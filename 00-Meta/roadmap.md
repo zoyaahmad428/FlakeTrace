@@ -9,13 +9,13 @@ Gantt: `attachments/GanttChart.jpeg`
 
 ## Phase table
 
-| Phase | Content | **Exit evidence** |
-| --- | --- | --- |
-| **Proposal** | Stakeholder evidence · contemporary comparison · POC with pre-registered rules · dataset and licence inspection · frozen scope | POC bundle with NARROW decision, **depth sweep, per-case classification, oracle ceiling, out-of-domain case, non-perturbation check** |
-| **FYP-I early** | Buildable benchmark subset · container runner · exact outcome signatures · random and one-by-one baselines · fixtures F1–F5 | **Reproduction yield, baseline results, clean-container logs**, requirements and design baseline |
-| **FYP-I end** | Static-field and system-property evidence · graph · configurable depth · initial minimiser · end-to-end provisional certificate · fixtures F6–F10 | **Working prototype from input to certificate with measured baselines** |
-| **FYP-II early** | Filesystem evidence · adaptive policy · verification and abstention · security hardening · certificate renderer · **CDR V1 if gates met** | **Policy ablations, depth matrix, overhead measurement, threat-model tests, clean install** |
-| **FYP-II final** | Held-out evaluation · failure analysis · CI packaging · user acceptance · deployment · **CDR V2/V3 if V1 gates met** | **Frozen results, acceptance decision, deployed release, reproducibility bundle** |
+| Phase            | Content                                                                                                                                           | **Exit evidence**                                                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| **Proposal**     | Stakeholder evidence · contemporary comparison · POC with pre-registered rules · dataset and licence inspection · frozen scope                    | POC bundle with NARROW decision, **depth sweep, per-case classification, oracle ceiling, out-of-domain case, non-perturbation check** |
+| **FYP-I early**  | Buildable benchmark subset · container runner · exact outcome signatures · random and one-by-one baselines · fixtures F1–F5                       | **Reproduction yield, baseline results, clean-container logs**, requirements and design baseline                                      |
+| **FYP-I end**    | Static-field and system-property evidence · graph · configurable depth · initial minimiser · end-to-end provisional certificate · fixtures F6–F10 | **Working prototype from input to certificate with measured baselines**                                                               |
+| **FYP-II early** | Filesystem evidence · adaptive policy · verification and abstention · security hardening · certificate renderer · **CDR V1 if gates met**         | **Policy ablations, depth matrix, overhead measurement, threat-model tests, clean install**                                           |
+| **FYP-II final** | Held-out evaluation · failure analysis · CI packaging · user acceptance · deployment · **CDR V2/V3 if V1 gates met**                              | **Frozen results, acceptance decision, deployed release, reproducibility bundle**                                                     |
 
 ## Iteration mapping (from the Gantt)
 

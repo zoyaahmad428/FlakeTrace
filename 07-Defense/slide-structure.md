@@ -1,54 +1,89 @@
 # Proposal Defence Slide Structure
 
-*The presentation should be concise and **present evidence before the panel begins
-questioning**. Slide order may be adjusted, but all of this information must be visible.*
+*Official 10-slide structure. Slide order should not be changed — the panel expects this
+sequence. All required content must be visible on the slide itself, not only in the appendix
+or spoken commentary.*
 
 ---
 
 ## Required slides
 
-| # | Slide | Required content | Our status |
-| --- | --- | --- | --- |
-| 1 | **Title and one-line problem** | Project title, members, supervisor, **declared stream**, one-sentence problem statement | ✅ [[00-Meta/project-one-pager]] |
-| 2 | **Stakeholders and current workflow** | Who faces the problem, how it is currently handled, why the failure matters, **the one relevant SDG** | ✅ Three named contacts. ⚠ Address the Java gap here rather than waiting |
-| 3 | **Existing solutions and prior FYPs** | Structural comparison and **evidence-based gap** | ✅ [[01-Literature/contemporary-comparison-table]] + [[01-Literature/prior-fyp-comparison]] |
-| 4 | **Research and technical basis** | Relevant current work, alternatives studied, **decisions influenced** | ✅ [[01-Literature/parameter-provenance]] is exactly this |
-| 5 | **CCP justification** | Applicable Seoul Accord characteristics, central trade-offs, uncertainty, **why routine development is insufficient** | ✅ Seven of nine |
-| 6 | **Proposed contribution and solution** | Contribution statement, high-level architecture, major components, boundaries, **intended deployment target** | ✅ [[03-Design/architecture]] |
-| 7 | **POC / technical spike (mandatory)** | The risk tested, **evidence obtained — shown, not described** — what was learned or disproved, the resulting decision | ⚠ Evidence checklist ready; **reconcile the victim/brittle wording first** |
-| 8 | **Evaluation plan** | Baseline, data or scenarios, metrics, success criteria, **at least one measurable NFR**, and the failure cases that matter most | ✅ [[05-Testing/evaluation-plan]] |
-
-> **A proposal that cannot demonstrate feasibility evidence should not normally be approved.**
-> Slide 7 is not optional and *"POC completed"* on a slide is not a POC.
+| # | Slide | What to show | Our status | Vault source |
+| --- | --- | --- | --- | --- |
+| 1 | **Title and one-line problem** | Project title, members, supervisor, one-line problem statement | ✅ | [[00-Meta/project-one-pager]] |
+| 2 | **Problem and users** | Who has the problem, current workflow, why it matters | ✅ Three named contacts. ⚠ Address the Java gap here, don't wait for it to be found | [[00-Meta/stakeholder-evidence]] |
+| 3 | **Existing solutions and prior FYP comparison** | Product/prior-FYP comparison table and the **real gap** | ✅ | [[01-Literature/contemporary-comparison-table]] + [[01-Literature/prior-fyp-comparison]] |
+| 4 | **R&D / recent technical work** | Relevant papers/methods/technical sources and **what you learned from them** | ✅ | [[01-Literature/parameter-provenance]] |
+| 5 | **Complex computing challenge** | What is technically hard and **why this is not a course project** | ✅ Seven of nine Seoul Accord characteristics | [[00-Meta/project-one-pager]] §CCP |
+| 6 | **Proposed solution and contribution** | Architecture idea, main modules, **clear contribution statement** | ✅ | [[03-Design/architecture]], contribution statement in [[00-Meta/project-one-pager]] |
+| 7 | **POC-lite / feasibility evidence** | See below — **we exceed the bar, frame it that way** | ✅✅ | [[05-Testing/poc/poc-log]] |
+| 8 | **Evaluation plan and risks** | How success will be measured; risks, dependencies, tool/API/GenAI boundary | ✅ | [[05-Testing/evaluation-plan]] + [[00-Meta/risk-register]] |
+| 9 | **Work division and iteration plan** | Member-wise responsibilities and milestones | ✅ | [[07-Defense/ownership-map]] + [[00-Meta/roadmap]] |
+| 10 | **DEI, Ethics and legal issues** | DEI statement, Ethical and Legal statement | ✅ | [[00-Meta/risk-register]] §Ethics, legal and DEI |
 
 ---
 
-## The single most important presentation decision
+## Slide 7 — read this before building it
 
-**Lead with the negative POC result. Do not bury it.**
+**The official bar is lower than what our project has.** The requirement is a
+*"clickable high-fidelity functional prototype (interface without core functionality behind
+the interface), API/data check, baseline run, sample pipeline, or risk experiment shown.
+**Full MVP not required.**"*
 
-The FAST guide states a POC that disproved its assumption and caused the group to revise its
-approach is usually **more valuable** than one that confirmed it.
+Our POC is not a clickable mockup or an interface stub — it is an **executed, evidence-backed
+experiment**: 8 targets built at pinned SHAs, 4 reproduced in clean containers, 2,606 controlled
+orders run, a negative result against pre-registered gates, two harness defects found and
+corrected, and a recorded decision.
 
-- A panel that **discovers it under questioning** treats it as **concealment**
-- A panel that is **told up front** treats it as **engineering judgement**
+**Frame the slide as exceeding the requirement, explicitly:**
 
-*(This is Dossier decision 3 — our intention is to lead with it, awaiting the supervisor's view.)*
+> "The guide asks for feasibility evidence — a prototype, a baseline run, or a risk experiment.
+> We went further: we ran the actual risk experiment end-to-end, with pre-registered success
+> gates, on real projects, in clean containers."
 
-## Slide 7 — how to build it
+**Do not undersell it by treating slide 7 as a checkbox.** This is your strongest slide — see
+[[07-Defense/weak-points]] and [[07-Defense/one-minute-answers]] for why leading with the
+negative result is the correct move, not a hedge.
 
-Structure the POC slide as the story, not the outcome:
+**Structure the slide as the story:**
+1. The one risky assumption tested — and why that one
+2. Pre-registered gates, committed before any experiment ran
+3. The result: negative. Zero overlap at depth 1. 0% saving against a 30% gate
+4. Why — the mechanism (FJ-02's two-hop path)
+5. The two harness defects — 182→0, timezone erasure. **These are the most important part**
+6. The decision: NARROW, and the four design changes that followed
 
-1. **The one risky assumption we tested** — and why that one
-2. **Pre-registered gates** — written and committed before any experiment ran
-3. **The result: negative.** Zero overlap at depth 1. 0% saving against a 30% gate
-4. **Why** — the mechanism: state moves through callees, not test bodies. FJ-02's two-hop path
-5. **The two harness defects** — 182→0, and the timezone erasure. *These are the most important
-   part*
-6. **The decision: NARROW**, and the four design changes that followed
+Evidence to have on screen, not on the slide itself:
+[[05-Testing/poc/poc-log]] §14 checklist.
 
-**Not on the slide, but on screen and ready:** the evidence checklist in
-[[05-Testing/poc/poc-log]] §14.
+---
+
+## Slide 9 — work division and iteration plan
+
+Pull directly from [[07-Defense/ownership-map]] (who owns what, individual evidence produced,
+the removal test for each member) and [[00-Meta/roadmap]] (phase table with **exit evidence**,
+not activities — the panel is trained to prefer "what will exist" over "what we'll be doing").
+
+Include the Gantt chart: `attachments/GanttChart.jpeg`.
+
+**Do not just list tasks per person.** Show the **removal test** reasoning for Member 3 in
+particular (Q88 is a near-certain question) — the POC's two invalidating defects were harness
+problems, not algorithm problems, which is the strongest available argument that evaluation
+infrastructure is a full pillar and not support work.
+
+---
+
+## Slide 10 — DEI, ethics and legal
+
+Pull directly from [[00-Meta/risk-register]] §Ethics, legal and DEI. Three ethics issues named
+(executing third-party code, handling potentially sensitive source/output, responsible
+claim-making), the legal position (all subjects open source, fetched by script, never
+redistributed), and the DEI statement (self-hosted, no GPU/cloud/paid API required, widens who
+can diagnose these failures).
+
+Keep this slide **short and factual** — it is a required disclosure, not a place to argue.
+
+---
 
 ## Consistency audit before slides are finalised
 
@@ -59,6 +94,7 @@ Structure the POC slide as the story, not the outcome:
 | Every number on a slide appears in [[05-Testing/poc/raw-numbers]] | If it is not there, do not say it | |
 | Every claim on a slide has a ledger row | [[07-Defense/claims-ledger]] | |
 | No slide says "minimum", "automatically fixing", "calibrated", or "dataset is ready" | The four phrasing traps | |
+| Slide 7 frames the POC as **exceeding** the feasibility-evidence bar, not meeting a checkbox | See above | |
 
 ## Open items the panel is entitled to check
 
