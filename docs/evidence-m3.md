@@ -330,3 +330,91 @@ real tests until the runner is integrated.
 - Result: explicit "NOT YET RUN ON REAL TESTS" section, stating no
   `OrderRunner` implementation exists yet and no baseline numbers against
   `fixtures/od-fixture` or any real project exist or should be invented.
+
+## Phase 5 — Benchmark manifest and yield report
+
+**Requirement:** create/extend the frozen manifest with the fixture cases
+(F1-F3, N1-N2) and, if POC case data exists in the repo, the real cases
+with pinned SHAs.
+
+- File/function: `eval/benchmark/manifest.json`.
+- Command: searched for real-case metadata before assuming none existed —
+  `grep -rln "sha\|commit\|repo_url\|github.com" POC` and inspected
+  `POC/POC/flaketrace-ui/src/data/recorded.json` directly (real file read,
+  not guessed).
+- Result: found one — `recorded.json`'s `git` section carries a pinned
+  40-character SHA (`ba16cdfde681d0409080f1acbe80942cbae7ae4f`) for a
+  "demo-project" case, plus a `suggested` polluter/victim/resource guess
+  from the POC's own heuristic backend. Added it to the manifest as
+  `POC-DEMO-1` with the pinned SHA, but with `ground_truth_outcome: null`
+  — that "suggested" value was the POC backend's own guess, not ground
+  truth we independently authored, so copying it in as if verified would
+  misrepresent it. Documented in the manifest's `notes` field that this
+  case used a custom JDK-21 harness (not Maven/Docker, not our statistical
+  pipeline) and that `demo-project`'s source isn't actually present in
+  this repo (`recorded.json` points at a `~/demo-project` path local to the
+  original author's machine) — so it cannot be attempted by our pipeline
+  yet.
+- Also checked `POC/POC/sample-dataset/sample` (Holder/ReaderTest/WriterTest,
+  found during Phase 0) against the same bar: no pinned SHA, no ground
+  truth, 0-byte `pom.xml` (confirmed in Phase 0), JUnit 5 not JUnit 4.
+  Excluded from the manifest rather than silently dropped — recorded under
+  `excluded_from_manifest` in the manifest file itself, with the reason.
+- Cross-check: `python3 -m unittest
+  eval.tests.test_yield_report.TestRealManifest.test_real_manifest_matches_fixture_ground_truth`
+  — passed, confirming the manifest's F1-F3/N1/N2 entries (victim,
+  polluters, `ground_truth_outcome`, `ground_truth_reason`) match
+  `fixtures/od-fixture/ground_truth.json` exactly, so the two files can't
+  silently drift apart.
+
+**Requirement:** a script that generates a yield report (attempted ->
+built -> victim passes alone -> reproduced -> excluded with reason) from
+recorded logs, not hand-typed numbers. If no logs exist yet, the report
+must show "not yet run" — never invent counts.
+
+- File/function: `eval/benchmark/yield_report.py` —
+  `generate_yield_report`, `compute_case_yield`, reading only from
+  `eval/benchmark/logs/<case_id>.json`.
+- Command: `python3 -m unittest eval.tests.test_yield_report -v` (5 tests:
+  2 synthetic-scenario tests using temp manifests/logs, 3 against the real
+  manifest/logs).
+- Result: 5/5 passed, including a synthetic mixed-funnel scenario (one
+  fully-reproduced case, one build-failure, one victim-fails-alone, one
+  with no log file at all) that confirmed every funnel count by hand
+  computation, and a real check that `eval/benchmark/logs/` currently
+  contains zero `.json` files.
+- Command (the actual deliverable, not a test): `python3
+  eval/benchmark/yield_report.py`.
+- Result: real output, reproduced below in full — all 6 cases
+  `not_yet_run`, every funnel count 0. This is the literal, current,
+  honest state; no number in it was typed by hand.
+
+```json
+{
+  "total_cases": 6,
+  "attempted": 6,
+  "not_yet_run": 6,
+  "built": 0,
+  "build_failed": 0,
+  "victim_passes_alone": 0,
+  "victim_fails_alone": 0,
+  "reproduced": 0,
+  "not_reproduced": 0,
+  "excluded": 0,
+  "cases": [
+    {"case_id": "F1", "attempted": true, "not_yet_run": true, "built": null, "victim_passes_alone": null, "reproduced": null, "excluded_reason": null},
+    {"case_id": "F2", "attempted": true, "not_yet_run": true, "built": null, "victim_passes_alone": null, "reproduced": null, "excluded_reason": null},
+    {"case_id": "F3", "attempted": true, "not_yet_run": true, "built": null, "victim_passes_alone": null, "reproduced": null, "excluded_reason": null},
+    {"case_id": "N1", "attempted": true, "not_yet_run": true, "built": null, "victim_passes_alone": null, "reproduced": null, "excluded_reason": null},
+    {"case_id": "N2", "attempted": true, "not_yet_run": true, "built": null, "victim_passes_alone": null, "reproduced": null, "excluded_reason": null},
+    {"case_id": "POC-DEMO-1", "attempted": true, "not_yet_run": true, "built": null, "victim_passes_alone": null, "reproduced": null, "excluded_reason": null}
+  ]
+}
+```
+
+- Limitation: `eval/benchmark/logs/` is empty because no implementation of
+  `baseline.py`'s `OrderRunner` (or any real build/isolation/reproduction
+  pipeline) exists in this repo yet — same blocker as Phase 4. Once Member
+  2's runner lands and writes real `<case_id>.json` log files, this exact
+  script (unchanged) will produce real funnel numbers instead of all
+  `not_yet_run`.

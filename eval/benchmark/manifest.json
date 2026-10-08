@@ -1,0 +1,95 @@
+{
+  "frozen_as_of": "2026-10-08",
+  "note": "Frozen case list for the benchmark. Adding or changing a case here is a shared-contract change (see docs/contracts/report-schema.md's spirit -- this file is read by eval/benchmark/yield_report.py and must stay stable). Each case's outcome/stage data comes ONLY from eval/benchmark/logs/<case_id>.json at report-generation time, never hand-typed into this file.",
+  "cases": [
+    {
+      "case_id": "F1",
+      "source": "fixture",
+      "project": "od-fixture",
+      "project_path": "fixtures/od-fixture",
+      "sha": null,
+      "victim": { "class": "odfixture.ConfigVictimTest", "method": "expectsDefaultMode" },
+      "polluters": [
+        { "class": "odfixture.ConfigPolluterTest", "method": "pollute" }
+      ],
+      "ground_truth_outcome": "VERIFIED",
+      "ground_truth_reason": null,
+      "ground_truth_ref": "fixtures/od-fixture/ground_truth.json#F1"
+    },
+    {
+      "case_id": "F2",
+      "source": "fixture",
+      "project": "od-fixture",
+      "project_path": "fixtures/od-fixture",
+      "sha": null,
+      "victim": { "class": "odfixture.FeatureVictimTest", "method": "expectsTurboDisabled" },
+      "polluters": [
+        { "class": "odfixture.FeaturePolluterTest", "method": "enableTurbo" }
+      ],
+      "ground_truth_outcome": "VERIFIED",
+      "ground_truth_reason": null,
+      "ground_truth_ref": "fixtures/od-fixture/ground_truth.json#F2"
+    },
+    {
+      "case_id": "F3",
+      "source": "fixture",
+      "project": "od-fixture",
+      "project_path": "fixtures/od-fixture",
+      "sha": null,
+      "victim": { "class": "odfixture.ToggleVictimTest", "method": "expectsNotBothFlagsSet" },
+      "polluters": [
+        { "class": "odfixture.ToggleAPolluterTest", "method": "setFlagA" },
+        { "class": "odfixture.ToggleBPolluterTest", "method": "setFlagB" }
+      ],
+      "ground_truth_outcome": "VERIFIED",
+      "ground_truth_reason": null,
+      "ground_truth_ref": "fixtures/od-fixture/ground_truth.json#F3"
+    },
+    {
+      "case_id": "N1",
+      "source": "fixture",
+      "project": "od-fixture",
+      "project_path": "fixtures/od-fixture",
+      "sha": null,
+      "victim": { "class": "odfixture.NegativeAloneFailTest", "method": "alwaysFails" },
+      "polluters": [],
+      "ground_truth_outcome": "UNRESOLVED",
+      "ground_truth_reason": "VICTIM_FAILS_ALONE",
+      "ground_truth_ref": "fixtures/od-fixture/ground_truth.json#N1"
+    },
+    {
+      "case_id": "N2",
+      "source": "fixture",
+      "project": "od-fixture",
+      "project_path": "fixtures/od-fixture",
+      "sha": null,
+      "victim": { "class": "odfixture.NegativeFlakyTest", "method": "sometimesFails" },
+      "polluters": [],
+      "ground_truth_outcome": "UNRESOLVED",
+      "ground_truth_reason": "VICTIM_FAILS_ALONE",
+      "ground_truth_ref": "fixtures/od-fixture/ground_truth.json#N2"
+    },
+    {
+      "case_id": "POC-DEMO-1",
+      "source": "poc-recorded",
+      "project": "demo-project",
+      "project_path": null,
+      "sha": "ba16cdfde681d0409080f1acbe80942cbae7ae4f",
+      "victim": { "class": "com.example.UserServiceTest", "method": "shouldRejectAnonymousUser" },
+      "polluters": [
+        { "class": "com.example.LoginTest", "method": "shouldLoginUser" }
+      ],
+      "ground_truth_outcome": null,
+      "ground_truth_reason": null,
+      "ground_truth_ref": null,
+      "notes": "Pinned SHA and the suggested polluter/victim/resource (UserCache.currentUser) come from POC/POC/flaketrace-ui/src/data/recorded.json, a recording from the proposal-defence POC's own heuristic backend -- not independently-authored ground truth, so ground_truth_outcome is deliberately null here, not copied from that file's 'suggested' guess. That recording used a custom JDK-only harness (`java -cp build/classes FlakeDemo ...`, JDK 21), not Maven/Docker and not this project's statistical (Wilson-interval) pipeline. The demo-project source tree itself is NOT present in this repo (recorded.json references a '~/demo-project' path local to the original author's machine), so this case cannot currently be attempted by our pipeline. Listed here only because the brief requires including real cases with pinned SHAs when POC case data exists in the repo -- the yield report must show this case as not_yet_run, never a fabricated result."
+    }
+  ],
+  "excluded_from_manifest": [
+    {
+      "project": "sample-dataset/sample",
+      "path": "POC/POC/sample-dataset/sample",
+      "reason": "No pinned SHA, no established order-dependent ground truth, and its pom.xml is 0 bytes (empty/broken, confirmed in Phase 0 inspection) -- not buildable. Uses JUnit 5, not JUnit 4. Does not meet the brief's bar of 'the real cases with pinned SHAs'; excluded rather than silently omitted."
+    }
+  ]
+}

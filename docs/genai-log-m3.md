@@ -221,3 +221,50 @@ artificially placing the victim last.
 
 Ownership checkpoint: you need to understand and verify this implementation
 before claiming it as your contribution.
+
+## 2026-10-09 — Phase 5 (benchmark manifest and yield report)
+
+**What I asked:** Create/extend the frozen manifest with the fixture cases
+(F1-F3, N1-N2) and, if POC case data exists in the repo, the real cases
+with pinned SHAs. Write a script that generates a yield report from
+recorded logs, not hand-typed numbers, showing "not yet run" if no logs
+exist.
+
+**What was retained:**
+- `eval/benchmark/manifest.json`, `eval/benchmark/yield_report.py`,
+  `eval/benchmark/logs/README.md` as generated.
+- `eval/tests/test_yield_report.py` as generated.
+- The `eval/README.md` additions documenting the yield report's
+  not-yet-run status.
+
+**What I changed:** Before writing the manifest, searched the repo for
+real-case metadata rather than assuming the brief's "if POC case data
+exists" condition was false — found a pinned SHA in
+`POC/POC/flaketrace-ui/src/data/recorded.json` for a "demo-project" case.
+Included it as `POC-DEMO-1`, but deliberately set `ground_truth_outcome:
+null` rather than copying that file's `suggested` polluter/victim guess as
+if it were verified ground truth — it's the POC backend's own heuristic
+output, not something I independently authored or verified. Also checked
+`POC/POC/sample-dataset/sample` against the same bar (pinned SHA, ground
+truth) and excluded it with a documented reason (0-byte `pom.xml`, no
+ground truth, JUnit 5) rather than silently omitting it.
+
+**How it was verified:**
+- `python3 -m unittest eval.tests.test_yield_report -v` — 5/5 passed,
+  including a synthetic mixed-funnel scenario (hand-verified counts
+  against a scripted set of fake log files) and a real cross-check that
+  the manifest's fixture entries match `fixtures/od-fixture/ground_truth.json`
+  exactly.
+- `python3 -m unittest discover -s eval/tests -v` — full suite, 55/55
+  passed.
+- Ran `python3 eval/benchmark/yield_report.py` for real (not simulated) —
+  confirmed it reports all 6 cases as `not_yet_run` with every funnel
+  count at 0, because `eval/benchmark/logs/` is genuinely empty. Full
+  output recorded in `docs/evidence-m3.md`.
+
+**Errors found:** None this phase.
+
+**Rejections:** None.
+
+Ownership checkpoint: you need to understand and verify this implementation
+before claiming it as your contribution.
