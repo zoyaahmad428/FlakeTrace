@@ -68,3 +68,50 @@ written, and I chose the Windows git repo and the proposed `eval/` layout.
 
 Ownership checkpoint: you need to understand and verify this implementation
 before claiming it as your contribution.
+
+## 2026-10-08 — Phase 2 (reproduction-confidence statistics)
+
+**What I asked:** Implement a dependency-free `wilson_interval(successes, n,
+confidence=0.95)` and a function comparing a sequence's reproduction rate to
+the victim-alone rate, returning a structured record. Unit-test the edge
+cases (0/n, n/n, n=0 must raise). Verify the numbers against an independent
+implementation rather than trusting the constants.
+
+**What was retained:**
+- `eval/stats.py` (`_norm_ppf`, `wilson_interval`, `compare_sequence_to_isolation`,
+  `ReproductionComparison`) as generated.
+- `eval/tests/test_stats.py` structure and edge-case tests as generated.
+- `eval/tools/verify_wilson_oneoff.py` as generated.
+
+**What I changed:**
+- The first draft of `test_known_critical_values` used `places=9`, which is
+  tighter than Acklam's approximation's own published ~1.15e-9 relative-error
+  bound. The test failed on first run (not a bug in `wilson_interval`) and I
+  relaxed it to `places=8` after checking the actual observed differences.
+- The statsmodels cross-check values in
+  `test_matches_independent_statsmodels_reference` were initially placeholder
+  numbers (acknowledged as such at the time, not presented as verified) —
+  replaced with the real values from running
+  `eval/tools/verify_wilson_oneoff.py` against statsmodels 0.15.0 before
+  accepting the test.
+
+**How it was verified:**
+- `python3 -m unittest eval.tests.test_stats -v` — 14/14 passed, including
+  explicit error-raising tests for `n=0`, `successes>n`, `successes<0`, and
+  `confidence` outside `(0,1)`.
+- Independent cross-check: built a throwaway venv, installed `statsmodels`
+  0.15.0, ran `proportion_confint(..., method="wilson")` against
+  `wilson_interval(...)` for 11 cases spanning three confidence levels and
+  both the 0/n and n/n edges. Max absolute difference: 2.643e-10. Full
+  numbers in [docs/evidence-m3.md](evidence-m3.md). Venv deleted afterward,
+  not committed.
+
+**Errors found:** The `places=9` tolerance mismatch above (test-only issue,
+not a defect in the Wilson interval formula itself — confirmed by the
+statsmodels cross-check agreeing to ~1e-10, far tighter than `_norm_ppf`'s own
+precision floor).
+
+**Rejections:** None.
+
+Ownership checkpoint: you need to understand and verify this implementation
+before claiming it as your contribution.

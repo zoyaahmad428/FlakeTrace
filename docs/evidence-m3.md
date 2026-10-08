@@ -101,3 +101,79 @@ order (non-order-dependent flakiness).
   from the five expected test failures (see above), not a compile error —
   `mvn -q -Dtest=...` runs on the same sources passed independently.
 - Limitation: none observed.
+
+## Phase 2 — Reproduction-confidence statistics
+
+**Requirement:** `wilson_interval(successes, n, confidence=0.95)` computes a
+correct Wilson score confidence interval, dependency-free, and rejects bad
+edge inputs with a clear error.
+
+- File/function: `eval/stats.py`, `wilson_interval`, `_norm_ppf`.
+- Command: `python3 -m unittest eval.tests.test_stats -v` (14 tests).
+- Result: all 14 passed, including explicit edge cases: `n=0` raises
+  `ValueError` ("n > 0" in the message), `successes > n` raises,
+  `successes < 0` raises, `confidence` outside `(0, 1)` raises; `0/n` gives
+  an exact `lower == 0.0`; `n/n` gives an exact `upper == 1.0`.
+- Limitation: `_norm_ppf` (Acklam's rational approximation to the inverse
+  normal CDF, used to get the z critical value for an arbitrary confidence
+  level) has ~1.15e-9 *relative* error per its own published accuracy — for
+  z in the 1.6-2.6 range that is up to ~3e-9 *absolute* error. My first
+  unit-test tolerance (`places=9`, i.e. <0.5e-9) was tighter than the
+  algorithm's real precision and failed on first run; not a bug in
+  `wilson_interval` itself, just a mismatched test tolerance. Corrected to
+  `places=8` after checking the actual observed differences
+  (1.58e-9 to 2.90e-9 across the three published critical values tested).
+
+**Requirement:** verify the numbers against an independent implementation,
+not just my own constants.
+
+- File/function: `eval/tools/verify_wilson_oneoff.py` (one-off script, not
+  part of the test suite — requires `statsmodels`, which is intentionally
+  not a project dependency).
+- Command: created a throwaway venv (`/tmp/ft_verify_venv`), `pip install
+  statsmodels` (0.15.0), then ran the script comparing
+  `wilson_interval(...)` against
+  `statsmodels.stats.proportion.proportion_confint(..., method="wilson")`
+  for 11 (successes, n, confidence) combinations including both 0/n and n/n
+  edges and three confidence levels (0.90, 0.95, 0.99).
+- Result: maximum absolute difference across all 11 cases was
+  **2.643e-10** — agreement to about 9-10 decimal places. Full per-case
+  output recorded below. The venv was deleted after the check; it is not
+  committed and is not needed again unless the Wilson formula changes.
+- Limitation: none — this was the strongest evidence available
+  (statsmodels is a widely-used, independently-maintained statistics
+  library) short of a hand-derived closed-form check, which the unit tests
+  also do separately (exact 0/n and n/n bounds).
+
+```
+successes=17 n=20 confidence=0.95  mine=(0.6395811350648312, 0.9476312541456368)  statsmodels=(0.6395811352592431, 0.9476312541037835)  max_abs_diff=1.944e-10
+successes= 0 n=20 confidence=0.95  mine=(0.0, 0.16112515827076002)  statsmodels=(0.0, 0.16112515805281938)  max_abs_diff=2.179e-10
+successes=20 n=20 confidence=0.95  mine=(0.83887484172924, 1.0)  statsmodels=(0.8388748419471806, 1.0)  max_abs_diff=2.179e-10
+successes=10 n=20 confidence=0.95  mine=(0.2992980080624758, 0.7007019919375241)  statsmodels=(0.2992980081982123, 0.7007019918017877)  max_abs_diff=1.357e-10
+successes= 1 n=20 confidence=0.95  mine=(0.008881448790731947, 0.23613119365295204)  statsmodels=(0.008881448800795402, 0.23613119344674205)  max_abs_diff=2.062e-10
+successes=19 n=20 confidence=0.95  mine=(0.7638688063470479, 0.9911185512092681)  statsmodels=(0.763868806553258, 0.9911185511992047)  max_abs_diff=2.062e-10
+successes=10 n=20 confidence=0.9   mine=(0.32740376805316856, 0.6725962319468314)  statsmodels=(0.3274037678851559, 0.6725962321148441)  max_abs_diff=1.680e-10
+successes=10 n=20 confidence=0.99  mine=(0.250447700111171, 0.749552299888829)  statsmodels=(0.25044770032177954, 0.7495522996782205)  max_abs_diff=2.106e-10
+successes= 0 n= 1 confidence=0.95  mine=(0.0, 0.7934506858870164)  statsmodels=(0.0, 0.7934506856227626)  max_abs_diff=2.643e-10
+successes= 1 n= 1 confidence=0.95  mine=(0.20654931411298352, 1.0)  statsmodels=(0.20654931437723745, 1.0)  max_abs_diff=2.643e-10
+successes= 3 n=20 confidence=0.95  mine=(0.052368745854363144, 0.36041886493516884)  statsmodels=(0.052368745896216595, 0.36041886474075696)  max_abs_diff=1.944e-10
+
+Overall max absolute difference across 11 cases: 2.643e-10
+```
+
+**Requirement:** a function that compares a sequence result against an
+isolation result and returns a structured record.
+
+- File/function: `eval/stats.py`, `compare_sequence_to_isolation`,
+  `ReproductionComparison`.
+- Command: `python3 -m unittest eval.tests.test_stats -v`
+  (`TestCompareSequenceToIsolation`, 3 tests).
+- Result: all passed — confirms the `summary` text reads exactly
+  `"sequence reproduced 17/20, victim alone 0/20"` for that input, both
+  sides carry their own Wilson interval, and `isolation_n=0` /
+  `sequence_n=0` each raise a clear `ValueError` (delegated straight from
+  `wilson_interval`).
+- Limitation: this function only produces the structured comparison; it
+  does not decide VERIFIED/CANDIDATE/UNRESOLVED — that decision table is
+  Phase 3, and several of its thresholds are explicitly open questions for
+  me to confirm before it is finalized.
