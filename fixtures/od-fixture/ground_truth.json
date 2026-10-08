@@ -1,0 +1,77 @@
+{
+  "fixture": "od-fixture",
+  "authored_by": "Member 3 (Evaluation)",
+  "authored_before_any_run": true,
+  "note": "Hand-written from the fixture's design, before mvn test was ever invoked against this project. Commit history of this file must predate any commit containing recorded run output.",
+  "cases": [
+    {
+      "id": "F1",
+      "category": "order-dependent",
+      "victim": { "class": "odfixture.ConfigVictimTest", "method": "expectsDefaultMode" },
+      "polluters": [
+        { "class": "odfixture.ConfigPolluterTest", "method": "pollute" }
+      ],
+      "polluter_combination": "single",
+      "order_sensitive_among_polluters": false,
+      "shared_resource": { "kind": "static-field", "class": "odfixture.Config", "field": "mode" },
+      "expected_outcome": "VERIFIED",
+      "expected_outcome_notes": "Deterministic: polluter sets Config.mode = 1 and never restores it; victim asserts Config.mode == 0. Victim passes alone and fails every time it runs after the polluter."
+    },
+    {
+      "id": "F2",
+      "category": "order-dependent",
+      "victim": { "class": "odfixture.FeatureVictimTest", "method": "expectsTurboDisabled" },
+      "polluters": [
+        { "class": "odfixture.FeaturePolluterTest", "method": "enableTurbo" }
+      ],
+      "polluter_combination": "single",
+      "order_sensitive_among_polluters": false,
+      "shared_resource": { "kind": "system-property", "key": "odfixture.turbo" },
+      "expected_outcome": "VERIFIED",
+      "expected_outcome_notes": "Deterministic: polluter calls System.setProperty(\"odfixture.turbo\", \"true\") and never clears it; victim asserts FeatureFlags.isTurboEnabled() is false. Victim passes alone and fails every time it runs after the polluter."
+    },
+    {
+      "id": "F3",
+      "category": "order-dependent-two-polluter",
+      "victim": { "class": "odfixture.ToggleVictimTest", "method": "expectsNotBothFlagsSet" },
+      "polluters": [
+        { "class": "odfixture.ToggleAPolluterTest", "method": "setFlagA" },
+        { "class": "odfixture.ToggleBPolluterTest", "method": "setFlagB" }
+      ],
+      "polluter_combination": "both_required",
+      "order_sensitive_among_polluters": false,
+      "shared_resource": { "kind": "static-field", "class": "odfixture.Toggles", "field": "flagA and flagB (both required)" },
+      "expected_outcome": "VERIFIED",
+      "expected_outcome_notes": "Edge case for the sequence minimiser: removing either single polluter makes the victim pass again, so a one-by-one polluter search alone will not identify this case correctly. Victim fails only when both ToggleAPolluterTest#setFlagA and ToggleBPolluterTest#setFlagB have run before it; the relative order of A and B does not matter."
+    },
+    {
+      "id": "N1",
+      "category": "negative-control-fails-alone",
+      "victim": { "class": "odfixture.NegativeAloneFailTest", "method": "alwaysFails" },
+      "polluters": [],
+      "polluter_combination": "none",
+      "order_sensitive_among_polluters": false,
+      "shared_resource": null,
+      "expected_outcome": "UNRESOLVED",
+      "expected_outcome_reason_free_text": "VICTIM_FAILS_ALONE",
+      "expected_outcome_notes": "Deliberately fails in isolation (assertEquals(2, 1) always fails). Any tool must report this as not order-dependent because it already fails with no polluter run first. Exact UNRESOLVED-reason enum value to be confirmed against the Phase 3 decision table."
+    },
+    {
+      "id": "N2",
+      "category": "negative-control-non-order-dependent-flake",
+      "victim": { "class": "odfixture.NegativeFlakyTest", "method": "sometimesFails" },
+      "polluters": [],
+      "polluter_combination": "none",
+      "order_sensitive_among_polluters": false,
+      "shared_resource": null,
+      "expected_outcome": "UNRESOLVED",
+      "expected_outcome_reason_free_text": "NOT_REPRODUCED",
+      "expected_outcome_notes": "Fails intermittently (~50% of runs) based on System.nanoTime() parity, independent of any shared static field, system property, or execution order. Included so the search must not mistake random flakiness for a reproducible order-dependent failure. Exact UNRESOLVED-reason enum value to be confirmed against the Phase 3 decision table."
+    }
+  ],
+  "benign_noise_tests": [
+    { "class": "odfixture.MathUtilTest", "methods": ["addsTwoNumbers", "squaresANumber"] },
+    { "class": "odfixture.StringUtilTest", "methods": ["reversesAString", "detectsPalindrome"] }
+  ],
+  "benign_noise_notes": "Always pass regardless of order; touch no static fields or system properties. Included as noise candidates for the polluter search."
+}
