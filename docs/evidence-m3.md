@@ -269,3 +269,64 @@ ever consulted. Phase 1's own evidence (N2 run alone 6 times: 2 pass / 4
 fail, same signature each failure) confirms N2 belongs in that category, not
 `NOT_REPRODUCED`. Updated the ground truth entry and its notes accordingly;
 N1 was already correctly `VICTIM_FAILS_ALONE` and is unchanged.
+
+## Phase 4 — Random-order baseline (interface only)
+
+**Requirement:** design the baseline against an explicit runner interface
+(run an ordered list of test methods in one JVM, return per-test outcome +
+signature).
+
+- File/function: `eval/baseline.py` — `OrderRunner` (a `typing.Protocol`),
+  `TestIdentifier`, `FailureSignature`, `RunOutcome`.
+- Result: interface defined; no implementation exists in this repo (Member
+  2's component, not built yet). Documented explicitly in
+  `eval/README.md` under "Random-order baseline status: NOT YET RUN ON
+  REAL TESTS."
+- Limitation: none for the interface definition itself — this is
+  intentionally interface-only per the brief.
+
+**Requirement:** seeded shuffles of the frozen candidate set; count runs
+until the victim's reference failure signature appears; record every seed.
+
+- File/function: `eval/baseline.py` — `run_random_order_baseline`,
+  `BaselineAttempt`, `BaselineResult`.
+- Command: `python3 -m unittest eval.tests.test_baseline -v`.
+- Result: 12/12 passed, including:
+  - `test_finds_matching_order_eventually_and_stops_early` — with a fake
+    runner where the victim fails iff the polluter is shuffled before it
+    (true ~50% of random permutations), found a match within 200 attempts
+    and confirmed the runner was called exactly `runs_attempted` times, not
+    `max_runs` times (early stopping on first match, real behavior, not
+    asserted by inspection).
+  - `test_records_every_seed_even_when_never_matching` — 5/5 seeds
+    (`[0,1,2,3,4]`) recorded even when none matched.
+  - `test_deterministic_given_same_seeds` — two independent runs with the
+    same `base_seed` produced byte-identical sequences of shuffled orders
+    (real `random.Random(seed).shuffle` determinism, not mocked).
+  - `test_different_base_seed_gives_different_orders` — confirms the seed
+    actually drives the shuffle (not a no-op parameter).
+- Limitation: `random.Random`'s determinism is CPython-internal (Mersenne
+  Twister) — reproducible within this project's own environment, not
+  intended to match any external/cross-language random source. Acceptable
+  for this use (re-running the same seed later in this same toolchain).
+
+**Requirement:** unit-test it with a FakeRunner that lives ONLY in the
+tests folder, clearly named as fake; the real CLI must never import it.
+
+- File/function: `eval/tests/fake_runner.py` — `FakeOrderRunner`.
+- Command: `grep -rn "fake_runner\|FakeOrderRunner" eval/baseline.py` (and
+  every non-test file under `eval/`).
+- Result: zero matches outside `eval/tests/` — confirmed `baseline.py` does
+  not import the fake, and no other file in `eval/` references it either.
+- Limitation: there is no "real CLI" yet anywhere in this repo to check
+  against (Member 2 hasn't built one), so this check is necessarily
+  limited to "nothing in this repo's non-test code imports the fake" today;
+  it will need re-checking once a real CLI exists.
+
+**Requirement:** mark in the README that the baseline is not executed on
+real tests until the runner is integrated.
+
+- File/function: `eval/README.md`.
+- Result: explicit "NOT YET RUN ON REAL TESTS" section, stating no
+  `OrderRunner` implementation exists yet and no baseline numbers against
+  `fixtures/od-fixture` or any real project exist or should be invented.

@@ -177,3 +177,47 @@ dependency question were answered with the recommended option.
 
 Ownership checkpoint: you need to understand and verify this implementation
 before claiming it as your contribution.
+
+## 2026-10-08 — Phase 4 (random-order baseline, interface only)
+
+**What I asked:** Design the random-order baseline against an explicit
+`OrderRunner` interface (run an ordered list of test methods in one JVM,
+return per-test outcome + signature) — no real implementation exists since
+that's Member 2's component. Implement seeded shuffles of the candidate
+set, stop and record once the victim's reference signature appears, record
+every seed tried. Unit-test with a FakeRunner that lives only in the tests
+folder and is never imported by production code. Mark in the README that
+the baseline hasn't been run on real tests.
+
+**What was retained:**
+- `eval/baseline.py` (`OrderRunner`, `TestIdentifier`, `FailureSignature`,
+  `RunOutcome`, `BaselineAttempt`, `BaselineResult`,
+  `run_random_order_baseline`) as generated.
+- `eval/tests/fake_runner.py` (`FakeOrderRunner`) as generated.
+- `eval/tests/test_baseline.py` as generated.
+- `eval/README.md` as generated.
+
+**What I changed:** Nothing — first attempt passed all 12 new tests and the
+import-boundary check cleanly. One design decision worth recording: the
+baseline shuffles the victim *together with* the candidate pool (not fixed
+at the end), matching how a naive "just run tests in random order
+repeatedly" baseline actually behaves in the literature, rather than
+artificially placing the victim last.
+
+**How it was verified:**
+- `python3 -m unittest eval.tests.test_baseline -v` — 12/12 passed,
+  including a real early-stopping check (the fake runner's call count
+  equals `runs_attempted`, not `max_runs`) and a real determinism check
+  (same seed, two independent runs, byte-identical shuffle sequences).
+- `python3 -m unittest discover -s eval/tests -v` — full suite, 50/50
+  passed (no regressions in Phases 2-3's tests).
+- `grep -rn "fake_runner\|FakeOrderRunner" eval --include="*.py" | grep -v
+  "eval/tests/"` — zero matches, confirming `baseline.py` (and everything
+  else non-test) never imports the fake.
+
+**Errors found:** None this phase.
+
+**Rejections:** None.
+
+Ownership checkpoint: you need to understand and verify this implementation
+before claiming it as your contribution.
