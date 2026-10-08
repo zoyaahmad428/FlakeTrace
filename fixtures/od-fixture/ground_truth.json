@@ -54,7 +54,7 @@
       "shared_resource": null,
       "expected_outcome": "UNRESOLVED",
       "expected_outcome_reason_free_text": "VICTIM_FAILS_ALONE",
-      "expected_outcome_notes": "Deliberately fails in isolation (assertEquals(2, 1) always fails). Any tool must report this as not order-dependent because it already fails with no polluter run first. Exact UNRESOLVED-reason enum value to be confirmed against the Phase 3 decision table."
+      "expected_outcome_notes": "Deliberately fails in isolation (assertEquals(2, 1) always fails). Any tool must report this as not order-dependent because it already fails with no polluter run first. Confirmed against the finalized Phase 3 decision table (eval/outcome.py): this maps to UNRESOLVED(VICTIM_FAILS_ALONE)."
     },
     {
       "id": "N2",
@@ -65,8 +65,8 @@
       "order_sensitive_among_polluters": false,
       "shared_resource": null,
       "expected_outcome": "UNRESOLVED",
-      "expected_outcome_reason_free_text": "NOT_REPRODUCED",
-      "expected_outcome_notes": "Fails intermittently (~50% of runs) based on System.nanoTime() parity, independent of any shared static field, system property, or execution order. Included so the search must not mistake random flakiness for a reproducible order-dependent failure. Exact UNRESOLVED-reason enum value to be confirmed against the Phase 3 decision table."
+      "expected_outcome_reason_free_text": "VICTIM_FAILS_ALONE",
+      "expected_outcome_notes": "Fails intermittently (~50% of runs, confirmed in Phase 1: 2 pass / 4 fail across 6 isolated runs) based on System.nanoTime() parity, independent of any shared static field, system property, or execution order. Originally guessed NOT_REPRODUCED in Phase 1 (flagged there as pending confirmation). Resolved differently once the Phase 3 decision table was finalized: the isolation check will observe the SAME failure signature recurring at least once even when run alone with no polluter present, which trips UNRESOLVED(VICTIM_FAILS_ALONE) before reproduction counting is ever consulted -- not NOT_REPRODUCED, since it does sometimes fail, just not because of any polluter. This is the correct category for any failure that recurs by itself, deterministically (N1) or intermittently (N2)."
     }
   ],
   "benign_noise_tests": [

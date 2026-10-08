@@ -1,0 +1,42 @@
+{
+  "victim": { "class": "odfixture.ConfigVictimTest", "method": "expectsDefaultMode" },
+  "polluters": [
+    { "class": "odfixture.ConfigPolluterTest", "method": "pollute" }
+  ],
+  "original_failing_order": [
+    { "class": "odfixture.MathUtilTest", "method": "addsTwoNumbers" },
+    { "class": "odfixture.ConfigPolluterTest", "method": "pollute" },
+    { "class": "odfixture.StringUtilTest", "method": "reversesAString" },
+    { "class": "odfixture.ConfigVictimTest", "method": "expectsDefaultMode" }
+  ],
+  "reduced_sequence": [
+    { "class": "odfixture.ConfigPolluterTest", "method": "pollute" },
+    { "class": "odfixture.ConfigVictimTest", "method": "expectsDefaultMode" }
+  ],
+  "reproduction": {
+    "successes": 20, "n": 20, "confidence": 0.95,
+    "lower": 0.83887484172924, "upper": 1.0
+  },
+  "sequence_any_signature_failures": 20,
+  "victim_alone": {
+    "successes": 0, "n": 20, "confidence": 0.95,
+    "lower": 0.0, "upper": 0.16112515827076002
+  },
+  "shared_resource": { "kind": "static-field", "class": "odfixture.Config", "field": "mode" },
+  "polluter_write_location": { "class": "odfixture.ConfigPolluterTest", "method": "pollute", "bytecode_offset": 3 },
+  "victim_read_location": { "class": "odfixture.ConfigVictimTest", "method": "expectsDefaultMode", "bytecode_offset": 5 },
+  "failure_signature": {
+    "exception_type": "java.lang.AssertionError",
+    "message": "expected:<0> but was:<1>",
+    "stack_trace": "at odfixture.ConfigVictimTest.expectsDefaultMode(ConfigVictimTest.java:10)"
+  },
+  "instrumentation_level": "static-only",
+  "execution_record_reference": "illustrative-only: no real execution record backs this example",
+  "source_integrity": { "passed": true, "details": "Illustrative: no modification detected to any instrumented class." },
+  "outcome": "VERIFIED",
+  "unresolved_reason": null,
+  "limitations": [
+    "Hand-written illustrative example, not a recorded benchmark run -- see eval/examples/README.md.",
+    "Counts are chosen to demonstrate the VERIFIED row of the Phase 3 decision table, not measured."
+  ]
+}

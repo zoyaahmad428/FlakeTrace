@@ -115,3 +115,65 @@ precision floor).
 
 Ownership checkpoint: you need to understand and verify this implementation
 before claiming it as your contribution.
+
+## 2026-10-08 — Phase 3 (evidence-report schema and outcome logic)
+
+**What I asked:** Write the JSON Schema for the diagnosis report, draft and
+confirm the outcome/unresolved-reason enums and decision table (the brief
+flagged this explicitly as "confirm with me, not finalize on your own"),
+implement the decision function with one unit test per decision-table row,
+write hand-written examples under `examples/` for every row, and write
+`docs/contracts/report-schema.md`.
+
+**What was retained:**
+- `eval/schema/report.schema.json`, `eval/outcome.py`, `eval/schema_validator.py`
+  as generated, after the fixes described below.
+- All 7 files under `eval/examples/` and `eval/examples/README.md` as
+  generated.
+- `docs/contracts/report-schema.md` as generated.
+
+**What I changed:**
+- Before writing any decision code, four genuinely ambiguous points were
+  put to me directly (not assumed): CANDIDATE vs.
+  `UNRESOLVED(BELOW_CONFIDENCE_THRESHOLD)`; whether a "reproduction
+  success" requires exact signature match; whether `n=20` is a fixed
+  protocol or the decision function should be generic over `n`; and
+  whether a failed source-integrity check should override everything. I
+  chose the recommended option on all four; the brief's required
+  `BELOW_CONFIDENCE_THRESHOLD` enum value was kept in the schema for
+  forward compatibility even though `decide()` doesn't emit it.
+- Also asked and confirmed before writing the validator: use the
+  `jsonschema` package (a new dependency) rather than a hand-rolled
+  validator, to avoid the validator drifting from the schema document.
+- Found a real schema bug during testing (not asked for, caught by running
+  the test suite): `shared_resource`'s `oneOf` matched a `null` instance on
+  *both* branches vacuously, so `oneOf` rejected valid `null` values.
+  Restructured it before accepting the schema. Full detail in
+  `docs/evidence-m3.md`.
+- Added a field not in the original field list
+  (`sequence_any_signature_failures`) after noticing the decision function
+  needs it to distinguish `NOT_REPRODUCED` from `SIGNATURE_MISMATCH`, but
+  the schema as first drafted had no field carrying that raw count — fixed
+  before writing any example, not after.
+- Went back and corrected a Phase 1 ground-truth placeholder (N2's
+  unresolved-reason guess) once the decision table was finalized — this
+  was flagged as pending in Phase 1, not a result-informed change; see
+  `docs/evidence-m3.md` for the reasoning.
+
+**How it was verified:**
+- `python3 -m unittest eval.tests.test_schema_validator -v` — 8/8 passed.
+- `python3 -m unittest eval.tests.test_outcome -v` — 12/12 passed (one test
+  per decision-table row, plus input-validation edge cases).
+- `python3 -m unittest eval.tests.test_examples -v` — 4/4 passed: every
+  example validates against the schema, every example's outcome matches
+  what `decide()` actually computes for the same counts (not just asserted
+  by hand), and every example's Wilson numbers match the formula.
+
+**Errors found:** The `shared_resource` `oneOf`/`null` schema bug above —
+caught by the test suite on first run, not by inspection.
+
+**Rejections:** None — all four open decision-table questions and the
+dependency question were answered with the recommended option.
+
+Ownership checkpoint: you need to understand and verify this implementation
+before claiming it as your contribution.

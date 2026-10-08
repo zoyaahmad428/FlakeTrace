@@ -1,0 +1,40 @@
+{
+  "victim": { "class": "com.example.FlakySortTest", "method": "checksOrdering" },
+  "polluters": [
+    { "class": "com.example.SuspectedPolluterTest", "method": "shufflesState" }
+  ],
+  "original_failing_order": [
+    { "class": "com.example.SuspectedPolluterTest", "method": "shufflesState" },
+    { "class": "com.example.FlakySortTest", "method": "checksOrdering" }
+  ],
+  "reduced_sequence": [
+    { "class": "com.example.SuspectedPolluterTest", "method": "shufflesState" },
+    { "class": "com.example.FlakySortTest", "method": "checksOrdering" }
+  ],
+  "reproduction": {
+    "successes": 0, "n": 20, "confidence": 0.95,
+    "lower": 0.0, "upper": 0.16112515827076002
+  },
+  "sequence_any_signature_failures": 5,
+  "victim_alone": {
+    "successes": 0, "n": 20, "confidence": 0.95,
+    "lower": 0.0, "upper": 0.16112515827076002
+  },
+  "shared_resource": { "kind": "static-field", "class": "com.example.Shared", "field": "order" },
+  "polluter_write_location": { "class": "com.example.SuspectedPolluterTest", "method": "shufflesState", "bytecode_offset": 6 },
+  "victim_read_location": { "class": "com.example.FlakySortTest", "method": "checksOrdering", "bytecode_offset": 2 },
+  "failure_signature": {
+    "exception_type": "java.lang.AssertionError",
+    "message": "expected the originally-observed failure to recur",
+    "stack_trace": "at com.example.FlakySortTest.checksOrdering(FlakySortTest.java:21)"
+  },
+  "instrumentation_level": "static-only",
+  "execution_record_reference": "illustrative-only: no real execution record backs this example",
+  "source_integrity": { "passed": true, "details": "Illustrative: no modification detected to any instrumented class." },
+  "outcome": "UNRESOLVED",
+  "unresolved_reason": "SIGNATURE_MISMATCH",
+  "limitations": [
+    "Hand-written illustrative example, not a recorded benchmark run -- see eval/examples/README.md.",
+    "The sequence failed 5/20 times, but every failure had a different exception/stack trace than the reference signature, so none of them counted as a reproduction."
+  ]
+}

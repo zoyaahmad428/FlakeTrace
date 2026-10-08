@@ -1,0 +1,34 @@
+{
+  "victim": { "class": "odfixture.NegativeAloneFailTest", "method": "alwaysFails" },
+  "polluters": [],
+  "original_failing_order": [
+    { "class": "odfixture.NegativeAloneFailTest", "method": "alwaysFails" }
+  ],
+  "reduced_sequence": [],
+  "reproduction": {
+    "successes": 20, "n": 20, "confidence": 0.95,
+    "lower": 0.83887484172924, "upper": 1.0
+  },
+  "sequence_any_signature_failures": 20,
+  "victim_alone": {
+    "successes": 20, "n": 20, "confidence": 0.95,
+    "lower": 0.83887484172924, "upper": 1.0
+  },
+  "shared_resource": null,
+  "polluter_write_location": null,
+  "victim_read_location": null,
+  "failure_signature": {
+    "exception_type": "java.lang.AssertionError",
+    "message": "expected:<2> but was:<1>",
+    "stack_trace": "at odfixture.NegativeAloneFailTest.alwaysFails(NegativeAloneFailTest.java:10)"
+  },
+  "instrumentation_level": "static-only",
+  "execution_record_reference": "illustrative-only: no real execution record backs this example",
+  "source_integrity": { "passed": true, "details": "Illustrative: no modification detected to any instrumented class." },
+  "outcome": "UNRESOLVED",
+  "unresolved_reason": "VICTIM_FAILS_ALONE",
+  "limitations": [
+    "Hand-written illustrative example, not a recorded benchmark run -- see eval/examples/README.md.",
+    "N1 negative control: this victim fails deterministically even in isolation, so no polluter can be attributed."
+  ]
+}

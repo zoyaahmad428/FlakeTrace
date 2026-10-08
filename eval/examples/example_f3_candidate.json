@@ -1,0 +1,44 @@
+{
+  "victim": { "class": "odfixture.ToggleVictimTest", "method": "expectsNotBothFlagsSet" },
+  "polluters": [
+    { "class": "odfixture.ToggleAPolluterTest", "method": "setFlagA" },
+    { "class": "odfixture.ToggleBPolluterTest", "method": "setFlagB" }
+  ],
+  "original_failing_order": [
+    { "class": "odfixture.ToggleAPolluterTest", "method": "setFlagA" },
+    { "class": "odfixture.ToggleBPolluterTest", "method": "setFlagB" },
+    { "class": "odfixture.ToggleVictimTest", "method": "expectsNotBothFlagsSet" }
+  ],
+  "reduced_sequence": [
+    { "class": "odfixture.ToggleAPolluterTest", "method": "setFlagA" },
+    { "class": "odfixture.ToggleBPolluterTest", "method": "setFlagB" },
+    { "class": "odfixture.ToggleVictimTest", "method": "expectsNotBothFlagsSet" }
+  ],
+  "reproduction": {
+    "successes": 12, "n": 20, "confidence": 0.95,
+    "lower": 0.3865815006061295, "upper": 0.7811934677397184
+  },
+  "sequence_any_signature_failures": 12,
+  "victim_alone": {
+    "successes": 0, "n": 20, "confidence": 0.95,
+    "lower": 0.0, "upper": 0.16112515827076002
+  },
+  "shared_resource": { "kind": "static-field", "class": "odfixture.Toggles", "field": "flagA and flagB (both required)" },
+  "polluter_write_location": { "class": "odfixture.ToggleBPolluterTest", "method": "setFlagB", "bytecode_offset": 3 },
+  "victim_read_location": { "class": "odfixture.ToggleVictimTest", "method": "expectsNotBothFlagsSet", "bytecode_offset": 7 },
+  "failure_signature": {
+    "exception_type": "java.lang.AssertionError",
+    "message": null,
+    "stack_trace": "at odfixture.ToggleVictimTest.expectsNotBothFlagsSet(ToggleVictimTest.java:14)"
+  },
+  "instrumentation_level": "static-only",
+  "execution_record_reference": "illustrative-only: no real execution record backs this example",
+  "source_integrity": { "passed": true, "details": "Illustrative: no modification detected to any instrumented class." },
+  "outcome": "CANDIDATE",
+  "unresolved_reason": null,
+  "limitations": [
+    "Hand-written illustrative example, not a recorded benchmark run -- see eval/examples/README.md.",
+    "Counts are chosen to demonstrate the CANDIDATE row (reproduces, below the 0.70 lower-bound threshold, but with a supporting resource edge).",
+    "The schema's single polluter_write_location field cannot represent both of this case's two required writes (flagA and flagB); only the second write is shown here. This is a known Iteration 1 schema limitation for multi-polluter cases."
+  ]
+}

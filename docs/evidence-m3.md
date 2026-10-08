@@ -177,3 +177,95 @@ isolation result and returns a structured record.
   does not decide VERIFIED/CANDIDATE/UNRESOLVED — that decision table is
   Phase 3, and several of its thresholds are explicitly open questions for
   me to confirm before it is finalized.
+
+## Phase 3 — Evidence-report schema and outcome logic
+
+**Requirement:** JSON Schema for the diagnosis report with the specified
+fields, and a validator.
+
+- File/function: `eval/schema/report.schema.json`, `eval/schema_validator.py`
+  (`validate_report`, `validate_report_file`), using the `jsonschema` package
+  (pinned in `eval/requirements.txt`).
+- Command: `python3 -m unittest eval.tests.test_schema_validator -v`.
+- Result: 8/8 passed, including that the schema document itself is a valid
+  JSON Schema (`Draft202012Validator.check_schema`), a valid report passes,
+  a missing required field fails, an unknown `outcome` value fails, and the
+  `outcome`/`unresolved_reason` conditional is enforced both directions
+  (UNRESOLVED without a reason fails; VERIFIED with a reason fails).
+- Bug found and fixed during testing: the first draft of the
+  `shared_resource` field used `"type": ["object", "null"]` with a sibling
+  `"oneOf"` of two object sub-schemas. For a `null` instance, neither
+  sub-schema's `properties`/`required` keywords apply (they're no-ops on
+  `null`), so **both** branches matched vacuously and `oneOf` correctly
+  rejected it for matching more than once. Fixed by restructuring to
+  `oneOf: [{"type":"null"}, {"type":"object", "oneOf": [...]}]`, confirmed
+  by re-running the two example files that have `shared_resource: null`
+  (`example_victim_fails_alone.json`, `example_no_resource_evidence.json`).
+- Limitation: `jsonschema` is a new dependency (confirmed with Member 3
+  before adding it) — recorded in `eval/requirements.txt`, not yet wired
+  into any CI/build step since none exists yet in this repo.
+
+**Requirement:** outcome enum, unresolved-reason enum, and the decision
+table — drafted as a starting point, confirmed with Member 3 before
+finalizing (per the brief).
+
+- File/function: `eval/outcome.py` (`decide`, `DecisionInput`, `Decision`).
+- Four open questions from the brief were put to Member 3 directly before
+  any decision code was written (see `docs/contracts/report-schema.md` for
+  the resolutions): CANDIDATE vs. `BELOW_CONFIDENCE_THRESHOLD` → CANDIDATE;
+  signature-gated success counting → yes; fixed `n=20` vs. generic Wilson
+  threshold → generic; source-integrity override → yes, added as a new
+  `SOURCE_INTEGRITY_FAILED` reason.
+- Command: `python3 -m unittest eval.tests.test_outcome -v` (12 tests: one
+  per decision-table row, plus `DecisionInput` validation edge cases).
+- Result: 12/12 passed — each of the 7 decision-table rows (source
+  integrity failed; victim fails alone; not reproduced; signature mismatch;
+  no resource evidence; verified; candidate) produces exactly the outcome
+  and reason the table specifies, confirmed with real calls into
+  `eval.stats.wilson_interval` (not mocked).
+- Limitation: `BELOW_CONFIDENCE_THRESHOLD` stays in the schema's enum (the
+  brief requires the five reasons "at least") but `decide()` never emits
+  it — documented in both the schema's field description and
+  `docs/contracts/report-schema.md` so this isn't mistaken for an omission
+  later.
+
+**Requirement:** example JSON files under `examples/`, labelled as
+hand-written, not results.
+
+- File/function: `eval/examples/*.json` (7 files, one per decision-table
+  row), `eval/examples/README.md`, `eval/tests/test_examples.py`.
+- Command: `python3 -m unittest eval.tests.test_examples -v`.
+- Result: 4/4 passed — every example file validates against the schema,
+  every example's hand-picked counts reproduce the *same* outcome and
+  reason when run through `eval.outcome.decide()` (not just asserted by
+  hand), and every example's `lower`/`upper` Wilson numbers match the
+  formula to 9 decimal places (computed, not typed from guesswork — see
+  Phase 2 evidence for the verification of the formula itself).
+- Limitation found and documented in the example itself: the schema's
+  singular `polluter_write_location` field cannot represent
+  `example_f3_candidate.json`'s two required writes (`flagA` and `flagB`
+  both set by separate tests); only one is shown, with a note in that
+  file's `limitations` array and in `report-schema.md`.
+
+**Requirement:** `docs/contracts/report-schema.md` explaining each field
+and which member produces it.
+
+- File/function: `docs/contracts/report-schema.md`.
+- Result: field-by-field table with producing member, outcome/reason enum
+  tables, the finalized decision table, and an explicit record of the four
+  decisions confirmed with Member 3 on 2026-10-08.
+- Limitation: none — this is documentation, not executable, so "verification"
+  here is that it accurately describes what `eval/outcome.py` and
+  `eval/schema/report.schema.json` actually do (checked by re-reading both
+  against the table after writing it).
+
+**Correction to Phase 1 ground truth, made in Phase 3 (not based on any run
+output):** `fixtures/od-fixture/ground_truth.json`'s N2 case was originally
+guessed as `UNRESOLVED(NOT_REPRODUCED)`, flagged at the time as "to be
+confirmed against the Phase 3 decision table." Under the finalized table,
+any isolation run that reproduces the reference signature at all — even
+intermittently — trips `VICTIM_FAILS_ALONE` before reproduction counting is
+ever consulted. Phase 1's own evidence (N2 run alone 6 times: 2 pass / 4
+fail, same signature each failure) confirms N2 belongs in that category, not
+`NOT_REPRODUCED`. Updated the ground truth entry and its notes accordingly;
+N1 was already correctly `VICTIM_FAILS_ALONE` and is unchanged.

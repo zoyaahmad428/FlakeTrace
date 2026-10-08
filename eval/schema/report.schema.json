@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flaketrace.invalid/schema/report.schema.json",
+  "title": "FlakeTrace diagnosis report",
+  "description": "Iteration 1 evidence report for one victim test. Field ownership is documented in docs/contracts/report-schema.md.",
+  "type": "object",
+  "$defs": {
+    "testIdentifier": {
+      "type": "object",
+      "properties": {
+        "class": { "type": "string", "minLength": 1 },
+        "method": { "type": "string", "minLength": 1 }
+      },
+      "required": ["class", "method"],
+      "additionalProperties": false
+    },
+    "codeLocation": {
+      "type": ["object", "null"],
+      "properties": {
+        "class": { "type": "string", "minLength": 1 },
+        "method": { "type": "string", "minLength": 1 },
+        "bytecode_offset": { "type": "integer", "minimum": 0 }
+      },
+      "required": ["class", "method", "bytecode_offset"],
+      "additionalProperties": false
+    },
+    "wilsonCount": {
+      "type": "object",
+      "properties": {
+        "successes": { "type": "integer", "minimum": 0 },
+        "n": { "type": "integer", "minimum": 1 },
+        "confidence": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1 },
+        "lower": { "type": "number", "minimum": 0, "maximum": 1 },
+        "upper": { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "required": ["successes", "n", "confidence", "lower", "upper"],
+      "additionalProperties": false
+    },
+    "sharedResource": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "oneOf": [
+            {
+              "properties": {
+                "kind": { "const": "static-field" },
+                "class": { "type": "string", "minLength": 1 },
+                "field": { "type": "string", "minLength": 1 }
+              },
+              "required": ["kind", "class", "field"],
+              "additionalProperties": false
+            },
+            {
+              "properties": {
+                "kind": { "const": "system-property" },
+                "key": { "type": "string", "minLength": 1 }
+              },
+              "required": ["kind", "key"],
+              "additionalProperties": false
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "properties": {
+    "victim": { "$ref": "#/$defs/testIdentifier" },
+    "polluters": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/testIdentifier" },
+      "minItems": 0
+    },
+    "original_failing_order": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/testIdentifier" },
+      "minItems": 0
+    },
+    "reduced_sequence": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/testIdentifier" },
+      "minItems": 0
+    },
+    "reproduction": { "$ref": "#/$defs/wilsonCount" },
+    "sequence_any_signature_failures": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Count of sequence runs that failed for ANY reason, not necessarily matching the reference failure signature. Always >= reproduction.successes. Used to distinguish NOT_REPRODUCED (this is 0) from SIGNATURE_MISMATCH (this is > 0 but reproduction.successes is 0)."
+    },
+    "victim_alone": { "$ref": "#/$defs/wilsonCount" },
+    "shared_resource": { "$ref": "#/$defs/sharedResource" },
+    "polluter_write_location": { "$ref": "#/$defs/codeLocation" },
+    "victim_read_location": { "$ref": "#/$defs/codeLocation" },
+    "failure_signature": {
+      "type": "object",
+      "properties": {
+        "exception_type": { "type": "string", "minLength": 1 },
+        "message": { "type": ["string", "null"] },
+        "stack_trace": { "type": "string" }
+      },
+      "required": ["exception_type", "stack_trace"],
+      "additionalProperties": false
+    },
+    "instrumentation_level": {
+      "type": "string",
+      "enum": ["static-only"],
+      "description": "Fixed to 'static-only' in Iteration 1. Runtime instrumentation is Iteration 2."
+    },
+    "execution_record_reference": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Pointer to Member 2's recorded execution log/run id for this diagnosis."
+    },
+    "source_integrity": {
+      "type": "object",
+      "properties": {
+        "passed": { "type": "boolean" },
+        "details": { "type": "string" }
+      },
+      "required": ["passed", "details"],
+      "additionalProperties": false
+    },
+    "outcome": {
+      "type": "string",
+      "enum": ["VERIFIED", "CANDIDATE", "UNRESOLVED"]
+    },
+    "unresolved_reason": {
+      "type": ["string", "null"],
+      "enum": [
+        "VICTIM_FAILS_ALONE",
+        "NOT_REPRODUCED",
+        "SIGNATURE_MISMATCH",
+        "NO_SUPPORTED_RESOURCE_EVIDENCE",
+        "BELOW_CONFIDENCE_THRESHOLD",
+        "SOURCE_INTEGRITY_FAILED",
+        null
+      ],
+      "description": "Required (non-null) when outcome is UNRESOLVED, must be null otherwise. BELOW_CONFIDENCE_THRESHOLD is reserved for forward compatibility; the Iteration 1 decision function (eval/outcome.py) uses CANDIDATE for that case instead, per team decision 2026-10-08."
+    },
+    "limitations": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "required": [
+    "victim", "polluters", "original_failing_order", "reduced_sequence",
+    "reproduction", "sequence_any_signature_failures", "victim_alone",
+    "shared_resource", "polluter_write_location", "victim_read_location",
+    "failure_signature", "instrumentation_level", "execution_record_reference",
+    "source_integrity", "outcome", "unresolved_reason", "limitations"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "outcome": { "const": "UNRESOLVED" } } },
+      "then": { "properties": { "unresolved_reason": { "type": "string" } } }
+    },
+    {
+      "if": { "not": { "properties": { "outcome": { "const": "UNRESOLVED" } } } },
+      "then": { "properties": { "unresolved_reason": { "type": "null" } } }
+    }
+  ]
+}

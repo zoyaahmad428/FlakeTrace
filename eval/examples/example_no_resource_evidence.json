@@ -1,0 +1,40 @@
+{
+  "victim": { "class": "com.example.MysteryVictimTest", "method": "expectsCleanState" },
+  "polluters": [
+    { "class": "com.example.MysteryPolluterTest", "method": "doesSomething" }
+  ],
+  "original_failing_order": [
+    { "class": "com.example.MysteryPolluterTest", "method": "doesSomething" },
+    { "class": "com.example.MysteryVictimTest", "method": "expectsCleanState" }
+  ],
+  "reduced_sequence": [
+    { "class": "com.example.MysteryPolluterTest", "method": "doesSomething" },
+    { "class": "com.example.MysteryVictimTest", "method": "expectsCleanState" }
+  ],
+  "reproduction": {
+    "successes": 18, "n": 20, "confidence": 0.95,
+    "lower": 0.6989663545713958, "upper": 0.9721335188119963
+  },
+  "sequence_any_signature_failures": 18,
+  "victim_alone": {
+    "successes": 0, "n": 20, "confidence": 0.95,
+    "lower": 0.0, "upper": 0.16112515827076002
+  },
+  "shared_resource": null,
+  "polluter_write_location": null,
+  "victim_read_location": null,
+  "failure_signature": {
+    "exception_type": "java.lang.AssertionError",
+    "message": "state was not clean",
+    "stack_trace": "at com.example.MysteryVictimTest.expectsCleanState(MysteryVictimTest.java:15)"
+  },
+  "instrumentation_level": "static-only",
+  "execution_record_reference": "illustrative-only: no real execution record backs this example",
+  "source_integrity": { "passed": true, "details": "Illustrative: no modification detected to any instrumented class." },
+  "outcome": "UNRESOLVED",
+  "unresolved_reason": "NO_SUPPORTED_RESOURCE_EVIDENCE",
+  "limitations": [
+    "Hand-written illustrative example, not a recorded benchmark run -- see eval/examples/README.md.",
+    "Demonstrates that strong, reliable reproduction is still not enough on its own: with no polluter-write/victim-read resource edge from static evidence, the outcome cannot be VERIFIED or CANDIDATE -- ranking alone must never produce VERIFIED."
+  ]
+}
