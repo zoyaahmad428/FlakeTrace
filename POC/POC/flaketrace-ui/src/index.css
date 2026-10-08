@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Instrument Sans Variable", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", Consolas, ui-monospace, monospace;
+
+  --color-paper: #f5f7fb;
+  --color-surface: #ffffff;
+  --color-sunken: #edf1f7;
+  --color-line: #d3dae5;
+  --color-line-strong: #a9b4c4;
+  --color-ink: #0c1a30;
+  --color-ink-2: #34445c;
+  --color-ink-3: #56657b;
+
+  --color-action: #1f4fd8;
+  --color-action-strong: #173db0;
+  --color-action-soft: #e5ecfd;
+
+  --color-polluter: #c2410c;
+  --color-polluter-soft: #fff0e6;
+  --color-resource: #0f766e;
+  --color-resource-soft: #e2f4f1;
+  --color-victim: #be123c;
+  --color-victim-soft: #fdebef;
+
+  --color-verified: #15803d;
+  --color-verified-soft: #e6f5eb;
+  --color-candidate: #a15c07;
+  --color-candidate-soft: #fdf3dc;
+  --color-unresolved: #475569;
+  --color-unresolved-soft: #eceff4;
+}
+
+@layer base {
+  html {
+    font-size: 15px;
+  }
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+    font-feature-settings: "ss01", "cv11";
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-action);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  button:not(:disabled),
+  [role="button"],
+  label[for],
+  select {
+    cursor: pointer;
+  }
+  ::selection {
+    background: var(--color-action-soft);
+  }
+  code,
+  pre,
+  kbd {
+    font-family: var(--font-mono);
+  }
+}
+
+.gnode:focus {
+  outline: none;
+}
+.gnode:focus-visible rect {
+  stroke: var(--color-action);
+  stroke-width: 3.5px;
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-strong) transparent;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

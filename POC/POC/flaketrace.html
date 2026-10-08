@@ -1,0 +1,1338 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FlakeTrace</title>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#fff; --surface2:#f4f3f0; --term:#f7f6f3;
+  --line:#dedcd6; --line2:#c9c6be;
+  --fg:#1b1d1f; --fg2:#4a4f55; --mut:#7b8189;
+  --accent:#2f5fa8; --accent-bg:#eaf0f9; --accent-line:#b9cde9;
+  --ok:#1e7a4d; --ok-bg:#e7f3ec; --ok-line:#b2d8c4;
+  --warn:#8a5d00; --warn-bg:#fbf1dc; --warn-line:#e6cd96;
+  --bad:#a3302c; --bad-bg:#fbeae9; --bad-line:#e8b6b3;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --ui:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#131519; --surface:#191c21; --surface2:#1f232a; --term:#0e1013;
+  --line:#2a2f37; --line2:#3a414b; --fg:#dfe3e8; --fg2:#b3bac2; --mut:#828b96;
+  --accent:#6ea3e8; --accent-bg:#16202e; --accent-line:#2d4463;
+  --ok:#54c78d; --ok-bg:#132520; --ok-line:#265842;
+  --warn:#e0aa47; --warn-bg:#2a2113; --warn-line:#5d4a20;
+  --bad:#e8827c; --bad-bg:#2a1717; --bad-line:#5e2f2c;
+}}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--ui);font-size:13.5px;line-height:1.5}
+.mono,code,pre,kbd{font-family:var(--mono)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+
+.top{position:sticky;top:0;z-index:40;background:var(--surface);border-bottom:1px solid var(--line)}
+.topin{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 0 8px}
+.brand{font-family:var(--mono);font-weight:700;font-size:14px}
+.brand b{color:var(--accent)}
+.pill{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--mut);border:1px solid var(--line2);border-radius:2px;padding:1px 5px}
+.ctx{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--mut);text-align:right}
+.ctx b{color:var(--fg2);font-weight:500}
+.steps{display:flex;gap:0;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin}
+.steps button{flex:0 0 auto;display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;background:none;border:0;color:var(--mut);padding:5px 10px 5px 0;cursor:pointer;white-space:nowrap;opacity:.55}
+.steps button .n{width:17px;height:17px;border-radius:50%;border:1px solid var(--line2);display:grid;place-items:center;font-size:9px}
+.steps button.done{opacity:1;color:var(--fg2)}
+.steps button.done .n{background:var(--ok);border-color:var(--ok);color:#fff}
+.steps button.on{opacity:1;color:var(--fg);font-weight:600}
+.steps button.on .n{background:var(--accent);border-color:var(--accent);color:#fff}
+.steps button:disabled{cursor:not-allowed}
+.steps button::after{content:"";width:14px;height:1px;background:var(--line2);margin-left:4px}
+.steps button:last-child::after{display:none}
+
+main{padding:20px 0 60px}
+.shead{margin-bottom:14px}
+.shead h1{font-size:16px;margin:0 0 3px;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.shead p{margin:0;color:var(--mut);font-size:12px;max-width:70ch}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:3px;margin-bottom:12px}
+.ph{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 12px;border-bottom:1px solid var(--line);background:var(--surface2)}
+.ph h2{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;margin:0;font-weight:600;color:var(--fg2)}
+.ph .right{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--mut)}
+.pb{padding:12px}
+.pb.tight{padding:0}
+.g2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px;align-items:start}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}
+@media(max-width:880px){.g2,.g3{grid-template-columns:minmax(0,1fr)}}
+
+.b{display:inline-block;font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;padding:1.5px 5px;border-radius:2px;border:1px solid;white-space:nowrap}
+.b-acc{color:var(--accent);border-color:var(--accent-line);background:var(--accent-bg)}
+.b-ok{color:var(--ok);border-color:var(--ok-line);background:var(--ok-bg)}
+.b-warn{color:var(--warn);border-color:var(--warn-line);background:var(--warn-bg)}
+.b-bad{color:var(--bad);border-color:var(--bad-line);background:var(--bad-bg)}
+.b-mut{color:var(--mut);border-color:var(--line2);background:transparent}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:10px 11px}
+.card .label{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut)}
+.card .value{font-size:13.5px;font-weight:600;margin-top:2px;word-break:break-word}
+.card .small{font-size:11px;color:var(--mut);margin-top:2px;word-break:break-word}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:0 14px;font-family:var(--mono);font-size:11.5px;margin:0}
+.kv dt{color:var(--mut);padding:3px 0;border-bottom:1px dotted var(--line)}
+.kv dd{margin:0;padding:3px 0;border-bottom:1px dotted var(--line);word-break:break-all}
+.kv dt:last-of-type,.kv dd:last-of-type{border-bottom:0}
+.note{font-size:11.5px;color:var(--mut);margin:8px 0 0}
+details{font-size:11.5px;color:var(--fg2);margin-top:8px;border-top:1px dotted var(--line);padding-top:7px}
+details summary{cursor:pointer;font-family:var(--mono);font-size:10.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.07em}
+details p{margin:6px 0 0}
+
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px 14px}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.f.full{grid-column:1/-1}
+.f label{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut)}
+.f input,.f textarea,.f select{font-family:var(--mono);font-size:12px;background:var(--bg);color:var(--fg);border:1px solid var(--line2);border-radius:2px;padding:6px 8px;width:100%}
+.f input:focus,.f textarea:focus,.f select:focus{outline:2px solid var(--accent-line);outline-offset:-1px;border-color:var(--accent)}
+.f textarea{resize:vertical;min-height:70px;line-height:1.5}
+.hint{font-size:10.5px;color:var(--mut);font-family:var(--mono)}
+.btn{font-family:var(--mono);font-size:11.5px;padding:7px 13px;border-radius:2px;border:1px solid var(--line2);background:var(--surface2);color:var(--fg);cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--fg2)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.sm{font-size:10.5px;padding:3px 8px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btnrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tog{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:2px;padding:8px 10px;background:var(--bg);cursor:pointer}
+.tog input{margin:2px 0 0}
+.tog .tt{font-family:var(--mono);font-size:11.5px;display:block}
+.tog .td{font-size:11px;color:var(--mut)}
+
+.srcs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+@media(max-width:760px){.srcs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.src{border:1px solid var(--line2);border-radius:3px;padding:9px 10px;background:var(--bg);cursor:pointer;text-align:left}
+.src:hover{border-color:var(--fg2)}
+.src.on{border-color:var(--accent);background:var(--accent-bg);box-shadow:inset 0 0 0 1px var(--accent)}
+.src .t{font-family:var(--mono);font-size:11.5px;font-weight:600;display:block}
+.src .d{font-size:10.5px;color:var(--mut);display:block;margin-top:2px}
+
+.status{display:flex;align-items:center;gap:8px;margin-top:10px;padding:7px 10px;border:1px solid var(--line);border-radius:2px;background:var(--surface2);font-family:var(--mono);font-size:11px;color:var(--fg2)}
+.status .dot{flex:0 0 auto;width:8px;height:8px;border-radius:50%;background:var(--line2)}
+.status[data-s=live]{border-color:var(--ok-line);background:var(--ok-bg)}
+.status[data-s=live] .dot{background:var(--ok)}
+.status[data-s=busy]{border-color:var(--accent-line);background:var(--accent-bg)}
+.status[data-s=busy] .dot{background:var(--accent);animation:bl 1s steps(1) infinite}
+.status[data-s=warn]{border-color:var(--warn-line);background:var(--warn-bg)}
+.status[data-s=warn] .dot{background:var(--warn)}
+.status[data-s=bad]{border-color:var(--bad-line);background:var(--bad-bg)}
+.status[data-s=bad] .dot{background:var(--bad)}
+@keyframes bl{50%{opacity:.25}}
+
+.rows{display:grid;gap:6px}
+.row{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--line);border-radius:2px;background:var(--bg);font-family:var(--mono);font-size:11px}
+.row .mut{color:var(--mut)}
+.row .push{margin-left:auto}
+.chk{display:flex;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line);align-items:flex-start}
+.chk:last-child{border-bottom:0}
+.chk .ic{font-family:var(--mono);font-weight:700;width:14px;text-align:center;flex:0 0 auto}
+.chk.p .ic{color:var(--ok)} .chk.f .ic{color:var(--bad)} .chk.n .ic{color:var(--mut)}
+.chk .t1{font-family:var(--mono);font-size:11.5px}
+.chk .t2{font-size:11px;color:var(--mut);margin-top:1px}
+.chk .rr{margin-left:auto;flex:0 0 auto}
+
+.term{background:var(--term);border:1px solid var(--line);border-radius:2px;font-family:var(--mono);font-size:11.5px;line-height:1.6;padding:10px 12px;overflow-x:auto;white-space:pre-wrap;word-break:break-word;color:var(--fg2);margin:0}
+.diff{font-family:var(--mono);font-size:11.5px;line-height:1.55;overflow-x:auto;background:var(--term);margin:0;padding:8px 0}
+.diff .ln{display:block;padding:0 12px;white-space:pre}
+.diff .ln.add{background:var(--ok-bg)} .diff .ln.del{background:var(--bad-bg)}
+.diff .ln.hh{background:var(--surface2);color:var(--mut)} .diff .ln.fh{color:var(--mut)}
+
+.banner{border:1px solid;border-left-width:4px;border-radius:3px;padding:13px 15px;margin-bottom:12px;display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.banner.ok{border-color:var(--ok-line);border-left-color:var(--ok);background:var(--ok-bg)}
+.banner.wn{border-color:var(--warn-line);border-left-color:var(--warn);background:var(--warn-bg)}
+.banner.bd{border-color:var(--bad-line);border-left-color:var(--bad);background:var(--bad-bg)}
+.banner .st{font-family:var(--mono);font-size:22px;font-weight:700;line-height:1.1}
+.banner.ok .st{color:var(--ok)} .banner.wn .st{color:var(--warn)} .banner.bd .st{color:var(--bad)}
+.banner .bl{flex:1 1 280px;min-width:0}
+.banner .meta{font-family:var(--mono);font-size:11px;color:var(--fg2);margin-top:3px;word-break:break-all}
+.callout{border:1px solid var(--line2);border-left:3px solid var(--mut);border-radius:2px;padding:9px 12px;font-size:11.5px;color:var(--fg2);background:var(--surface2);margin-bottom:12px}
+.callout.ac{border-color:var(--accent-line);border-left-color:var(--accent);background:var(--accent-bg)}
+.callout b{color:var(--fg)}
+
+.chain{position:relative;padding-left:22px;margin:0}
+.chain::before{content:"";position:absolute;left:5px;top:6px;bottom:8px;width:1px;background:var(--line2)}
+.ev{position:relative;margin-bottom:11px}
+.ev:last-child{margin-bottom:0}
+.ev::before{content:"";position:absolute;left:-21px;top:4px;width:9px;height:9px;border-radius:50%;background:var(--surface);border:2px solid var(--accent)}
+.ev.g::before{border-color:var(--ok)} .ev.t::before{border-color:var(--bad)}
+.ev .who{font-family:var(--mono);font-size:12px;font-weight:600;word-break:break-all}
+.ev .act{font-family:var(--mono);font-size:11px;color:var(--fg2);margin-top:1px;word-break:break-all}
+.ev .loc{font-family:var(--mono);font-size:10.5px;color:var(--mut);margin-top:1px;word-break:break-all}
+
+.meter{display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--surface2);border:1px solid var(--line)}
+.meter i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.phase{display:flex;gap:8px;align-items:center;font-family:var(--mono);font-size:11px;padding:4px 0;color:var(--mut)}
+.phase .ic{width:14px;text-align:center}
+.phase.on{color:var(--fg)} .phase.done{color:var(--fg2)}
+.phase.done .ic{color:var(--ok)}
+
+.flow{display:flex;gap:8px;align-items:center;margin-top:16px;padding-top:12px;border-top:1px solid var(--line);flex-wrap:wrap}
+.flow .sp{margin-left:auto}
+.screen{display:none} .screen.on{display:block}
+[hidden]{display:none!important}
+/* ---- evidence graph ---- */
+.gwrap{display:grid;grid-template-columns:minmax(0,1fr) 258px}
+@media(max-width:900px){.gwrap{grid-template-columns:minmax(0,1fr)}}
+.gsvg{overflow-x:auto;padding:6px 8px;min-width:0}
+.gsvg svg{display:block;min-width:660px;width:100%;height:auto}
+.gsvg text{font-family:var(--mono);dominant-baseline:middle}
+.gsvg .nt{font-size:10.5px;fill:var(--fg);font-weight:600}
+.gsvg .ns{font-size:9px;fill:var(--mut)}
+.gsvg .gl{opacity:.75}
+.gsvg .el{font-size:9px;fill:var(--mut)}
+.gsvg .box{fill:var(--surface2);stroke:var(--line2);stroke-width:1}
+.gsvg .res .box{fill:var(--accent-bg);stroke:var(--accent-line)}
+.gsvg .hot .box{stroke:var(--bad);stroke-width:2}
+.gsvg .tgt .box{stroke:var(--accent);stroke-width:2}
+.gsvg .gn{cursor:pointer}
+.gsvg .gn.sel .box{stroke:var(--fg);stroke-width:2.5}
+.gsvg .gn.faint{opacity:.13}
+.gsvg .edge{fill:none;stroke-width:1.5}
+.gsvg .edge.gone{display:none}
+.gsvg .e-dir{stroke:var(--ok)}
+.gsvg .e-ind{stroke:var(--warn);stroke-dasharray:5 4}
+.gsvg .e-res{stroke:var(--line2);stroke-dasharray:1 4}
+.gpanel{border-left:1px solid var(--line);padding:11px;background:var(--surface2);min-width:0}
+@media(max-width:900px){.gpanel{border-left:0;border-top:1px solid var(--line)}}
+.glabel{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin-bottom:7px}
+.ghint{font-size:11.5px;color:var(--mut);margin:0}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.07em;padding:3px 8px;border-radius:2px;border:1px solid var(--line2);background:var(--bg);color:var(--fg2);cursor:pointer}
+.chip.off{opacity:.42;text-decoration:line-through}
+.c-dir{border-color:var(--ok-line);color:var(--ok)}
+.c-ind{border-color:var(--warn-line);color:var(--warn)}
+.c-res{border-color:var(--line2);color:var(--mut)}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap topin">
+    <div class="brand">Flake<b>Trace</b></div>
+    <span class="pill">order-dependent test diagnosis</span>
+    <div class="ctx" id="ctx">no project loaded</div>
+  </div>
+  <div class="wrap"><div class="steps" id="stepbar"></div></div>
+</header>
+
+<main class="wrap">
+
+<section id="k1" class="screen">
+  <div class="shead">
+    <h1>Project source</h1>
+    <p>Point FlakeTrace at a Java project. It reads the git history and the test sources.</p>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><h2>Where from</h2><span class="right" id="src-be">checking backend...</span></div>
+    <div class="pb">
+      <div class="srcs" id="srcs">
+        <button class="src on" data-kind="demo"><span class="t">Demo project</span><span class="d">bundled example with a real flaky test</span></button>
+        <button class="src" data-kind="local"><span class="t">Own project</span><span class="d">a path on this machine</span></button>
+        <button class="src" data-kind="github"><span class="t">GitHub</span><span class="d">clone a public repo</span></button>
+        <button class="src" data-kind="zip"><span class="t">Dataset zip</span><span class="d">archive in this folder</span></button>
+      </div>
+
+      <div style="margin-top:11px">
+        <div class="f" id="in-demo">
+          <label>Bundled project</label>
+          <div class="row"><span>demo-project</span><span class="mut push">services/user &middot; 5 test classes &middot; one planted order dependence</span></div>
+        </div>
+        <div class="f" id="in-local" hidden>
+          <label for="v-local">Project path</label>
+          <input id="v-local" placeholder="/home/you/my-service" spellcheck="false">
+          <span class="hint">a Maven or Gradle project; git history optional</span>
+        </div>
+        <div class="f" id="in-github" hidden>
+          <label for="v-github">Repository URL</label>
+          <input id="v-github" placeholder="https://github.com/owner/repo.git" spellcheck="false">
+          <span class="hint">shallow clone, 50 commits, into ~/.flaketrace-work</span>
+        </div>
+        <div class="f" id="in-zip" hidden>
+          <label for="v-zip">Archive</label>
+          <select id="v-zip"><option value="">scanning...</option></select>
+          <span class="hint">drop a .zip in your home folder, then press rescan</span>
+        </div>
+      </div>
+
+      <div class="btnrow" style="margin-top:11px">
+        <button class="btn pri" id="load-btn">Load project</button>
+        <button class="btn" id="rescan-btn">Rescan</button>
+      </div>
+      <div class="status" id="src-status" data-s="idle"><span class="dot"></span><span class="msg">Nothing loaded yet.</span></div>
+    </div>
+  </div>
+
+  <div class="g2" id="src-detail" hidden>
+    <div class="panel">
+      <div class="ph"><h2>Commits</h2><span class="right" id="src-branch"></span></div>
+      <div class="pb"><div class="rows" id="src-commits"></div></div>
+    </div>
+    <div class="panel">
+      <div class="ph"><h2>Project</h2></div>
+      <div class="pb"><dl class="kv" id="src-kv"></dl></div>
+    </div>
+  </div>
+
+  <div class="flow">
+    <span class="hint" id="f1-hint">Load a project to continue.</span>
+    <span class="sp"></span>
+    <button class="btn pri" data-next="k2" disabled id="f1-next">Choose target</button>
+  </div>
+</section>
+
+<section id="k2" class="screen">
+  <div class="shead">
+    <h1>Target test</h1>
+    <p>Pick the test that fails. FlakeTrace diagnoses one named test; it does not hunt for flaky tests.</p>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <div class="ph"><h2>Failing test</h2><span class="right" id="t-count"></span></div>
+      <div class="pb">
+        <form class="form" onsubmit="return false">
+          <div class="f full">
+            <label for="v-target">Target</label>
+            <select id="v-target"></select>
+            <span class="hint" id="t-sug"></span>
+          </div>
+          <div class="f full">
+            <label for="v-order">Known failing order (optional)</label>
+            <textarea id="v-order" spellcheck="false"></textarea>
+            <span class="hint">one test per line, in run order</span>
+          </div>
+          <div class="f">
+            <label for="v-budget">Budget</label>
+            <input id="v-budget" value="400" inputmode="numeric">
+            <span class="hint">test invocations</span>
+          </div>
+          <div class="f">
+            <label for="v-thr">Threshold</label>
+            <select id="v-thr">
+              <option>Wilson 95% &ge; 0.70</option>
+              <option>Wilson 95% &ge; 0.80</option>
+              <option>Wilson 95% &ge; 0.60</option>
+            </select>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ph"><h2>Optional stages</h2></div>
+      <div class="pb" style="display:grid;gap:8px">
+        <label class="tog"><input type="checkbox" id="opt-repair" checked>
+          <span><span class="tt">Propose repair</span><span class="td">Generate a patch once a cause is found.</span></span></label>
+        <label class="tog"><input type="checkbox" id="opt-evo">
+          <span><span class="tt">EvoSuite generation</span><span class="td">Search-based JUnit suite for the affected class.</span></span></label>
+        <p class="note">Both run only after the diagnosis produces a cause.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow">
+    <button class="btn" data-next="k1">Back</button>
+    <span class="sp"></span>
+    <button class="btn pri" data-next="k3" id="f2-next">Run diagnosis</button>
+  </div>
+</section>
+
+<section id="k3" class="screen">
+  <div class="shead">
+    <h1>Diagnosis</h1>
+    <p>Reads every test source, resolves what each one writes and reads, and follows calls into production code.</p>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><h2>Run</h2><span class="right" id="d-target"></span></div>
+    <div class="pb">
+      <div class="meter"><i id="d-meter" style="width:0%"></i></div>
+      <div style="margin-top:9px" id="d-phases">
+        <div class="phase"><span class="ic">.</span>Index test sources</div>
+        <div class="phase"><span class="ic">.</span>Find shared mutable state</div>
+        <div class="phase"><span class="ic">.</span>Resolve writers and readers through calls</div>
+        <div class="phase"><span class="ic">.</span>Check teardown restoration</div>
+        <div class="phase"><span class="ic">.</span>Rank candidates</div>
+      </div>
+      <div class="btnrow" style="margin-top:10px">
+        <button class="btn pri" id="run-btn">Start</button>
+      </div>
+      <div class="status" id="d-status" data-s="idle"><span class="dot"></span><span class="msg">Not started.</span></div>
+    </div>
+  </div>
+
+  <div id="d-results" hidden>
+    <div class="g3" id="d-cards"></div>
+    <div class="panel">
+      <div class="ph"><h2>Shared state</h2><span class="right">source-level analysis</span></div>
+      <div class="pb tight" id="d-findings"></div>
+    </div>
+  </div>
+
+  <div class="flow">
+    <button class="btn" data-next="k2">Back</button>
+    <span class="sp"></span>
+    <button class="btn pri" data-next="k4" id="f3-next" disabled>See result</button>
+  </div>
+</section>
+
+<section id="k4" class="screen">
+  <div class="shead"><h1>Result</h1><p>What was found, how it was established, and what it does not claim.</p></div>
+  <div id="r-banner"></div>
+
+  <div class="g2">
+    <div>
+      <div class="panel">
+        <div class="ph"><h2>Evidence</h2><span class="right">each link says how it was established</span></div>
+        <div class="pb"><div class="chain" id="r-chain"></div>
+          <details><summary>What this evidence is and is not</summary>
+            <p>Every link comes from reading the source: an assignment, a call that reaches the field, a missing teardown. That is enough to name a cause and build a patch.</p>
+            <p>It is not execution. Confirming the failure means running the two tests in order, which the replay below does when a JDK is present.</p>
+          </details>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="ph"><h2>Replay</h2><span class="right" id="r-replay-note"></span></div>
+        <div class="pb">
+          <pre class="term" id="r-cmd">-</pre>
+          <div class="btnrow" style="margin-top:9px">
+            <button class="btn pri" id="replay-btn">Run replay</button>
+            <span class="hint" id="replay-hint"></span>
+          </div>
+          <pre class="term" id="r-out" hidden style="margin-top:9px"></pre>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="panel">
+        <div class="ph"><h2>Case</h2></div>
+        <div class="pb"><dl class="kv" id="r-kv"></dl></div>
+      </div>
+      <div class="panel">
+        <div class="ph"><h2>Limitations</h2></div>
+        <div class="pb tight" id="r-limits"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow">
+    <button class="btn" data-next="k3">Back</button>
+    <span class="sp"></span>
+    <button class="btn pri" data-next="kg" id="f4-next">Evidence graph</button>
+  </div>
+</section>
+
+<section id="kg" class="screen">
+  <div class="shead">
+    <h1>Evidence graph</h1>
+    <p>Every write and read the analysis resolved in this module, and how each one was attributed. The result on the previous screen is one path through this graph; the rest is what was considered and not chosen.</p>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><h2>Reads and writes</h2><span class="right" id="g-meta">-</span></div>
+    <div class="pb" style="border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <span class="hint">attribution</span>
+      <div class="chips" id="g-chips">
+        <button class="chip c-dir" data-f="dir">direct</button>
+        <button class="chip c-ind" data-f="ind">via a call</button>
+        <button class="chip c-res" data-f="res">restored</button>
+      </div>
+      <span class="hint" style="margin-left:auto">click a node</span>
+      <button class="btn sm" id="g-clear">Clear</button>
+    </div>
+
+    <div class="gwrap">
+      <div class="gsvg" id="g-svg"></div>
+      <aside class="gpanel">
+        <div class="glabel">Node detail</div>
+        <div id="g-detail"><p class="ghint">Select a node to see its source location and how the access was attributed.</p></div>
+      </aside>
+    </div>
+
+    <div class="pb" style="border-top:1px solid var(--line)">
+      <p class="note" style="margin:0"><b style="color:var(--fg)">Reading the edges.</b>
+      <span class="mono" style="color:var(--ok)">direct</span> &mdash; the test names the field itself, at the line shown.
+      <span class="mono" style="color:var(--warn)">via a call</span> &mdash; the test reaches the field through a call into production code; the analysis followed the call chain to get there, so the attribution is to the chain, not to a line that mentions the field.
+      <span class="mono" style="color:var(--mut)">restored</span> &mdash; the writing class resets the field in teardown, so that write cannot leak into a later test.</p>
+      <p class="note">Reflective and native access appears nowhere on this graph. Source-level analysis cannot see it, and its absence here is not evidence that it does not happen.</p>
+    </div>
+  </div>
+
+  <div class="flow">
+    <button class="btn" data-next="k4">Back</button>
+    <span class="sp"></span>
+    <button class="btn pri" data-next="k5">Repair</button>
+  </div>
+</section>
+
+<section id="k5" class="screen">
+  <div class="shead"><h1>Repair</h1><p>A mechanical fix derived from the finding: capture the field before each test, restore it after.</p></div>
+
+  <div class="g2">
+    <div class="panel">
+      <div class="ph"><h2>Patch</h2><span class="b b-mut" id="p-badge">not generated</span><span class="right" id="p-file"></span></div>
+      <div class="pb tight">
+        <pre class="diff" id="p-diff"><span class="ln fh">Press Generate patch.</span></pre>
+      </div>
+      <div class="pb" style="border-top:1px solid var(--line)">
+        <div class="btnrow">
+          <button class="btn pri" id="patch-btn">Generate patch</button>
+          <button class="btn" id="apply-btn" disabled>Apply to working tree</button>
+          <button class="btn" id="revert-btn" disabled>Revert</button>
+        </div>
+        <div class="status" id="p-status" data-s="idle"><span class="dot"></span><span class="msg">No patch yet.</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ph"><h2>Policy</h2><span class="right" id="p-policy-n"></span></div>
+      <div class="pb tight" id="p-policy"><div class="chk n"><span class="ic">.</span><div><div class="t1">not checked yet</div></div></div></div>
+      <div class="pb" style="border-top:1px solid var(--line)">
+        <details open><summary>Why not fix the field itself</summary>
+          <p>Making the field non-static is the durable fix, but it changes production code and every caller. FlakeTrace limits patches to test sources and flags the deeper change for a human.</p>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow">
+    <button class="btn" data-next="kg">Back</button>
+    <span class="sp"></span>
+    <button class="btn pri" data-next="k6" id="f5-next">Verify</button>
+  </div>
+</section>
+
+<section id="k6" class="screen">
+  <div class="shead"><h1>Verification</h1><p>A patch that makes the failure disappear is not the same as a patch that fixes it.</p></div>
+
+  <div class="panel">
+    <div class="ph"><h2>Checks</h2><span class="right">all must pass</span></div>
+    <div class="pb tight" id="v-checks"></div>
+    <div class="pb" style="border-top:1px solid var(--line)">
+      <div class="btnrow">
+        <button class="btn pri" id="verify-btn">Run verification</button>
+        <span class="hint" id="v-hint"></span>
+      </div>
+      <div class="status" id="v-status" data-s="idle"><span class="dot"></span><span class="msg">Not run.</span></div>
+      <pre class="term" id="v-out" hidden style="margin-top:9px"></pre>
+    </div>
+  </div>
+
+  <div class="flow">
+    <button class="btn" data-next="k5">Back</button>
+    <span class="sp"></span>
+    <button class="btn pri" data-next="k7" id="f6-next">EvoSuite</button>
+  </div>
+</section>
+
+<section id="k7" class="screen">
+  <div class="shead">
+    <h1>EvoSuite generation <span class="b b-mut">optional</span></h1>
+    <p>Search-based generation of a JUnit suite for one class. It documents behaviour; it does not find polluters.</p>
+  </div>
+
+  <div class="g3">
+    <div class="card"><div class="label">class under test</div><div class="value mono" id="e-class">-</div><div class="small">from the finding</div></div>
+    <div class="card"><div class="label">suite</div><div class="value mono" id="e-suite">-</div><div class="small" id="e-count">not generated</div></div>
+    <div class="card"><div class="label">toolchain</div><div class="value" id="e-tool" style="color:var(--mut)">unknown</div><div class="small" id="e-toolsub">-</div></div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <div class="ph"><h2>Configure</h2></div>
+      <div class="pb">
+        <form class="form" onsubmit="return false">
+          <div class="f full"><label for="e-target">Class</label><input id="e-target" spellcheck="false"></div>
+          <div class="f"><label for="e-budget">Budget (s)</label><input id="e-budget" value="60" inputmode="numeric"></div>
+          <div class="f"><label for="e-seed">Seed</label><input id="e-seed" value="1" inputmode="numeric"></div>
+          <div class="f"><label for="e-crit">Criteria</label>
+            <select id="e-crit">
+              <option value="branch:line:exception">branch, line, exception</option>
+              <option value="branch:line">branch, line</option>
+              <option value="branch:line:exception:method:output">plus method, output</option>
+              <option value="mutation:branch:line">mutation, branch, line</option>
+            </select></div>
+          <div class="f"><label for="e-assert">Assertions</label>
+            <select id="e-assert">
+              <option value="mutation">mutation-filtered</option>
+              <option value="all">all observed</option>
+              <option value="structured">structured</option>
+            </select></div>
+          <div class="f full"><label class="tog"><input type="checkbox" id="e-det" checked>
+            <span><span class="tt">Reject non-deterministic tests</span><span class="td">Drops cases reading the clock, network, filesystem or unseeded randomness.</span></span></label></div>
+          <div class="f full btnrow">
+            <button class="btn" id="e-plan" type="button">Build command</button>
+            <button class="btn pri" id="e-run" type="button">Generate</button>
+          </div>
+        </form>
+        <div class="status" id="e-status" data-s="idle"><span class="dot"></span><span class="msg">Idle.</span></div>
+        <pre class="term" id="e-cmd" style="margin-top:9px">-</pre>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ph"><h2>Where it helps, where it does not</h2></div>
+      <div class="pb tight">
+        <div class="chk p"><span class="ic">+</span><div><div class="t1">pins behaviour after a repair</div><div class="t2">locks in what the fixed class does</div></div></div>
+        <div class="chk n"><span class="ic">.</span><div><div class="t1">targets a class, not an interaction</div><div class="t2">order dependence lives between tests, so a per-class generator cannot see it</div></div></div>
+        <div class="chk n"><span class="ic">.</span><div><div class="t1">freezes current behaviour</div><div class="t2">including behaviour that is wrong, so the suite is proposed for review</div></div></div>
+        <div class="chk f"><span class="ic">x</span><div><div class="t1">never evidence for the diagnosis</div><div class="t2">a generated test passing says nothing about the cause</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow">
+    <button class="btn" data-next="k6">Back</button>
+    <span class="sp"></span>
+    <button class="btn pri" data-next="k8">Export</button>
+  </div>
+</section>
+
+<section id="k8" class="screen">
+  <div class="shead"><h1>Export</h1><p>The case as data.</p></div>
+  <div class="panel">
+    <div class="ph"><h2>Case record</h2>
+      <span class="right"><button class="btn sm" id="copy-btn">Copy JSON</button></span></div>
+    <div class="pb tight"><pre class="term" id="x-json" style="border:0;border-radius:0;max-height:420px;overflow:auto">-</pre></div>
+  </div>
+  <div class="flow">
+    <button class="btn" data-next="k7">Back</button>
+    <span class="sp"></span>
+    <button class="btn" data-next="k1">Start over</button>
+  </div>
+</section>
+
+</main>
+
+<script>
+(function(){
+"use strict";
+var API = location.protocol === "file:" ? "http://127.0.0.1:8765" : "";
+
+var STEPS = [
+  ["k1","Source"],["k2","Target"],["k3","Diagnosis"],["k4","Result"],["kg","Graph"],
+  ["k5","Repair"],["k6","Verify"],["k7","EvoSuite"],["k8","Export"]
+];
+
+var S = { project:null, git:null, analysis:null, target:"", order:[],
+          patch:null, evo:null, replay:null, verify:null, tool:null,
+          reached:{k1:true} };
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g, function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+function setS(id,state,msg){
+  var el=$(id); if(!el) return;
+  el.dataset.s=state; el.querySelector(".msg").textContent=msg;
+}
+function api(path,params){
+  var q=Object.keys(params||{}).map(function(k){
+    return encodeURIComponent(k)+"="+encodeURIComponent(params[k]); }).join("&");
+  return fetch(API+path+(q?"?"+q:""),{cache:"no-store"}).then(function(r){
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    return r.json();
+  });
+}
+function offline(err){ return "Backend unreachable ("+err.message+"). Run: python3 flaketrace_backend.py"; }
+function row(k,v){ return "<dt>"+esc(k)+"</dt><dd>"+esc(v)+"</dd>"; }
+function card(l,v,s){
+  return '<div class="card"><div class="label">'+esc(l)+'</div><div class="value">'
+    +esc(v)+'</div><div class="small">'+esc(s)+'</div></div>';
+}
+
+var bar=$("stepbar");
+STEPS.forEach(function(s,i){
+  var b=document.createElement("button");
+  b.innerHTML='<span class="n">'+(i+1)+'</span>'+s[1];
+  b.dataset.go=s[0];
+  bar.appendChild(b);
+});
+
+var painters={};
+function go(id){
+  if(!S.reached[id]) return;
+  STEPS.forEach(function(s){ var el=$(s[0]); if(el) el.classList.toggle("on", s[0]===id); });
+  bar.querySelectorAll("button").forEach(function(b){
+    b.classList.toggle("on", b.dataset.go===id);
+    b.classList.toggle("done", !!S.reached[b.dataset.go] && b.dataset.go!==id);
+    b.disabled = !S.reached[b.dataset.go];
+  });
+  if(painters[id]) painters[id]();
+  window.scrollTo(0,0);
+}
+document.addEventListener("click", function(e){
+  var t=e.target.closest("[data-next],[data-go]");
+  if(!t) return;
+  var id=t.dataset.next||t.dataset.go;
+  if(t.dataset.next){ S.reached[id]=true; }
+  go(id);
+});
+
+/* ---- step 1 ---- */
+var kind="demo";
+document.querySelectorAll("#srcs .src").forEach(function(b){
+  b.addEventListener("click", function(){
+    document.querySelectorAll("#srcs .src").forEach(function(x){ x.classList.remove("on"); });
+    b.classList.add("on");
+    kind=b.dataset.kind;
+    ["demo","local","github","zip"].forEach(function(k){ $("in-"+k).hidden=(k!==kind); });
+  });
+});
+
+function loadProjects(){
+  api("/api/projects").then(function(d){
+    var sel=$("v-zip"); sel.innerHTML="";
+    var zips=d.projects.filter(function(p){ return p.kind==="zip"; });
+    if(!zips.length){
+      sel.innerHTML='<option value="">no .zip found in ~ or ~/flaketrace</option>';
+    } else {
+      zips.forEach(function(z){
+        var o=document.createElement("option");
+        o.value=z.path; o.textContent=z.name;
+        sel.appendChild(o);
+      });
+    }
+    var locals=d.projects.filter(function(p){ return p.kind==="local"; });
+    if(locals.length){ $("v-local").placeholder=locals[0].path; }
+  }).catch(function(){});
+}
+
+function health(){
+  api("/api/health").then(function(d){
+    S.tool=d.toolchain;
+    $("src-be").textContent="backend up | JDK "+(d.toolchain.can_run_tests?"yes":"no")
+      +" | Maven "+(d.toolchain.mvn?"yes":"no")
+      +" | EvoSuite "+(d.toolchain.can_run_evosuite?"yes":"no");
+    paintEvoTool(d.toolchain);
+  }).catch(function(err){
+    $("src-be").textContent="backend down";
+    setS("src-status","bad",offline(err));
+  });
+}
+
+$("rescan-btn").addEventListener("click", function(){ loadProjects(); health(); });
+
+$("load-btn").addEventListener("click", function(){
+  var btn=this, params={kind:kind};
+  if(kind==="local"){ params.path=$("v-local").value.trim(); }
+  if(kind==="github"){ params.url=$("v-github").value.trim(); }
+  if(kind==="zip"){ params.path=$("v-zip").value; }
+
+  btn.disabled=true; btn.textContent="Loading...";
+  setS("src-status","busy", kind==="github"?"Cloning...":"Reading project...");
+
+  api("/api/source",params).then(function(src){
+    if(src.status!=="ok"){ throw new Error(src.error||"could not load"); }
+    S.project=src;
+    return api("/api/git-extract",{repoPath:src.path}).then(function(g){
+      S.git = (g.status==="ok") ? g : null;
+      return api("/api/analyze",{repoPath:src.path, module:src.module});
+    });
+  }).then(function(a){
+    S.analysis=a;
+    paintSource();
+    S.reached.k2=true;
+    $("f1-next").disabled=false;
+    $("f1-hint").textContent="";
+    go("k1");
+    setS("src-status","live", S.project.name+" | "+S.project.module+" | "
+      +a.counts.test_classes+" test classes, "+a.counts.test_methods+" methods"
+      +(S.git?" | "+S.git.sha+" on "+S.git.branch:" | no git history"));
+  }).catch(function(err){
+    var m=err.message||"";
+    setS("src-status","bad",
+      (m.indexOf("HTTP")===0||m.indexOf("Failed")===0||m.indexOf("NetworkError")>=0)?offline(err):m);
+  }).then(function(){
+    btn.disabled=false; btn.textContent="Load project";
+  });
+});
+
+function paintSource(){
+  $("src-detail").hidden=false;
+  var p=S.project, g=S.git, a=S.analysis;
+  $("ctx").innerHTML="<b>"+esc(p.name)+"</b> | "+esc(p.module)+(g?" @ <b>"+esc(g.sha)+"</b>":"");
+  $("src-branch").textContent=g?g.branch:"no git";
+  $("src-commits").innerHTML = (g&&g.commits.length)
+    ? g.commits.map(function(c){
+        return '<div class="row"><b>'+esc(c[0])+'</b><span>'+esc(c[1])
+          +'</span><span class="mut push">'+esc(c[2])+'</span></div>'; }).join("")
+    : '<div class="row"><span class="mut">no commit history</span></div>';
+  $("src-kv").innerHTML = row("path",p.path)+row("module",p.module)
+    +row("java files",p.java_files)+row("test files",p.test_files)
+    +row("test methods",a.counts.test_methods)
+    +row("shared statics",a.counts.shared_statics);
+}
+
+/* ---- step 2 ---- */
+painters.k2=function(){
+  var a=S.analysis; if(!a) return;
+  var sel=$("v-target");
+  if(sel.options.length && sel.dataset.for===S.project.path) return;
+  sel.innerHTML=""; sel.dataset.for=S.project.path;
+  a.test_methods.forEach(function(m){
+    var o=document.createElement("option"); o.value=m; o.textContent=m; sel.appendChild(o);
+  });
+  $("t-count").textContent=a.test_methods.length+" discovered";
+  if(a.suggested){
+    sel.value=a.suggested.victim;
+    $("t-sug").textContent="suggested: this test reads "+a.suggested.resource;
+    $("v-order").value=a.suggested.order.join("\n");
+  } else {
+    $("t-sug").textContent="no order dependence found by static analysis";
+    $("v-order").value=a.test_methods.slice(0,3).join("\n");
+  }
+};
+
+/* ---- step 3 ---- */
+var PH=$("d-phases").querySelectorAll(".phase");
+$("run-btn").addEventListener("click", function(){
+  var btn=this;
+  S.target=$("v-target").value;
+  S.order=$("v-order").value.split("\n").filter(function(x){ return x.trim(); });
+  $("d-target").textContent=S.target;
+  btn.disabled=true; btn.textContent="Running...";
+  setS("d-status","busy","Analysing test sources...");
+  PH.forEach(function(p){ p.className="phase"; p.querySelector(".ic").textContent="."; });
+  $("d-meter").style.width="0%";
+
+  var i=0;
+  var timer=setInterval(function(){
+    if(i>0){ PH[i-1].className="phase done"; PH[i-1].querySelector(".ic").textContent="+"; }
+    if(i<PH.length){ PH[i].className="phase on"; PH[i].querySelector(".ic").textContent=">"; }
+    $("d-meter").style.width=Math.round((i/PH.length)*100)+"%";
+    i++;
+    if(i>PH.length){ clearInterval(timer); }
+  },260);
+
+  api("/api/analyze",{repoPath:S.project.path, module:S.project.module})
+    .then(function(a){
+      S.analysis=a;
+      setTimeout(function(){
+        clearInterval(timer);
+        PH.forEach(function(p){ p.className="phase done"; p.querySelector(".ic").textContent="+"; });
+        $("d-meter").style.width="100%";
+        paintFindings();
+        S.reached.k4=true;
+        $("f3-next").disabled=false;
+        setS("d-status", a.suggested?"live":"warn",
+          a.suggested ? "Cause found: "+a.suggested.polluter+" pollutes "+a.suggested.resource
+                      : "No order dependence found in this project.");
+        btn.disabled=false; btn.textContent="Re-run";
+      },1500);
+    })
+    .catch(function(err){
+      clearInterval(timer);
+      setS("d-status","bad",offline(err));
+      btn.disabled=false; btn.textContent="Start";
+    });
+});
+
+function paintFindings(){
+  var a=S.analysis;
+  $("d-results").hidden=false;
+  $("d-cards").innerHTML=
+     card("test classes", a.counts.test_classes, a.counts.test_methods+" methods")
+    +card("shared statics", a.counts.shared_statics, "mutable, process-wide")
+    +card("verdict", a.suggested?"order dependence":"clean",
+          a.suggested?a.suggested.resource:"no unrestored write reaches a reader");
+  $("d-findings").innerHTML = a.findings.length
+    ? a.findings.map(renderFinding).join("")
+    : '<div class="chk n"><span class="ic">.</span><div><div class="t1">no shared mutable statics found</div><div class="t2">nothing for an order dependence to travel through</div></div></div>';
+}
+function renderFinding(f){
+  var cls={bad:"f",warn:"n",ok:"p"}[f.severity];
+  var ic={bad:"x",warn:"!",ok:"+"}[f.severity];
+  var badge={bad:"b-bad",warn:"b-warn",ok:"b-ok"}[f.severity];
+  var w=f.polluters.map(function(x){
+    return '<div class="loc" style="font-family:var(--mono);font-size:10.5px;color:var(--mut);margin-top:2px">writes &middot; '
+      +esc(x.test.split(".").pop())+"#"+esc(x.method)+" &middot; "+esc(x.file)+":"+x.line
+      +" &middot; "+esc(x.how)+"</div>"; }).join("");
+  var r=f.victims.slice(0,3).map(function(x){
+    return '<div class="loc" style="font-family:var(--mono);font-size:10.5px;color:var(--mut);margin-top:2px">reads &middot; '
+      +esc(x.test.split(".").pop())+"#"+esc(x.method)+" &middot; "+esc(x.file)+":"+x.line
+      +" &middot; "+esc(x.how)+"</div>"; }).join("");
+  return '<div class="chk '+cls+'"><span class="ic">'+ic+'</span><div style="min-width:0">'
+    +'<div class="t1">'+esc(f.resource.id)+' <span class="b '+badge+'">'+esc(f.verdict)+'</span></div>'
+    +'<div class="t2">'+esc(f.summary)+'</div>'+w+r+'</div></div>';
+}
+
+/* ---- step 4 ---- */
+function ev(k,who,act,loc){
+  return '<div class="ev '+k+'"><div class="who">'+esc(who)+'</div><div class="act">'
+    +esc(act)+'</div><div class="loc">'+esc(loc)+'</div></div>';
+}
+function limitRow(t1,t2){
+  return '<div class="chk n"><span class="ic">.</span><div><div class="t1">'+esc(t1)
+    +'</div><div class="t2">'+esc(t2)+'</div></div></div>';
+}
+painters.k4=function(){
+  var a=S.analysis, s=a&&a.suggested;
+  if(!s){
+    $("r-banner").innerHTML='<div class="banner wn"><div class="bl"><div class="st">NO CAUSE</div>'
+      +'<div class="meta">static analysis found no unrestored write reaching a reader</div></div></div>';
+    $("r-chain").innerHTML=ev("t","nothing to chain","no candidate survived","");
+    $("r-kv").innerHTML=row("target",S.target)+row("project",S.project.name);
+    $("r-cmd").textContent="-";
+    $("r-limits").innerHTML=limitRow("static analysis only","execution was not attempted");
+    $("replay-btn").disabled=true;
+    return;
+  }
+  var f=a.findings[0];
+  $("r-banner").innerHTML=
+     '<div class="banner bd"><div class="bl"><div class="st">ORDER DEPENDENCE</div>'
+    +'<div class="meta">'+esc(s.polluter)+' pollutes '+esc(s.resource)+'</div>'
+    +'<div class="meta">'+esc(s.victim)+' reads it and fails</div></div></div>';
+  $("r-chain").innerHTML=
+     ev("", s.polluter, "writes "+s.resource, s.polluter_at+" \u00b7 direct assignment")
+    +ev("t", f.polluters[0].test.split(".").pop(), "nothing restores the field",
+        "no teardown resets "+s.resource)
+    +ev("g", s.victim, "reads "+s.resource,
+        s.victim_at+(f.victims[0]?" \u00b7 "+f.victims[0].how:""));
+  $("r-kv").innerHTML= row("project",S.project.name)+row("module",S.project.module)
+    +(S.git?row("commit",S.git.sha+" ("+S.git.branch+")"):"")
+    +row("resource",s.resource)+row("polluter",s.polluter)
+    +row("victim",s.victim)+row("method","static source analysis");
+
+  var isDemo = S.project.path.indexOf("demo-project")>=0;
+  $("r-cmd").textContent = isDemo
+    ? "cd "+S.project.path+" && ./demo.sh"
+    : "cd "+S.project.path+" && mvn test";
+
+  var t=S.tool||{};
+  $("r-replay-note").textContent = t.can_run_tests?"JDK present":"needs a JDK";
+  $("replay-btn").disabled = !t.can_run_tests;
+  $("replay-hint").textContent = t.can_run_tests
+    ? "compiles and runs the order in one JVM"
+    : "no JDK on PATH - install one, or run the command above elsewhere";
+
+  $("r-limits").innerHTML=
+     limitRow("not verified by execution","the cause is read from source, not proven by a run")
+    +limitRow("one resource at a time","other shared state may also be in play")
+    +limitRow("reflection and native writes are invisible","only direct and call-reachable writes are seen");
+};
+
+$("replay-btn").addEventListener("click", function(){
+  var btn=this; btn.disabled=true; btn.textContent="Running...";
+  api("/api/run",{repoPath:S.project.path, order:S.order.join("\n")})
+    .then(function(r){
+      S.replay=r;
+      $("r-out").hidden=false;
+      $("r-out").textContent = (r.status==="ok")
+        ? r.output+"\n\nexit="+r.exit_code
+        : (r.error||"could not run")+(r.command?"\n\n"+r.command:"");
+      $("replay-hint").textContent = (r.status==="ok")
+        ? (r.passed?"order passed - no failure reproduced":"order failed - dependence reproduced")
+        : r.status;
+    })
+    .catch(function(err){ $("replay-hint").textContent=offline(err); })
+    .then(function(){ btn.disabled=false; btn.textContent="Run replay"; });
+});
+
+/* ---- evidence graph ---- */
+var GCOL={w:{x:8,w:208}, res:{x:300,w:190}, r:{x:560,w:232}};
+var GROW=66, GNH=50, GTOP=30, GCAP=5, GACC=8;
+var GS={model:null, sel:null, off:{}};
+
+function gTrim(s,n){ s=String(s==null?"":s); return s.length>n?s.slice(0,n-1)+"…":s; }
+function gShort(t){ return String(t||"").split(".").pop(); }
+
+function buildGraph(){
+  var a=S.analysis;
+  if(!a || !a.findings || !a.findings.length) return null;
+  var sug=a.suggested||{}, nodes=[], edges=[], byKey={}, elided=0;
+
+  function node(col,key,title,sub,loc,detail){
+    var k=col+"|"+key;
+    if(byKey[k]) return byKey[k];
+    var n={id:"n"+nodes.length, col:col, title:title, sub:sub, loc:loc,
+           detail:detail, extra:"", res:[]};
+    byKey[k]=n; nodes.push(n);
+    return n;
+  }
+
+  a.findings.slice(0,GCAP).forEach(function(f){
+    var res=f.resource;
+    var rn=node("res", res.id, res.id, res.type, res.declared_at, {
+      kind:"shared resource · mutable static field",
+      badge:[f.verdict, {bad:"b-bad",warn:"b-warn",ok:"b-ok"}[f.severity]],
+      rows:[["field",res.field],["owner",res.owner_fqcn],["type",res.type],
+            ["declared at",res.declared_at],["verdict",f.verdict],
+            ["writers",String(f.writers.length)],
+            ["unrestored",String(f.polluters.length)],
+            ["readers",String(f.readers.length)]],
+      note:f.summary
+    });
+    if(f.severity==="bad" && rn.extra.indexOf("hot")<0){ rn.extra=("hot "+rn.extra).trim(); }
+
+    (f.writers||[]).slice(0,GACC).forEach(function(w){
+      var key=w.test+"#"+w.method;
+      var wn=node("w", key, gShort(w.test), "#"+w.method,
+                    w.file+":"+w.line+" · "+w.attribution, {
+        kind:"test method · writer",
+        badge: w.restores?["restored","b-ok"]:["unrestored write","b-bad"],
+        rows:[["role", w.restores
+                ? "writer — its class restores the field in teardown"
+                : "polluter — nothing restores the field"],
+              ["test",w.test],["method",w.method],
+              ["access",w.how],["attribution",w.attribution],
+              ["source",w.file+":"+w.line]],
+        code:w.code||"",
+        note: w.restores
+          ? "This write is undone before the next test runs, so it cannot travel."
+          : "The field keeps this value after the test method returns."
+      });
+      if(sug.polluter===key && wn.extra.indexOf("hot")<0){ wn.extra=("hot "+wn.extra).trim(); }
+      if(wn.res.indexOf(res.id)<0){ wn.res.push(res.id); }
+      edges.push({from:wn.id, to:rn.id,
+                  cat: w.restores?"res":(w.attribution==="direct"?"dir":"ind")});
+    });
+    if((f.writers||[]).length>GACC){ elided+=f.writers.length-GACC; }
+
+    (f.readers||[]).slice(0,GACC).forEach(function(r){
+      var key=r.test+"#"+r.method;
+      var rd=node("r", key, gShort(r.test), "#"+r.method,
+                    r.file+":"+r.line+" · "+r.attribution, {
+        kind:"test method · reader",
+        badge: (sug.victim===key)?["victim","b-acc"]:["reader","b-mut"],
+        rows:[["role", (sug.victim===key)
+                ? "victim — named in the result"
+                : "reads the field, not the target of this case"],
+              ["test",r.test],["method",r.method],
+              ["access",r.how],["attribution",r.attribution],
+              ["source",r.file+":"+r.line]],
+        code:r.code||"",
+        note:"Whatever the field holds when this line runs is what the test sees."
+      });
+      if(sug.victim===key && rd.extra.indexOf("tgt")<0){ rd.extra=("tgt "+rd.extra).trim(); }
+      if(rd.res.indexOf(res.id)<0){ rd.res.push(res.id); }
+      edges.push({from:rn.id, to:rd.id,
+                  cat: r.attribution==="direct"?"dir":"ind"});
+    });
+    if((f.readers||[]).length>GACC){ elided+=f.readers.length-GACC; }
+  });
+
+  return {nodes:nodes, edges:edges, elided:elided,
+          findings:Math.min(a.findings.length,GCAP), total:a.findings.length};
+}
+
+function renderGraph(){
+  var host=$("g-svg"), m=buildGraph();
+  GS.model=m; GS.sel=null;
+  $("g-detail").innerHTML='<p class="ghint">Select a node to see its source location and how the access was attributed.</p>';
+
+  if(!m){
+    host.innerHTML='<p class="ghint" style="padding:16px">No shared mutable statics were found in this module, so there is nothing to graph.</p>';
+    $("g-meta").textContent="nothing to graph";
+    return;
+  }
+
+  var cols={w:[],res:[],r:[]};
+  m.nodes.forEach(function(n){ cols[n.col].push(n); });
+  var maxN=Math.max(cols.w.length, cols.res.length, cols.r.length, 1);
+  var H=GTOP+maxN*GROW+12;
+  ["w","res","r"].forEach(function(c){
+    var top=GTOP+(maxN-cols[c].length)*GROW/2;
+    cols[c].forEach(function(n,i){ n.y=top+i*GROW; n.cy=n.y+GNH/2; });
+  });
+  var at={}; m.nodes.forEach(function(n){ at[n.id]=n; });
+
+  var out=['<svg viewBox="0 0 800 '+H+'" role="img" aria-label="Writes and reads between test methods and shared static fields">'];
+  out.push('<defs>');
+  [["dir","--ok"],["ind","--warn"],["res","--line2"]].forEach(function(k){
+    out.push('<marker id="ar-'+k[0]+'" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">'
+      +'<path d="M0,0 L10,5 L0,10 z" style="fill:var('+k[1]+')"/></marker>');
+  });
+  out.push('</defs>');
+  out.push('<text class="el" x="'+GCOL.w.x+'" y="14">TESTS THAT WRITE</text>');
+  out.push('<text class="el" x="'+GCOL.res.x+'" y="14">SHARED STATIC STATE</text>');
+  out.push('<text class="el" x="'+GCOL.r.x+'" y="14">TESTS THAT READ</text>');
+
+  m.edges.forEach(function(e,i){
+    var a=at[e.from], b=at[e.to];
+    var x1=GCOL[a.col].x+GCOL[a.col].w, x2=GCOL[b.col].x;
+    out.push('<path class="edge e-'+e.cat+'" data-edge="'+i+'" d="M'+x1+','+a.cy
+      +' C'+(x1+46)+','+a.cy+' '+(x2-46)+','+b.cy+' '+x2+','+b.cy
+      +'" marker-end="url(#ar-'+e.cat+')"/>');
+  });
+
+  m.nodes.forEach(function(n){
+    var c=GCOL[n.col], cap=Math.floor((c.w-20)/5.4);
+    out.push('<g class="gn '+(n.col==="res"?"res ":"")+n.extra+'" data-node="'+n.id+'">'
+      +'<rect class="box" x="'+c.x+'" y="'+n.y+'" width="'+c.w+'" height="'+GNH+'" rx="2"/>'
+      +'<text class="nt" x="'+(c.x+10)+'" y="'+(n.y+14)+'">'+esc(gTrim(n.title, cap))+'</text>'
+      +'<text class="ns" x="'+(c.x+10)+'" y="'+(n.y+28)+'">'+esc(gTrim(n.sub, cap))+'</text>'
+      +'<text class="ns gl" x="'+(c.x+10)+'" y="'+(n.y+40)+'">'+esc(gTrim(n.loc, cap))+'</text></g>');
+  });
+  out.push('</svg>');
+  host.innerHTML=out.join("");
+
+  host.querySelectorAll(".gn").forEach(function(g){
+    g.addEventListener("click", function(){ showNode(g.dataset.node); });
+  });
+
+  $("g-meta").textContent=cols.res.length+" resource(s) · "+cols.w.length+" writer(s) · "
+    +cols.r.length+" reader(s) · "+m.edges.length+" edge(s)"
+    +(m.elided?" · "+m.elided+" access(es) not drawn":"")
+    +(m.total>m.findings?" · "+(m.total-m.findings)+" resource(s) not drawn":"");
+  applyGraphView();
+}
+
+function showNode(id){
+  var m=GS.model; if(!m) return;
+  var n=null;
+  m.nodes.forEach(function(x){ if(x.id===id){ n=x; } });
+  if(!n) return;
+  GS.sel=(GS.sel===id)?null:id;
+  if(!GS.sel){
+    $("g-detail").innerHTML='<p class="ghint">Select a node to see its source location and how the access was attributed.</p>';
+    applyGraphView();
+    return;
+  }
+  var d=n.detail, rows=d.rows.slice();
+  if(n.col!=="res" && n.res.length){ rows.push(["resource", n.res.join(", ")]); }
+  $("g-detail").innerHTML=
+     '<div class="mono" style="font-size:12px;font-weight:600;word-break:break-all">'+esc(n.title)+'</div>'
+    +'<div class="mono" style="font-size:10.5px;color:var(--mut);margin:3px 0 8px">'+esc(d.kind)+'</div>'
+    +'<span class="b '+d.badge[1]+'">'+esc(d.badge[0])+'</span>'
+    +'<dl class="kv" style="margin-top:10px">'+rows.map(function(r){ return row(r[0],r[1]); }).join("")+'</dl>'
+    +(d.code?'<pre class="term" style="margin-top:9px">'+esc(d.code)+'</pre>':"")
+    +(d.note?'<p class="note">'+esc(d.note)+'</p>':"");
+  applyGraphView();
+}
+
+function applyGraphView(){
+  var m=GS.model, host=$("g-svg");
+  if(!m) return;
+  var live={};
+  m.edges.forEach(function(e,i){
+    var el=host.querySelector('[data-edge="'+i+'"]');
+    if(!el) return;
+    var on=!GS.off[e.cat];
+    if(on && GS.sel){ on=(e.from===GS.sel||e.to===GS.sel); }
+    el.classList.toggle("gone", !on);
+    if(on){ live[e.from]=1; live[e.to]=1; }
+  });
+  m.nodes.forEach(function(n){
+    var el=host.querySelector('[data-node="'+n.id+'"]');
+    if(!el) return;
+    el.classList.toggle("faint", !live[n.id] && n.id!==GS.sel);
+    el.classList.toggle("sel", n.id===GS.sel);
+  });
+}
+
+document.querySelectorAll("#g-chips .chip").forEach(function(c){
+  c.addEventListener("click", function(){
+    GS.off[c.dataset.f]=!GS.off[c.dataset.f];
+    c.classList.toggle("off", !!GS.off[c.dataset.f]);
+    applyGraphView();
+  });
+});
+$("g-clear").addEventListener("click", function(){
+  GS.sel=null;
+  $("g-detail").innerHTML='<p class="ghint">Select a node to see its source location and how the access was attributed.</p>';
+  applyGraphView();
+});
+painters.kg=renderGraph;
+
+/* ---- step 5 ---- */
+function renderDiff(text){
+  return text.split("\n").map(function(l){
+    var c = (l.indexOf("+++")===0||l.indexOf("---")===0) ? "fh"
+          : (l.indexOf("@@")===0) ? "hh"
+          : (l.charAt(0)==="+") ? "add"
+          : (l.charAt(0)==="-") ? "del" : "";
+    return '<span class="ln '+c+'">'+esc(l||" ")+"</span>";
+  }).join("");
+}
+$("patch-btn").addEventListener("click", function(){
+  var btn=this; btn.disabled=true; btn.textContent="Generating...";
+  setS("p-status","busy","Building patch from the finding...");
+  api("/api/patch",{repoPath:S.project.path, module:S.project.module})
+    .then(function(p){
+      S.patch=p;
+      if(p.status!=="ok"){
+        setS("p-status","warn", p.error||p.status);
+        $("p-diff").innerHTML='<span class="ln fh">'+esc(p.error||p.status)+"</span>";
+        return;
+      }
+      $("p-file").textContent=p.file;
+      $("p-badge").textContent="proposed"; $("p-badge").className="b b-acc";
+      $("p-diff").innerHTML=renderDiff(p.diff);
+      $("p-policy").innerHTML=p.policy.map(function(c){
+        return '<div class="chk '+(c[1]?"p":"f")+'"><span class="ic">'+(c[1]?"+":"x")
+          +'</span><div><div class="t1">'+esc(c[0])+'</div><div class="t2">'+esc(c[2])+"</div></div></div>";
+      }).join("");
+      $("p-policy-n").textContent=p.policy.filter(function(c){return c[1];}).length
+        +" / "+p.policy.length+" passed";
+      $("apply-btn").disabled=false;
+      setS("p-status","live", p.added_lines+" lines into "+p.file.split("/").pop()
+        +" - touches the polluter only");
+    })
+    .catch(function(err){ setS("p-status","bad",offline(err)); })
+    .then(function(){ btn.disabled=false; btn.textContent="Generate patch"; });
+});
+$("apply-btn").addEventListener("click", function(){
+  var btn=this; btn.disabled=true;
+  setS("p-status","busy","Writing the file...");
+  api("/api/patch",{repoPath:S.project.path, module:S.project.module, apply:"true"})
+    .then(function(p){
+      S.patch=p;
+      var ok=(p.status==="ok");
+      setS("p-status", ok?"live":"bad",
+        ok?("Applied to "+p.file+" - Revert restores it"):(p.error||"apply failed"));
+      if(ok){
+        $("revert-btn").disabled=false;
+        $("p-badge").textContent="applied"; $("p-badge").className="b b-ok";
+      } else { btn.disabled=false; }
+    })
+    .catch(function(err){ setS("p-status","bad",offline(err)); btn.disabled=false; });
+});
+$("revert-btn").addEventListener("click", function(){
+  setS("p-status","busy","Reverting...");
+  api("/api/revert",{repoPath:S.project.path}).then(function(r){
+    var ok=(r.status==="ok");
+    setS("p-status", ok?"live":"bad", ok?"Working tree restored.":r.error);
+    if(ok && S.patch){ S.patch.applied=false; }
+    $("p-badge").textContent="proposed"; $("p-badge").className="b b-acc";
+    $("apply-btn").disabled=false;
+  }).catch(function(err){ setS("p-status","bad",offline(err)); });
+});
+
+/* ---- step 6 ---- */
+function vrow(k,t1,t2){
+  var ic={p:"+",f:"x",n:"."}[k];
+  return '<div class="chk '+k+'"><span class="ic">'+ic+'</span><div><div class="t1">'
+    +esc(t1)+'</div><div class="t2">'+esc(t2)+"</div></div></div>";
+}
+painters.k6=function(){
+  var applied = !!(S.patch && S.patch.applied);
+  var t=S.tool||{};
+  $("v-checks").innerHTML=
+     vrow(applied?"p":"n","patch applied", applied?"working tree carries the fix":"generate and apply it in step 5")
+    +vrow("n","target passes in the failing order","run below")
+    +vrow("n","target still passes alone","run below")
+    +vrow("n","no other test broke","run below")
+    +vrow(S.patch&&S.patch.status==="ok"?"p":"n","no assertion weakened",
+          S.patch&&S.patch.status==="ok"?"policy check passed":"pending");
+  $("verify-btn").disabled = !t.can_run_tests;
+  $("v-hint").textContent = t.can_run_tests
+    ? "re-runs the order against the patched tree"
+    : "needs a JDK - install one to execute the checks";
+};
+$("verify-btn").addEventListener("click", function(){
+  var btn=this; btn.disabled=true; btn.textContent="Running...";
+  setS("v-status","busy","Re-running the failing order...");
+  api("/api/run",{repoPath:S.project.path, order:S.order.join("\n")})
+    .then(function(r){
+      S.verify=r;
+      $("v-out").hidden=false;
+      $("v-out").textContent = (r.status==="ok")?r.output:(r.error||r.status);
+      if(r.status==="ok"){
+        var fixed=r.passed;
+        setS("v-status", fixed?"live":"bad",
+          fixed?"Order now passes - the dependence is gone."
+               :"Order still fails - the patch did not fix it.");
+        var second=$("v-checks").children[1];
+        second.className="chk "+(fixed?"p":"f");
+        second.querySelector(".ic").textContent=fixed?"+":"x";
+        second.querySelector(".t2").textContent="exit="+r.exit_code+" over "+S.order.length+" tests";
+      } else {
+        setS("v-status","warn", r.error||r.status);
+      }
+    })
+    .catch(function(err){ setS("v-status","bad",offline(err)); })
+    .then(function(){ btn.disabled=false; btn.textContent="Run verification"; });
+});
+
+/* ---- step 7 ---- */
+function paintEvoTool(t){
+  if(!t) return;
+  $("e-tool").textContent = t.can_run_evosuite?"available":"not installed";
+  $("e-tool").style.color = t.can_run_evosuite?"var(--ok)":"var(--bad)";
+  $("e-toolsub").textContent = t.can_run_evosuite?t.evosuite_jar:(t.missing||[]).join(" | ");
+}
+painters.k7=function(){
+  if(!$("e-target").value){
+    var a=S.analysis, cls="";
+    if(a && a.findings.length){ cls=a.findings[0].resource.owner_fqcn; }
+    else if(a && a.test_classes.length){ cls=a.test_classes[0]; }
+    $("e-target").value=cls;
+  }
+  $("e-class").textContent=$("e-target").value||"-";
+  $("e-suite").textContent=($("e-target").value||"").split(".").pop()+"_ESTest";
+  paintEvoTool(S.tool);
+};
+function evoCall(exec){
+  var bs=[$("e-plan"),$("e-run")];
+  bs.forEach(function(b){ b.disabled=true; });
+  setS("e-status","busy", exec?"Running EvoSuite...":"Resolving classpath...");
+  api("/api/evosuite-generate",{
+    repoPath:S.project?S.project.path:"", module:S.project?S.project.module:".",
+    targetClass:$("e-target").value, searchBudget:$("e-budget").value,
+    seed:$("e-seed").value, criteria:$("e-crit").value,
+    assertionStrategy:$("e-assert").value,
+    deterministic:String($("e-det").checked), execute:exec?"true":"false"
+  }).then(function(d){
+    S.evo=d;
+    $("e-cmd").textContent=d.command||"-";
+    if(d.target_class){ $("e-class").textContent=d.target_class; }
+    if(d.suite_class){ $("e-suite").textContent=d.suite_class.split(".").pop(); }
+    paintEvoTool(d.toolchain);
+    if(d.status==="ok"){
+      $("e-count").textContent=(d.generated_files||[]).length+" file(s) written";
+      setS("e-status","live","Generated into "+d.test_dir);
+    } else if(d.status==="ready"){
+      setS("e-status","live","Toolchain ready - press Generate to run it.");
+    } else if(d.status==="unavailable"){
+      setS("e-status","warn", d.error+" The command above is what would run.");
+    } else {
+      setS("e-status", d.status==="not_compiled"?"warn":"bad", d.error||d.status);
+    }
+  }).catch(function(err){ setS("e-status","bad",offline(err)); })
+    .then(function(){ bs.forEach(function(b){ b.disabled=false; }); });
+}
+$("e-plan").addEventListener("click", function(){ evoCall(false); });
+$("e-run").addEventListener("click", function(){ evoCall(true); });
+
+/* ---- step 8 ---- */
+painters.k8=function(){
+  var a=S.analysis;
+  var rec={
+    tool:"FlakeTrace",
+    generated:new Date().toISOString(),
+    project:S.project?{name:S.project.name,path:S.project.path,module:S.project.module}:null,
+    commit:S.git?{sha:S.git.sha_full,branch:S.git.branch}:null,
+    target:S.target,
+    order:S.order,
+    method:"static source analysis (no execution)",
+    finding:a?a.suggested:null,
+    counts:a?a.counts:null,
+    graph:(function(){
+      var g=buildGraph(); if(!g) return null;
+      var c={res:0,w:0,r:0};
+      g.nodes.forEach(function(n){ c[n.col==="res"?"res":n.col]++; });
+      return {resources:c.res, writers:c.w, readers:c.r,
+              edges:g.edges.length, not_drawn:g.elided};
+    })(),
+    repair:(S.patch&&S.patch.status==="ok")?{
+      file:S.patch.file, strategy:S.patch.strategy,
+      added_lines:S.patch.added_lines, applied:!!S.patch.applied }:null,
+    replay:S.replay?{status:S.replay.status,exit_code:S.replay.exit_code,passed:S.replay.passed}:null,
+    evosuite:S.evo?{status:S.evo.status,target:S.evo.target_class,command:S.evo.command}:null
+  };
+  $("x-json").textContent=JSON.stringify(rec,null,2);
+};
+$("copy-btn").addEventListener("click", function(){
+  var t=$("x-json").textContent, b=this;
+  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject(new Error("no clipboard")))
+    .then(function(){ b.textContent="Copied"; setTimeout(function(){ b.textContent="Copy JSON"; },1200); })
+    .catch(function(){ b.textContent="Select manually"; setTimeout(function(){ b.textContent="Copy JSON"; },1600); });
+});
+
+loadProjects(); health(); go("k1");
+})();
+</script>
+</body>
+</html>

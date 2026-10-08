@@ -1,0 +1,721 @@
+{
+  "health": {
+    "status": "ok",
+    "git": true,
+    "toolchain": {
+      "java": "C:/Java/jdk-21.0.9+10/bin/java.EXE",
+      "javac": "C:/Java/jdk-21.0.9+10/bin/javac.EXE",
+      "mvn": "",
+      "evosuite_jar": "",
+      "can_run_tests": true,
+      "can_run_maven": false,
+      "can_run_evosuite": false,
+      "missing": [
+        "Maven",
+        "EvoSuite jar (set EVOSUITE_JAR)"
+      ]
+    },
+    "demo_project": true
+  },
+  "source": {
+    "status": "ok",
+    "kind": "demo",
+    "path": "~/demo-project",
+    "name": "demo-project",
+    "is_git": true,
+    "module": "services/user",
+    "java_files": 10,
+    "test_files": 5,
+    "note": "acquired"
+  },
+  "git": {
+    "status": "ok",
+    "repo": "demo-project",
+    "repo_path": "~/demo-project",
+    "sha": "ba16cdf",
+    "sha_full": "ba16cdfde681d0409080f1acbe80942cbae7ae4f",
+    "branch": "master",
+    "ref": "HEAD",
+    "mode_note": "tip of HEAD",
+    "module": "services/user",
+    "commits": [
+      [
+        "ba16cdf",
+        "harness: make package-private test constructors accessible",
+        "2 days ago"
+      ],
+      [
+        "77c5781",
+        "demo: JDK-only harness that reproduces the order dependence",
+        "2 days ago"
+      ],
+      [
+        "cd83937",
+        "tests: session expiry and audit logging",
+        "2 days ago"
+      ],
+      [
+        "2379e53",
+        "tests: add login coverage",
+        "2 days ago"
+      ],
+      [
+        "1da5c69",
+        "tests: cover anonymous resolution and cart totals",
+        "2 days ago"
+      ],
+      [
+        "f0e3196",
+        "user service: cache the resolved principal in UserCache",
+        "2 days ago"
+      ]
+    ],
+    "test_files": 5,
+    "test_methods": [
+      "com.example.AuditTest#shouldRecordLoginEvent",
+      "com.example.CartTest#shouldAddItem",
+      "com.example.LoginTest#shouldLoginUser",
+      "com.example.LoginTest#shouldReportAuthenticatedRole",
+      "com.example.SessionTest#shouldExpireStaleSession",
+      "com.example.UserServiceTest#shouldRejectAnonymousUser",
+      "com.example.UserServiceTest#shouldNameAnonymousPrincipal"
+    ],
+    "test_classes": [
+      "com.example.AuditTest",
+      "com.example.CartTest",
+      "com.example.LoginTest",
+      "com.example.SessionTest",
+      "com.example.UserServiceTest"
+    ],
+    "suggested": {
+      "polluter": "com.example.LoginTest#shouldLoginUser",
+      "victim": "com.example.UserServiceTest#shouldRejectAnonymousUser",
+      "resource": "UserCache.currentUser",
+      "polluter_at": "LoginTest.java:19",
+      "victim_at": "UserServiceTest.java:19",
+      "order": [
+        "com.example.LoginTest#shouldLoginUser",
+        "com.example.UserServiceTest#shouldRejectAnonymousUser"
+      ]
+    }
+  },
+  "analysis": {
+    "status": "ok",
+    "repo_path": "~/demo-project",
+    "module": "services/user",
+    "analysis": "static (source level) -- candidates proposed, not verified",
+    "counts": {
+      "production_classes": 5,
+      "test_classes": 5,
+      "test_methods": 7,
+      "shared_statics": 1
+    },
+    "findings": [
+      {
+        "resource": {
+          "owner": "UserCache",
+          "owner_fqcn": "com.example.UserCache",
+          "field": "currentUser",
+          "type": "User",
+          "declared_at": "UserCache.java:13",
+          "id": "UserCache.currentUser"
+        },
+        "verdict": "order dependence",
+        "severity": "bad",
+        "summary": "LoginTest writes UserCache.currentUser and never restores it; UserServiceTest reads it",
+        "writers": [
+          {
+            "test": "com.example.LoginTest",
+            "method": "shouldLoginUser",
+            "file": "LoginTest.java",
+            "line": 19,
+            "code": "UserCache.currentUser = service.login(\"ada\", \"hunter2\");",
+            "attribution": "direct",
+            "how": "assignment to the field",
+            "restores": false
+          },
+          {
+            "test": "com.example.LoginTest",
+            "method": "shouldReportAuthenticatedRole",
+            "file": "LoginTest.java",
+            "line": 25,
+            "code": "service.login(\"grace\", \"hunter2\");",
+            "attribution": "indirect",
+            "how": "via login(), which writes the field",
+            "restores": false
+          },
+          {
+            "test": "com.example.SessionTest",
+            "method": "shouldExpireStaleSession",
+            "file": "SessionTest.java",
+            "line": 16,
+            "code": "SessionSupport.beginSession(\"stale\");",
+            "attribution": "indirect",
+            "how": "via beginSession(), which writes the field",
+            "restores": true
+          },
+          {
+            "test": "com.example.SessionTest",
+            "method": "shouldExpireStaleSession",
+            "file": "SessionTest.java",
+            "line": 18,
+            "code": "SessionSupport.endSession();",
+            "attribution": "indirect",
+            "how": "via endSession(), which writes the field",
+            "restores": true
+          },
+          {
+            "test": "com.example.SessionTest",
+            "method": "tearDown",
+            "file": "SessionTest.java",
+            "line": 23,
+            "code": "SessionSupport.endSession();",
+            "attribution": "indirect",
+            "how": "via endSession(), which writes the field",
+            "restores": true
+          }
+        ],
+        "readers": [
+          {
+            "test": "com.example.LoginTest",
+            "method": "shouldLoginUser",
+            "file": "LoginTest.java",
+            "line": 20,
+            "code": "assertEquals(\"ada\", UserCache.currentUser.name());",
+            "attribution": "direct",
+            "how": "reads the field"
+          },
+          {
+            "test": "com.example.LoginTest",
+            "method": "shouldReportAuthenticatedRole",
+            "file": "LoginTest.java",
+            "line": 26,
+            "code": "assertEquals(Role.AUTHENTICATED, UserCache.currentUser.role());",
+            "attribution": "direct",
+            "how": "reads the field"
+          },
+          {
+            "test": "com.example.SessionTest",
+            "method": "shouldExpireStaleSession",
+            "file": "SessionTest.java",
+            "line": 17,
+            "code": "assertEquals(\"stale\", UserCache.currentUser.name());",
+            "attribution": "direct",
+            "how": "reads the field"
+          },
+          {
+            "test": "com.example.UserServiceTest",
+            "method": "shouldRejectAnonymousUser",
+            "file": "UserServiceTest.java",
+            "line": 19,
+            "code": "User resolved = service.resolveCurrent();",
+            "attribution": "indirect",
+            "how": "via resolveCurrent(), which reads the field"
+          },
+          {
+            "test": "com.example.UserServiceTest",
+            "method": "shouldRejectAnonymousUser",
+            "file": "UserServiceTest.java",
+            "line": 21,
+            "code": "assertTrue(service.isAnonymous());",
+            "attribution": "indirect",
+            "how": "via isAnonymous(), which reads the field"
+          },
+          {
+            "test": "com.example.UserServiceTest",
+            "method": "shouldNameAnonymousPrincipal",
+            "file": "UserServiceTest.java",
+            "line": 26,
+            "code": "assertEquals(\"anonymous\", service.resolveCurrent().name());",
+            "attribution": "indirect",
+            "how": "via resolveCurrent(), which reads the field"
+          }
+        ],
+        "polluters": [
+          {
+            "test": "com.example.LoginTest",
+            "method": "shouldLoginUser",
+            "file": "LoginTest.java",
+            "line": 19,
+            "code": "UserCache.currentUser = service.login(\"ada\", \"hunter2\");",
+            "attribution": "direct",
+            "how": "assignment to the field",
+            "restores": false
+          },
+          {
+            "test": "com.example.LoginTest",
+            "method": "shouldReportAuthenticatedRole",
+            "file": "LoginTest.java",
+            "line": 25,
+            "code": "service.login(\"grace\", \"hunter2\");",
+            "attribution": "indirect",
+            "how": "via login(), which writes the field",
+            "restores": false
+          }
+        ],
+        "victims": [
+          {
+            "test": "com.example.UserServiceTest",
+            "method": "shouldRejectAnonymousUser",
+            "file": "UserServiceTest.java",
+            "line": 19,
+            "code": "User resolved = service.resolveCurrent();",
+            "attribution": "indirect",
+            "how": "via resolveCurrent(), which reads the field"
+          },
+          {
+            "test": "com.example.UserServiceTest",
+            "method": "shouldRejectAnonymousUser",
+            "file": "UserServiceTest.java",
+            "line": 21,
+            "code": "assertTrue(service.isAnonymous());",
+            "attribution": "indirect",
+            "how": "via isAnonymous(), which reads the field"
+          },
+          {
+            "test": "com.example.UserServiceTest",
+            "method": "shouldNameAnonymousPrincipal",
+            "file": "UserServiceTest.java",
+            "line": 26,
+            "code": "assertEquals(\"anonymous\", service.resolveCurrent().name());",
+            "attribution": "indirect",
+            "how": "via resolveCurrent(), which reads the field"
+          }
+        ]
+      }
+    ],
+    "suggested": {
+      "polluter": "com.example.LoginTest#shouldLoginUser",
+      "victim": "com.example.UserServiceTest#shouldRejectAnonymousUser",
+      "resource": "UserCache.currentUser",
+      "polluter_at": "LoginTest.java:19",
+      "victim_at": "UserServiceTest.java:19",
+      "order": [
+        "com.example.LoginTest#shouldLoginUser",
+        "com.example.UserServiceTest#shouldRejectAnonymousUser"
+      ]
+    },
+    "test_classes": [
+      "com.example.AuditTest",
+      "com.example.CartTest",
+      "com.example.LoginTest",
+      "com.example.SessionTest",
+      "com.example.UserServiceTest"
+    ],
+    "test_methods": [
+      "com.example.AuditTest#shouldRecordLoginEvent",
+      "com.example.CartTest#shouldAddItem",
+      "com.example.LoginTest#shouldLoginUser",
+      "com.example.LoginTest#shouldReportAuthenticatedRole",
+      "com.example.SessionTest#shouldExpireStaleSession",
+      "com.example.UserServiceTest#shouldRejectAnonymousUser",
+      "com.example.UserServiceTest#shouldNameAnonymousPrincipal"
+    ]
+  },
+  "runs": {
+    "alone": {
+      "status": "ok",
+      "toolchain": {
+        "java": "C:/Java/jdk-21.0.9+10/bin/java.EXE",
+        "javac": "C:/Java/jdk-21.0.9+10/bin/javac.EXE",
+        "mvn": "",
+        "evosuite_jar": "",
+        "can_run_tests": true,
+        "can_run_maven": false,
+        "can_run_evosuite": false,
+        "missing": [
+          "Maven",
+          "EvoSuite jar (set EVOSUITE_JAR)"
+        ]
+      },
+      "order": [
+        "com.example.UserServiceTest#shouldRejectAnonymousUser"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "output": "PASS  UserServiceTest#shouldRejectAnonymousUser\n\nRESULT: all passed",
+      "command": "java -cp build/classes FlakeDemo com.example.UserServiceTest#shouldRejectAnonymousUser"
+    },
+    "polluting": {
+      "status": "ok",
+      "toolchain": {
+        "java": "C:/Java/jdk-21.0.9+10/bin/java.EXE",
+        "javac": "C:/Java/jdk-21.0.9+10/bin/javac.EXE",
+        "mvn": "",
+        "evosuite_jar": "",
+        "can_run_tests": true,
+        "can_run_maven": false,
+        "can_run_evosuite": false,
+        "missing": [
+          "Maven",
+          "EvoSuite jar (set EVOSUITE_JAR)"
+        ]
+      },
+      "order": [
+        "com.example.LoginTest#shouldLoginUser",
+        "com.example.UserServiceTest#shouldRejectAnonymousUser"
+      ],
+      "exit_code": 1,
+      "passed": false,
+      "output": "PASS  LoginTest#shouldLoginUser\n  FAIL  UserServiceTest#shouldRejectAnonymousUser  -> java.lang.AssertionError: expected: <ANONYMOUS> but was: <AUTHENTICATED>\n\nRESULT: 1 failed -> [UserServiceTest#shouldRejectAnonymousUser]",
+      "command": "java -cp build/classes FlakeDemo com.example.LoginTest#shouldLoginUser com.example.UserServiceTest#shouldRejectAnonymousUser"
+    },
+    "full": {
+      "status": "ok",
+      "toolchain": {
+        "java": "C:/Java/jdk-21.0.9+10/bin/java.EXE",
+        "javac": "C:/Java/jdk-21.0.9+10/bin/javac.EXE",
+        "mvn": "",
+        "evosuite_jar": "",
+        "can_run_tests": true,
+        "can_run_maven": false,
+        "can_run_evosuite": false,
+        "missing": [
+          "Maven",
+          "EvoSuite jar (set EVOSUITE_JAR)"
+        ]
+      },
+      "order": [
+        "com.example.AuditTest#shouldRecordLoginEvent",
+        "com.example.CartTest#shouldAddItem",
+        "com.example.LoginTest#shouldLoginUser",
+        "com.example.LoginTest#shouldReportAuthenticatedRole",
+        "com.example.SessionTest#shouldExpireStaleSession",
+        "com.example.UserServiceTest#shouldRejectAnonymousUser",
+        "com.example.UserServiceTest#shouldNameAnonymousPrincipal"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "output": "PASS  AuditTest#shouldRecordLoginEvent\n  PASS  CartTest#shouldAddItem\n  PASS  LoginTest#shouldLoginUser\n  PASS  LoginTest#shouldReportAuthenticatedRole\n  PASS  SessionTest#shouldExpireStaleSession\n  PASS  UserServiceTest#shouldRejectAnonymousUser\n  PASS  UserServiceTest#shouldNameAnonymousPrincipal\n\nRESULT: all passed",
+      "command": "java -cp build/classes FlakeDemo com.example.AuditTest#shouldRecordLoginEvent com.example.CartTest#shouldAddItem com.example.LoginTest#shouldLoginUser com.example.LoginTest#shouldReportAuthenticatedRole com.example.SessionTest#shouldExpireStaleSession com.example.UserServiceTest#shouldRejectAnonymousUser com.example.UserServiceTest#shouldNameAnonymousPrincipal"
+    },
+    "patched_order": {
+      "status": "ok",
+      "toolchain": {
+        "java": "C:/Java/jdk-21.0.9+10/bin/java.EXE",
+        "javac": "C:/Java/jdk-21.0.9+10/bin/javac.EXE",
+        "mvn": "",
+        "evosuite_jar": "",
+        "can_run_tests": true,
+        "can_run_maven": false,
+        "can_run_evosuite": false,
+        "missing": [
+          "Maven",
+          "EvoSuite jar (set EVOSUITE_JAR)"
+        ]
+      },
+      "order": [
+        "com.example.LoginTest#shouldLoginUser",
+        "com.example.UserServiceTest#shouldRejectAnonymousUser"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "output": "PASS  LoginTest#shouldLoginUser\n  PASS  UserServiceTest#shouldRejectAnonymousUser\n\nRESULT: all passed",
+      "command": "java -cp build/classes FlakeDemo com.example.LoginTest#shouldLoginUser com.example.UserServiceTest#shouldRejectAnonymousUser"
+    },
+    "patched_alone": {
+      "status": "ok",
+      "toolchain": {
+        "java": "C:/Java/jdk-21.0.9+10/bin/java.EXE",
+        "javac": "C:/Java/jdk-21.0.9+10/bin/javac.EXE",
+        "mvn": "",
+        "evosuite_jar": "",
+        "can_run_tests": true,
+        "can_run_maven": false,
+        "can_run_evosuite": false,
+        "missing": [
+          "Maven",
+          "EvoSuite jar (set EVOSUITE_JAR)"
+        ]
+      },
+      "order": [
+        "com.example.UserServiceTest#shouldRejectAnonymousUser"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "output": "PASS  UserServiceTest#shouldRejectAnonymousUser\n\nRESULT: all passed",
+      "command": "java -cp build/classes FlakeDemo com.example.UserServiceTest#shouldRejectAnonymousUser"
+    },
+    "patched_full": {
+      "status": "ok",
+      "toolchain": {
+        "java": "C:/Java/jdk-21.0.9+10/bin/java.EXE",
+        "javac": "C:/Java/jdk-21.0.9+10/bin/javac.EXE",
+        "mvn": "",
+        "evosuite_jar": "",
+        "can_run_tests": true,
+        "can_run_maven": false,
+        "can_run_evosuite": false,
+        "missing": [
+          "Maven",
+          "EvoSuite jar (set EVOSUITE_JAR)"
+        ]
+      },
+      "order": [
+        "com.example.AuditTest#shouldRecordLoginEvent",
+        "com.example.CartTest#shouldAddItem",
+        "com.example.LoginTest#shouldLoginUser",
+        "com.example.LoginTest#shouldReportAuthenticatedRole",
+        "com.example.SessionTest#shouldExpireStaleSession",
+        "com.example.UserServiceTest#shouldRejectAnonymousUser",
+        "com.example.UserServiceTest#shouldNameAnonymousPrincipal"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "output": "PASS  AuditTest#shouldRecordLoginEvent\n  PASS  CartTest#shouldAddItem\n  PASS  LoginTest#shouldLoginUser\n  PASS  LoginTest#shouldReportAuthenticatedRole\n  PASS  SessionTest#shouldExpireStaleSession\n  PASS  UserServiceTest#shouldRejectAnonymousUser\n  PASS  UserServiceTest#shouldNameAnonymousPrincipal\n\nRESULT: all passed",
+      "command": "java -cp build/classes FlakeDemo com.example.AuditTest#shouldRecordLoginEvent com.example.CartTest#shouldAddItem com.example.LoginTest#shouldLoginUser com.example.LoginTest#shouldReportAuthenticatedRole com.example.SessionTest#shouldExpireStaleSession com.example.UserServiceTest#shouldRejectAnonymousUser com.example.UserServiceTest#shouldNameAnonymousPrincipal"
+    }
+  },
+  "scan": [
+    {
+      "candidate": "com.example.AuditTest#shouldRecordLoginEvent",
+      "result": {
+        "status": "ok",
+        "toolchain": {
+          "java": "C:/Java/jdk-21.0.9+10/bin/java.EXE",
+          "javac": "C:/Java/jdk-21.0.9+10/bin/javac.EXE",
+          "mvn": "",
+          "evosuite_jar": "",
+          "can_run_tests": true,
+          "can_run_maven": false,
+          "can_run_evosuite": false,
+          "missing": [
+            "Maven",
+            "EvoSuite jar (set EVOSUITE_JAR)"
+          ]
+        },
+        "order": [
+          "com.example.AuditTest#shouldRecordLoginEvent",
+          "com.example.UserServiceTest#shouldRejectAnonymousUser"
+        ],
+        "exit_code": 0,
+        "passed": true,
+        "output": "PASS  AuditTest#shouldRecordLoginEvent\n  PASS  UserServiceTest#shouldRejectAnonymousUser\n\nRESULT: all passed",
+        "command": "java -cp build/classes FlakeDemo com.example.AuditTest#shouldRecordLoginEvent com.example.UserServiceTest#shouldRejectAnonymousUser"
+      }
+    },
+    {
+      "candidate": "com.example.CartTest#shouldAddItem",
+      "result": {
+        "status": "ok",
+        "toolchain": {
+          "java": "C:/Java/jdk-21.0.9+10/bin/java.EXE",
+          "javac": "C:/Java/jdk-21.0.9+10/bin/javac.EXE",
+          "mvn": "",
+          "evosuite_jar": "",
+          "can_run_tests": true,
+          "can_run_maven": false,
+          "can_run_evosuite": false,
+          "missing": [
+            "Maven",
+            "EvoSuite jar (set EVOSUITE_JAR)"
+          ]
+        },
+        "order": [
+          "com.example.CartTest#shouldAddItem",
+          "com.example.UserServiceTest#shouldRejectAnonymousUser"
+        ],
+        "exit_code": 0,
+        "passed": true,
+        "output": "PASS  CartTest#shouldAddItem\n  PASS  UserServiceTest#shouldRejectAnonymousUser\n\nRESULT: all passed",
+        "command": "java -cp build/classes FlakeDemo com.example.CartTest#shouldAddItem com.example.UserServiceTest#shouldRejectAnonymousUser"
+      }
+    },
+    {
+      "candidate": "com.example.LoginTest#shouldLoginUser",
+      "result": {
+        "status": "ok",
+        "toolchain": {
+          "java": "C:/Java/jdk-21.0.9+10/bin/java.EXE",
+          "javac": "C:/Java/jdk-21.0.9+10/bin/javac.EXE",
+          "mvn": "",
+          "evosuite_jar": "",
+          "can_run_tests": true,
+          "can_run_maven": false,
+          "can_run_evosuite": false,
+          "missing": [
+            "Maven",
+            "EvoSuite jar (set EVOSUITE_JAR)"
+          ]
+        },
+        "order": [
+          "com.example.LoginTest#shouldLoginUser",
+          "com.example.UserServiceTest#shouldRejectAnonymousUser"
+        ],
+        "exit_code": 1,
+        "passed": false,
+        "output": "PASS  LoginTest#shouldLoginUser\n  FAIL  UserServiceTest#shouldRejectAnonymousUser  -> java.lang.AssertionError: expected: <ANONYMOUS> but was: <AUTHENTICATED>\n\nRESULT: 1 failed -> [UserServiceTest#shouldRejectAnonymousUser]",
+        "command": "java -cp build/classes FlakeDemo com.example.LoginTest#shouldLoginUser com.example.UserServiceTest#shouldRejectAnonymousUser"
+      }
+    },
+    {
+      "candidate": "com.example.LoginTest#shouldReportAuthenticatedRole",
+      "result": {
+        "status": "ok",
+        "toolchain": {
+          "java": "C:/Java/jdk-21.0.9+10/bin/java.EXE",
+          "javac": "C:/Java/jdk-21.0.9+10/bin/javac.EXE",
+          "mvn": "",
+          "evosuite_jar": "",
+          "can_run_tests": true,
+          "can_run_maven": false,
+          "can_run_evosuite": false,
+          "missing": [
+            "Maven",
+            "EvoSuite jar (set EVOSUITE_JAR)"
+          ]
+        },
+        "order": [
+          "com.example.LoginTest#shouldReportAuthenticatedRole",
+          "com.example.UserServiceTest#shouldRejectAnonymousUser"
+        ],
+        "exit_code": 1,
+        "passed": false,
+        "output": "PASS  LoginTest#shouldReportAuthenticatedRole\n  FAIL  UserServiceTest#shouldRejectAnonymousUser  -> java.lang.AssertionError: expected: <ANONYMOUS> but was: <AUTHENTICATED>\n\nRESULT: 1 failed -> [UserServiceTest#shouldRejectAnonymousUser]",
+        "command": "java -cp build/classes FlakeDemo com.example.LoginTest#shouldReportAuthenticatedRole com.example.UserServiceTest#shouldRejectAnonymousUser"
+      }
+    },
+    {
+      "candidate": "com.example.SessionTest#shouldExpireStaleSession",
+      "result": {
+        "status": "ok",
+        "toolchain": {
+          "java": "C:/Java/jdk-21.0.9+10/bin/java.EXE",
+          "javac": "C:/Java/jdk-21.0.9+10/bin/javac.EXE",
+          "mvn": "",
+          "evosuite_jar": "",
+          "can_run_tests": true,
+          "can_run_maven": false,
+          "can_run_evosuite": false,
+          "missing": [
+            "Maven",
+            "EvoSuite jar (set EVOSUITE_JAR)"
+          ]
+        },
+        "order": [
+          "com.example.SessionTest#shouldExpireStaleSession",
+          "com.example.UserServiceTest#shouldRejectAnonymousUser"
+        ],
+        "exit_code": 0,
+        "passed": true,
+        "output": "PASS  SessionTest#shouldExpireStaleSession\n  PASS  UserServiceTest#shouldRejectAnonymousUser\n\nRESULT: all passed",
+        "command": "java -cp build/classes FlakeDemo com.example.SessionTest#shouldExpireStaleSession com.example.UserServiceTest#shouldRejectAnonymousUser"
+      }
+    },
+    {
+      "candidate": "com.example.UserServiceTest#shouldNameAnonymousPrincipal",
+      "result": {
+        "status": "ok",
+        "toolchain": {
+          "java": "C:/Java/jdk-21.0.9+10/bin/java.EXE",
+          "javac": "C:/Java/jdk-21.0.9+10/bin/javac.EXE",
+          "mvn": "",
+          "evosuite_jar": "",
+          "can_run_tests": true,
+          "can_run_maven": false,
+          "can_run_evosuite": false,
+          "missing": [
+            "Maven",
+            "EvoSuite jar (set EVOSUITE_JAR)"
+          ]
+        },
+        "order": [
+          "com.example.UserServiceTest#shouldNameAnonymousPrincipal",
+          "com.example.UserServiceTest#shouldRejectAnonymousUser"
+        ],
+        "exit_code": 0,
+        "passed": true,
+        "output": "PASS  UserServiceTest#shouldNameAnonymousPrincipal\n  PASS  UserServiceTest#shouldRejectAnonymousUser\n\nRESULT: all passed",
+        "command": "java -cp build/classes FlakeDemo com.example.UserServiceTest#shouldNameAnonymousPrincipal com.example.UserServiceTest#shouldRejectAnonymousUser"
+      }
+    }
+  ],
+  "patch": {
+    "status": "ok",
+    "applied": false,
+    "file": "services/user/src/test/java/com/example/LoginTest.java",
+    "abs_path": "~/demo-project/services/user/src/test/java/com/example/LoginTest.java",
+    "resource": "UserCache.currentUser",
+    "polluter": "com.example.LoginTest#shouldLoginUser",
+    "polluter_at": "LoginTest.java:19",
+    "victim": "com.example.UserServiceTest#shouldRejectAnonymousUser",
+    "diff": "--- a/services/user/src/test/java/com/example/LoginTest.java\n+++ b/services/user/src/test/java/com/example/LoginTest.java\n@@ -11,6 +11,15 @@\n  * runs next. There is no @AfterEach here, and that omission is the bug.\n  */\n class LoginTest {\n+\n+    // FlakeTrace: UserCache.currentUser is left set by this class; capture and restore it.\n+    private User flakeTracePreviousCurrentUser;\n+\n+    @org.junit.jupiter.api.BeforeEach\n+    void flakeTraceCapture() { flakeTracePreviousCurrentUser = UserCache.currentUser; }\n+\n+    @org.junit.jupiter.api.AfterEach\n+    void flakeTraceRestore() { UserCache.currentUser = flakeTracePreviousCurrentUser; }\n \n     private final UserService service = new UserService();\n \n",
+    "added_lines": 9,
+    "strategy": "capture-and-restore-static-field",
+    "policy": [
+      [
+        "test code only",
+        true,
+        "1 file under src/test/java: services/user/src/test/java/com/example/LoginTest.java"
+      ],
+      [
+        "no assertion changed",
+        true,
+        "0 assertions added, removed or weakened"
+      ],
+      [
+        "target test untouched",
+        true,
+        "the victim's source is not in the diff"
+      ],
+      [
+        "no @Disabled / @Ignore",
+        true,
+        "0 occurrences added"
+      ],
+      [
+        "no retries or reruns",
+        true,
+        "no @RepeatedTest, no rerunFailingTestsCount"
+      ],
+      [
+        "no new dependencies",
+        true,
+        "pom.xml not in the diff"
+      ],
+      [
+        "production source untouched",
+        true,
+        "src/main/java not in the diff"
+      ],
+      [
+        "within size budget",
+        true,
+        "9 lines of a 40-line limit"
+      ]
+    ]
+  },
+  "evosuite": {
+    "repo_path": "~/demo-project",
+    "module": "services/user",
+    "target_class": "com.example.UserCache",
+    "criteria": "branch:line:exception",
+    "search_budget": 60,
+    "seed": 1,
+    "assertion_strategy": "mutation",
+    "deterministic": true,
+    "project_cp": "",
+    "test_dir": "~/demo-project/services/user/src/test/java",
+    "suite_class": "com.example.UserCache_ESTest",
+    "suite_path": "~/demo-project/services/user/src/test/java/com/example/UserCache_ESTest.java",
+    "command": "C:/Java/jdk-21.0.9+10/bin/java.EXE -jar evosuite.jar -class com.example.UserCache -criterion branch:line:exception -Dsearch_budget=60 -Dassertion_strategy=mutation -Dtest_dir=~/demo-project/services/user/src/test/java -Dassertions=true -Djunit_check=true -Dminimize=true -seed=1 -Dno_runtime_dependency=true -Dreplace_calls=false -Dvirtual_fs=false -Dvirtual_net=false",
+    "toolchain": {
+      "java": "C:/Java/jdk-21.0.9+10/bin/java.EXE",
+      "javac": "C:/Java/jdk-21.0.9+10/bin/javac.EXE",
+      "mvn": "",
+      "evosuite_jar": "",
+      "can_run_tests": true,
+      "can_run_maven": false,
+      "can_run_evosuite": false,
+      "missing": [
+        "Maven",
+        "EvoSuite jar (set EVOSUITE_JAR)"
+      ]
+    },
+    "executed": false,
+    "generated_files": [],
+    "log": "",
+    "status": "unavailable",
+    "error": "EvoSuite cannot run here \u2014 missing: evosuite.jar (set EVOSUITE_JAR)"
+  }
+}
