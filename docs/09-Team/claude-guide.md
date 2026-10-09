@@ -35,19 +35,41 @@ Ask me before any decision that another member would need to agree with.
 - **Push back and record it.** When the agent is wrong, note it in your GenAI log — this is the
   "rejected or corrected suggestion" the evaluation asks every member to show.
 
+## After each finished piece of work — the commit hand-over
+
+The agent **never commits or pushes** (hard rule in `CLAUDE.md` §3). When one logical unit is
+done and verified, it stops, updates the affected docs (`CLAUDE.md` §5) and hands you the
+commit. If it forgets, say:
+
+```
+That piece is done. Update every doc it affects (CLAUDE.md §5), then give me the
+commit hand-over: what changed, how it was verified, and the exact git add / git commit /
+git push commands with a [M<N>] title and a body. Do not run them yourself.
+```
+
+Then you:
+
+1. Run `git diff` and read it. Ask the agent about anything you don't understand.
+2. Paste the `git add …` line, then run `git diff --staged` to see exactly what will go in.
+3. Paste the `git commit …` and `git push …` lines.
+
 ## Ending a session
 
 ```
-Before we stop: update docs/evidence-m<N>.md and docs/genai-log-m<N>.md for this session
-(assistance level L1–L4), commit with the [M<N>] prefix, push the branch, and give me a
-short list of what I must understand to explain and modify this code myself without AI.
+Before we stop: hand over any remaining finished work as a commit (do not run it). Make sure
+docs/evidence-m<N>.md and docs/genai-log-m<N>.md cover this session (level L1–L4), then
+give me a short list of what I must understand to explain and modify this code myself
+without AI.
 ```
 
 Then actually study that list. Open the PR when the task is done, and ask a teammate to review.
 
 ## Things an agent must never do here
 
-- Commit to `main`, force-push, or move a tag
+- Run `git commit`, `push`, `merge`, `rebase`, `tag` or anything that discards work — it
+  hands you the commands instead
+- Commit under the name "Claude" — commits are authored by you; Claude only appears as
+  `Co-Authored-By`
 - Edit another member's folder or a contract without the owner's agreement
 - Put a number in a doc or report that no command produced
 - Add a citation nobody has opened

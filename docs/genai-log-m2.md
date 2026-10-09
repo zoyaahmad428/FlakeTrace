@@ -36,3 +36,28 @@ deferred.
 
 Ownership checkpoint: I must be able to explain the CI workflow line by line, the branch
 protection rules, and the `OrderRunner` contract before the evaluation.
+
+## 2026-10-09 — Commit protocol: members commit, agents hand over
+
+**Tool:** Claude Opus 5.5 · **Level:** L2
+
+**What I asked:** a hard rule that AI agents never commit or push; after each finished piece
+of work the agent updates every affected doc and gives the member the exact commit commands
+with a meaningful title and body.
+
+**What was retained:** `CLAUDE.md` §3 (hard rule, when to hand over, message format) and new
+§5 (which docs to update for which kind of change); matching sections in `CONTRIBUTING.md`,
+`docs/09-Team/claude-guide.md` and the PR template.
+
+**Why:** two problems found today — Zoya's PR #2 commits were authored as "Claude", and my
+own restructure commits used an email not on my GitHub account, so neither was credited to
+a member. A member running the commit after reading the diff is ownership evidence; an agent
+commit is not.
+
+**How it was verified:** read through the changed files; section numbers and cross-references
+checked (`grep` for `§` in `CLAUDE.md`). No code changed, so no tests apply.
+
+**What I changed:** *fill after review.*
+
+**Note:** this change was handed to me as a patch to apply and commit myself — the first use
+of the new rule.
