@@ -53,4 +53,4 @@ cannot resolve a case. This is step 5–7 of the post-defence fallback ladder.
 | --- | --- | --- |
 | M1 | ☐ | |
 | M2 | ☐ | |
-| M3 | ☐ | |
+| M3 | ☑ | Agreed 2026-10-10 |

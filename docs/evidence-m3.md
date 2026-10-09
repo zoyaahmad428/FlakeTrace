@@ -725,3 +725,22 @@ Windows/JDK 21 machine (0/40 failures, alone and in the full order), contradicti
   a single-bit fragility, backed by two independent real measurements (different OS, different
   JDK major version) both landing close to 50%, not by reproducing the exact prior
   environment.
+
+## 2026-10-10 — Random-order baseline run for real for the first time
+
+**Requirement:** W4's baseline (`eval/baseline.py`) has been interface-only since Phase 4;
+Member 2 confirmed the real `OrderRunner` is ready to use.
+
+- File/function: `eval.baseline.run_random_order_baseline`, against the real
+  `runner.order_runner.OrderRunner` (not `eval/tests/fake_runner.py`).
+- Command: real F1 case, candidate pool of 7 tests (victim + its polluter + 5 noise tests),
+  `max_runs=50`, 4 independent trials with `base_seed` 0, 100, 200, 300.
+- Result: found the bug in **1, 1, 3, and 2** random shuffles respectively (average 1.75).
+  Every matching attempt's order placed `ConfigPolluterTest#pollute` before
+  `ConfigVictimTest#expectsDefaultMode`, as expected.
+- Comparison: Member 2's real targeted one-by-one search found the same polluter in 1 search
+  run (`docs/evidence-m2.md`, F1 row). Both are cheap on this 7-test fixture by design — the
+  baseline comparison's real value will show on a larger real-world project, not this one.
+- File/function: `eval/README.md` — corrected the baseline status section, which still said
+  "No implementation of `OrderRunner` exists in this repo yet" (stale since PR #10).
+- Limitation: only F1 run so far; F2/F3/N1/N2 and any idoft case remain.

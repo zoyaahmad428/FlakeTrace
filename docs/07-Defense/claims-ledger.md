@@ -88,7 +88,7 @@ published finding — defend as a choice) · `FROZEN` (committed pre-registratio
 
 | # | Claim | Backing | Source | Owner | Status |
 | --- | --- | --- | --- | --- | --- |
-| E1 | Committed: Linux container, Maven Surefire, JUnit 4 (incl. JUnit 3 via JUnit38 adapter) | POC confirmed all 8 cases were JUnit 3 — adapter path is validated, not assumed | [[02-Requirements/scope-boundary]] | M2 | COMMITTED |
+| E1 | Committed: Linux container, JUnit 4 (incl. JUnit 3 via JUnit38 adapter), executed via a custom JUnitCore-based harness for controlled ordering (ADR-003) — Maven Surefire is used only for plain build/compile, not for diagnosis runs | POC confirmed all 8 cases were JUnit 3 — adapter path is validated, not assumed | [[02-Requirements/scope-boundary]] | M2 | COMMITTED |
 | E2 | JUnit 5 is conditional | Becomes committed only after discovery + instrumentation attribute events to correct test boundaries under Jupiter | [[02-Requirements/scope-boundary]] | M2 | GATED |
 | E3 | Databases, network, threads, timing are unsupported — not silent | Produce *opaque events* contributing to the abstention decision and the coverage report | [[02-Requirements/scope-boundary]] | M1 | COMMITTED |
 | E4 | We never claim definitive causality | Explicit exclusion. Certificate language is "evidence-supported interference path" | [[03-Design/certificate-contract]] | Joint | COMMITTED |

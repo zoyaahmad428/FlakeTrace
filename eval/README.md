@@ -23,25 +23,27 @@ pip install -r eval/requirements.txt
 python3 -m unittest discover -s eval/tests -v
 ```
 
-## Random-order baseline status: NOT YET RUN ON REAL TESTS
+## Random-order baseline status: run for real against the real runner (2026-10-10)
 
-`baseline.py` defines the `OrderRunner` interface Member 2's real Docker
-builder / single-JVM order runner must implement (`run_ordered(order) ->
-{test: outcome}`), and `run_random_order_baseline()` is built entirely
-against that interface. **No implementation of `OrderRunner` exists in this
-repo yet** — Member 2's runner is a separate, not-yet-built component.
+`baseline.py` defines the `OrderRunner` interface; `runner.order_runner.OrderRunner`
+(Member 2, real since PR #10) satisfies it. Unit-tested throughout with
+`eval/tests/fake_runner.py`'s `FakeOrderRunner` — a scriptable fake that never
+launches a JVM, lives **only** under `eval/tests/`, and `baseline.py` does not
+import it.
 
-Consequently this baseline:
+**Real run, F1, 4 independent trials** (`runner.order_runner.OrderRunner`, native
+Windows/JDK24, candidate pool of 7 tests — the victim, its polluter, and 5 noise
+tests, `max_runs=50`): found the bug in **1, 1, 3, and 2** random shuffles
+respectively (average 1.75 — close to the ~2 expected for a pool this size, where
+each shuffle has roughly even odds of placing the polluter before the victim).
+Compare to Member 2's real targeted one-by-one search on the same case: 1 search
+run (`docs/evidence-m2.md`). Both are cheap on this small fixture by design; the
+real value of this comparison method will show once run against a larger
+real-world project (the idoft cases in `benchmark/manifest.json`), where a
+targeted search should scale far better than random shuffling.
 
-- Has been unit-tested with `eval/tests/fake_runner.py`'s `FakeOrderRunner`
-  — a scriptable fake that never launches a JVM or runs real Maven/JUnit.
-  That fake lives **only** under `eval/tests/`; `baseline.py` does not
-  import it, and no real CLI should ever import it either.
-- Has **never been executed against `fixtures/od-fixture` or any other real
-  project.** Any number you might expect to see here (e.g. "it took N
-  random shuffles to reproduce F1") does not exist yet and must not be
-  invented. Once Member 2's order runner is integrated, this baseline can
-  be run for real and its results feed into the yield report below.
+Not yet done: F2/F3/N1/N2 with the real runner, and any idoft case (still
+metadata-only, not cloned/built).
 
 ## Benchmark yield report status: 5 of 11 cases actually run
 
