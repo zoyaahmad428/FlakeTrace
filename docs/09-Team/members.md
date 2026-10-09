@@ -4,13 +4,11 @@
 post-defence action plan's two-student split is superseded by the three-member split in
 [[07-Defense/decisions/three-member-split]].*
 
-> ⚠ **Confirm at the 2026-10-09 meeting:** the member number for Zoya is inferred from commit
-> history. Correct this table if it is wrong, and fill in her registration number. Member 3
-> (Zarpash) confirmed 2026-10-09.
+> Member 1 (Zoya) and Member 3 (Zarpash) confirmed their rows on 2026-10-09.
 
 | # | Name | Reg. no. | GitHub | Owns | Folder |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Zoya Ahmad *(confirm)* | *fill* | `zoyaahmad428` | Resource evidence and explanation | `evidence/` |
+| 1 | Zoya Ahmad | 23i-0805 | `zoyaahmad428` | Resource evidence and explanation | `evidence/` |
 | 2 | Abdul Raffay | 23i-0587 | `abdulraffay-m` | Bounded search and verification · CLI · CI · integration | `runner/`, `.github/` |
 | 3 | Zarpash Nasim | 23i-0027 | `ZarpashNasim` | Evaluation infrastructure · fixtures · statistics · gated repair | `eval/`, `fixtures/` |
 
