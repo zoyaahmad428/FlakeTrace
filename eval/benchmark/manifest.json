@@ -83,8 +83,99 @@
       "ground_truth_reason": null,
       "ground_truth_ref": null,
       "notes": "Pinned SHA and the suggested polluter/victim/resource (UserCache.currentUser) come from POC/POC/flaketrace-ui/src/data/recorded.json, a recording from the proposal-defence POC's own heuristic backend -- not independently-authored ground truth, so ground_truth_outcome is deliberately null here, not copied from that file's 'suggested' guess. That recording used a custom JDK-only harness (`java -cp build/classes FlakeDemo ...`, JDK 21), not Maven/Docker and not this project's statistical (Wilson-interval) pipeline. The demo-project source tree itself is NOT present in this repo (recorded.json references a '~/demo-project' path local to the original author's machine), so this case cannot currently be attempted by our pipeline. Listed here only because the brief requires including real cases with pinned SHAs when POC case data exists in the repo -- the yield report must show this case as not_yet_run, never a fabricated result."
+    },
+    {
+      "case_id": "IDOFT-DROPWIZARD-1",
+      "source": "idoft",
+      "project": "dropwizard/dropwizard",
+      "project_path": "dropwizard-logging",
+      "sha": "07dfaed697427e208d65049f80a5d1949833b7cd",
+      "victim": { "class": "io.dropwizard.logging.DefaultLoggingFactoryPrintErrorMessagesTest", "method": "testLogbackStatusPrinterPrintStreamIsRestoredToSystemOut" },
+      "polluters": [
+        { "class": "io.dropwizard.logging.ThrottlingAppenderWrapperTest", "method": "belowThrottlingLimit" },
+        { "class": "io.dropwizard.logging.TcpSocketAppenderFactoryTest", "method": "testTestTcpLogging" }
+      ],
+      "ground_truth_outcome": null,
+      "ground_truth_reason": null,
+      "ground_truth_ref": null,
+      "notes": "Row pulled verbatim from idoft/odr-tests.csv (TestingResearchIllinois/idoft, https://github.com/TestingResearchIllinois/idoft), a real published research dataset of confirmed order-dependent tests -- not fabricated. Metadata only: not yet cloned, built, or run by our pipeline, so ground_truth_outcome stays null (idoft's own classification is external validation, not something we verified ourselves). The two polluters above come from idoft's 'Relevant-test(if it is VP/BSS)' and 'Relevant-test(if it is VPC)' columns respectively -- that VP/BSS/VPC taxonomy is idoft's own, carried through as-is, not independently attributed by us."
+    },
+    {
+      "case_id": "IDOFT-HTTP-REQUEST-1",
+      "source": "idoft",
+      "project": "kevinsawicki/http-request",
+      "project_path": "lib",
+      "sha": "2d62a3e9da726942a93cf16b6e91c0187e6c0136",
+      "victim": { "class": "com.github.kevinsawicki.http.HttpRequestTest", "method": "getWithVarargsQueryParams" },
+      "polluters": [
+        { "class": "com.github.kevinsawicki.http.HttpRequestTest", "method": "customConnectionFactory" },
+        { "class": "com.github.kevinsawicki.http.HttpRequestTest", "method": "nullConnectionFactory" }
+      ],
+      "ground_truth_outcome": null,
+      "ground_truth_reason": null,
+      "ground_truth_ref": null,
+      "notes": "Row pulled verbatim from idoft/odr-tests.csv. Metadata only -- see IDOFT-DROPWIZARD-1's note for the same caveats (not run by our pipeline, VP/BSS vs VPC columns are idoft's own taxonomy)."
+    },
+    {
+      "case_id": "IDOFT-MARINE-API-1",
+      "source": "idoft",
+      "project": "ktuukkan/marine-api",
+      "project_path": ".",
+      "sha": "af0003847db9ba822f67d4f1dceb8de3fe63250a",
+      "victim": { "class": "net.sf.marineapi.ais.parser.AISMessageFactoryTest", "method": "testCreateWithIncorrectOrder" },
+      "polluters": [
+        { "class": "net.sf.marineapi.nmea.parser.SentenceFactoryTest", "method": "testRegisterParserWithAlternativeBeginChar" },
+        { "class": "net.sf.marineapi.nmea.parser.SentenceFactoryTest", "method": "testCreateParser" }
+      ],
+      "ground_truth_outcome": null,
+      "ground_truth_reason": null,
+      "ground_truth_ref": null,
+      "notes": "Row pulled verbatim from idoft/odr-tests.csv. Metadata only -- see IDOFT-DROPWIZARD-1's note for the same caveats."
+    },
+    {
+      "case_id": "IDOFT-OPENPOJO-1",
+      "source": "idoft",
+      "project": "openpojo/openpojo",
+      "project_path": ".",
+      "sha": "9badbcc4593e797accfed5e51bec9f2b843f0f67",
+      "victim": { "class": "com.openpojo.validation.test.impl.SerializableTesterTest", "method": "shouldSkipOverNonSerializableClass" },
+      "polluters": [
+        { "class": "com.openpojo.log.JavaLoggerTest", "method": "shouldLogInVariousLevels" },
+        { "class": "com.openpojo.log.Log4JLoggerTest", "method": "testToString" }
+      ],
+      "ground_truth_outcome": null,
+      "ground_truth_reason": null,
+      "ground_truth_ref": null,
+      "notes": "Row pulled verbatim from idoft/odr-tests.csv. Metadata only -- see IDOFT-DROPWIZARD-1's note for the same caveats."
+    },
+    {
+      "case_id": "IDOFT-SPRING-BOOT-1",
+      "source": "idoft",
+      "project": "spring-projects/spring-boot",
+      "project_path": "spring-boot-project/spring-boot",
+      "sha": "daa3d457b71896a758995c264977bdd1414ee4d4",
+      "victim": { "class": "org.springframework.boot.logging.log4j2.Log4J2LoggingSystemTests", "method": "loggingThatUsesJulIsCaptured" },
+      "polluters": [
+        { "class": "org.springframework.boot.logging.java.JavaLoggingSystemTests", "method": "withFile" },
+        { "class": "org.springframework.boot.logging.java.JavaLoggingSystemTests", "method": "testSystemPropertyInitializesFormat" }
+      ],
+      "ground_truth_outcome": null,
+      "ground_truth_reason": null,
+      "ground_truth_ref": null,
+      "notes": "Row pulled verbatim from idoft/odr-tests.csv. Metadata only -- see IDOFT-DROPWIZARD-1's note for the same caveats."
     }
   ],
+  "idoft_source": {
+    "dataset": "TestingResearchIllinois/idoft",
+    "url": "https://github.com/TestingResearchIllinois/idoft",
+    "file": "odr-tests.csv",
+    "pulled_from": "~/WorkSpace/flaketrace/idoft/odr-tests.csv (WSL2, not a path inside this git repo)",
+    "pulled_on": "2026-10-09",
+    "total_rows_in_source_file": 1908,
+    "distinct_projects_in_source_file": 24,
+    "rows_pulled_into_this_manifest": 5,
+    "selection_method": "Picked one OD-test-type=victim row each from 5 diverse, recognizable, smaller-to-mid-size projects (dropwizard, http-request, marine-api, openpojo, spring-boot) out of the 24 projects in the file, to keep the manifest short and the entries easy to recognize -- not a random or statistically representative sample."
+  },
   "excluded_from_manifest": [
     {
       "project": "sample-dataset/sample",

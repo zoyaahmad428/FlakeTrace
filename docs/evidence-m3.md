@@ -418,3 +418,115 @@ must show "not yet run" — never invent counts.
   2's runner lands and writes real `<case_id>.json` log files, this exact
   script (unchanged) will produce real funnel numbers instead of all
   `not_yet_run`.
+
+## Post-Phase-5 correction — replacing fabricated numbers with real data
+
+The user correctly flagged that Phase 3's `eval/examples/*.json` used
+hand-picked counts (e.g. "20/20") never actually measured, and that the
+manifest's only "real" case (`POC-DEMO-1`) was one I had already flagged
+myself as unusable. Two fixes, both now real:
+
+**Fix 1 — real cases from a real published dataset, not just metadata I
+invented.** Searched WSL's `~/WorkSpace/flaketrace/idoft/odr-tests.csv`
+(TestingResearchIllinois/idoft, 1908 rows, confirmed via `wc -l` and
+`cut -d, -f1 | sort -u | wc -l` → 24 distinct real GitHub projects). Used
+Python's `csv.DictReader` (not naive comma-splitting, since some fields
+could contain commas) to pull one `OD-test-type=victim` row each from 5
+diverse, recognizable projects: dropwizard, kevinsawicki/http-request,
+ktuukkan/marine-api, openpojo, spring-boot. Added as
+`IDOFT-DROPWIZARD-1`, `IDOFT-HTTP-REQUEST-1`, `IDOFT-MARINE-API-1`,
+`IDOFT-OPENPOJO-1`, `IDOFT-SPRING-BOOT-1` in
+`eval/benchmark/manifest.json`, each with its real 40-character SHA
+transcribed verbatim from the CSV.
+
+- Command: `python3 -m unittest eval.tests.test_yield_report -v` (added
+  `test_idoft_cases_have_pinned_shas_and_null_ground_truth`).
+- Result: 6/6 passed — confirms all 5 idoft SHAs are real 40-char hex
+  strings (regex-checked, not just non-null), confirms 5 distinct real
+  project names (no accidental duplicates), and confirms
+  `ground_truth_outcome` is `null` for every one of them (we have not run
+  these ourselves — idoft's own research classification is not the same
+  as our pipeline verifying it, so copying their verdict in as "ground
+  truth" would misrepresent it).
+- Command: `python3 eval/benchmark/yield_report.py` → real output, now 11
+  total cases, all 11 still honestly `not_yet_run` (no build/isolation/
+  reproduction pipeline exists yet for any source — fixture, POC, or
+  idoft).
+- Limitation: these 5 rows are metadata only — not cloned, not built, not
+  run. Actually doing so (cloning external GitHub repos at a pinned SHA,
+  building with Maven, running the specific tests) was explicitly
+  descoped by the user to "metadata only" given the cost/risk of building
+  unknown external projects; recorded as a known gap, not silently
+  dropped.
+
+**Fix 2 — real measured counts for the fixture, replacing hand-picked
+numbers.** Wrote `eval/tools/run_real_reps.sh` and ran it for real inside
+`maven:3.9-eclipse-temurin-8` (same container as Phase 1): each of
+F1/F2/F3's isolation case and reduced-sequence reproduction, plus N1/N2's
+isolation case (their reduced_sequence is empty, so isolation ==
+reproduction for them), run 20 times each via `mvn -q -Dtest=... test`,
+counting real exit codes. 160 Maven invocations total; took about
+30 minutes (JVM/Maven startup overhead per invocation, not 1-2s as first
+estimated — confirmed healthy via `docker exec ... ps aux` mid-run, not
+assumed).
+
+- Command: `python3 eval/tools/run_real_reps.sh` inside the container (via
+  `docker run`, volumes mounting `fixtures/od-fixture` and the script).
+- Real result (verbatim):
+  ```
+  F1_isolation: pass=20 fail=0 n=20
+  F1_reproduction: pass=0 fail=20 n=20
+  F2_isolation: pass=20 fail=0 n=20
+  F2_reproduction: pass=0 fail=20 n=20
+  F3_isolation: pass=20 fail=0 n=20
+  F3_reproduction: pass=0 fail=20 n=20
+  N1_isolation: pass=0 fail=20 n=20
+  N2_isolation: pass=8 fail=12 n=20
+  ```
+  ("pass"/"fail" = whether the `mvn` invocation exited 0; for isolation
+  runs a "fail" means the victim failed alone, for reproduction runs a
+  "fail" means the victim reproduced the bug after the polluter(s).)
+- Interpretation: F1/F2/F3 are genuinely deterministic — 20/20 reproduction,
+  0/20 alone-failure, confirmed by actually running each 20 times, not
+  assumed from one earlier observation. N1 is genuinely deterministic
+  (20/20 fails alone). **N2 gave a real, previously-unmeasured number:
+  12/20 fails alone** — Phase 1 had only sampled 6 runs informally (2
+  pass/4 fail); this is the first proper n=20 measurement.
+- Fed these real counts through `eval.outcome.decide()` (not re-derived by
+  hand) to get the authoritative outcome for each case:
+  `python3 -c "from eval.outcome import DecisionInput, decide; ..."` →
+  F1/F2/F3 → `VERIFIED`; N1/N2 → `UNRESOLVED(VICTIM_FAILS_ALONE)`. All five
+  match `fixtures/od-fixture/ground_truth.json`'s hand-authored
+  expectations exactly.
+- Wrote `eval/benchmark/logs/{F1,F2,F3,N1,N2}.json` with these real
+  counts and outcomes (`recorded_by` field states plainly this was a
+  manual plain-Maven run, not Member 2's automated pipeline). Running
+  `python3 eval/benchmark/yield_report.py` now shows real funnel data for
+  these 5 cases (3 `reproduced`, 2 `excluded` as `VICTIM_FAILS_ALONE`)
+  while the other 6 cases (`POC-DEMO-1` + 5 `IDOFT-*`) remain honestly
+  `not_yet_run`.
+- Updated `eval/examples/` to match: `example_f1_verified.json` and the
+  renamed `example_f3_verified.json` now carry real counts (F3's are
+  genuinely 20/20, not the fabricated 12/20 "CANDIDATE" framing used
+  before — F3 is deterministic given its full reduced sequence, so it
+  cannot produce a real CANDIDATE example). Added
+  `example_victim_fails_alone_intermittent.json` with N2's real 12/20.
+  Replaced the deleted F3-as-CANDIDATE file with a wholly synthetic
+  `example_candidate.json` (`com.example.*` names), since none of
+  F1-F3's real behavior lands below the 0.70 threshold. Updated
+  `example_source_integrity_failed.json` to reuse F1's now-real stats
+  (only the integrity failure itself stays hypothetical, since no real
+  integrity checker exists). `eval/examples/README.md` now labels each
+  file REAL/SYNTHETIC/MIXED explicitly.
+- Command: `python3 -m unittest discover -s eval/tests -v` (after all
+  updates, including a new cross-check
+  `test_real_examples_match_the_real_log_files` comparing the 4 real
+  example files' counts against the actual log files, and a corrected
+  `test_yield_report_shows_real_funnel_for_run_cases_and_not_yet_run_for_the_rest`
+  replacing the now-outdated "logs dir is empty" assumption).
+- Result: 58/58 passed.
+- Limitation: `polluter_write_location`/`victim_read_location`'s
+  `bytecode_offset` values and `source_integrity` are still placeholders
+  in every example — no real static-bytecode-evidence extractor (Member 1)
+  or source-integrity checker (Member 2) exists yet. Only the
+  reproduction/isolation statistics themselves are now real.

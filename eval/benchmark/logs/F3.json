@@ -1,0 +1,10 @@
+{
+  "case_id": "F3",
+  "built": true,
+  "victim_passes_alone": true,
+  "reproduced": true,
+  "excluded_reason": null,
+  "recorded_by": "Member 3, manual plain-Maven repetition (eval/tools/run_real_reps.sh), not Member 2's automated runner (does not exist yet)",
+  "recorded_on": "2026-10-09",
+  "raw_counts": { "isolation_successes": 0, "isolation_n": 20, "sequence_successes": 20, "sequence_n": 20 }
+}
