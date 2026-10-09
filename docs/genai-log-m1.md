@@ -226,3 +226,26 @@ recorded, not hidden.
 three members; proposed in the PR instead).
 
 Ownership checkpoint: you need to understand and verify this implementation before claiming it as your contribution.
+
+## 2026-10-09 — CI guard for the evidence tests; in-process default depth
+
+**Assistance level:** L2 (Assisted): the guard helper and test were generated; the need came from
+Member 2's CI question.
+
+**What I asked:** make sure Member 2's CI job for `evidence/tests/` cannot pass by skipping.
+
+**What was retained:** `FLAKETRACE_REQUIRE_JVM=1` turns the "classes not compiled" and "javap not
+found" skips into failures (the same name Member 2's runner job uses); `analyse_test` now defaults
+to depth 2 like the CLI; 1 new test (27 total).
+
+**What I changed:** *fill after review.*
+
+**How it was verified:** skip, fail and pass behaviour each run for real; see `docs/evidence-m1.md`.
+
+**Errors found:** `analyse_test`'s in-process default was depth 1 while the CLI and the contract
+said 2. It was found while checking the contract's API notes against the code, and is fixed and
+tested.
+
+**Rejections:** none.
+
+Ownership checkpoint: you need to understand and verify this implementation before claiming it as your contribution.

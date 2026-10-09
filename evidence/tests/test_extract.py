@@ -9,6 +9,10 @@ Expected offsets were read by hand from JDK 8 `javap -c -p` output of those clas
 (recorded in docs/evidence-m1.md). Run from the repository root:
 
     python3 -m unittest evidence.tests.test_extract -v
+
+Tests that need compiled classes or javap skip when they are missing. Set
+FLAKETRACE_REQUIRE_JVM=1 (CI does) to make them fail instead, so a broken setup
+can never pass silently.
 """
 import json
 import os
@@ -28,16 +32,44 @@ FIXTURE_TARGET = os.path.join(REPO_ROOT, "fixtures", "od-fixture", "target")
 FIXTURE_DIRS = [os.path.join(FIXTURE_TARGET, "classes"), os.path.join(FIXTURE_TARGET, "test-classes")]
 
 
+REQUIRE_JVM = os.environ.get("FLAKETRACE_REQUIRE_JVM") == "1"
+
+
+def needs(condition, reason):
+    """Skip the test class when `condition` is false, or fail it under FLAKETRACE_REQUIRE_JVM=1."""
+    if condition or not REQUIRE_JVM:
+        return unittest.skipUnless(condition, reason)
+
+    def fail_class(cls):
+        def setUpClass(klass):
+            raise AssertionError("FLAKETRACE_REQUIRE_JVM=1 but " + reason)
+        cls.setUpClass = classmethod(setUpClass)
+        return cls
+    return fail_class
+
+
+def need_javap(test):
+    """Inside a test: skip (or fail under FLAKETRACE_REQUIRE_JVM=1) when javap is missing."""
+    if not shutil.which(extract.javap_command()):
+        if REQUIRE_JVM:
+            test.fail("FLAKETRACE_REQUIRE_JVM=1 but javap not found")
+        test.skipTest("javap not found")
+
+
+HAS_JAVAP = bool(shutil.which(extract.javap_command()))
+NO_JAVAP = "javap not found (need a JDK 8+)"
+NO_SELFTEST = ("self-test classes not compiled: run mvn -B -q -f "
+               "evidence/tests/resources/m1-selftest/pom.xml test-compile")
+
+
 def summary(accesses):
     """(access, resource_id, class, method, offset, via) tuples, easy to compare."""
     return [(a["access"], a["resource_id"], a["class"], a["method"], a["bytecode_offset"], a["via"])
             for a in accesses]
 
 
-@unittest.skipUnless(os.path.isdir(TEST_CLASSES),
-                     "self-test classes not compiled: run mvn -B -q -f "
-                     "evidence/tests/resources/m1-selftest/pom.xml test-compile")
-@unittest.skipUnless(shutil.which(extract.javap_command()), "javap not found (need a JDK 8+)")
+@needs(os.path.isdir(TEST_CLASSES), NO_SELFTEST)
+@needs(HAS_JAVAP, NO_JAVAP)
 class DepthOneExtractionTest(unittest.TestCase):
 
     def analyse(self, test_id):
@@ -96,8 +128,8 @@ def path_of(access):
                       for f in access["call_path"])
 
 
-@unittest.skipUnless(os.path.isdir(TEST_CLASSES), "self-test classes not compiled")
-@unittest.skipUnless(shutil.which(extract.javap_command()), "javap not found (need a JDK 8+)")
+@needs(os.path.isdir(TEST_CLASSES), NO_SELFTEST)
+@needs(HAS_JAVAP, NO_JAVAP)
 class CallDepthTest(unittest.TestCase):
     """Phase 3. Expected values read by hand from JDK 8 javap of M1DepthSelfTest."""
 
@@ -139,6 +171,11 @@ class CallDepthTest(unittest.TestCase):
              "M1DepthSelfTest.dispatch@9 > SelfTestBase.work@2")])   # SelfTestChild's write not claimed
         self.assertIn(("VIRTUAL_DISPATCH", "dispatch", 9), self.kinds(test, 3))
 
+    def test_in_process_default_depth_is_2(self):
+        result = extract.analyse_test(extract.Project([CLASSES, TEST_CLASSES]),
+                                      "m1selftest.M1DepthSelfTest#callsDown")
+        self.assertEqual([a["depth"] for a in result["accesses"]], [2])
+
     def test_depth_1_results_are_unchanged(self):
         self.assertEqual(len(self.analyse("m1selftest.M1SelfTest#writesAndReads", 3)["accesses"]), 4)
 
@@ -157,8 +194,8 @@ def analyse_pair(class_dirs, polluter, victim, depth=extract.DEFAULT_DEPTH):
                               victim, extract.analyse_test(project, victim, depth))
 
 
-@unittest.skipUnless(os.path.isdir(TEST_CLASSES), "self-test classes not compiled")
-@unittest.skipUnless(shutil.which(extract.javap_command()), "javap not found (need a JDK 8+)")
+@needs(os.path.isdir(TEST_CLASSES), NO_SELFTEST)
+@needs(HAS_JAVAP, NO_JAVAP)
 class PairSelfTest(unittest.TestCase):
     """Phase 4 on Member 1's own test classes."""
 
@@ -190,9 +227,9 @@ class PairSelfTest(unittest.TestCase):
         self.assertNotIn("sysprop:m1.selftest.key", [e["resource_id"] for e in pair["edges"]])
 
 
-@unittest.skipUnless(os.path.isdir(FIXTURE_DIRS[1]),
-                     "fixture not compiled: run mvn -B -q -f fixtures/od-fixture/pom.xml test-compile")
-@unittest.skipUnless(shutil.which(extract.javap_command()), "javap not found (need a JDK 8+)")
+@needs(os.path.isdir(FIXTURE_DIRS[1]),
+       "fixture not compiled: run mvn -B -q -f fixtures/od-fixture/pom.xml test-compile")
+@needs(HAS_JAVAP, NO_JAVAP)
 class FixturePairTest(unittest.TestCase):
     """Phase 4 on Member 3's fixture. Offsets read by hand from JDK 8 javap (docs/evidence-m1.md)."""
 
@@ -252,7 +289,7 @@ class FixturePairTest(unittest.TestCase):
         self.assertIsNone(none["shared_resource"])
 
 
-@unittest.skipUnless(os.path.isdir(TEST_CLASSES), "self-test classes not compiled")
+@needs(os.path.isdir(TEST_CLASSES), NO_SELFTEST)
 class CommandLineTest(unittest.TestCase):
 
     def run_cli(self, *args):
@@ -260,8 +297,7 @@ class CommandLineTest(unittest.TestCase):
                               capture_output=True, text=True, cwd=REPO_ROOT)
 
     def test_prints_contract_json_on_stdout(self):
-        if not shutil.which(extract.javap_command()):
-            self.skipTest("javap not found")
+        need_javap(self)
         done = self.run_cli("--classes", CLASSES, "--test-classes", TEST_CLASSES,
                             "--test", "m1selftest.M1SelfTest#writesAndReads", "--depth", "1")
         self.assertEqual(done.returncode, 0, done.stderr)
@@ -275,8 +311,7 @@ class CommandLineTest(unittest.TestCase):
         self.assertIn(text, done.stderr)
 
     def test_pair_mode_prints_edges(self):
-        if not shutil.which(extract.javap_command()):
-            self.skipTest("javap not found")
+        need_javap(self)
         done = self.run_cli("--classes", CLASSES, "--test-classes", TEST_CLASSES,
                             "--polluter", "m1selftest.M1SelfTest#writesAndReads",
                             "--victim", "m1selftest.M1LifecycleSelfTest#emptyBody")
@@ -303,15 +338,13 @@ class CommandLineTest(unittest.TestCase):
         self.assert_input_error(done, "class directory not found")
 
     def test_unknown_test_method_is_an_input_error(self):
-        if not shutil.which(extract.javap_command()):
-            self.skipTest("javap not found")
+        need_javap(self)
         done = self.run_cli("--classes", CLASSES, "--test-classes", TEST_CLASSES,
                             "--test", "m1selftest.M1SelfTest#noSuchMethod", "--depth", "1")
         self.assert_input_error(done, "test method not found")
 
     def test_default_depth_is_2(self):
-        if not shutil.which(extract.javap_command()):
-            self.skipTest("javap not found")
+        need_javap(self)
         done = self.run_cli("--classes", CLASSES, "--test-classes", TEST_CLASSES,
                             "--test", "m1selftest.M1DepthSelfTest#callsDown")
         self.assertEqual(done.returncode, 0, done.stderr)
