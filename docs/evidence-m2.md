@@ -132,3 +132,23 @@ critical issues and four important ones; three needed code fixes, one a docs cor
 - JDK 8: GitHub Actions run `37959672072` on PR #10 (commit `3579e47`), 2026-10-09 — all three
   jobs succeeded; job `runner` (Temurin JDK 8): `Ran 22 tests in 17.2s — OK`.
   https://github.com/zoyaahmad428/FlakeTrace/actions/runs/37959672072
+
+## W7 — diagnosis runs
+
+Design: [[03-Design/decisions/ADR-004-w7-diagnosis-runs]].
+
+### 2026-10-09 — Task 1: source-integrity check
+
+**Requirement:** report-schema `source_integrity` — FlakeTrace must leave the analysed project's
+source unchanged, and show it (ADR-001, panel action on code modification).
+
+- Files: `runner/integrity.py` (`snapshot`, `compare`, `SourceIntegrity`),
+  `runner/tests/test_integrity.py`.
+- Command: `py -m unittest -v runner.tests.test_integrity` (Windows 11, Python 3.14).
+- Before the code existed: `ModuleNotFoundError: No module named 'runner.integrity'`.
+- Result: `Ran 4 tests in 0.054s — OK`: unchanged project passes; a changed, an added and a
+  removed file are each named (`changed: src/main/A.java; added: src/main/B.java; removed:
+  pom.xml`); `target/` and `.git/` are ignored; a nested folder named `target` is still hashed.
+- Limitations: only the top-level `target/` is skipped — a multi-module project's
+  `module/target/` would be hashed, so building it during a diagnosis would show as "changed".
+  Not relevant for the single-module fixture; revisit for real projects.

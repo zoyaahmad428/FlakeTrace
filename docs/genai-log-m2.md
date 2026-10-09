@@ -188,3 +188,21 @@ the ADR computed with `eval.stats.wilson_interval`.
 (`System.nanoTime()` has 100-ns steps there). The N2 test uses n = 40 so it cannot flake.
 
 **What I changed:** *fill after reviewing the ADR.*
+
+## 2026-10-09 — W7 Task 1: source-integrity check
+
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+
+**What I asked:** implement Task 1 of the W7 plan — hash the project's files before and after
+a diagnosis and name any difference.
+
+**What was retained:** `runner/integrity.py`, `runner/tests/test_integrity.py` (code identical to
+the plan, which was tested in the design spike).
+
+**How it was verified:** tests run first and failed (`ModuleNotFoundError`); after the code,
+`py -m unittest -v runner.tests.test_integrity` → 4 tests OK.
+
+**Errors found:** none. Limitation noted: only the top-level `target/` is excluded (multi-module
+projects).
+
+**What I changed:** *fill after reading the diff.*

@@ -80,6 +80,19 @@ not.
 - JUnit 4 only.
 - Only the top-level exception is part of the signature; a wrapped cause is not compared.
 
+## Diagnosis runs (W7, in progress)
+
+Design: [ADR-004](../docs/03-Design/decisions/ADR-004-w7-diagnosis-runs.md). Modules land one by
+one; each has its own tests in `runner/tests/`.
+
+| Module | Job | State |
+| --- | --- | --- |
+| `integrity.py` | `snapshot(project)` hashes every file (SHA-256) except top-level `target/` and `.git/`; `compare(before, after)` → `SourceIntegrity(passed, details)` naming changed/added/removed files | done |
+| `recording.py` | `RecordingRunner` — every JVM run appended to a JSON-lines execution record | next |
+| `discovery.py` | original order like Surefire (classes) + JUnit (methods) | planned |
+| `search.py`, `verify.py` | reproduce, one-by-one polluter search, repeat ×n | planned |
+| `diagnose.py` | `diagnose(project, victim, n=20)` → `DiagnosisRuns` (raw counts, no verdict) | planned |
+
 ## Planned components, in build order
 
 | # | Component | Produces (report-schema fields) | Needed for Mid demo |
