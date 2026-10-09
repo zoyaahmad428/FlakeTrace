@@ -1,10 +1,6 @@
 # Resource evidence — output contract (Member 1)
 
-**Status: DRAFT, not yet confirmed with Members 2 and 3.** No extraction code
-may be written against this contract until both have confirmed it. Both
-consume it: Member 2's CLI calls the extractor end-to-end (see
-[Invocation](#invocation)), and Member 3's report assembly uses its output.
-Changes after confirmation need agreement from all three members.
+**Status: DRAFT, not yet confirmed with Members 2 and 3.** No extraction code may be written against this contract until both have confirmed it. Both consume it: Member 2's CLI calls the extractor end-to-end (see [Invocation](#invocation)), and Member 3's report assembly uses its output. Changes after confirmation need agreement from all three members.
 
 This file defines what the Resource Evidence component (Member 1) outputs, and
 how that output is projected into the shared diagnosis report
@@ -47,19 +43,10 @@ members.
 - **Depth**: the number of methods on the path from the root to the method
   that contains the access instruction. Depth 1 means the instruction is in
   the root itself. Depth 2 means it is in a project method called directly
-  from the root. `--depth N` (default **2**, supported 1–3) reports accesses
-  with `depth <= N`.
-  *Why the default is 2:* fixture F2's victim reads its system property inside
-  `FeatureFlags.isTurboEnabled()`, one call below the test method, so at
-  depth 1 F2 has no edge. Depth 2 also equals the POC's frozen scope ("direct
-  references plus one hop"). The cost is more analysis time and more
-  over-approximation (statically reachable accesses that may never run). The
-  depth sweep still reports depths 1–3. See ADR-002.
-  *Numbering note:* the August POC numbers depth by **hops**: its
-  `FT_HOPS=N` (and "depth N" in `POC/results/depth_sweep.csv`) is
-  **depth N + 1** here, because `extract_static.py` loops
-  `range(HOPS + 1)`. A POC or vault figure quoted at "depth 2" is depth 3 in
-  this contract.
+  from the root. `--depth N` (default **2**, supported 1–3) reports accesses with `depth <= N`.
+  *Why the default is 2:* fixture F2's victim reads its system property inside `FeatureFlags.isTurboEnabled()`, one call below the test method, so at depth 1 F2 has no edge. Depth 2 also equals the POC's frozen scope ("direct references plus one hop"). The cost is more analysis time and more over-approximation (statically reachable accesses that may never run). The depth sweep still reports depths 1–3. See ADR-002.
+  *Numbering note:* the August POC numbers depth by **hops**: its `FT_HOPS=N` (and "depth N" in `POC/results/depth_sweep.csv`) is **depth N + 1** here, because `extract_static.py` loops `range(HOPS + 1)`. A POC or vault figure quoted at "depth 2" is depth 3 in this contract.
+  *Note:* the August POC's `FT_HOPS=1` corresponds to **depth 2** here.
 - **Project classes**: classes found in the input directories
   (`classes` + `test-classes`). Calls into anything else (JDK, JUnit,
   third-party jars) are never followed.
@@ -141,8 +128,7 @@ in Output 2).
 Bytecode is read by running `javap -c -p` (and `-v` for annotations) from a
 JDK 8 or newer found on `PATH`.
 
-```
-python3 -m evidence.extract --classes <dir> --test-classes <dir> \
+```python3 -m evidence.extract --classes <dir> --test-classes <dir> \
     --polluter <Class#method> --victim <Class#method> [--depth N]
 python3 -m evidence.extract --classes <dir> --test-classes <dir> \
     --test <Class#method> [--depth N]
@@ -305,11 +291,7 @@ Example: F2 at depth 2 projects to `shared_resource = {kind: "system-property", 
 4. **Ground truth has no expected locations**, so the automatic Phase 5 check
    can compare resources only. Offsets will be checked by hand against
    `javap`. Is that acceptable?
-5. **Illustrative offsets. RESOLVED 2026-10-09.** Member 3 verified the real
-   JDK 8 offsets independently with `javap -c -p` (write 1, read 1) and
-   updated `eval/examples/example_f1_verified.json` (commit `af70048`,
-   PR #7). These offsets were still read by hand; this component does not
-   produce them yet.
+5. **Illustrative offsets. RESOLVED 2026-10-09.** Member 3 verified the real JDK 8 offsets independently with `javap -c -p` (write 1, read 1) and updated `eval/examples/example_f1_verified.json` (commit `af70048`, PR #7). Earlier examples labelled illustrative are still not authoritative; this component does not produce them yet.
 6. **BRITTLE cases (POC FJ-01).** In the POC the "victim" fails alone and passes
    after a *state-setter* (`DateFieldTest8`). The resource edge has the same
    write-then-read shape, but the decision table would yield
