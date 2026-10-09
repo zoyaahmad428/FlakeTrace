@@ -16,6 +16,7 @@ JDK on `PATH`, same requirements as `runner/`).
 | `f1.json` | `odfixture.ConfigVictimTest#expectsDefaultMode` | `VERIFIED` (20/20 reproduced, 0/20 alone, real resource edge) |
 | `f2.json` | `odfixture.FeatureVictimTest#expectsTurboDisabled` | `VERIFIED` (20/20 reproduced, 0/20 alone, real resource edge via a helper call, `FeatureFlags.isTurboEnabled`) |
 | `n1.json` | `odfixture.NegativeAloneFailTest#alwaysFails` | `UNRESOLVED(VICTIM_FAILS_ALONE)` (20/20 alone-failures) |
+| `n2.json` | `odfixture.NegativeFlakyTest#sometimesFails` | `UNRESOLVED(VICTIM_FAILS_ALONE)` (12/20 alone-successes, i.e. 8/20 alone-failures — intermittent, as designed) |
 
 Each report's `execution_record_reference` points at a raw per-run JSONL execution record
 (`runner.recording.RecordingRunner`) under a local `flaketrace-records/` folder — one real JVM
@@ -38,13 +39,19 @@ if a portable reference is wanted later.
 
 ## What's NOT here yet
 
-F3 (needs multi-polluter search, not implemented by Member 2 yet — `W10`), and N2 (handled by
-`runner.diagnose` as `NOT_REPRODUCED` on this run, a `DiagnosisRuns.status`
-`eval.report.assemble_report()` deliberately does not handle yet — see its module docstring).
-Neither is invented or worked around; both are open items tracked in `docs/evidence-m3.md`.
+F3 only — it needs multi-polluter search, not implemented by Member 2 yet (`W10`). That is an
+open item tracked in `docs/evidence-m3.md`, not invented or worked around.
 
-F2 **is** here now: it needed `--depth 2` (the contract default, already implemented by
-Member 1), not a depth Member 1 hadn't built. This script was wrongly calling `analyse_test`
-with `depth=1`, which cannot see a resource accessed through a one-level helper call (F2's
-victim reads the property inside `FeatureFlags.isTurboEnabled()`, not in its own test method)
-— also flagged by Member 2, fixed together with the correlation-logic duplication above.
+F2 and N2 **are** here now, both added after being blocked:
+
+- F2 needed `--depth 2` (the contract default, already implemented by Member 1), not a depth
+  Member 1 hadn't built. This script was wrongly calling `analyse_test` with `depth=1`, which
+  cannot see a resource accessed through a one-level helper call (F2's victim reads the
+  property inside `FeatureFlags.isTurboEnabled()`, not in its own test method) — flagged by
+  Member 2, fixed together with the correlation-logic duplication above.
+- N2 used to report `NOT_REPRODUCED` on some machines (a `DiagnosisRuns.status`
+  `eval.report.assemble_report()` deliberately does not handle — see its module docstring),
+  because its old flakiness mechanism (`System.nanoTime()`'s lowest bit) could be
+  deterministically even on some hardware. After Member 3 fixed that mechanism and Member 2
+  confirmed it now reliably reports `VICTIM_FAILS_ALONE` on every platform tested, N2 needed
+  no new code here — `assemble_report` already handles that status.
