@@ -1,6 +1,6 @@
 # Resource evidence — output contract (Member 1)
 
-**Status: CONFIRMED by Member 1 and Member 2 (2026-10-09); Member 3 confirms by approving the PR that sets this line.**
+**Status: CONFIRMED by Members 1, 2 and 3 (2026-10-09; approvals recorded on PR #17).**
 Both other members consume it: Member 2's CLI calls the extractor end-to-end (see [Invocation](#invocation)),
 and Member 3's report assembly uses its output. The extractor (Phases 2–4, `evidence/extract.py`) was
 built against the draft of this contract. Any change from now on needs agreement from all three members.
