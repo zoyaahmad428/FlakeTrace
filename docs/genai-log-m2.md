@@ -61,3 +61,27 @@ checked (`grep` for `§` in `CLAUDE.md`). No code changed, so no tests apply.
 
 **Note:** this change was handed to me as a patch to apply and commit myself — the first use
 of the new rule.
+
+## 2026-10-09 — W6 design: order runner (ADR-002) and implementation plan
+
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+
+**What I asked:** propose at least two designs for `OrderRunner.run_ordered` (JUnit 4, one
+fresh JVM per call, exact order), with trade-offs, classpath without new dependencies, and
+portability on Windows/WSL/CI; stop for my choice; then write the plan.
+
+**What was retained:** option A — Python `OrderRunner` + JUnitCore harness (ADR-002); the
+implementation plan in `docs/superpowers/plans/2026-10-09-order-runner.md`.
+
+**What I decided:** chose A over Maven Surefire (cannot honour a method-level order across
+classes) and an all-Java runner (second language boundary with `eval/`).
+
+**How it was verified:** a throwaway spike (not committed) compiled the harness against the
+fixture's own classpath and ran F1 on my laptop (JDK 21): victim alone PASS; polluter then
+victim FAIL `java.lang.AssertionError`; reversed order PASS.
+
+**Errors found:** the ADR first said `javac --release 8`; the spike showed `-source 8 -target 8`
+works on both JDK 8 and 21, so the ADR was corrected. Maven was not installed on my laptop —
+installed 3.10.0 and added to user PATH.
+
+**What I changed:** *fill after reviewing the ADR.*
