@@ -1,4 +1,4 @@
-"""Tests for evidence/extract.py (Member 1): depth-1 lifecycle attribution (Phase 2) and call depth (Phase 3).
+"""Tests for evidence/extract.py (Member 1): lifecycle attribution (Phase 2), call depth (Phase 3), pairs (Phase 4).
 
 Input: Member 1's own test classes in evidence/tests/resources/m1-selftest/ (not a
 project fixture). Compile them first, with JDK 8 like the rest of the project:
@@ -24,6 +24,8 @@ TARGET = os.path.join(HERE, "resources", "m1-selftest", "target")
 CLASSES = os.path.join(TARGET, "classes")
 TEST_CLASSES = os.path.join(TARGET, "test-classes")
 REPO_ROOT = os.path.dirname(os.path.dirname(HERE))
+FIXTURE_TARGET = os.path.join(REPO_ROOT, "fixtures", "od-fixture", "target")
+FIXTURE_DIRS = [os.path.join(FIXTURE_TARGET, "classes"), os.path.join(FIXTURE_TARGET, "test-classes")]
 
 
 def summary(accesses):
@@ -141,6 +143,115 @@ class CallDepthTest(unittest.TestCase):
         self.assertEqual(len(self.analyse("m1selftest.M1SelfTest#writesAndReads", 3)["accesses"]), 4)
 
 
+def edge_summary(pair):
+    """[(resource_id, [write 'Class.method@offset'], [read 'Class.method@offset'])] for a pair."""
+    def loc(access):
+        return "%s.%s@%d" % (access["class"].split(".")[-1], access["method"], access["bytecode_offset"])
+    return [(e["resource_id"], [loc(a) for a in e["polluter_write_locations"]],
+             [loc(a) for a in e["victim_read_locations"]]) for e in pair["edges"]]
+
+
+def analyse_pair(class_dirs, polluter, victim, depth=extract.DEFAULT_DEPTH):
+    project = extract.Project(class_dirs)
+    return extract.find_edges(polluter, extract.analyse_test(project, polluter, depth),
+                              victim, extract.analyse_test(project, victim, depth))
+
+
+@unittest.skipUnless(os.path.isdir(TEST_CLASSES), "self-test classes not compiled")
+@unittest.skipUnless(shutil.which(extract.javap_command()), "javap not found (need a JDK 8+)")
+class PairSelfTest(unittest.TestCase):
+    """Phase 4 on Member 1's own test classes."""
+
+    def test_write_in_one_test_read_in_anothers_lifecycle_is_an_edge(self):
+        pair = analyse_pair([CLASSES, TEST_CLASSES], "m1selftest.M1SelfTest#writesAndReads",
+                            "m1selftest.M1LifecycleSelfTest#emptyBody")
+        self.assertEqual(edge_summary(pair), [
+            ("m1selftest.SelfTestState#counter", ["M1SelfTest.writesAndReads@1"],
+             ["M1LifecycleSelfTest.afterAll@0"])])
+        self.assertEqual(pair["edges"][0]["victim_read_locations"][0]["via"], "AFTER_CLASS")
+        self.assertFalse(pair["no_supported_resource_evidence"])
+
+    def test_no_shared_resource_gives_empty_edges_and_the_flag(self):
+        pair = analyse_pair([CLASSES, TEST_CLASSES], "m1selftest.M1Junit3SelfTest#testNothing",
+                            "m1selftest.M1UnsupportedSelfTest#tricky")
+        self.assertEqual(pair["edges"], [])
+        self.assertTrue(pair["no_supported_resource_evidence"])
+        self.assertIn("Missing evidence is not proof of independence.", pair["limitations"])
+        self.assertEqual(len(pair["limitations"]), 7)
+        sides = {(o["side"], o["kind"]) for o in pair["unsupported_observations"]}
+        self.assertIn(("victim", "SYSPROP_NON_CONSTANT_KEY"), sides)
+        self.assertIn(("victim", "REFLECTION"), sides)
+
+    def test_a_write_by_the_victim_is_not_an_edge(self):
+        # M1LifecycleSelfTest's @After clears m1.selftest.key (a WRITE); M1SelfTest writes it too,
+        # but nobody READS it in the victim, so it must not appear.
+        pair = analyse_pair([CLASSES, TEST_CLASSES], "m1selftest.M1SelfTest#writesAndReads",
+                            "m1selftest.M1LifecycleSelfTest#emptyBody")
+        self.assertNotIn("sysprop:m1.selftest.key", [e["resource_id"] for e in pair["edges"]])
+
+
+@unittest.skipUnless(os.path.isdir(FIXTURE_DIRS[1]),
+                     "fixture not compiled: run mvn -B -q -f fixtures/od-fixture/pom.xml test-compile")
+@unittest.skipUnless(shutil.which(extract.javap_command()), "javap not found (need a JDK 8+)")
+class FixturePairTest(unittest.TestCase):
+    """Phase 4 on Member 3's fixture. Offsets read by hand from JDK 8 javap (docs/evidence-m1.md)."""
+
+    def pair(self, polluter, victim, depth=extract.DEFAULT_DEPTH):
+        return analyse_pair(FIXTURE_DIRS, "odfixture." + polluter, "odfixture." + victim, depth)
+
+    def test_f1_exactly_one_edge_on_config_mode(self):
+        pair = self.pair("ConfigPolluterTest#pollute", "ConfigVictimTest#expectsDefaultMode")
+        self.assertEqual(edge_summary(pair), [
+            ("odfixture.Config#mode", ["ConfigPolluterTest.pollute@1"],
+             ["ConfigVictimTest.expectsDefaultMode@1"])])
+
+    def test_f2_edge_needs_depth_2(self):
+        args = ("FeaturePolluterTest#enableTurbo", "FeatureVictimTest#expectsTurboDisabled")
+        at_depth_1 = self.pair(*args, depth=1)
+        self.assertEqual(at_depth_1["edges"], [])
+        self.assertTrue(at_depth_1["no_supported_resource_evidence"])
+        self.assertIn(("victim", "DEPTH_LIMIT"),
+                      [(o["side"], o["kind"]) for o in at_depth_1["unsupported_observations"]])
+        self.assertEqual(edge_summary(self.pair(*args, depth=2)), [
+            ("sysprop:odfixture.turbo", ["FeaturePolluterTest.enableTurbo@4"],
+             ["FeatureFlags.isTurboEnabled@2"])])
+
+    def test_f3_each_polluter_has_its_own_flag_edge(self):
+        self.assertEqual(edge_summary(self.pair("ToggleAPolluterTest#setFlagA",
+                                                "ToggleVictimTest#expectsNotBothFlagsSet")),
+                         [("odfixture.Toggles#flagA", ["ToggleAPolluterTest.setFlagA@1"],
+                           ["ToggleVictimTest.expectsNotBothFlagsSet@0"])])
+        self.assertEqual(edge_summary(self.pair("ToggleBPolluterTest#setFlagB",
+                                                "ToggleVictimTest#expectsNotBothFlagsSet")),
+                         [("odfixture.Toggles#flagB", ["ToggleBPolluterTest.setFlagB@1"],
+                           ["ToggleVictimTest.expectsNotBothFlagsSet@6"])])
+
+    def test_unrelated_pair_has_no_supported_evidence(self):
+        pair = self.pair("ConfigPolluterTest#pollute", "FeatureVictimTest#expectsTurboDisabled")
+        self.assertEqual(pair["edges"], [])
+        self.assertTrue(pair["no_supported_resource_evidence"])
+
+    def test_report_fields_fit_member3_schema(self):
+        try:
+            import jsonschema
+        except ImportError:
+            self.skipTest("jsonschema not installed (pip install -r eval/requirements.txt)")
+        with open(os.path.join(REPO_ROOT, "eval", "schema", "report.schema.json")) as f:
+            defs = json.load(f)["$defs"]
+        f2 = extract.report_fields(self.pair("FeaturePolluterTest#enableTurbo",
+                                             "FeatureVictimTest#expectsTurboDisabled"))
+        self.assertEqual(f2["shared_resource"], {"kind": "system-property", "key": "odfixture.turbo"})
+        self.assertEqual(f2["victim_read_location"],
+                         {"class": "odfixture.FeatureFlags", "method": "isTurboEnabled", "bytecode_offset": 2})
+        none = extract.report_fields(self.pair("ConfigPolluterTest#pollute",
+                                               "FeatureVictimTest#expectsTurboDisabled"))
+        for fields in (f2, none):
+            jsonschema.validate(fields["shared_resource"], {"$defs": defs, "$ref": "#/$defs/sharedResource"})
+            for key in ("polluter_write_location", "victim_read_location"):
+                jsonschema.validate(fields[key], {"$defs": defs, "$ref": "#/$defs/codeLocation"})
+        self.assertIsNone(none["shared_resource"])
+
+
 @unittest.skipUnless(os.path.isdir(TEST_CLASSES), "self-test classes not compiled")
 class CommandLineTest(unittest.TestCase):
 
@@ -162,6 +273,29 @@ class CommandLineTest(unittest.TestCase):
         self.assertEqual(done.returncode, 2)
         self.assertEqual(done.stdout, "")
         self.assertIn(text, done.stderr)
+
+    def test_pair_mode_prints_edges(self):
+        if not shutil.which(extract.javap_command()):
+            self.skipTest("javap not found")
+        done = self.run_cli("--classes", CLASSES, "--test-classes", TEST_CLASSES,
+                            "--polluter", "m1selftest.M1SelfTest#writesAndReads",
+                            "--victim", "m1selftest.M1LifecycleSelfTest#emptyBody")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        output = json.loads(done.stdout)
+        self.assertEqual(len(output["tests"]), 2)
+        self.assertEqual([e["resource_id"] for e in output["pair"]["edges"]],
+                         ["m1selftest.SelfTestState#counter"])
+
+    def test_pair_mode_needs_both_tests(self):
+        done = self.run_cli("--classes", CLASSES, "--test-classes", TEST_CLASSES,
+                            "--polluter", "m1selftest.M1SelfTest#writesAndReads")
+        self.assert_input_error(done, "needs both --polluter and --victim")
+
+    def test_test_and_pair_mode_cannot_be_combined(self):
+        done = self.run_cli("--classes", CLASSES, "--test-classes", TEST_CLASSES,
+                            "--test", "m1selftest.M1SelfTest#writesAndReads",
+                            "--polluter", "a.B#c", "--victim", "a.B#d")
+        self.assert_input_error(done, "not both")
 
     def test_missing_class_directory_is_an_input_error(self):
         done = self.run_cli("--classes", "/no/such/dir", "--test-classes", TEST_CLASSES,

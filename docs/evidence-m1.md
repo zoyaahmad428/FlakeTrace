@@ -195,3 +195,43 @@ unsupported. Measures what each depth adds on the fixture.
   - Measurement-tool error (not an extractor bug): the first JDK 8 run failed with "class not
     found" because the Docker javap wrapper runs in a different working directory and
     relative class paths did not resolve. Re-run with absolute paths.
+
+## Phase 4 — Polluter→victim resource edges (2026-10-09)
+
+**Requirement:** given `--polluter` and `--victim`, report every resource the polluter
+WRITES (including its lifecycle code) that the victim READS, with both locations. An empty
+edge list carries `no_supported_resource_evidence: true` and never means "no dependency".
+
+- Files: `evidence/extract.py` (`find_edges`, `report_fields`, pair mode in `main`);
+  `evidence/tests/test_extract.py` (`PairSelfTest`, `FixturePairTest`, CLI pair tests).
+- Fixture compiled unmodified (JDK 8 image, `mvn -B -q test-compile` exit 0). Command per pair:
+  `python3 -m evidence.extract --classes fixtures/od-fixture/target/classes --test-classes fixtures/od-fixture/target/test-classes --polluter … --victim …`
+  (JDK 8 javap, default depth 2):
+
+  | pair | edges | `no_supported_resource_evidence` |
+  | --- | --- | --- |
+  | F1 `ConfigPolluterTest#pollute` → `ConfigVictimTest#expectsDefaultMode` | `odfixture.Config#mode`: write `pollute@1`, read `expectsDefaultMode@1` | false |
+  | F2 `FeaturePolluterTest#enableTurbo` → `FeatureVictimTest#expectsTurboDisabled` | `sysprop:odfixture.turbo`: write `enableTurbo@4`, read `FeatureFlags.isTurboEnabled@2` (depth 2) | false |
+  | F2 at `--depth 1` | none (victim side `DEPTH_LIMIT`) | true |
+  | F3 `ToggleAPolluterTest#setFlagA` → `ToggleVictimTest#expectsNotBothFlagsSet` | `odfixture.Toggles#flagA`: write `setFlagA@1`, read `@0` | false |
+  | F3 `ToggleBPolluterTest#setFlagB` → same victim | `odfixture.Toggles#flagB`: write `setFlagB@1`, read `@6` | false |
+  | `MathUtilTest#addsTwoNumbers` → `NegativeAloneFailTest#alwaysFails` | none | true |
+  | `ConfigPolluterTest#pollute` → `FeatureVictimTest#expectsTurboDisabled` | none | true |
+
+  The F3 offsets were checked by hand in JDK 8 `javap -c -p` (`putstatic flagA@1`, `putstatic flagB@1`,
+  `getstatic flagA@0`, `getstatic flagB@6`). The F1/F2 offsets are the ones in
+  `evidence/javap-dumps/phase1-f1-f2.txt`.
+- `report_fields` for F2: `shared_resource = {kind: system-property, key: odfixture.turbo}`,
+  `victim_read_location = {class: odfixture.FeatureFlags, method: isTurboEnabled, bytecode_offset: 2}`.
+  It and the no-edge case (all `null`) validate against `eval/schema/report.schema.json`.
+- Command: `python3 -m unittest evidence.tests.test_extract -v` → `Ran 26 tests … OK` with javap
+  21.0.12.1 and with JDK 8 javap (Python 3.13). Under Python 3.11: `Ran 26 … OK (skipped=1)`. The
+  skipped test is `test_report_fields_fit_member3_schema`, because jsonschema is not installed for
+  3.11 here. It ran and passed under 3.13.
+- Limitations discovered:
+  - F3 needs **both** polluters, but this component is pairwise. It reports one edge per
+    polluter (flagA, flagB). Combining them is Member 2's minimisation (W10).
+  - The contract's Invocation section and `interfaces.md` still say "planned, not yet
+    implemented". That wording was not edited, because contracts change only with all three members.
+  - A CI job for these tests must install `eval/requirements.txt` (for jsonschema) and compile both
+    the self-test project and the fixture.

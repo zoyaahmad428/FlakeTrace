@@ -199,3 +199,30 @@ The honest result is that the fixture cannot show the time cost of depth.
 recorded as `VIRTUAL_DISPATCH` instead).
 
 Ownership checkpoint: you need to understand and verify this implementation before claiming it as your contribution.
+
+## 2026-10-09 — Phase 4: polluter→victim resource edges
+
+**Assistance level:** L3 (Core-assist): the edge computation, projection and tests were generated.
+
+**What I asked:** given `--polluter` and `--victim`, compute the resources written by the
+polluter (including its lifecycle code) and read by the victim, with both locations. If there
+are none, output an empty list with `no_supported_resource_evidence`; never invent an edge, and
+never claim "no dependency".
+
+**What was retained:** `find_edges` (contract Output 2: ordering, side tags, 7 fixed
+limitations), `report_fields` (contract projection into Member 3's three fields; extra edges and
+locations named in `limitations`), pair-mode CLI with clear input errors, 11 new tests (26 total).
+
+**What I changed:** *fill after review.*
+
+**How it was verified:** see `docs/evidence-m1.md` Phase 4. The fixture pairs F1/F2/F3 and two
+no-resource pairs were run with JDK 8 javap, and the F3 offsets were checked by hand. 26 tests OK
+on JDK 8 and JDK 21 javap. The projection was validated against Member 3's schema.
+
+**Errors found:** none this phase. One test skips under Python 3.11 here (no jsonschema); this is
+recorded, not hidden.
+
+**Rejections:** editing the contract's "planned, not yet implemented" wording myself (needs all
+three members; proposed in the PR instead).
+
+Ownership checkpoint: you need to understand and verify this implementation before claiming it as your contribution.
