@@ -48,9 +48,9 @@ verdict stays with M3's `decide()`, so the statistics and decision rules live in
   order only crashed or timed out, those runs are counted in `sequence_any_failures`.
 - **`record_dir` inside the analysed project** → refused with `ValueError`; a record written
   there would itself make the integrity check fail.
-- **Platform-dependent flakiness**: fixture N2 fails on `System.nanoTime()` parity; with Windows'
-  10 MHz timer it was observed never to fail (0/80), so it ends `NOT_REPRODUCED` here and is
-  expected to end `VICTIM_FAILS_ALONE` on Linux.
+- **Flaky victims**: N2 (fails ~50%, `Random.nextBoolean` since PR #14) ends `VICTIM_FAILS_ALONE`.
+  Without the alone check it would be blamed on a spurious polluter (seen in a mutation check,
+  [[evidence-m2]] 2026-10-10). Its earlier `System.nanoTime()` parity never failed on Windows.
 - **Order mismatch**: Surefire's default `runOrder` is `filesystem`; discovery assumes
   alphabetical. **Multi-module projects**: only the top-level `target/` is excluded from hashing.
 - A crash or timeout is never a reference or a match — it only counts as "failed for any reason".

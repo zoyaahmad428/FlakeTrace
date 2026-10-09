@@ -145,14 +145,17 @@ duration, timestamp.
 | F2 | `POLLUTER_FOUND` | polluter `FeaturePolluterTest#enableTurbo` |
 | F3 | `NO_SINGLE_POLLUTER` | 12 earlier tests searched |
 | N1 | `VICTIM_FAILS_ALONE` | alone 20/20 |
-| N2 | `VICTIM_FAILS_ALONE`, or `NOT_REPRODUCED` where N2 never fails | never blames a polluter (see below) |
+| N2 | `VICTIM_FAILS_ALONE` | alone ≥ 1/20; never blames a polluter (see below) |
 
 N2 fails on `System.nanoTime() % 2`, so its rate depends on the platform's timer. On this
 Windows laptop (`Stopwatch.Frequency` = 10 MHz) `nanoTime` was later observed to be a multiple of
 100 on every call and N2 failed 0/80 times — although the design spike earlier the same day saw
 18/60 failures (cause of that drift not established). On Linux ~50% is expected. The N2 test
-therefore checks the property N2 exists for — no polluter is ever blamed — and accepts
-`NOT_REPRODUCED` when N2 never failed, `VICTIM_FAILS_ALONE` when it did.
+therefore checked only that no polluter is ever blamed, and accepted `NOT_REPRODUCED`.
+
+**Update 2026-10-10:** Member 3 replaced the mechanism with `new Random().nextBoolean()` (PR #14),
+which fails ~50% on Windows and Linux. The N2 test now expects `VICTIM_FAILS_ALONE` with at least
+one alone failure and no polluter (20 runs with no failure has probability ~1e-6).
 
 3. CI: the existing `runner` job picks up the new `runner/tests/test_*.py`; its real duration is
    recorded in [[evidence-m2]].

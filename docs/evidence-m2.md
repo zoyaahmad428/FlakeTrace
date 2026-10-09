@@ -301,3 +301,24 @@ a job with `FLAKETRACE_REQUIRE_JVM=1` and gave the steps (answer to M1-7).
   `Ran 8 tests — FAILED (failures=4, errors=4)`, so a missing javap fails the job instead of skipping.
 - CI on JDK 8: not yet run (runs on the PR).
 - Also ticked M2's row in ADR-001 and ADR-002.
+
+### 2026-10-10 — N2 test back to `VICTIM_FAILS_ALONE`
+
+**Requirement:** Member 3 replaced N2's `System.nanoTime()` parity with `new Random().nextBoolean()`
+(PR #14), so N2 now fails ~50% on every platform. The W7 N2 test (accepting `NOT_REPRODUCED`)
+and the docs saying "N2 may end `NOT_REPRODUCED` on Windows" were out of date.
+- Real runs first (local Windows, JDK 21.0.9): `diagnose(fixtures/od-fixture,
+  NegativeFlakyTest#sometimesFails, n=20)` three times → `VICTIM_FAILS_ALONE` each time, no
+  polluter, alone failures 16/20, 9/20, 11/20, source integrity passed.
+- File: `runner/tests/test_diagnose.py` — `test_n2_intermittent_failure_fails_alone_and_blames_no_polluter`
+  expects `VICTIM_FAILS_ALONE`, `polluters == []`, alone ≥ 1. Chance of 20 runs with no failure
+  at 50%: 0.5^20 ≈ 1e-6.
+- Command: `py -m unittest runner.tests.test_diagnose.TestDiagnoseOnFixture.test_n2_intermittent_failure_fails_alone_and_blames_no_polluter`
+  → `Ran 1 test in 17.082s — OK`.
+- Mutation check: `if alone_successes >= 1:` changed to `>= 100` in `runner/diagnose.py` → the test
+  FAILED with `'POLLUTER_FOUND' != 'VICTIM_FAILS_ALONE'`: without the alone check, the search
+  blamed an earlier test for N2's random failure. Restored; `git diff runner/diagnose.py` empty.
+- Full runner suite: `Ran 57 tests in 127.173s — OK`.
+- **CI for PR #20 (`evidence` job):** `Ran …` line not recorded here yet.
+- Docs updated: ADR-004 (N2 row and an update note), [[04-Implementation/diagnosis-runs]],
+  demo plan Runner row, claims E9.
