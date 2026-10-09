@@ -161,6 +161,6 @@ therefore checks the property N2 exists for — no polluter is ever blamed — a
 
 | Member | Agree? | Comment |
 | --- | --- | --- |
-| M1 | ☐ | `priority` hook for evidence-ranked candidates |
+| M1 | ☑ | Agree with the `priority` hook for evidence-ranked candidates; the ranking rule must be fixed before any ground truth is used |
 | M2 | ☑ | Chose these options on 2026-10-09 |
 | M3 | ☐ | default `n = 20` (I3); `DiagnosisRuns` → `DecisionInput` mapping in W9 |

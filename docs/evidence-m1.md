@@ -253,3 +253,19 @@ edge list carries `no_supported_resource_evidence: true` and never means "no dep
     without it → `OK (skipped=23)`.
 - Limitation discovered: before this fix, `analyse_test(project, test_id)` defaulted to depth 1 in-process
   while the CLI defaulted to 2. An in-process caller leaving out the depth would have missed F2's edge.
+
+## Contract confirmation and ADR agreement (2026-10-09)
+
+**Requirement:** answer Member 2's integration questions. Confirm the resource-evidence contract,
+fix which edge goes into the report, define how Member 2 calls the extractor, and record Member 1's
+agreement on ADR-001 to ADR-004.
+
+- Files: `docs/contracts/resource-evidence.md` (status: confirmed by M1 and M2, M3 pending; Invocation
+  marked implemented, plus "Calling it from another component"; open questions 1 and 3 answered,
+  2/4/6 marked open for M3); `docs/contracts/interfaces.md` (Interface 2 line: implemented);
+  M1 rows ticked in ADR-001, ADR-002, ADR-003, ADR-004.
+- Check (inline Python): every name the contract now lists exists in `evidence/extract.py` on main
+  `eeb5ba1` (`Project`, `analyse_test`, `find_edges`, `report_fields`, `ExtractError.exit_code`,
+  `FLAKETRACE_JAVAP` in `javap_command`); the example JSON parses; all anchors resolve. Result: passed.
+- Limitation: ADR status lines stay `PROPOSED` until Member 3 ticks. The contract is confirmed by all
+  three only when Member 3 approves this PR.

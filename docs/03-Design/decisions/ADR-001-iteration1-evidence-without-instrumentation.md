@@ -51,6 +51,6 @@ cannot resolve a case. This is step 5–7 of the post-defence fallback ladder.
 
 | Member | Agree? | Comment |
 | --- | --- | --- |
-| M1 | ☐ | |
+| M1 | ☑ | Agree: Iteration 1 evidence is static-only (javap), no instrumentation; built that way in Phases 2–4 |
 | M2 | ☐ | |
 | M3 | ☐ | |
