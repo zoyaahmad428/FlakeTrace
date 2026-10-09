@@ -28,4 +28,28 @@ Format follows [[evidence-m3]]. No number in this file is invented.
 
 ## Order runner (W6)
 
-*Not started.*
+### 2026-10-09 — Hand-over 1: harness + happy path on fixture F1
+
+**Requirement:** contract Interface 1 ([[contracts/interfaces]]) rules 1–2 — all tests in one
+JVM in exactly the given order; a fresh JVM per call. Design: [[03-Design/decisions/ADR-003-order-runner-junitcore-harness]].
+
+- Files: `runner/harness/FtHarness.java`, `runner/order_runner.py` (`OrderRunner`,
+  `maven_test_classpath`, `normalise_stack`, `normalise_message`, `parse_results`),
+  `runner/tests/test_order_runner.py`.
+- Environment: Windows 11, Git Bash, Python 3.14 (`py`), Temurin JDK 21.0.9, Maven 3.10.0.
+- Command: `py -m unittest -v runner.tests.test_order_runner`
+- Before the code existed: `ModuleNotFoundError: No module named 'runner.order_runner'` (expected).
+- Result: `Ran 8 tests in 10.137s — OK` (4 normalisation, 1 result parsing, 3 real-JVM runs on F1).
+  - `[ConfigVictimTest#expectsDefaultMode]` alone → PASS.
+  - `[ConfigPolluterTest#pollute, ConfigVictimTest#expectsDefaultMode]` in one JVM → polluter
+    PASS, victim FAIL `java.lang.AssertionError`, stack ending at
+    `odfixture.ConfigVictimTest.expectsDefaultMode:10`.
+  - `[ConfigVictimTest#expectsDefaultMode, ConfigPolluterTest#pollute]` → both PASS (order honoured).
+- Mutation check (the F1 test can fail): changed the test's order to victim-then-polluter →
+  `AssertionError: True is not false`, `FAILED (failures=1)`; restored the file (byte-identical)
+  → `OK`.
+- Source integrity: `git status --short fixtures/` printed nothing after the runs (only the
+  git-ignored `target/` is written).
+- Limitations: each method runs as its own JUnit `Request`, so `@BeforeClass`/`@AfterClass` run
+  once per method, not once per class; JUnit 4 only; a JVM crash, timeout or `@Ignore` is not yet
+  handled (hand-over 2); JDK 8 not yet run (CI, hand-over 3).

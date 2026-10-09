@@ -62,7 +62,7 @@ checked (`grep` for `§` in `CLAUDE.md`). No code changed, so no tests apply.
 **Note:** this change was handed to me as a patch to apply and commit myself — the first use
 of the new rule.
 
-## 2026-10-09 — W6 design: order runner (ADR-002) and implementation plan
+## 2026-10-09 — W6 design: order runner (ADR-003) and implementation plan
 
 **Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
 
@@ -70,7 +70,7 @@ of the new rule.
 fresh JVM per call, exact order), with trade-offs, classpath without new dependencies, and
 portability on Windows/WSL/CI; stop for my choice; then write the plan.
 
-**What was retained:** option A — Python `OrderRunner` + JUnitCore harness (ADR-002); the
+**What was retained:** option A — Python `OrderRunner` + JUnitCore harness (ADR-003); the
 implementation plan in `docs/superpowers/plans/2026-10-09-order-runner.md`.
 
 **What I decided:** chose A over Maven Surefire (cannot honour a method-level order across
@@ -85,3 +85,25 @@ works on both JDK 8 and 21, so the ADR was corrected. Maven was not installed on
 installed 3.10.0 and added to user PATH.
 
 **What I changed:** *fill after reviewing the ADR.*
+
+## 2026-10-09 — W6 hand-over 1: harness + F1 proof
+
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+
+**What I asked:** implement Task 1 of the W6 plan — the JUnitCore harness, the Python
+`OrderRunner`, and tests that prove F1's victim passes alone and fails after its polluter in
+one JVM.
+
+**What was retained:** `runner/harness/FtHarness.java`, `runner/order_runner.py`,
+`runner/tests/test_order_runner.py`, `docs/04-Implementation/sandbox-runner.md`.
+
+**How it was verified:** test written first and seen failing (`ModuleNotFoundError`); then
+`py -m unittest -v runner.tests.test_order_runner` → 8 tests OK; the F1 test was deliberately
+broken (order reversed) and failed, then restored and passed. `git status --short fixtures/`
+empty — fixture source untouched.
+
+**Errors found:** Member 1 had merged their own ADR-002 first; ours was renumbered to ADR-003
+and every reference updated. During the merge of `main`, a local merge commit kept conflict
+markers in `genai-register.md`; fixed by taking the clean GitHub resolution.
+
+**What I changed:** *fill after reading the diff.*

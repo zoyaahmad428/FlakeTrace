@@ -1,15 +1,77 @@
 # runner/ — bounded search and verification (Member 2)
 
-**Owner:** Member 2 · **State:** not started (2026-10-09)
+**Owner:** Member 2 · **State:** W6 in progress — ordered single-JVM runner works on fixture F1
+(2026-10-09); crash/timeout handling and CI job next.
 
 Implements the `OrderRunner` interface in [`eval/baseline.py`](../eval/baseline.py) and
 everything built on it. Contract: [docs/contracts/interfaces.md](../docs/contracts/interfaces.md).
+Design: [ADR-003](../docs/03-Design/decisions/ADR-003-order-runner-junitcore-harness.md).
+
+## Order runner (W6)
+
+```python
+from runner.order_runner import OrderRunner, maven_test_classpath
+from eval.baseline import TestIdentifier
+
+runner = OrderRunner(maven_test_classpath("fixtures/od-fixture"))
+results = runner.run_ordered([
+    TestIdentifier("odfixture.ConfigPolluterTest", "pollute"),
+    TestIdentifier("odfixture.ConfigVictimTest", "expectsDefaultMode"),
+])   # {TestIdentifier: RunOutcome(passed, failure_signature)}
+```
+
+- `maven_test_classpath(project)` runs `mvn test-compile dependency:build-classpath` on the
+  target project and returns `target/test-classes`, `target/classes` and the project's own jars.
+  No dependency is added; only the git-ignored `target/` is written.
+- `OrderRunner` compiles `harness/FtHarness.java` once into a temp directory. Each
+  `run_ordered` call starts **one fresh JVM** that runs the tests **in exactly the given order**
+  with JUnit's `JUnitCore` + `Request.method`.
+- A failed test carries `FailureSignature(exception_type, stack_trace, message)`. `stack_trace`
+  is the frames from the throw point down to the test, cut at the first JUnit-runner/reflection/
+  harness frame, so JDK 8 and JDK 21 give the same signature. `message` is the first line with
+  numbers, hex ids, paths and timestamps masked.
+
+### Harness protocol
+
+`java FtHarness <result-file>` with the classpath in `CLASSPATH`; stdin: one `Class#method` per
+line. Result file, one line per test (tabs/newlines/backslashes escaped):
+
+```
+index<TAB>Class#method<TAB>PASS|FAIL|SKIP<TAB>exceptionClass<TAB>message<TAB>frame|frame|…
+```
+
+### Run the tests
+
+Prerequisites: JDK 8+ (`java`, `javac`) and Maven on `PATH`. From the repo root:
+
+```bash
+py -m unittest -v runner.tests.test_order_runner        # Windows
+python3 -m unittest -v runner.tests.test_order_runner   # Linux / WSL / CI
+```
+
+Without `java`/`javac`/`mvn` the real-JVM tests are skipped with a reason, unless
+`FLAKETRACE_REQUIRE_JVM` is set (CI), in which case they fail.
+
+### Portability
+
+Processes are launched with argument lists (no shell), so paths with spaces work. The classpath
+is joined with the running Python's `os.pathsep` and passed through `CLASSPATH`, avoiding
+Windows' command-line length limit. Windows Python + Windows Java (Git Bash, PowerShell) and
+Linux Python + Linux Java (WSL, CI) are supported; an MSYS/Cygwin Python driving a Windows JDK is
+not.
+
+### Known limitations
+
+- Each method is its own JUnit `Request`: `@BeforeClass`/`@AfterClass` run once per method,
+  not once per class as under Maven Surefire.
+- JUnit 4 only.
+- A JVM crash, timeout or skipped test is not yet handled (W6 hand-over 2).
 
 ## Planned components, in build order
 
 | # | Component | Produces (report-schema fields) | Needed for Mid demo |
 | --- | --- | --- | --- |
-| 1 | Ordered single-JVM runner for JUnit 4 | per-test outcomes, `failure_signature` | Yes |
+| 1 | Ordered single-JVM runner for JUnit 4 — **in progress (W6)** | per-test outcomes, `failure_signature` | Yes |
 | 2 | Victim-alone check, repeated `n` times | `victim_alone` raw counts | Yes |
 | 3 | Polluter search over preceding tests | `polluters`, `original_failing_order` | Yes |
 | 4 | Deletion minimisation (handles F3's two-polluter case) | `reduced_sequence` | Yes (F1/F2); F3 stretch |
