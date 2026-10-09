@@ -1,0 +1,13 @@
+# Each owner is asked to review changes in their area automatically.
+# Member 3's GitHub username is not yet confirmed — replace the placeholder below,
+# then uncomment those lines.
+
+/runner/                 @abdulraffay-m
+/.github/                @abdulraffay-m
+/evidence/               @zoyaahmad428
+# /eval/                 @MEMBER3_USERNAME
+# /fixtures/             @MEMBER3_USERNAME
+
+# Contracts need everyone.
+/docs/contracts/         @abdulraffay-m @zoyaahmad428
+# /docs/contracts/       @abdulraffay-m @zoyaahmad428 @MEMBER3_USERNAME
