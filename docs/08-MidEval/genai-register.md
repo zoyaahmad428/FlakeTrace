@@ -21,7 +21,7 @@ Policy context and the four-point ownership standard: [[00-Meta/ai-usage-log]].
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2026-09-08 | M2 | Claude | L2 | `docs/` vault structure and notes (built from project documents) | Note structure and summaries | Selected sources, organised structure, corrected slide structure | Read against source documents | Slide structure corrected (commit `3ec7d7d`) | Vault commits `cad960b`–`3ec7d7d` |
 | 2026-10-08 | M3 | *fill* | L2 | `fixtures/od-fixture`, `eval/` phases 0–5 | See per-session log | See per-session log | Real Maven runs in Docker; statsmodels cross-check | Wilson test tolerance corrected; schema `oneOf` bug fixed | [[genai-log-m3]], [[evidence-m3]] |
-| 2026-10-09 | M2 | Claude Opus 5.5 | L2 | Single-repo restructure, CI workflow, CLAUDE.md, CONTRIBUTING, `docs/08-MidEval/`, `docs/09-Team/`, ADR-001 | Drafts of all listed files | Chose single-repo and PR+1 review; *add your edits after review* | Python CI steps run locally (55 tests pass); fixture CI job **not run locally** (Maven Central blocked in that environment) | *record any changes you make* | This PR |
+| 2026-10-09 | M2 | Claude Opus 5.5 | L2 | Single-repo restructure, CI workflow, CLAUDE.md, CONTRIBUTING, `docs/08-MidEval/`, `docs/09-Team/`, ADR-001 | Drafts of all listed files | Chose single-repo and PR+1 review; *add your edits after review* | Python CI steps run locally (55 tests pass); both CI jobs passed on GitHub Actions, run `37926797625` on PR #1 | *record any changes you make* | This PR |
 
 ## Prompt journal — significant interactions only
 

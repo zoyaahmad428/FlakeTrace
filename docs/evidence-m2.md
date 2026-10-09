@@ -13,13 +13,16 @@ Format follows [[evidence-m3]]. No number in this file is invented.
 - Result: `Ran 55 tests … OK` (Python 3.13, local).
 - Command: `python3 eval/benchmark/yield_report.py` → runs; all 6 cases `not_yet_run`
   (correct — no runner exists yet).
-- Limitation: run locally, not yet on GitHub Actions.
+- Limitation: none further — the same commands also passed on GitHub Actions in run
+  `37926797625` (job `python-eval`).
 
 **Requirement:** CI checks the fixture's ground-truth premises on every change.
 
 - File: `.github/workflows/ci.yml`, job `fixture-build`.
-- Result: **not yet run.** Maven Central was unreachable from the environment where this was
-  written. First evidence will be the GitHub Actions run on the restructure PR.
+- Result: **passed on GitHub Actions**, run `37926797625` on PR #1 (`chore/repo-restructure`,
+  head `8347168`), 2026-10-09. Every step succeeded: compile fixture; F1, F2, F3 victims pass
+  alone; F1 and F2 victims fail after their polluter; N1 fails alone. JDK: Temurin 8.
+  https://github.com/zoyaahmad428/FlakeTrace-Code/actions/runs/37926797625
 - Limitation: checks premises with plain Maven (victims alone, polluter→victim for F1/F2, N1
   alone). F3's two-polluter premise needs the order runner.
 

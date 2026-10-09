@@ -21,8 +21,8 @@ the post-defence and Mid Eval stage.
 **How it was verified:**
 - Python CI steps run locally: 55 unit tests pass; `yield_report.py` runs on the real manifest.
 - Workflow YAML parses; two jobs (`python-eval`, `fixture-build`).
-- **Not verified:** the `fixture-build` job — Maven Central was blocked in the environment
-  Claude worked in. First real run will be on GitHub Actions.
+- The `fixture-build` job could not run where Claude worked (Maven Central blocked); it
+  first ran on GitHub Actions on PR #1 (run `37926797625`) and every step passed.
 
 **Errors found:**
 - `eval/README.md` documents `python3 -m unittest discover -s eval/tests`, which fails because
