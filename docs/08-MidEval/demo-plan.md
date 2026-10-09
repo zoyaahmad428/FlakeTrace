@@ -37,7 +37,7 @@ run and go into `docs/evidence-m2.md`.
 | Component | Implemented | Mocked/substituted | Plan to remove |
 | --- | --- | --- | --- |
 | Runner | *fill* | *fill* | |
-| Evidence extractor | *fill* | *fill* | |
+| Evidence extractor | Depth 1 only, single test (`--test`); real javap on real classes | None mocked; pair mode and depth 2 not built yet, so demo step 3 (F1) works but F2 does not yet | Phases 3–4 |
 | Outcome + statistics | Yes (M3, tested) | None | — |
 | UI | Not part of Mid demo | POC UI uses recorded data | FYP-1 Final or later |
 

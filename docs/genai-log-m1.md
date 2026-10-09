@@ -135,3 +135,38 @@ contract. Flagged in ADR-002 for a wording check; those docs were not edited.
 
 **Rejections:** (a2) copying POC code; (b) ASM; default depth 1 and 3.
 Reasons in ADR-002.
+
+## 2026-10-09 — Phase 2: depth-1 extraction with lifecycle attribution
+
+**Assistance level:** L3 (Core-assist): the extractor module and its tests were generated.
+I must be able to explain what was produced, what I added, why it works, and its limits.
+
+**What I asked:** start Phase 2 on `m1/static-extraction`: depth-1 extraction of static
+fields and constant-key system properties for one test method, including JUnit 4/3
+lifecycle methods, `<clinit>` and inherited lifecycle methods. Build my own tiny test
+class first, with one static write, one static read, one setProperty and one
+getProperty, and cross-check the offsets against `javap -c -p`.
+
+**What was retained:** `evidence/extract.py` (fresh code per ADR-002, standard library
+only); `evidence/tests/test_extract.py` (9 tests); the self-test Maven project
+`evidence/tests/resources/m1-selftest/` (acceptance, lifecycle, JUnit 3 and unsupported
+cases); `docs/04-Implementation/evidence-collector.md`; the README, iteration-plan,
+members, demo-plan and register updates.
+
+**What I changed:** *fill after review.*
+
+**How it was verified:** see `docs/evidence-m1.md` Phase 2: the four acceptance offsets
+cross-checked by hand against JDK 8 `javap -c -p`; 9 tests OK on JDK 8 and JDK 21 javap; a
+mutation check showed the lifecycle test catches the bug below.
+
+**Errors found:**
+- Annotation names were not recognised on JDK 8 javap (regex kept javap's padding), so
+  every `@Before/@After/@BeforeClass/@AfterClass` method was missed. It was found by running
+  on real JDK 8 output and fixed; the test now guards it.
+- Choices to review, not errors: when depth 2 is requested, the CLI refuses rather than
+  silently falling back to depth 1; `external_calls_not_followed` lists `java.lang.System`
+  for non-property calls such as `nanoTime`.
+
+**Rejections:** none this session.
+
+Ownership checkpoint: you need to understand and verify this implementation before claiming it as your contribution.

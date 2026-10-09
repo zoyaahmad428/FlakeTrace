@@ -22,7 +22,7 @@ post-defence plan, §13.)*
 | W5 | Single repo, CI, team rules, Mid Eval docs | M2 | Oct 9 | **In review** (this PR) | `.github/`, `CLAUDE.md`, `docs/08-MidEval/` |
 | W6 | `OrderRunner`: ordered single-JVM JUnit 4 runner + failure signatures | M2 | S−2 | Not started | — |
 | W7 | Victim-alone check, polluter search, repeated-run counts, source hash, execution record | M2 | S−1 | Not started | — |
-| W8 | Static extraction: static fields + system properties, attributed to test methods | M1 | S−1 | Not started | — |
+| W8 | Static extraction: static fields + system properties, attributed to test methods | M1 | S−1 | **In progress**: depth-1 extraction with lifecycle attribution done (Phase 2); depth 2/3 and edges not yet | `evidence/extract.py`, `docs/evidence-m1.md` |
 | W9 | End-to-end CLI: F1 → validated JSON report | M2 + M3 | S−1 | Not started | — |
 | W10 | Deletion minimisation incl. F3 two-polluter case | M2 | S | Not started | — |
 | W11 | Mid report (template) | All, chapter owners in [[08-MidEval/README]] | S | Not started | — |
