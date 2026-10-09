@@ -40,3 +40,54 @@ report schema.
     not reachable by following calls and is reported as `IMPLICIT_CLINIT`.
   - Member 3's report has singular location fields. Multi-edge information is
     lost on projection (open question 1 in the contract).
+
+## Contract revision — consumers and invocation (2026-10-09)
+
+**Requirement:** the contract must name all its consumers (Member 2's CLI calls
+the extractor end-to-end) and define how the extractor is invoked, so Member 2
+can code against it. Also record the language and entry point in
+`docs/contracts/interfaces.md` Interface 2.
+
+- File: `docs/contracts/resource-evidence.md`. Status paragraph corrected (Member
+  2 is a consumer, so later changes need all three members). New section
+  "Invocation": command, flags, pair and single modes, JSON on stdout, exit
+  codes 0/1/2. Status: **planned, not yet implemented**.
+- File: `docs/contracts/interfaces.md`, the one line under Interface 2 about
+  function name and language, now points to the Invocation section. No other
+  line changed.
+- Check (inline Python script, run in the scratch checkout): the example JSON
+  still parses; its 3 `call_path` frames still resolve to `invokestatic` in
+  `evidence/javap-dumps/phase1-f1-f2.txt`; the projected `codeLocation`s
+  validate against `eval/schema/report.schema.json`; every in-document link
+  anchor (`#invocation`, `#terms`, `#example--fixture-f2-at---depth-2`) exists.
+  Result: all passed.
+- Command: `git diff --numstat -- docs/contracts/interfaces.md` → `1 1`
+  (exactly one line changed).
+- Command: `python3 -m unittest` over every `eval/tests/test_*.py` → `Ran 58
+  tests ... OK` (docs-only change; run to confirm nothing else broke).
+- Not yet run: the extractor itself (no code exists yet).
+- Limitations / open items:
+  - Default `--depth` decided as **2** (Member 1, 2026-10-09; ADR-002). At
+    depth 1, fixture F2 has no edge (its read sits one call below the test
+    method).
+  - Phase 1 cleanup (`.gitignore` and the removal of 45 junk files) was merged
+    separately as PR #4 (`dfcaa88`). Its check: 45 matching files before, `git
+    ls-files` count 0 after, status showed 45 deletions plus `.gitignore`.
+
+## Decision record — extractor approach and default depth (2026-10-09)
+
+**Requirement:** record Member 1's two design decisions (fresh Python/javap
+extractor, default `--depth 2`) where the team can agree to them.
+
+- Files: `docs/03-Design/decisions/ADR-002-evidence-extractor-implementation.md`
+  (new, PROPOSED); `docs/contracts/resource-evidence.md` (default 2 in Terms
+  and the Invocation table; numbering note; open question 5 marked resolved).
+- Check: `git show origin/main:POC/src/extract_static.py`, lines 29 and 132:
+  `HOPS = int(os.environ.get("FT_HOPS", "1"))` and `for _depth in range(HOPS + 1):`.
+  The POC explores the root plus HOPS levels of callees, so POC depth N =
+  contract depth N + 1. `POC/results/depth_sweep.csv` uses the POC numbering.
+- Limitation discovered: POC records disagree on FJ-02. `ranking.csv` gives
+  first rank 39 at the frozen scope, but `depth_sweep.csv` gives rank 1 at POC
+  depth 1 (W_R). Not resolved here; Phase 5 re-measures with this extractor.
+- Open question 5 (F1 offsets) resolved by Member 3 in PR #7 (`af70048`),
+  verified independently with `javap -c -p`: offsets 1/1.

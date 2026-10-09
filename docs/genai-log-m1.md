@@ -70,3 +70,68 @@ the repo changed).
 working POC code, and ASM does not expose bytecode offsets directly.
 
 Ownership checkpoint: you need to understand and verify this implementation before claiming it as your contribution.
+
+## 2026-10-09 — Contract revision: consumers and invocation
+
+**Assistance level:** L2 (Assisted): the section text was generated from my
+instructions; I chose the command shape and decide the default depth.
+
+**What I asked:**
+- Remove the claim that Member 2 consumes nothing from the contract, because
+  Member 2's CLI calls the extractor end-to-end.
+- Add an "Invocation" section (command, flags, JSON on stdout, exit codes) and
+  fill the language/entry-point line under Interface 2 in `interfaces.md`.
+- Explain the trade-off of defaulting `--depth` to 2, and stop for my decision.
+
+**What was retained:** the corrected status paragraph; the Invocation section
+with pair mode (`--polluter` + `--victim`) and single mode (`--test`); exit
+code 1 for internal errors (`javap` missing or failing), added beside 0 and 2;
+the `interfaces.md` line marked "planned, not yet implemented", because that
+line says to record it "when implemented".
+
+**What I changed:** *fill after review.*
+
+**How it was verified:** see `docs/evidence-m1.md`, "Contract revision": the
+example still matches the javap dump, the projections validate against the
+schema, the anchors resolve, `interfaces.md` has exactly one changed line, and
+the 58 eval tests are OK.
+
+**Errors found / corrected during the session:**
+- My first staging simulation for the cleanup PR set `GIT_INDEX_FILE` before
+  resolving the real index path, so it ran on an empty index and printed
+  meaningless numbers. It was noticed and redone correctly before handing over.
+- The claim "the team's repo-hygiene CI check rejects them" was left out of the
+  cleanup commit: no such check exists on `main` or in any open PR.
+- The claim "CLAUDE.md §6 forbids committing .class files and dumps" was wrong.
+  §6 is about GenAI records. The real rule broken by `chore/repo-restructure`
+  is `POC/.gitignore`, which ignores `runner/`, `*.class` and
+  `results/resources_*.json`.
+
+**Rejections:** none this session.
+
+Ownership checkpoint: you need to understand and verify this implementation before claiming it as your contribution.
+
+## 2026-10-09 — Phase 0 re-check, extractor approach and default depth
+
+**Assistance level:** L2 (Assisted): the decision record text was generated; the
+two decisions are mine.
+
+**What I asked:** re-run Phase 0 on the current repo, then record my
+decisions: (a1) write `evidence/extract.py` fresh, with the POC as a reference
+only; default `--depth 2`.
+
+**What was retained:** ADR-002 (PROPOSED); the default-2 wording in the
+contract; the numbering note; open question 5 marked resolved.
+
+**What I changed:** *fill after review.*
+
+**How it was verified:** the depth-numbering claim was checked against the POC
+source (`extract_static.py` lines 29 and 132) and `depth_sweep.csv`; see
+`docs/evidence-m1.md`.
+
+**Errors found:** the vault's depth wording (`depth-configurable.md`, claims
+C6/C7) uses the POC's hop numbering, so its "depth 2" is depth 3 in our
+contract. Flagged in ADR-002 for a wording check; those docs were not edited.
+
+**Rejections:** (a2) copying POC code; (b) ASM; default depth 1 and 3.
+Reasons in ADR-002.

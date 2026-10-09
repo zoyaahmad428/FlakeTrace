@@ -1,9 +1,10 @@
 # Resource evidence — output contract (Member 1)
 
-**Status: DRAFT, not yet confirmed with Member 3.** No extraction code may be
-written against this contract until Member 3 has confirmed it. Changes after
-confirmation need agreement from Member 1 and Member 3 (Member 2 consumes
-nothing from this file in Iteration 1).
+**Status: DRAFT, not yet confirmed with Members 2 and 3.** No extraction code
+may be written against this contract until both have confirmed it. Both
+consume it: Member 2's CLI calls the extractor end-to-end (see
+[Invocation](#invocation)), and Member 3's report assembly uses its output.
+Changes after confirmation need agreement from all three members.
 
 This file defines what the Resource Evidence component (Member 1) outputs, and
 how that output is projected into the shared diagnosis report
@@ -46,9 +47,19 @@ members.
 - **Depth**: the number of methods on the path from the root to the method
   that contains the access instruction. Depth 1 means the instruction is in
   the root itself. Depth 2 means it is in a project method called directly
-  from the root. `--depth N` (default 1, supported 1–3) reports accesses with
-  `depth <= N`.
-  *Note:* the August POC's `FT_HOPS=1` corresponds to **depth 2** here.
+  from the root. `--depth N` (default **2**, supported 1–3) reports accesses
+  with `depth <= N`.
+  *Why the default is 2:* fixture F2's victim reads its system property inside
+  `FeatureFlags.isTurboEnabled()`, one call below the test method, so at
+  depth 1 F2 has no edge. Depth 2 also equals the POC's frozen scope ("direct
+  references plus one hop"). The cost is more analysis time and more
+  over-approximation (statically reachable accesses that may never run). The
+  depth sweep still reports depths 1–3. See ADR-002.
+  *Numbering note:* the August POC numbers depth by **hops**: its
+  `FT_HOPS=N` (and "depth N" in `POC/results/depth_sweep.csv`) is
+  **depth N + 1** here, because `extract_static.py` loops
+  `range(HOPS + 1)`. A POC or vault figure quoted at "depth 2" is depth 3 in
+  this contract.
 - **Project classes**: classes found in the input directories
   (`classes` + `test-classes`). Calls into anything else (JDK, JUnit,
   third-party jars) are never followed.
@@ -124,12 +135,49 @@ in Output 2).
 6. Execution timing is not modelled (e.g. a victim `<clinit>` read that happens before the polluter runs).
 7. Missing evidence is not proof of independence.
 
+## Invocation
+
+**Planned, not yet implemented.** Language: Python 3, standard library only.
+Bytecode is read by running `javap -c -p` (and `-v` for annotations) from a
+JDK 8 or newer found on `PATH`.
+
+```
+python3 -m evidence.extract --classes <dir> --test-classes <dir> \
+    --polluter <Class#method> --victim <Class#method> [--depth N]
+python3 -m evidence.extract --classes <dir> --test-classes <dir> \
+    --test <Class#method> [--depth N]
+```
+
+(On Windows the interpreter is usually `python` or `py -3` instead of `python3`.)
+
+| Flag | Required | Meaning |
+| --- | --- | --- |
+| `--classes <dir>` | yes | The target project's compiled main classes, e.g. `target/classes`. |
+| `--test-classes <dir>` | yes | The target project's compiled test classes, e.g. `target/test-classes`. Together with `--classes`, this defines the *project classes*. |
+| `--polluter <Class#method>` | pair mode | The candidate polluter, e.g. `odfixture.FeaturePolluterTest#enableTurbo`. Must be given together with `--victim`. |
+| `--victim <Class#method>` | pair mode | The victim test. |
+| `--test <Class#method>` | single mode | One test method; produces Output 1 only. Cannot be combined with `--polluter`/`--victim`. |
+| `--depth N` | no | Call depth as defined under [Terms](#terms). Default 2; accepted values 1, 2, 3. |
+
+Exactly one mode must be given: `--polluter` + `--victim`, or `--test`.
+
+**Output:** one JSON object on **stdout** (UTF-8), shaped like the
+[example](#example--fixture-f2-at---depth-2) below. In pair mode it contains
+`tests` (Output 1 for both tests) and `pair` (Output 2). In single mode it
+contains `tests` only. Nothing else is printed to stdout, so the caller can
+parse it directly. Diagnostics go to stderr.
+
+**The extractor never runs tests and never writes into the class
+directories.** It only reads `.class` files.
+
 ## Exit codes and errors
 
 - `0`: analysis completed (including an empty edge list).
+- `1`: internal error, e.g. `javap` not found or it failed on a class file. One
+  line `error: <reason>` on stderr, and no JSON on stdout.
 - `2`: input error: missing/unreadable class directory, test class or method
-  not found, unsupported `--depth`. One line `error: <reason>` on stderr, and
-  no JSON on stdout.
+  not found, unsupported `--depth`, or an invalid flag combination. One line
+  `error: <reason>` on stderr, and no JSON on stdout.
 
 ## Example — fixture F2 at `--depth 2`
 
@@ -257,11 +305,11 @@ Example: F2 at depth 2 projects to `shared_resource = {kind: "system-property", 
 4. **Ground truth has no expected locations**, so the automatic Phase 5 check
    can compare resources only. Offsets will be checked by hand against
    `javap`. Is that acceptable?
-5. **Illustrative offsets.** `eval/examples/example_f1_verified.json` uses
-   write offset 3 / read offset 5 for F1. Real JDK 8 offsets are 1 / 1
-   (`putstatic` at 1 in `ConfigPolluterTest.pollute`, `getstatic` at 1 in
-   `ConfigVictimTest.expectsDefaultMode`). The examples are labelled
-   illustrative, so this is only a note in case realistic values are wanted.
+5. **Illustrative offsets. RESOLVED 2026-10-09.** Member 3 verified the real
+   JDK 8 offsets independently with `javap -c -p` (write 1, read 1) and
+   updated `eval/examples/example_f1_verified.json` (commit `af70048`,
+   PR #7). These offsets were still read by hand; this component does not
+   produce them yet.
 6. **BRITTLE cases (POC FJ-01).** In the POC the "victim" fails alone and passes
    after a *state-setter* (`DateFieldTest8`). The resource edge has the same
    write-then-read shape, but the decision table would yield
