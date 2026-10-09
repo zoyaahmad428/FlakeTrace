@@ -325,3 +325,18 @@ and the docs saying "N2 may end `NOT_REPRODUCED` on Windows" were out of date.
 - **CI for PR #20 (`evidence` job):** `Ran …` line not recorded yet.
 - Docs updated: ADR-004 (N2 row and an update note), [[04-Implementation/diagnosis-runs]],
   demo plan Runner row, claims E9.
+
+### 2026-10-10 — CI results for PR #20 and PR #22 (recorded late)
+
+- PR #22 (N2 test) after merging `main` into it (commit `cf8da48`): job `runner` (JDK 8, Linux) →
+  `Ran 57 tests in 66.969s — OK`; job `evidence` → `Ran 30 tests in 24.771s — OK` (30 = 27 +
+  Member 1's ground-truth test from PR #23, so the new test runs in CI). Lines copied from the job
+  logs by Member 2.
+
+### 2026-10-10 — W9 CLI design (ADR-005)
+
+- Not a run: design only. [[03-Design/decisions/ADR-005-w9-diagnose-cli]] proposes
+  `py -m runner diagnose --project … --victim …` and answers I4 (pending M1/M3).
+- Facts checked for the ADR: `eval.stats.wilson_interval(5, 5, 0.95)` → lower `0.5655` (< 0.70,
+  so `VERIFIED` tests need n = 20); `eval/schema_validator.py` imports `jsonschema` at load; the
+  `runner` CI job has no `pip install` step; `evidence.extract.DEFAULT_DEPTH` = 2.

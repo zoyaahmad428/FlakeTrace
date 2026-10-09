@@ -334,3 +334,23 @@ which CLAUDE.md forbids agents to run. It discarded only the agent's own one-lin
 to the member at the time.
 
 **What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — W9 CLI design (ADR-005)
+
+**Tool:** Claude Opus 5.5 (brainstorming) · **Level:** L2
+
+**What was asked:** design the W9 end-to-end command after Member 3 built report assembly
+(PR #13, #21).
+
+**Decisions made by Member 2:** one victim per run, for the demo and real use (A); no report and
+exit 3 when `assemble_report` cannot build one (A); a Python module `py -m runner diagnose` now,
+the installable `flaketrace` command deferred to a later iteration (M2 wants it).
+
+**What was retained:** ADR-005 — flow, options, exit codes 0/1/2/3, tests, and the `runner` CI job
+needing `eval/requirements.txt`.
+
+**What was argued:** Member 2 questioned whether `py -m runner` is "production". Agreed that the
+launch method is not, but behaviour is; a proper install needs a team-wide package rename and the
+container decision, so it is recorded as deferred with its constraints.
+
+**What I changed:** *fill after reading the diff.*
