@@ -602,3 +602,79 @@ on it.
   than assumed.
 - Limitation: none — this was purely my own example file, no contract
   change, no other member's sign-off needed.
+
+## 2026-10-10 — W9: real end-to-end report assembly
+
+**Requirement:** Interface 3 of `docs/contracts/interfaces.md` ("report assembly, M3") —
+turn Member 2's raw diagnosis counts and Member 1's resource-access data into one
+schema-validated report, now that both exist for real (PR #10 `runner/order_runner.py`,
+PR #11 `runner/diagnose.py`, PR #9 `evidence/extract.py`).
+
+- Before writing any glue code: smoke-tested both real components on this machine (native
+  Windows, JDK 24.0.2, Maven 3.9.11 — not the Docker/JDK8 setup used in earlier phases).
+  `runner.diagnose.diagnose()` on F1 (`n=5`): real `POLLUTER_FOUND`, correct polluter found,
+  matches the shape expected. Cross-checked against my own independent manual measurement
+  from two sessions ago (Docker/plain-Maven, `eval/tools/run_real_reps.sh`): F1 and N1 both
+  agree exactly (F1: 20/20 reproduced, 0/20 alone; N1: 20/20 alone) — two independently-run
+  real measurements agreeing is stronger evidence than either alone.
+- File/function: `eval/report.py` — `find_resource_edge` (correlates two
+  `evidence.extract.analyse_test` Output-1 results into one edge, per the contract's
+  documented `edges[0]` ordering) and `assemble_report` (builds a full report from a
+  `DiagnosisRuns` + optional edge, runs it through `eval.outcome.decide` and
+  `eval.schema_validator.validate_report`).
+- Deliberate scope limit, not silently worked around: `assemble_report` only handles
+  `DiagnosisRuns.status` values `POLLUTER_FOUND` and `VICTIM_FAILS_ALONE`, raising
+  `UnhandledStatus` otherwise. Two real reasons, found by reading `runner/diagnose.py`
+  carefully, not assumed:
+  1. `NOT_REPRODUCED` carries `alone_n=0` (M2's code never runs the isolation check if the
+     sequence never reproduces at all) — but `eval.outcome.DecisionInput` requires
+     `isolation_n > 0`. Feeding it a fabricated `isolation_n=1` just to satisfy the signature
+     would be inventing data; raising instead.
+  2. `NO_SINGLE_POLLUTER` (M2's one-by-one search finding no single attributable test — F3's
+     real status, confirmed below) has no corresponding value in `report.schema.json`'s
+     `unresolved_reason` enum. Mapping it onto an existing reason (e.g.
+     `NO_SUPPORTED_RESOURCE_EVIDENCE`) would be semantically wrong — that reason means
+     missing *resource* evidence, not a missing *polluter identity*. A new enum value is a
+     contract change needing all three members, not decided here.
+- Command: `py -m unittest eval.tests.test_report -v` (pure-logic tests against literal
+  Output-1 dicts and hand-built `DiagnosisRuns` objects — not calling real Maven/JDK, so this
+  runs in the existing `python-eval` CI job unchanged).
+- Result: 11/11 passed, including: resource-edge correlation finds the right resource and
+  picks the lowest-combined-depth edge when more than one is shared; `VERIFIED` for a strong
+  reproduction with an edge; `NO_SUPPORTED_RESOURCE_EVIDENCE` with no edge; `CANDIDATE` for a
+  weak reproduction; `SOURCE_INTEGRITY_FAILED` overriding a strong case; `VICTIM_FAILS_ALONE`
+  correctly ignoring a resource edge even if one is mistakenly passed in; both unhandled
+  statuses correctly raising `UnhandledStatus`.
+- Command: `py -m unittest discover -s eval/tests -v` (full suite).
+- Result: 69/69 passed (58 existing + 11 new).
+- **Real end-to-end integration** (`eval/tools/run_w9_integration.py`, not part of the unit
+  suite — shells out to real Maven/JDK, a few minutes):
+  - F1: `runner.diagnose.diagnose()` for real (`n=20`) → `POLLUTER_FOUND`, 20/20 reproduced,
+    0/20 alone, source integrity passed. `evidence.extract.analyse_test()` for real on the
+    polluter and victim → real edge, `odfixture.Config#mode`, write/read both at bytecode
+    offset 1 (matches the independently-`javap`-verified value from the earlier session).
+    `assemble_report` → **`VERIFIED`**, `validate_report` passed. Saved:
+    `eval/reports/f1.json`.
+  - N1: real `diagnose()` (`n=20`) → `VICTIM_FAILS_ALONE`, 20/20 alone-failures.
+    `assemble_report` (no resource edge) → **`UNRESOLVED(VICTIM_FAILS_ALONE)`**,
+    `validate_report` passed. Saved: `eval/reports/n1.json`.
+  - Both match `fixtures/od-fixture/ground_truth.json` exactly.
+- Limitation found and documented, not fixed here (not my folder): `execution_record_reference`
+  in both reports is an absolute, machine-specific path, because
+  `runner.diagnose.diagnose()` calls `Path(record_dir).resolve()` internally. The committed
+  JSON reflects exactly what the real run produced, not cleaned up for presentation.
+- Limitation: the raw per-run JSONL execution records
+  (`eval/reports/flaketrace-records/*.jsonl`) that back `execution_record_reference` are
+  **not committed** — `.gitignore` already excludes `flaketrace-records/` (Member 2's
+  existing convention). Only the final assembled reports are committed; the records
+  regenerate locally by re-running the integration script.
+- Also confirmed empirically, while exploring: on this machine, `diagnose()` reports N2 as
+  `NOT_REPRODUCED` (never fails at all, in or out of order), not `VICTIM_FAILS_ALONE` as my
+  own earlier Docker measurement found (12/20 alone-failures) or as `ground_truth.json`
+  currently assumes. Traced by Member 2 to `System.nanoTime()` having coarser resolution on
+  some Windows/JVM combinations (always a multiple of 100ns, always even, so the parity check
+  in `NegativeFlakyTest` can never fail there) — see `docs/evidence-m2.md`. This is a genuine,
+  environment-dependent behaviour of the fixture, not a bug in either component; it means
+  `ground_truth.json`'s N2 entry is not safely portable across machines as currently written,
+  which I have not yet resolved (my call to make, as the fixture's owner — recorded as an
+  open item, not silently patched over).

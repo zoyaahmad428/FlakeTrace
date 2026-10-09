@@ -1,0 +1,77 @@
+{
+  "victim": {
+    "class": "odfixture.NegativeAloneFailTest",
+    "method": "alwaysFails"
+  },
+  "polluters": [],
+  "original_failing_order": [
+    {
+      "class": "odfixture.ConfigPolluterTest",
+      "method": "pollute"
+    },
+    {
+      "class": "odfixture.ConfigVictimTest",
+      "method": "expectsDefaultMode"
+    },
+    {
+      "class": "odfixture.FeaturePolluterTest",
+      "method": "enableTurbo"
+    },
+    {
+      "class": "odfixture.FeatureVictimTest",
+      "method": "expectsTurboDisabled"
+    },
+    {
+      "class": "odfixture.MathUtilTest",
+      "method": "squaresANumber"
+    },
+    {
+      "class": "odfixture.MathUtilTest",
+      "method": "addsTwoNumbers"
+    },
+    {
+      "class": "odfixture.NegativeAloneFailTest",
+      "method": "alwaysFails"
+    }
+  ],
+  "reduced_sequence": [
+    {
+      "class": "odfixture.NegativeAloneFailTest",
+      "method": "alwaysFails"
+    }
+  ],
+  "reproduction": {
+    "successes": 20,
+    "n": 20,
+    "confidence": 0.95,
+    "lower": 0.83887484172924,
+    "upper": 1.0
+  },
+  "sequence_any_signature_failures": 20,
+  "victim_alone": {
+    "successes": 20,
+    "n": 20,
+    "confidence": 0.95,
+    "lower": 0.83887484172924,
+    "upper": 1.0
+  },
+  "shared_resource": null,
+  "polluter_write_location": null,
+  "victim_read_location": null,
+  "failure_signature": {
+    "exception_type": "java.lang.AssertionError",
+    "message": "expected:<<N>> but was:<<N>>",
+    "stack_trace": "org.junit.Assert.fail:89\norg.junit.Assert.failNotEquals:835\norg.junit.Assert.assertEquals:647\norg.junit.Assert.assertEquals:633\nodfixture.NegativeAloneFailTest.alwaysFails:10"
+  },
+  "instrumentation_level": "static-only",
+  "execution_record_reference": "C:\\Users\\zarpa\\OneDrive\\Documents\\GitHub\\FlakeTracee\\eval\\reports\\flaketrace-records\\20261009T190451Z-odfixture.NegativeAloneFailTest#alwaysFails.jsonl",
+  "source_integrity": {
+    "passed": true,
+    "details": "19 files hashed (SHA-256) before and after; all identical"
+  },
+  "outcome": "UNRESOLVED",
+  "unresolved_reason": "VICTIM_FAILS_ALONE",
+  "limitations": [
+    "instrumentation_level is static-only (Iteration 1); runtime instrumentation is Iteration 2."
+  ]
+}

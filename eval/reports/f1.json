@@ -1,0 +1,78 @@
+{
+  "victim": {
+    "class": "odfixture.ConfigVictimTest",
+    "method": "expectsDefaultMode"
+  },
+  "polluters": [
+    {
+      "class": "odfixture.ConfigPolluterTest",
+      "method": "pollute"
+    }
+  ],
+  "original_failing_order": [
+    {
+      "class": "odfixture.ConfigPolluterTest",
+      "method": "pollute"
+    },
+    {
+      "class": "odfixture.ConfigVictimTest",
+      "method": "expectsDefaultMode"
+    }
+  ],
+  "reduced_sequence": [
+    {
+      "class": "odfixture.ConfigPolluterTest",
+      "method": "pollute"
+    },
+    {
+      "class": "odfixture.ConfigVictimTest",
+      "method": "expectsDefaultMode"
+    }
+  ],
+  "reproduction": {
+    "successes": 20,
+    "n": 20,
+    "confidence": 0.95,
+    "lower": 0.83887484172924,
+    "upper": 1.0
+  },
+  "sequence_any_signature_failures": 20,
+  "victim_alone": {
+    "successes": 0,
+    "n": 20,
+    "confidence": 0.95,
+    "lower": 0.0,
+    "upper": 0.16112515827076002
+  },
+  "shared_resource": {
+    "kind": "static-field",
+    "class": "odfixture.Config",
+    "field": "mode"
+  },
+  "polluter_write_location": {
+    "class": "odfixture.ConfigPolluterTest",
+    "method": "pollute",
+    "bytecode_offset": 1
+  },
+  "victim_read_location": {
+    "class": "odfixture.ConfigVictimTest",
+    "method": "expectsDefaultMode",
+    "bytecode_offset": 1
+  },
+  "failure_signature": {
+    "exception_type": "java.lang.AssertionError",
+    "message": "expected:<<N>> but was:<<N>>",
+    "stack_trace": "org.junit.Assert.fail:89\norg.junit.Assert.failNotEquals:835\norg.junit.Assert.assertEquals:647\norg.junit.Assert.assertEquals:633\nodfixture.ConfigVictimTest.expectsDefaultMode:10"
+  },
+  "instrumentation_level": "static-only",
+  "execution_record_reference": "C:\\Users\\zarpa\\OneDrive\\Documents\\GitHub\\FlakeTracee\\eval\\reports\\flaketrace-records\\20261009T190417Z-odfixture.ConfigVictimTest#expectsDefaultMode.jsonl",
+  "source_integrity": {
+    "passed": true,
+    "details": "19 files hashed (SHA-256) before and after; all identical"
+  },
+  "outcome": "VERIFIED",
+  "unresolved_reason": null,
+  "limitations": [
+    "instrumentation_level is static-only (Iteration 1); runtime instrumentation is Iteration 2."
+  ]
+}

@@ -22,7 +22,7 @@ post-defence action plan's two-student split is superseded by the three-member s
 | --- | --- | --- | --- | --- |
 | 1 | Static-field + system-property extraction for F1/F2 | `m1/static-extraction` | Phase 2 done (depth 1, lifecycle attribution); Phase 3 (depth 2) next | Contract PR #8 review (M2, M3) |
 | 2 | W7 diagnosis runs (victim-alone, polluter search, repeats, integrity, record) | `m2/w7-diagnosis-runs` | W7 complete (PR #11 in review; CI green on JDK 8); W9 (report assembly) next | — |
-| 3 | Report ch. 4 (requirements) and ch. 7–8 (testing plan, tool/risk disclosure) per `08-MidEval/README`'s Form 3 table; wire baseline to runner when ready | `m3/…` | Phases 0–5 done; real fixture repetitions + idoft dataset cases added (see `docs/evidence-m3.md`) | M2 runner for real numbers |
+| 3 | W9 report assembly done for F1/N1 (real end-to-end); report ch. 4 and 7–8 per `08-MidEval/README`'s Form 3 table next | `m3/w9-report-assembly` | Phases 0–5 done; `eval/report.py` wired to the real `runner.diagnose()` + `evidence.extract()`, real `VERIFIED`/`UNRESOLVED` reports produced for F1/N1 (see `docs/evidence-m3.md`) | F2/F3 need W8 depth-2/edges (M1) and W10 (M2) |
 
 ## Evidence files per member
 
