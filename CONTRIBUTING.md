@@ -1,0 +1,67 @@
+# Contributing to FlakeTrace
+
+The supervisor evaluates this repository as evidence of industry practice: meaningful
+branches, automated tests, reviewed pull requests and visible individual ownership. These
+rules make that evidence appear naturally from normal work.
+
+## Branches
+
+| Branch | Use |
+| --- | --- |
+| `main` | Always passing CI. Protected: no direct pushes, PR + 1 approval + green CI |
+| `m1/<topic>`, `m2/<topic>`, `m3/<topic>` | A member's feature work, e.g. `m2/order-runner` |
+| `docs/<topic>` | Docs, report and Mid Eval evidence changes |
+| `chore/<topic>` | Repo setup, CI, tooling |
+
+One branch per piece of work. Keep branches short-lived (merge within a few days) so the
+three areas do not drift apart.
+
+## Commits
+
+```
+[M2] runner: run an explicit ordered list of tests in one JVM
+[M3] eval: add Wilson interval edge-case tests
+[ALL] docs: record panel action register
+```
+
+- Prefix with the member who did the work (`[M1]`, `[M2]`, `[M3]`, or `[ALL]` for joint work).
+- One logical change per commit. A commit message says *what changed and why*.
+- If an AI assistant produced the change, keep its `Co-Authored-By` trailer — disclosure is
+  required, and it costs nothing.
+- Do not squash away history when merging: use **"Create a merge commit"** or
+  **"Rebase and merge"** so each member's individual commits remain visible.
+
+## Pull requests
+
+1. Push your branch and open a PR into `main`. Fill in the template.
+2. CI must pass.
+3. **Another member reviews and approves.** The reviewer actually runs or reads the change and
+   leaves at least one real comment or question. Reviews are graded evidence of team practice.
+4. A PR that changes anything in `docs/contracts/` or `eval/schema/` needs approval from
+   **both** other members, and the PR description says so.
+
+## Tags and releases
+
+- `mid-eval-v1` — the exact version demonstrated at the FYP-1 Mid Evaluation. Created by the
+  integration owner (Member 2) after the final PR is merged, at least 48 hours before the
+  meeting. Recorded in the evidence worksheet.
+- Later: `final-1`, `mid-2`, `final-2`.
+
+## Evidence every member keeps up to date
+
+| File | What goes in it |
+| --- | --- |
+| `docs/evidence-m<N>.md` | Requirement → file/function → command → real result → limitation |
+| `docs/genai-log-m<N>.md` | Per session: asked, kept, changed, verified, rejected |
+| `docs/09-Team/members.md` | Your current task and its state |
+
+## One-time GitHub setup (repository admin)
+
+1. **Settings → Branches → Add branch protection rule** for `main`:
+   - Require a pull request before merging, with **1 approval**
+   - Require status checks to pass: `python-eval`, `fixture-build`
+   - Do not allow bypassing the above settings
+2. **Settings → Collaborators:** all three members have **Write** access.
+3. **Settings → General → Pull Requests:** allow merge commits and rebase merging.
+4. Optional: install the Claude GitHub App on this repository so members' Claude sessions can
+   push branches and open PRs.

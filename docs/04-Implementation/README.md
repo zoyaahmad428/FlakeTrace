@@ -1,6 +1,14 @@
 # Implementation
 
-**Dormant until after proposal approval.** Nothing here yet, and correctly so.
+**Active since proposal approval (Oct 2026).** Code lives in the repository folders below;
+this folder holds the four-point ownership note for each component.
+
+| Component | Code | Owner | Note |
+| --- | --- | --- | --- |
+| Sandbox runner, planner, minimiser/verifier, certificate, CLI | `runner/` | M2 | `sandbox-runner.md` *(write while building)* |
+| Evidence collector, resource graph | `evidence/` | M1 | `evidence-collector.md` *(write while building)* |
+| Outcome decision, statistics, schema, baselines, manifest | `eval/` | M3 | see [[evidence-m3]] |
+| Seeded fixtures | `fixtures/` | M3 | [[05-Testing/fixture-suite]] |
 
 When it starts, one note per major component, mapped to the architecture in
 [[03-Design/architecture]]:

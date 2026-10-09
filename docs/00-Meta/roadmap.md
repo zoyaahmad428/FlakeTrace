@@ -7,6 +7,8 @@ Gantt: `attachments/GanttChart.jpeg`
 
 ---
 
+> **Now (2026-10-09):** FYP-I early → Mid-1 gate. Detailed plan: [[08-MidEval/iteration-plan]].
+
 ## Phase table
 
 | Phase            | Content                                                                                                                                           | **Exit evidence**                                                                                                                     |

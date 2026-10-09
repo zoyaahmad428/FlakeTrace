@@ -1,6 +1,9 @@
 # Architecture
 
-*Status: `PROPOSED`. Nothing here is implemented.*
+*Status (2026-10-09): `PROPOSED`, partially implemented. Implemented: outcome decision,
+statistics, report schema (`eval/`). Not yet implemented: runner, evidence collector,
+minimiser, CLI. Iteration 1 evidence approach: [[03-Design/decisions/ADR-001-iteration1-evidence-without-instrumentation]].
+How components call each other: [[contracts/interfaces]].*
 
 ---
 

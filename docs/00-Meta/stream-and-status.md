@@ -32,7 +32,15 @@ realistic CI conditions.
 
 ---
 
-## Supervisor verdict on record
+## Proposal defence outcome — 2026-10
+
+**Decision: Approved with Minor Modifications.** The panel asked how detection works without
+logs, whether trace instructions are injected, whether code is modified, how the code block
+is isolated, and which scenarios apply. Tracked in [[08-MidEval/panel-action-register]].
+
+---
+
+## Supervisor verdict on record (pre-defence)
 
 > **Revise, then Proceed.** The problem, CCP and per-student ownership are strong. The present
 > wording does not yet survive a contemporary comparison because iFixFlakies, RankF and Takuan
@@ -57,6 +65,9 @@ realistic CI conditions.
 | Evaluation | 🟢 | Precise cost, minimality, replay and abstention definitions in place |
 | Ownership | 🟡 | Green once evaluation infrastructure is confirmed as Member 3's primary ownership **and the group change is approved** |
 | Repair module (CDR) | 🟡 | Only as a gated, ablatable, verification-bound module |
+
+> **Updated 2026-10-09:** the table above is the pre-defence status. Current status lives in
+> [[08-MidEval/iteration-plan]].
 
 ## POC decision
 

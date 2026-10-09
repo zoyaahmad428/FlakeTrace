@@ -4,7 +4,9 @@ Obsidian vault for **FlakeTrace: budget-aware, evidence-certified diagnosis of o
 Java test failures**.
 FAST School of Computing · Stream B · Three members · Two semesters.
 
-**Current phase:** proposal defence preparation. Implementation has not started.
+**Current phase:** FYP-1 Iteration 1 → **Mid Evaluation (12–16 Oct 2026)**. Proposal approved
+with minor modifications. This vault now lives in the project repository as `docs/` — open
+this folder in Obsidian. Changes go through a branch and PR like code.
 
 ---
 
@@ -12,6 +14,10 @@ FAST School of Computing · Stream B · Three members · Two semesters.
 
 | If you want to… | Open |
 | --- | --- |
+| **Know what the Mid Evaluation needs** | [[08-MidEval/README]] |
+| **See the panel's required changes and their status** | [[08-MidEval/panel-action-register]] |
+| **Know how we work together / direct our AI agents** | [[09-Team/working-agreement]] · [[09-Team/claude-guide]] |
+| **Know how the components connect** | [[contracts/interfaces]] · [[contracts/report-schema]] |
 | Understand the project in 5 minutes | [[00-Meta/project-one-pager]] |
 | Read one page before walking into the room | [[07-Defense/one-minute-answers]] |
 | Know what we may and may not claim | [[07-Defense/claims-ledger]] |
@@ -30,11 +36,17 @@ FAST School of Computing · Stream B · Three members · Two semesters.
                   references · commercial tools · prior FYP comparison
 02-Requirements/  functional · non-functional · scope boundary
 03-Design/        architecture · certificate contract
-04-Implementation/ dormant until after proposal approval
+04-Implementation/ per-component notes (code lives in runner/ evidence/ eval/)
 05-Testing/       POC evidence · evaluation plan · fixture suite
 06-Meetings/      dated notes; decisions get promoted to 07-Defense/decisions/
 07-Defense/       claims ledger · decisions · question bank · weak points
                   ownership map · rehearsal log · slide structure · one-minute answers
+08-MidEval/       requirements · panel action register · iteration plan · demo plan
+                  GenAI register
+09-Team/          members · working agreement · Claude guide
+contracts/        interfaces · report schema (shared, change needs all three)
+evidence-mN.md    per-member evidence of what was actually run
+genai-log-mN.md   per-member GenAI session logs
 attachments/      architecture diagram · Gantt chart
 ```
 
