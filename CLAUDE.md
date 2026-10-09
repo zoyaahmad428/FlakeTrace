@@ -170,6 +170,8 @@ python3 -m unittest eval.tests.test_stats eval.tests.test_outcome eval.tests.tes
     eval.tests.test_examples eval.tests.test_baseline eval.tests.test_yield_report
 mvn -B -f fixtures/od-fixture/pom.xml test-compile      # needs JDK 8+ and Maven
 python3 -m unittest -v runner.tests.test_order_runner   # needs JDK 8+ and Maven on PATH
+mvn -B -q -f evidence/tests/resources/m1-selftest/pom.xml test-compile
+python3 -m unittest -v evidence.tests.test_extract       # needs the two compiles above and javap
 ```
 
 CI runs exactly what is in `.github/workflows/ci.yml`. If you add tests, add them there.
