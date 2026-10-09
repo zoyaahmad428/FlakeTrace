@@ -282,3 +282,22 @@ https://github.com/zoyaahmad428/FlakeTrace/actions/runs/37971869749
   leaves no record line; a broken symlink in the project crashes hashing; record file names are
   not sanitised (`:` would write an NTFS stream) and are unique only to the second;
   Parameterized/Enclosed classes are not discovered (not yet in ADR-004's Discovery section).
+
+### 2026-10-10 — CI job for Member 1's evidence tests
+
+**Requirement:** Member 1's extractor tests (`evidence/tests/test_extract.py`) ran in no CI job.
+Without compiled classes they skip, so 22 of 27 skipped on a fresh checkout. Member 1 asked for
+a job with `FLAKETRACE_REQUIRE_JVM=1` and gave the steps (answer to M1-7).
+- File: `.github/workflows/ci.yml` — new job `evidence` (JDK 8, Python 3.11): installs
+  `eval/requirements.txt`, compiles `fixtures/od-fixture` and `evidence/tests/resources/m1-selftest`,
+  runs `python -m unittest -v evidence.tests.test_extract`.
+- Before (no classes compiled, local Windows, JDK 21.0.9, Python 3.14):
+  `py -m unittest evidence.tests.test_extract` → `Ran 27 tests — OK (skipped=22)`.
+- The job's steps run locally: `mvn -B -q -f fixtures/od-fixture/pom.xml test-compile`,
+  `mvn -B -q -f evidence/tests/resources/m1-selftest/pom.xml test-compile`, then
+  `FLAKETRACE_REQUIRE_JVM=1 py -m unittest -v evidence.tests.test_extract` →
+  `Ran 27 tests in 50.143s — OK`, none skipped.
+- Guard check: same command with `FLAKETRACE_JAVAP=C:/nope/javap.exe` →
+  `Ran 8 tests — FAILED (failures=4, errors=4)`, so a missing javap fails the job instead of skipping.
+- CI on JDK 8: not yet run (runs on the PR).
+- Also ticked M2's row in ADR-001 and ADR-002.

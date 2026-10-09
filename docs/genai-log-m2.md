@@ -294,3 +294,25 @@ code; CI run `37971869749` recorded.
 runner suite 57 OK.
 
 **What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — CI job for Member 1's evidence tests
+
+**Tool:** Claude Opus 5.5 · **Level:** L2
+
+**What was asked:** read the PRs merged since W7 (#12–#18) and the M1/M3 answers, then add the
+`evidence` CI job Member 1 asked for, and tick ADR-001 and ADR-002.
+
+**What was retained:** the job as Member 1 specified it (JDK 8, compile fixture and self-test,
+`FLAKETRACE_REQUIRE_JVM=1`), plus pip caching as in `python-eval`.
+
+**How it was verified:** the job's commands run locally: 27 OK, none skipped (22 skipped
+before). With javap pointed at a missing file the run fails (4 failures, 4 errors), so the job
+cannot pass by skipping. CI on JDK 8 not yet run.
+
+**What was found while reading the merged PRs:** `eval/reports/README.md` says `diagnose()`
+makes `execution_record_reference` absolute; it does not (`runner/diagnose.py:103` uses
+`record_dir` as given; the integration script passes an absolute folder). `eval/report.py`
+duplicates Member 1's `find_edges`/`report_fields`. Claim E1 as rewritten in PR #18 says Surefire
+is used for compiling, which is wrong. Raised with the members, not edited (not M2's folders).
+
+**What I changed:** *fill after reading the diff.*

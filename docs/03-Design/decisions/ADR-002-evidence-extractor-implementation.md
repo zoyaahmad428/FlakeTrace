@@ -56,5 +56,5 @@ Two choices are left open:
 | Member | Agree? | Comment |
 | --- | --- | --- |
 | M1 | ☑ | Chose (a1) fresh Python/javap extractor and default depth 2 on 2026-10-09 |
-| M2 | ☐ | |
+| M2 | ☑ | Agreed 2026-10-10: the W9 CLI will call the extractor in-process at depth 2 |
 | M3 | ☐ | |
