@@ -29,12 +29,12 @@
     "stack_trace": "at odfixture.ConfigVictimTest.expectsDefaultMode(ConfigVictimTest.java:10)"
   },
   "instrumentation_level": "static-only",
-  "execution_record_reference": "illustrative-only: no real execution record backs this example",
-  "source_integrity": { "passed": false, "details": "Illustrative: the instrumented class file's checksum did not match the source-derived checksum -- the compiled bytecode diverged from what was analyzed." },
+  "execution_record_reference": "eval/benchmark/logs/F1.json",
+  "source_integrity": { "passed": false, "details": "Hypothetical: no real source-integrity checker exists yet (Member 2's component), so this failure is illustrative, not something that was actually detected." },
   "outcome": "UNRESOLVED",
   "unresolved_reason": "SOURCE_INTEGRITY_FAILED",
   "limitations": [
-    "Hand-written illustrative example, not a recorded benchmark run -- see eval/examples/README.md.",
-    "Despite statistics and resource evidence that would otherwise be VERIFIED-strength (see example_f1_verified.json, same victim/polluter), a failed source-integrity check overrides every other signal because the repro counts can no longer be trusted."
+    "reproduction and victim_alone ARE the real measured F1 counts (same real run as example_f1_verified.json, see docs/evidence-m3.md) -- only source_integrity.passed is hypothetical here, since no real integrity checker exists yet to actually fail.",
+    "Despite statistics and resource evidence that are genuinely VERIFIED-strength (this is real F1 data), a failed source-integrity check overrides every other signal because the repro counts can no longer be trusted once instrumentation integrity is in question."
   ]
 }

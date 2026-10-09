@@ -37,18 +37,33 @@ Consequently this baseline:
   invented. Once Member 2's order runner is integrated, this baseline can
   be run for real and its results feed into the yield report below.
 
-## Benchmark yield report status: NOT YET RUN ON REAL TESTS
+## Benchmark yield report status: 5 of 11 cases actually run
 
-`benchmark/manifest.json` lists 6 frozen cases (F1-F3, N1-N2 from
-`fixtures/od-fixture`, plus one real-world case, `POC-DEMO-1`, with a pinned
-40-character SHA from `POC/POC/flaketrace-ui/src/data/recorded.json` — see
-that file's `notes` field for why it can't be attempted by our pipeline
-yet). `benchmark/yield_report.py` reads `benchmark/logs/<case_id>.json` for
-each case and computes the funnel from there — it has **no code path that
+`benchmark/manifest.json` lists 11 frozen cases: F1-F3/N1-N2 from
+`fixtures/od-fixture`, one recorded POC case (`POC-DEMO-1`, pinned SHA,
+can't be attempted — see its `notes`), and 5 real cases pulled from the
+published [idoft dataset](https://github.com/TestingResearchIllinois/idoft)
+(`IDOFT-*`, metadata only — real pinned SHAs, not cloned/built/run yet).
+`benchmark/yield_report.py` reads `benchmark/logs/<case_id>.json` for each
+case and computes the funnel from there — it has **no code path that
 invents a count**.
 
-`benchmark/logs/` is currently empty (no implementation of `OrderRunner`
-exists yet, same blocker as the baseline above), so running
-`python3 eval/benchmark/yield_report.py` today correctly reports all 6
-cases as `not_yet_run` and every funnel stage at 0. That is the real,
-current output — run it yourself to check.
+As of 2026-10-09, `benchmark/logs/` has 5 real log files — **F1, F2, F3,
+N1, N2 were actually run**, 20 times each way, via plain Maven inside
+`maven:3.9-eclipse-temurin-8` (`eval/tools/run_real_reps.sh`; full numbers
+in `docs/evidence-m3.md`). This is a manual run driven by Member 3 using
+plain Maven, not Member 2's automated pipeline (which still doesn't
+exist) — the log files say so (`recorded_by`). Running
+`python3 eval/benchmark/yield_report.py` today correctly shows:
+
+- F1, F2, F3 → `built: true`, `reproduced: true` (real, deterministic 20/20).
+- N1, N2 → `built: true`, `excluded_reason: "VICTIM_FAILS_ALONE"` (N1
+  deterministic 20/20 alone-failures; N2 intermittent — a real, newly
+  measured 12/20, not the rough 4/6 sample used informally in Phase 1).
+- `POC-DEMO-1` and all 5 `IDOFT-*` cases → still honestly `not_yet_run`;
+  nothing has run them.
+
+The random-order **baseline** above is a different measurement (how many
+random full-suite shuffles it takes to stumble onto the bug) and remains
+not-yet-run — these targeted repeated-sequence numbers don't substitute
+for it.

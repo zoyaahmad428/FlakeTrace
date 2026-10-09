@@ -268,3 +268,76 @@ ground truth, JUnit 5) rather than silently omitting it.
 
 Ownership checkpoint: you need to understand and verify this implementation
 before claiming it as your contribution.
+
+## 2026-10-09 — Post-Phase-5 correction (real data, not fabricated)
+
+**What I asked:** The user directly challenged whether the entire body of
+work was done on fabricated data. I reviewed honestly and confirmed: yes,
+`eval/examples/*.json`'s counts were hand-picked, never measured, despite
+being labeled "illustrative." Agreed two fixes: (1) re-run od-fixture for
+real to replace the fixture-based example numbers, (2) pull real cases
+with pinned SHAs from the idoft dataset (found sitting unused in the WSL
+workspace since Phase 0) into the manifest, metadata only.
+
+**What was retained:** The overall decision-table/schema/outcome logic
+from Phase 3 needed no changes — only the *evidence* feeding it was
+fabricated, not the logic itself. `eval/tools/run_real_reps.sh` and the
+manifest additions as generated.
+
+**What I changed:**
+- Ran a real 160-invocation Maven repetition script against
+  `fixtures/od-fixture` inside the real container, not simulated. Fed the
+  real counts through the real `decide()` function rather than re-deriving
+  outcomes by hand.
+- Found that F3's real behavior (deterministic 20/20) could not honestly
+  support the CANDIDATE example it was previously used for (fabricated
+  12/20) — rewrote that file as a real VERIFIED example
+  (`example_f3_verified.json`) and created a wholly synthetic, clearly
+  `com.example.*`-named replacement (`example_candidate.json`) for the
+  CANDIDATE row, since nothing in this deterministic fixture can produce
+  it for real.
+- N2's real isolation count (12/20) was new information — Phase 1 had
+  only informally sampled 6 runs (2 pass/4 fail ≈ 67%); the real n=20
+  measurement is 12/20 (60%), close but not identical, and now backed by
+  a proper sample size. Added a dedicated real example for it
+  (`example_victim_fails_alone_intermittent.json`) rather than silently
+  reusing the old informal number.
+- Wrote real log files into `eval/benchmark/logs/` for F1-F3/N1/N2, each
+  stating plainly in a `recorded_by` field that this was a manual
+  plain-Maven run by Member 3, not Member 2's (nonexistent) automated
+  pipeline — so nobody downstream mistakes this for pipeline integration
+  having happened.
+- Found and fixed a now-outdated test
+  (`test_real_logs_directory_is_currently_empty...`) that asserted the
+  logs directory was empty — true when written, false now that real logs
+  exist. Replaced with tests asserting the correct new split (5 run, 6
+  not-yet-run) rather than just deleting the inconvenient assertion.
+- Searched idoft's CSV with Python's `csv.DictReader` (not naive
+  comma-splitting) before picking rows, to avoid silently mis-parsing a
+  field containing a comma. Set `ground_truth_outcome: null` for all 5
+  idoft cases pulled in — their presence in idoft's dataset is external
+  validation by the idoft researchers, not something this project
+  verified itself, and conflating the two would overstate our own
+  evidence.
+
+**How it was verified:**
+- Watched the background Maven run complete for real (160 invocations,
+  ~30 minutes, confirmed mid-run via `docker exec ... ps aux` that it was
+  actively running, not hung) rather than assuming success.
+- `python3 -m unittest discover -s eval/tests -v` — 58/58 passed,
+  including a new cross-check that the "real" example files' counts
+  match the actual log files byte-for-byte (`raw_counts`), not just
+  mutual self-consistency.
+- `python3 eval/benchmark/yield_report.py` — real output: 5/11 cases now
+  show real funnel data, 6/11 still honestly `not_yet_run`.
+
+**Errors found:** The fabrication itself (Phase 3's examples, flagged by
+the user, confirmed on review) and the outdated "logs dir is empty" test
+(caught by actually running the suite after adding real logs, not by
+inspection).
+
+**Rejections:** None — the user's correction was accepted in full; no
+part of the original fabricated-data criticism was pushed back on.
+
+Ownership checkpoint: you need to understand and verify this implementation
+before claiming it as your contribution.

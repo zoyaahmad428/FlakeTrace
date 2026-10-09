@@ -1,0 +1,34 @@
+{
+  "victim": { "class": "odfixture.NegativeFlakyTest", "method": "sometimesFails" },
+  "polluters": [],
+  "original_failing_order": [
+    { "class": "odfixture.NegativeFlakyTest", "method": "sometimesFails" }
+  ],
+  "reduced_sequence": [],
+  "reproduction": {
+    "successes": 12, "n": 20, "confidence": 0.95,
+    "lower": 0.3865815006061295, "upper": 0.7811934677397184
+  },
+  "sequence_any_signature_failures": 12,
+  "victim_alone": {
+    "successes": 12, "n": 20, "confidence": 0.95,
+    "lower": 0.3865815006061295, "upper": 0.7811934677397184
+  },
+  "shared_resource": null,
+  "polluter_write_location": null,
+  "victim_read_location": null,
+  "failure_signature": {
+    "exception_type": "java.lang.AssertionError",
+    "message": null,
+    "stack_trace": "at odfixture.NegativeFlakyTest.sometimesFails(NegativeFlakyTest.java:16)"
+  },
+  "instrumentation_level": "static-only",
+  "execution_record_reference": "eval/benchmark/logs/N2.json",
+  "source_integrity": { "passed": true, "details": "No real source-integrity checker exists yet (Member 2's component) -- 'passed: true' is asserted by construction (plain Maven, no instrumentation involved), not independently checked." },
+  "outcome": "UNRESOLVED",
+  "unresolved_reason": "VICTIM_FAILS_ALONE",
+  "limitations": [
+    "victim_alone (and reproduction, identical since reduced_sequence is empty) is a REAL measured count: od-fixture's N2 case was actually run alone 20 times via plain Maven on 2026-10-09 (eval/tools/run_real_reps.sh) -- result was 12 failures / 20 runs, not a round or hand-picked number. See docs/evidence-m3.md and eval/benchmark/logs/N2.json.",
+    "N2 negative control: this victim fails INTERMITTENTLY even in isolation (driven by System.nanoTime() parity, unrelated to any shared static field or system property). Any isolation run that reproduces the reference signature at all -- even 12/20, not just a deterministic 20/20 like N1 -- is enough to trigger VICTIM_FAILS_ALONE before reproduction counting is ever consulted. This is the real-data confirmation of a decision made during Phase 3 when this case's ground truth was corrected from an earlier NOT_REPRODUCED guess (see fixtures/od-fixture/ground_truth.json)."
+  ]
+}

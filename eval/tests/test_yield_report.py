@@ -116,19 +116,51 @@ class TestRealManifest(unittest.TestCase):
         # We never authored ground truth for this case ourselves -- must stay null.
         self.assertIsNone(poc_case["ground_truth_outcome"])
 
-    def test_real_logs_directory_is_currently_empty_so_every_case_is_not_yet_run(self):
-        json_logs = list(Path(LOGS_DIR).glob("*.json"))
-        self.assertEqual(
-            json_logs, [],
-            "eval/benchmark/logs/ is expected to be empty until Member 2's runner exists; "
-            f"found unexpected log files: {json_logs}",
-        )
+    def test_idoft_cases_have_pinned_shas_and_null_ground_truth(self):
+        with open(MANIFEST_PATH, encoding="utf-8") as f:
+            manifest = json.load(f)["cases"]
+        idoft_cases = [c for c in manifest if c["source"] == "idoft"]
+        # 5 real cases pulled from idoft/odr-tests.csv -- see manifest.json's
+        # idoft_source block for provenance.
+        self.assertEqual(len(idoft_cases), 5)
+        projects = {c["project"] for c in idoft_cases}
+        self.assertEqual(len(projects), 5)  # 5 distinct real projects, not duplicates
+        for case in idoft_cases:
+            with self.subTest(case_id=case["case_id"]):
+                self.assertIsNotNone(case["sha"])
+                self.assertEqual(len(case["sha"]), 40, "idoft SHAs must be full 40-char hashes")
+                self.assertRegex(case["sha"], r"^[0-9a-f]{40}$")
+                # Pulled as metadata only -- we have not run these ourselves,
+                # so ground truth must stay null, not copied from idoft's listing.
+                self.assertIsNone(case["ground_truth_outcome"])
+                self.assertTrue(case["victim"]["class"])
+                self.assertTrue(case["victim"]["method"])
+                self.assertGreaterEqual(len(case["polluters"]), 1)
 
+    def test_real_logs_exist_only_for_the_5_manually_run_fixture_cases(self):
+        """F1-F3/N1/N2 were actually run via plain Maven (eval/tools/run_real_reps.sh,
+        2026-10-09) and have real logs. POC-DEMO-1 and the 5 idoft cases have
+        never been run by any pipeline and must have no log file."""
+        json_logs = {p.stem for p in Path(LOGS_DIR).glob("*.json")}
+        self.assertEqual(json_logs, {"F1", "F2", "F3", "N1", "N2"})
+
+    def test_yield_report_shows_real_funnel_for_run_cases_and_not_yet_run_for_the_rest(self):
         report = generate_yield_report()
-        self.assertEqual(report["not_yet_run"], report["total_cases"])
-        self.assertEqual(report["built"], 0)
-        self.assertEqual(report["reproduced"], 0)
-        self.assertEqual(report["excluded"], 0)
+        self.assertEqual(report["total_cases"], 11)
+        self.assertEqual(report["not_yet_run"], 6)  # POC-DEMO-1 + 5 idoft
+        self.assertEqual(report["built"], 5)        # F1,F2,F3,N1,N2 all compiled fine
+        self.assertEqual(report["reproduced"], 3)   # F1,F2,F3 verified
+        self.assertEqual(report["victim_fails_alone"], 2)  # N1,N2
+        self.assertEqual(report["excluded"], 2)     # N1,N2, both VICTIM_FAILS_ALONE
+
+        by_id = {c["case_id"]: c for c in report["cases"]}
+        for case_id in ("F1", "F2", "F3"):
+            self.assertTrue(by_id[case_id]["reproduced"], case_id)
+        for case_id in ("N1", "N2"):
+            self.assertEqual(by_id[case_id]["excluded_reason"], "VICTIM_FAILS_ALONE", case_id)
+        for case_id in ("POC-DEMO-1", "IDOFT-DROPWIZARD-1", "IDOFT-HTTP-REQUEST-1",
+                        "IDOFT-MARINE-API-1", "IDOFT-OPENPOJO-1", "IDOFT-SPRING-BOOT-1"):
+            self.assertTrue(by_id[case_id]["not_yet_run"], case_id)
 
 
 if __name__ == "__main__":

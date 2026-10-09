@@ -31,12 +31,13 @@
     "stack_trace": "at odfixture.ConfigVictimTest.expectsDefaultMode(ConfigVictimTest.java:10)"
   },
   "instrumentation_level": "static-only",
-  "execution_record_reference": "illustrative-only: no real execution record backs this example",
-  "source_integrity": { "passed": true, "details": "Illustrative: no modification detected to any instrumented class." },
+  "execution_record_reference": "eval/benchmark/logs/F1.json",
+  "source_integrity": { "passed": true, "details": "No real source-integrity checker exists yet (Member 2's component) -- 'passed: true' is asserted by construction (plain Maven, no instrumentation involved), not independently checked." },
   "outcome": "VERIFIED",
   "unresolved_reason": null,
   "limitations": [
-    "Hand-written illustrative example, not a recorded benchmark run -- see eval/examples/README.md.",
-    "Counts are chosen to demonstrate the VERIFIED row of the Phase 3 decision table, not measured."
+    "reproduction and victim_alone are REAL measured counts: od-fixture's F1 case was actually run 20 times each way via plain Maven inside maven:3.9-eclipse-temurin-8 on 2026-10-09 (eval/tools/run_real_reps.sh) -- not hand-picked. See docs/evidence-m3.md and eval/benchmark/logs/F1.json for the raw run.",
+    "polluter_write_location/victim_read_location's bytecode_offset values (3, 5) are still placeholders -- no real static-bytecode-evidence extractor exists in this repo yet (Member 1's component). The resource identity itself (odfixture.Config#mode) is correct by construction, not invented.",
+    "original_failing_order includes two benign noise tests to illustrate what the minimiser would reduce away; reduced_sequence is what was actually run."
   ]
 }

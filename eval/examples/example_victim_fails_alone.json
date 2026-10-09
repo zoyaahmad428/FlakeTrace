@@ -23,12 +23,12 @@
     "stack_trace": "at odfixture.NegativeAloneFailTest.alwaysFails(NegativeAloneFailTest.java:10)"
   },
   "instrumentation_level": "static-only",
-  "execution_record_reference": "illustrative-only: no real execution record backs this example",
-  "source_integrity": { "passed": true, "details": "Illustrative: no modification detected to any instrumented class." },
+  "execution_record_reference": "eval/benchmark/logs/N1.json",
+  "source_integrity": { "passed": true, "details": "No real source-integrity checker exists yet (Member 2's component) -- 'passed: true' is asserted by construction (plain Maven, no instrumentation involved), not independently checked." },
   "outcome": "UNRESOLVED",
   "unresolved_reason": "VICTIM_FAILS_ALONE",
   "limitations": [
-    "Hand-written illustrative example, not a recorded benchmark run -- see eval/examples/README.md.",
-    "N1 negative control: this victim fails deterministically even in isolation, so no polluter can be attributed."
+    "victim_alone (and reproduction, which is identical since reduced_sequence is empty) is a REAL measured count: od-fixture's N1 case was actually run alone 20 times via plain Maven on 2026-10-09 (eval/tools/run_real_reps.sh), not hand-picked. See docs/evidence-m3.md and eval/benchmark/logs/N1.json.",
+    "N1 negative control: this victim fails deterministically even in isolation (20/20, confirmed by real repetition, not just asserted), so no polluter can be attributed. Compare example_victim_fails_alone_intermittent.json for the same gate triggered by an intermittent (not deterministic) alone-failure."
   ]
 }
