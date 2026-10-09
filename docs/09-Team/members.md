@@ -20,7 +20,7 @@ post-defence action plan's two-student split is superseded by the three-member s
 
 | Member | Current task | Branch | State | Blocked by |
 | --- | --- | --- | --- | --- |
-| 1 | Static-field + system-property extraction for F1/F2 | `m1/static-extraction` | Phase 2 done (depth 1, lifecycle attribution); Phase 3 (depth 2) next | Contract PR #8 review (M2, M3) |
+| 1 | Static-field + system-property extraction for F1/F2 | `m1/call-depth` | Phases 2–3 done (lifecycle attribution, depth 1–3); Phase 4 (edges) next | — |
 | 2 | W7 diagnosis runs (victim-alone, polluter search, repeats, integrity, record) | `m2/w7-diagnosis-runs` | W7 complete (PR #11 in review; CI green on JDK 8); W9 (report assembly) next | — |
 | 3 | Report ch. 4 (requirements) and ch. 7–8 (testing plan, tool/risk disclosure) per `08-MidEval/README`'s Form 3 table; wire baseline to runner when ready | `m3/…` | Phases 0–5 done; real fixture repetitions + idoft dataset cases added (see `docs/evidence-m3.md`) | M2 runner for real numbers |
 

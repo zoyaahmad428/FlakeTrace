@@ -1,4 +1,4 @@
-"""Tests for evidence/extract.py (Member 1), Phase 2: depth 1 with lifecycle attribution.
+"""Tests for evidence/extract.py (Member 1): depth-1 lifecycle attribution (Phase 2) and call depth (Phase 3).
 
 Input: Member 1's own test classes in evidence/tests/resources/m1-selftest/ (not a
 project fixture). Compile them first, with JDK 8 like the rest of the project:
@@ -88,6 +88,59 @@ class DepthOneExtractionTest(unittest.TestCase):
         self.assertEqual(kinds, [("SYSPROP_NON_CONSTANT_KEY", 23), ("REFLECTION", 37), ("DEPTH_LIMIT", 40)])
 
 
+def path_of(access):
+    """'Class.method@offset > ...' for an access's call_path, without the package."""
+    return " > ".join("%s.%s@%d" % (f["class"].split(".")[-1], f["method"], f["bytecode_offset"])
+                      for f in access["call_path"])
+
+
+@unittest.skipUnless(os.path.isdir(TEST_CLASSES), "self-test classes not compiled")
+@unittest.skipUnless(shutil.which(extract.javap_command()), "javap not found (need a JDK 8+)")
+class CallDepthTest(unittest.TestCase):
+    """Phase 3. Expected values read by hand from JDK 8 javap of M1DepthSelfTest."""
+
+    def analyse(self, test_id, depth):
+        return extract.analyse_test(extract.Project([CLASSES, TEST_CLASSES]), test_id, depth)
+
+    def paths(self, test_id, depth):
+        return [(a["access"], a["resource_id"], a["depth"], path_of(a))
+                for a in self.analyse(test_id, depth)["accesses"]]
+
+    def kinds(self, test_id, depth):
+        return [(u["kind"], u["method"], u["bytecode_offset"])
+                for u in self.analyse(test_id, depth)["unsupported_observations"]]
+
+    def test_access_two_calls_down_appears_only_at_depth_3(self):
+        test = "m1selftest.M1DepthSelfTest#callsDown"
+        write2 = ("WRITE", "m1selftest.SelfTestState#counter", 2,
+                  "M1DepthSelfTest.callsDown@0 > M1DepthSelfTest.level2@2")
+        write3 = ("WRITE", "sysprop:m1.selftest.deep", 3,
+                  "M1DepthSelfTest.callsDown@0 > M1DepthSelfTest.level2@5 > M1DepthSelfTest.level3@4")
+        self.assertEqual(self.paths(test, 1), [])
+        self.assertEqual(self.paths(test, 2), [write2])
+        self.assertEqual(self.paths(test, 3), [write2, write3])     # level4 (depth 4) never
+
+    def test_depth_limit_is_reported_where_the_walk_stops(self):
+        test = "m1selftest.M1DepthSelfTest#callsDown"
+        self.assertEqual(self.kinds(test, 1), [("DEPTH_LIMIT", "callsDown", 0)])
+        self.assertEqual(self.kinds(test, 3), [("DEPTH_LIMIT", "level3", 8)])
+
+    def test_recursion_terminates(self):
+        self.assertEqual(self.paths("m1selftest.M1DepthSelfTest#recursion", 3), [
+            ("WRITE", "m1selftest.SelfTestState#counter", 3,
+             "M1DepthSelfTest.recursion@1 > M1DepthSelfTest.ping@7 > M1DepthSelfTest.pong@1")])
+
+    def test_virtual_dispatch_follows_only_the_named_target_and_says_so(self):
+        test = "m1selftest.M1DepthSelfTest#dispatch"
+        self.assertEqual(self.paths(test, 3), [
+            ("WRITE", "m1selftest.SelfTestState#counter", 2,
+             "M1DepthSelfTest.dispatch@9 > SelfTestBase.work@2")])   # SelfTestChild's write not claimed
+        self.assertIn(("VIRTUAL_DISPATCH", "dispatch", 9), self.kinds(test, 3))
+
+    def test_depth_1_results_are_unchanged(self):
+        self.assertEqual(len(self.analyse("m1selftest.M1SelfTest#writesAndReads", 3)["accesses"]), 4)
+
+
 @unittest.skipUnless(os.path.isdir(TEST_CLASSES), "self-test classes not compiled")
 class CommandLineTest(unittest.TestCase):
 
@@ -122,10 +175,18 @@ class CommandLineTest(unittest.TestCase):
                             "--test", "m1selftest.M1SelfTest#noSuchMethod", "--depth", "1")
         self.assert_input_error(done, "test method not found")
 
-    def test_unimplemented_depth_is_refused_clearly(self):
+    def test_default_depth_is_2(self):
+        if not shutil.which(extract.javap_command()):
+            self.skipTest("javap not found")
         done = self.run_cli("--classes", CLASSES, "--test-classes", TEST_CLASSES,
-                            "--test", "m1selftest.M1SelfTest#writesAndReads")
-        self.assert_input_error(done, "not implemented yet")
+                            "--test", "m1selftest.M1DepthSelfTest#callsDown")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual(json.loads(done.stdout)["analysis"]["depth"], 2)
+
+    def test_unsupported_depth_is_an_input_error(self):
+        done = self.run_cli("--classes", CLASSES, "--test-classes", TEST_CLASSES,
+                            "--test", "m1selftest.M1SelfTest#writesAndReads", "--depth", "4")
+        self.assert_input_error(done, "--depth must be 1, 2 or 3")
 
 
 if __name__ == "__main__":

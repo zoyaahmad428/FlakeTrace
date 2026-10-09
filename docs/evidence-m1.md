@@ -145,3 +145,53 @@ class's `<clinit>`, inherited lifecycle methods), with the lifecycle method each
     This needs a contract decision.
   - The unit tests are not in CI yet: `.github/` is Member 2's area. CI needs a step that
     compiles the self-test project and runs `python3 -m unittest evidence.tests.test_extract`.
+
+## Phase 3 — Configurable call depth (2026-10-09)
+
+**Requirement:** `--depth N` (default 2; 1, 2, 3 supported) follows calls into the
+project's own classes only, never the JDK or third-party jars. Handles recursion and
+cycles. Records `call_path` for every access. Reports virtual dispatch and reflection as
+unsupported. Measures what each depth adds on the fixture.
+
+- Files: `evidence/extract.py` (`walk_root`, `scan_method`, `scan_call`, `follow_call`,
+  `may_be_overridden`, `Project.resolve_method`); `evidence/tests/test_extract.py` (class
+  `CallDepthTest` and CLI tests); new self-test input `M1DepthSelfTest`, `SelfTestBase`,
+  `SelfTestChild` (javap dump: `evidence/javap-dumps/phase3-depth-selftest.txt`);
+  `evidence/tools/measure_depth.py`.
+- Expected results read by hand from the JDK 8 javap dump, then matched by the extractor (JDK 8 javap):
+  - `M1DepthSelfTest#callsDown`: depth 1 none (`DEPTH_LIMIT @callsDown@0`); depth 2 counter
+    WRITE `callsDown@0 > level2@2`; depth 3 adds property WRITE
+    `callsDown@0 > level2@5 > level3@4`. level4's READ (depth 4) is never reported
+    (`DEPTH_LIMIT @level3@8`).
+  - `#recursion` (ping/pong cycle): depth 3 gives counter WRITE
+    `recursion@1 > ping@7 > pong@1`, and the walk terminates.
+  - `#dispatch`: only the named target is followed, so counter WRITE `dispatch@9 > SelfTestBase.work@2`
+    plus `VIRTUAL_DISPATCH @dispatch@9`. `SelfTestChild.work`'s `setProperty`, which is what
+    really runs, is **not** claimed.
+- Command: `python3 -m unittest evidence.tests.test_extract -v` → `Ran 15 tests … OK` with host
+  javap 21.0.12.1, and `Ran 15 tests … OK` with JDK 8 javap.
+- Command (fixture compiled unmodified, JDK 8 image, `mvn -B -q test-compile` exit 0):
+  `python3 -m evidence.tools.measure_depth --classes fixtures/od-fixture/target/classes --test-classes fixtures/od-fixture/target/test-classes --repeats 5`
+
+  13 test methods, every repeat with an empty class cache:
+
+  | depth | accesses | unsupported | javap calls | median s (javap 21.0.12.1, 5 runs) | median s (javap 1.8.0_502 via Docker, 3 runs) |
+  | --- | --- | --- | --- | --- | --- |
+  | 1 | 7 | 10 (5 IMPLICIT_CLINIT, 5 DEPTH_LIMIT) | 16 | 5.349 (min 5.138, max 5.963) | 10.933 (10.417–11.072) |
+  | 2 | 8 | 6 (5 IMPLICIT_CLINIT, 1 DEPTH_LIMIT) | 16 | 5.124 (5.047–5.565) | 10.825 (10.759–11.121) |
+  | 3 | 8 | 5 (5 IMPLICIT_CLINIT) | 16 | 5.378 (5.252–5.641) | 10.507 (10.473–10.600) |
+
+  The only access added by depth 2: `FeatureVictimTest#expectsTurboDisabled` READ
+  `sysprop:odfixture.turbo` (F2's victim read). Depth 3 adds no access on the fixture.
+- Limitations discovered:
+  - **On the fixture, depth adds no measurable time.** All depths load the same 16 classes, and the time is
+    almost all `javap` JVM start-up (about 0.33 s per call on the host, about 0.68 s per call through Docker).
+    The time differences between depths are within run-to-run noise. The fixture is too small
+    to show the cost of depth; a real project (Phase 5) is needed for that.
+  - One `javap` process per class. That is acceptable here; for large projects, batching classes
+    per call would cut start-up cost (not done).
+  - Overrides are not followed (only `VIRTUAL_DISPATCH` is recorded). Finding subclasses
+    would need every project class loaded.
+  - Measurement-tool error (not an extractor bug): the first JDK 8 run failed with "class not
+    found" because the Docker javap wrapper runs in a different working directory and
+    relative class paths did not resolve. Re-run with absolute paths.
