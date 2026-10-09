@@ -45,6 +45,7 @@ Policy context and the four-point ownership standard: [[00-Meta/ai-usage-log]].
 | 2026-10-10 | M2 | Claude Opus 5.5 | L2 | `evidence` CI job in `.github/workflows/ci.yml` | Job from Member 1's steps | *add your edits after review* | Job steps run locally: 27 OK, 0 skipped; missing javap fails the run | — | [[genai-log-m2]], [[evidence-m2]] |
 | 2026-10-10 | M2 | Claude Opus 5.5 | L2 | N2 test in `runner/tests/test_diagnose.py`; ADR-004, notes, claim E9 | Tightened test and doc wording | *add your edits after review* | 3 real N2 runs `VICTIM_FAILS_ALONE`; mutation made the test fail; 57 OK | Agent ran a forbidden `git checkout` to undo its own mutation (no member work lost) | [[genai-log-m2]], [[evidence-m2]] |
 | 2026-10-10 | M2 | Claude Opus 5.5 | L2 | ADR-005 (W9 CLI design) | Design options and ADR text | Chose single-victim use, exit-3 handling, deferring the `flaketrace` install | Facts in the ADR checked by running them (Wilson bound, imports, CI steps) | — | [[genai-log-m2]], [[evidence-m2]] |
+| 2026-10-10 | M2 | Claude Opus 5.5 | L2 | `runner/cli.py`, `runner/__main__.py` + tests, `runner` CI install step (W9 Task 1) | Command code and tests from the W9 plan | *add your edits after review* | Tests failed first; 11 OK; mutation made them fail; suite 68 OK | — | [[genai-log-m2]], [[evidence-m2]] |
 
 ## Prompt journal — significant interactions only
 

@@ -340,3 +340,18 @@ and the docs saying "N2 may end `NOT_REPRODUCED` on Windows" were out of date.
 - Facts checked for the ADR: `eval.stats.wilson_interval(5, 5, 0.95)` → lower `0.5655` (< 0.70,
   so `VERIFIED` tests need n = 20); `eval/schema_validator.py` imports `jsonschema` at load; the
   `runner` CI job has no `pip install` step; `evidence.extract.DEFAULT_DEPTH` = 2.
+
+### 2026-10-10 — W9 Task 1: `py -m runner diagnose` (fast tests)
+
+**Requirement:** ADR-005 — one command from a failing test to a report file; exit codes 0/1/2/3.
+- Files: `runner/cli.py` (`main`, `run_diagnose`, `resource_fields`, `summary`), `runner/__main__.py`,
+  `runner/tests/test_cli.py`; `.github/workflows/ci.yml` (`runner` job installs `eval/requirements.txt`).
+- Probe first: `py -m` runs `__main__.py` of a namespace package (no `__init__.py`, like `runner/`)
+  both from its folder and via `PYTHONPATH` from another folder → `main ran`, exit 0 (Python 3.14).
+- Tests written first: `py -m unittest runner.tests.test_cli` → `ModuleNotFoundError: No module
+  named 'runner.cli'`. After the code: `Ran 11 tests in 0.108s — OK` (no JVM; `diagnose` replaced
+  with `unittest.mock.patch` in the tool-error and report tests only).
+- Mutation check: evidence step forced on (`if True else None`) → both report tests FAILED
+  (`1 != 0`, `1 != 3`); restored from a copy → 11 OK.
+- Full runner suite: `Ran 68 tests in 124.206s — OK`. `git status --short fixtures/` empty.
+- Limitation: real Maven/JVM/javap runs of the command are Task 2.

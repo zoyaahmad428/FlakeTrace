@@ -354,3 +354,17 @@ launch method is not, but behaviour is; a proper install needs a team-wide packa
 container decision, so it is recorded as deferred with its constraints.
 
 **What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — W9 Task 1: the diagnose command
+
+**Tool:** Claude Opus 5.5 · **Level:** L2
+
+**What was asked:** implement Task 1 of `docs/superpowers/plans/2026-10-10-w9-diagnose-cli.md`.
+
+**What was retained:** `runner/cli.py`, `runner/__main__.py`, 11 fast tests, the `runner` CI job's
+install step, as planned.
+
+**How it was verified:** tests failed first (module missing), then 11 OK; mutation of the evidence
+condition made the report tests fail; full runner suite 68 OK.
+
+**What I changed:** *fill after reading the diff.*
