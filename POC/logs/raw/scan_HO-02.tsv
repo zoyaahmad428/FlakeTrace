@@ -1,0 +1,147 @@
+c0	FT	1	com.alibaba.json.bvt.date.CalendarTest#test_codec	PASS				465
+c0	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	36
+c1	FT	1	com.alibaba.json.bvt.date.CalendarTest#test_codec_iso88591	PASS				459
+c1	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	27
+c2	FT	1	com.alibaba.json.bvt.date.CalendarTest#test_codec_iso88591_2	PASS				475
+c2	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	25
+c3	FT	1	com.alibaba.json.bvt.date.CalendarTest#test_null	PASS				426
+c3	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	37
+c4	{"publishTime":"2026/09/04 20:06:31","serverTime":"2026-09-04 20:06:31","startDate":"2026-09-04"}
+c4	FT	1	com.alibaba.json.bvt.date.DateFieldFormatTest#test_format_	PASS				478
+c4	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				14
+c5	FT	1	com.alibaba.json.bvt.date.DateFieldTest#test_codec	PASS				446
+c5	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	38
+c6	FT	1	com.alibaba.json.bvt.date.DateFieldTest#test_codec_null	PASS				456
+c6	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	34
+c7	FT	1	com.alibaba.json.bvt.date.DateFieldTest#test_codec_null_1	PASS				436
+c7	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	41
+c8	FT	1	com.alibaba.json.bvt.date.DateFieldTest#test_codec_null_asm	PASS				441
+c8	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	33
+c9	FT	1	com.alibaba.json.bvt.date.DateFieldTest10#test_1	PASS				422
+c9	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				28
+c10	FT	1	com.alibaba.json.bvt.date.DateFieldTest10#test_2	PASS				447
+c10	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				15
+c11	FT	1	com.alibaba.json.bvt.date.DateFieldTest10#test_3	PASS				450
+c11	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				15
+c12	FT	1	com.alibaba.json.bvt.date.DateFieldTest10#test_4	PASS				449
+c12	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				18
+c13	FT	1	com.alibaba.json.bvt.date.DateFieldTest10#test_5	PASS				439
+c13	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				25
+c14	FT	1	com.alibaba.json.bvt.date.DateFieldTest10#test_6	PASS				479
+c14	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				24
+c15	FT	1	com.alibaba.json.bvt.date.DateFieldTest10#test_for_zero	PASS				474
+c15	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				20
+c16	FT	1	com.alibaba.json.bvt.date.DateFieldTest11_reader#test_cn	PASS				431
+c16	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				21
+c17	1462464000000
+c17	1488297600000
+c17	FT	1	com.alibaba.json.bvt.date.DateFieldTest11_reader#test_cn_1	PASS				426
+c17	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				27
+c18	FT	1	com.alibaba.json.bvt.date.DateFieldTest2#test_codec	PASS				433
+c18	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				35
+c19	FT	1	com.alibaba.json.bvt.date.DateFieldTest2#test_codec_asm	PASS				443
+c19	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				36
+c20	FT	1	com.alibaba.json.bvt.date.DateFieldTest2#test_codec_no_asm	PASS				462
+c20	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				32
+c21	FT	1	com.alibaba.json.bvt.date.DateFieldTest2#test_codec_null_1	PASS				-104
+c21	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				61
+c22	FT	1	com.alibaba.json.bvt.date.DateFieldTest2#test_codec_null_asm	PASS				495
+c22	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				36
+c23	FT	1	com.alibaba.json.bvt.date.DateFieldTest3#test_codec	PASS				488
+c23	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				34
+c24	FT	1	com.alibaba.json.bvt.date.DateFieldTest3#test_codec_asm	PASS				478
+c24	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				32
+c25	FT	1	com.alibaba.json.bvt.date.DateFieldTest3#test_codec_no_asm	PASS				435
+c25	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				35
+c26	FT	1	com.alibaba.json.bvt.date.DateFieldTest3#test_codec_null_1	PASS				462
+c26	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				37
+c27	FT	1	com.alibaba.json.bvt.date.DateFieldTest3#test_codec_null_asm	PASS				463
+c27	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				37
+c28	FT	1	com.alibaba.json.bvt.date.DateFieldTest3#test_codec_null_no_asm	PASS				430
+c28	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				28
+c29	FT	1	com.alibaba.json.bvt.date.DateFieldTest4#test_codec	PASS				484
+c29	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				32
+c30	FT	1	com.alibaba.json.bvt.date.DateFieldTest4#test_codec_asm	PASS				458
+c30	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				33
+c31	FT	1	com.alibaba.json.bvt.date.DateFieldTest4#test_codec_no_asm	PASS				467
+c31	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				36
+c32	FT	1	com.alibaba.json.bvt.date.DateFieldTest4#test_codec_null_1	PASS				470
+c32	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				35
+c33	FT	1	com.alibaba.json.bvt.date.DateFieldTest4#test_codec_null_asm	PASS				468
+c33	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				31
+c34	FT	1	com.alibaba.json.bvt.date.DateFieldTest5#test_codec	PASS				422
+c34	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	66
+c35	FT	1	com.alibaba.json.bvt.date.DateFieldTest5#test_codec_asm	PASS				423
+c35	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	65
+c36	FT	1	com.alibaba.json.bvt.date.DateFieldTest5#test_codec_no_asm	PASS				406
+c36	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	62
+c37	FT	1	com.alibaba.json.bvt.date.DateFieldTest5#test_codec_null_1	PASS				507
+c37	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	36
+c38	FT	1	com.alibaba.json.bvt.date.DateFieldTest5#test_codec_null_asm	PASS				450
+c38	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	43
+c39	FT	1	com.alibaba.json.bvt.date.DateFieldTest6#test_0	PASS				453
+c39	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				29
+c40	FT	1	com.alibaba.json.bvt.date.DateFieldTest7#test_0	PASS				523
+c40	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				96
+c41	FT	1	com.alibaba.json.bvt.date.DateFieldTest8#test_0	PASS				576
+c41	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				54
+c42	FT	1	com.alibaba.json.bvt.date.DateFieldTest8#test_1	PASS				484
+c42	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				32
+c43	FT	1	com.alibaba.json.bvt.date.DateFieldTest9#test_cn	PASS				450
+c43	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				24
+c44	FT	1	com.alibaba.json.bvt.date.DateFieldTest9#test_cn_1	PASS				472
+c44	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				30
+c45	FT	1	com.alibaba.json.bvt.date.DateFieldTest9#test_cn_2	PASS				540
+c45	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				28
+c46	FT	1	com.alibaba.json.bvt.date.DateFieldTest9#test_cn_3	PASS				506
+c46	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				20
+c47	FT	1	com.alibaba.json.bvt.date.DateFieldTest9#test_cn_4	PASS				433
+c47	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				21
+c48	FT	1	com.alibaba.json.bvt.date.DateFieldTest9#test_de	PASS				443
+c48	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				19
+c49	FT	1	com.alibaba.json.bvt.date.DateFieldTest9#test_in	PASS				445
+c49	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				25
+c50	FT	1	com.alibaba.json.bvt.date.DateFieldTest9#test_kr_1	PASS				424
+c50	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				23
+c51	FT	1	com.alibaba.json.bvt.date.DateFieldTest9#test_kr_2	PASS				445
+c51	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				24
+c52	FT	1	com.alibaba.json.bvt.date.DateFieldTest9#test_kr_3	PASS				435
+c52	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				21
+c53	FT	1	com.alibaba.json.bvt.date.DateFieldTest9#test_kr_4	PASS				461
+c53	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				19
+c54	FT	1	com.alibaba.json.bvt.date.DateFieldTest9#test_tw	PASS				415
+c54	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	PASS				22
+c55	FT	1	com.alibaba.json.bvt.date.DateNewTest#test_date	PASS				411
+c55	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	59
+c56	FT	1	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	358
+c56	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	108
+c57	FT	1	com.alibaba.json.bvt.date.DateTest1#test_date	PASS				425
+c57	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	55
+c58	FT	1	com.alibaba.json.bvt.date.DateTest2#test_date	PASS				431
+c58	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	62
+c59	FT	1	com.alibaba.json.bvt.date.DateTest_dotnet#test_date	PASS				444
+c59	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	38
+c60	FT	1	com.alibaba.json.bvt.date.DateTest_dotnet_1#test_date	PASS				416
+c60	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	41
+c61	FT	1	com.alibaba.json.bvt.date.DateTest_dotnet_2#test_date	PASS				412
+c61	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	30
+c62	FT	1	com.alibaba.json.bvt.date.DateTest_dotnet_3#test_date	PASS				441
+c62	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	31
+c63	FT	1	com.alibaba.json.bvt.date.DateTest_dotnet_4#test_date	PASS				392
+c63	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	53
+c64	FT	1	com.alibaba.json.bvt.date.DateTest_dotnet_5#test_date	PASS				429
+c64	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	53
+c65	FT	1	com.alibaba.json.bvt.date.DateTest_error#test_error	PASS				419
+c65	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	59
+c66	FT	1	com.alibaba.json.bvt.date.DateTest_error#test_error_1	PASS				447
+c66	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	75
+c67	FT	1	com.alibaba.json.bvt.date.DateTest_error#test_error_2	PASS				401
+c67	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	58
+c68	FT	1	com.alibaba.json.bvt.date.DateTest_error#test_error_3	PASS				-339
+c68	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	68
+c69	FT	1	com.alibaba.json.bvt.date.DateTest_error#test_error_4	PASS				-738
+c69	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	56
+c70	FT	1	com.alibaba.json.bvt.date.DateTest_error#test_error_5	PASS				422
+c70	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	64
+c71	FT	1	com.alibaba.json.bvt.date.XMLGregorianCalendarTest#test_for_issue	PASS				578
+c71	FT	2	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	41

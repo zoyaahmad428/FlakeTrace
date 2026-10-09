@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" width="100%" role="img" aria-label="cost to first OD-relevant test">
+<style>text{font:12px system-ui,sans-serif;fill:#444}.t{font-weight:600}</style>
+<line x1="60" y1="250" x2="740" y2="250" stroke="#ccc"/>
+<rect x="80" y="248" width="26" height="2" fill="#5B8DEF" rx="2"/>
+<text x="93.0" y="244" text-anchor="middle" font-size="10">5</text>
+<rect x="112" y="248" width="26" height="2" fill="#E8833A" rx="2"/>
+<text x="125.0" y="244" text-anchor="middle" font-size="10">5</text>
+<rect x="144" y="249" width="26" height="1" fill="#8E8E93" rx="2"/>
+<text x="157.0" y="245" text-anchor="middle" font-size="10">3</text>
+<text class="t" x="125" y="268" text-anchor="middle">FJ-01</text>
+<rect x="250" y="228" width="26" height="22" fill="#5B8DEF" rx="2"/>
+<text x="263.0" y="224" text-anchor="middle" font-size="10">39</text>
+<rect x="282" y="228" width="26" height="22" fill="#E8833A" rx="2"/>
+<text x="295.0" y="224" text-anchor="middle" font-size="10">39</text>
+<rect x="314" y="234" width="26" height="16" fill="#8E8E93" rx="2"/>
+<text x="327.0" y="230" text-anchor="middle" font-size="10">29</text>
+<text class="t" x="295" y="268" text-anchor="middle">FJ-02</text>
+<rect x="420" y="40" width="26" height="210" fill="#5B8DEF" rx="2"/>
+<text x="433.0" y="36" text-anchor="middle" font-size="10">368</text>
+<rect x="452" y="40" width="26" height="210" fill="#E8833A" rx="2"/>
+<text x="465.0" y="36" text-anchor="middle" font-size="10">368</text>
+<rect x="484" y="226" width="26" height="24" fill="#8E8E93" rx="2"/>
+<text x="497.0" y="222" text-anchor="middle" font-size="10">43</text>
+<text class="t" x="465" y="268" text-anchor="middle">FJ-03</text>
+<rect x="590" y="125" width="26" height="125" fill="#5B8DEF" rx="2"/>
+<text x="603.0" y="121" text-anchor="middle" font-size="10">220</text>
+<rect x="622" y="125" width="26" height="125" fill="#E8833A" rx="2"/>
+<text x="635.0" y="121" text-anchor="middle" font-size="10">220</text>
+<rect x="654" y="123" width="26" height="127" fill="#8E8E93" rx="2"/>
+<text x="667.0" y="119" text-anchor="middle" font-size="10">224</text>
+<text class="t" x="635" y="268" text-anchor="middle">FJ-04</text>
+<rect x="80" y="14" width="11" height="11" fill="#5B8DEF" rx="2"/>
+<text x="96" y="24">OBO</text>
+<rect x="280" y="14" width="11" height="11" fill="#E8833A" rx="2"/>
+<text x="296" y="24">resource (hop-1)</text>
+<rect x="480" y="14" width="11" height="11" fill="#8E8E93" rx="2"/>
+<text x="496" y="24">random median</text>
+<text x="14" y="125.0" transform="rotate(-90 14 125.0)" text-anchor="middle">confirmations to first hit</text>
+</svg>

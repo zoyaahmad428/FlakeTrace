@@ -1,0 +1,5 @@
+case_id,candidates,relevant,top1,top5,top20pct,first_rank,mrr,best_score,score_of_first_relevant,relevant_with_nonzero_overlap
+FJ-01,72,42,NO,YES,YES,5,0.2,0,0,0
+FJ-02,722,24,NO,NO,YES,39,0.0256,0,0,0
+FJ-03,524,6,NO,NO,NO,368,0.0027,0,0,0
+FJ-04,524,2,NO,NO,NO,220,0.0045,0,0,0

@@ -1,0 +1,24 @@
+case_id,project,victim,alone_passes,reps,direction,alone_signature
+FJ-01,fastjson,com.alibaba.json.bvt.date.DateTest#test_date,0,10,BRITTLE,"org.junit.ComparisonFailure || expected:<""<N>-<N>-<N>[<N> <N>]:<N>:<N>""> but was:<""<N>-<N>-<N>[<N> <N>]:<N>:<N>""> || com.alibaba.json.bvt.date.DateTest.test_date"
+FJ-02,fastjson,com.alibaba.json.bvt.parser.DefaultExtJSONParser_parseArray#test_7,0,10,BRITTLE,java.lang.AssertionError || expected:<Sun Jan <N> <N>:<N>:<N> UTC <N>> but was:<Sun Jan <N> <N>:<N>:<N> UTC <N>> || com.alibaba.json.bvt.parser.DefaultExtJSONParser_parseArray.test_7
+FJ-03,fastjson,com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf,10,10,VICTIM,
+FJ-04,fastjson,com.alibaba.json.bvt.serializer.JSONSerializerTest2#test_0,10,10,VICTIM,
+HO-01,fastjson,com.alibaba.json.bvt.bug.Issue_717#test_for_issue,10,10,VICTIM,
+HO-02,fastjson,com.alibaba.json.bvt.date.DateTest_tz#test_codec,0,10,BRITTLE,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec
+HO-03,fastjson,com.alibaba.json.bvt.issue_1200.Issue1298#test_for_issue,0,10,BRITTLE,"junit.framework.ComparisonFailure || expected:<""<N>-<N>-<N>T[<N>:<N>:<N>+<N>:<N>]""> but was:<""<N>-<N>-<N>T[<N>:<N>:<N>Z]""> || com.alibaba.json.bvt.issue_1200.Issue1298.test_for_issue"
+HO-04,fastjson,com.alibaba.json.bvt.issue_1200.Issue1298#test_for_issue_1,0,10,BRITTLE,"junit.framework.ComparisonFailure || expected:<""<TS> but was:<""<TS> || com.alibaba.json.bvt.issue_1200.Issue1298.test_for_issue_1"
+HO-05,fastjson,com.alibaba.json.bvt.issue_1600.Issue1679#test_for_issue,0,10,BRITTLE,"junit.framework.ComparisonFailure || expected:<""<TS> but was:<""<TS> || com.alibaba.json.bvt.issue_1600.Issue1679.test_for_issue"
+HO-06,fastjson,com.alibaba.json.bvt.issue_1700.Issue1769#test_for_issue,0,10,BRITTLE,"junit.framework.ComparisonFailure || expected:<...eginTime"":""<N>[<N>]<N>""}> but was:<...eginTime"":""<N>[<N>]<N>""}> || com.alibaba.json.bvt.issue_1700.Issue1769.test_for_issue"
+HO-07,fastjson,com.alibaba.json.bvt.issue_1900.Issue1977#test_for_issue,0,10,BRITTLE,"junit.framework.ComparisonFailure || expected:<""<N>-<N>-<N>T[<N>:<N>:<N>.<N>+<N>:<N>]""> but was:<""<N>-<N>-<N>T[<N>:<N>:<N>.<N>Z]""> || com.alibaba.json.bvt.issue_1900.Issue1977.test_for_issue"
+HO-08,fastjson,com.alibaba.json.bvt.parser.DefaultExtJSONParser_parseArray#test_8,0,10,BRITTLE,java.lang.AssertionError || expected:<Sun Jan <N> <N>:<N>:<N> UTC <N>> but was:<Sun Jan <N> <N>:<N>:<N> UTC <N>> || com.alibaba.json.bvt.parser.DefaultExtJSONParser_parseArray.test_8
+HO-09,fastjson,com.alibaba.json.bvt.serializer.JSONFieldTest5#test_jsonField,10,10,VICTIM,
+HO-10,fastjson,com.alibaba.json.bvt.serializer.date.DateTest4_indian#test_date,0,10,BRITTLE,junit.framework.AssertionFailedError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.serializer.date.DateTest4_indian.test_date
+HO-11,fastjson,com.alibaba.json.bvt.serializer.date.DateTest5_iso8601#test_date,0,10,BRITTLE,junit.framework.AssertionFailedError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.serializer.date.DateTest5_iso8601.test_date
+JI-01,jsoniter,com.jsoniter.TestIO#test_read_byte,10,10,VICTIM,
+JI-02,jsoniter,com.jsoniter.TestString#test_utf8,10,10,VICTIM,
+JI-03,jsoniter,com.jsoniter.TestBoolean#test_streaming,10,10,VICTIM,
+JI-04,jsoniter,com.jsoniter.output.TestObject#test_transient_field_getter,10,10,VICTIM,
+OR-01,ormlite,com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists,10,10,VICTIM,
+OR-02,ormlite,com.j256.ormlite.misc.TransactionManagerTest#testConnectionLeakCreateList,10,10,VICTIM,
+OR-03,ormlite,com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection,10,10,VICTIM,
+OR-04,ormlite,com.j256.ormlite.dao.RuntimeExceptionDaoTest#testAssignEmptyForeignCollectionThrow,10,10,VICTIM,

@@ -1,0 +1,21 @@
+candidate,victim_status,exc,msg_norm,top_frame,signature,ms,cand_status,od_relevant
+com.alibaba.json.bvt.serializer.date.DateTest#test_0,PASS,,,,,100,PASS,YES
+com.alibaba.json.bvt.serializer.date.DateTest#test_1,PASS,,,,,84,PASS,YES
+com.alibaba.json.bvt.serializer.date.DateTest#test_2,PASS,,,,,82,PASS,YES
+com.alibaba.json.bvt.serializer.date.DateTest#test_3,PASS,,,,,80,PASS,YES
+com.alibaba.json.bvt.serializer.date.DateTest#test_4,PASS,,,,,86,PASS,YES
+com.alibaba.json.bvt.serializer.date.DateTest#test_5,PASS,,,,,77,PASS,YES
+com.alibaba.json.bvt.serializer.date.DateTest#test_6,PASS,,,,,77,PASS,YES
+com.alibaba.json.bvt.serializer.date.DateTest#test_7,PASS,,,,,81,PASS,YES
+com.alibaba.json.bvt.serializer.date.DateTest#test_8,PASS,,,,,85,PASS,YES
+com.alibaba.json.bvt.serializer.date.DateTest#test_9,PASS,,,,,39,PASS,YES
+com.alibaba.json.bvt.serializer.date.DateTest2#test_null,FAIL,junit.framework.AssertionFailedError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.serializer.date.DateTest5_iso8601.test_date,junit.framework.AssertionFailedError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.serializer.date.DateTest5_iso8601.test_date,66,PASS,NO
+com.alibaba.json.bvt.serializer.date.DateTest3#test_date,FAIL,junit.framework.AssertionFailedError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.serializer.date.DateTest5_iso8601.test_date,junit.framework.AssertionFailedError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.serializer.date.DateTest5_iso8601.test_date,5,PASS,NO
+com.alibaba.json.bvt.serializer.date.DateTest4_indian#test_date,FAIL,junit.framework.AssertionFailedError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.serializer.date.DateTest5_iso8601.test_date,junit.framework.AssertionFailedError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.serializer.date.DateTest5_iso8601.test_date,6,FAIL,NO
+com.alibaba.json.bvt.serializer.date.DateTest_ISO8601_OneLetterISO8601TimeZone#test_date_9,FAIL,junit.framework.AssertionFailedError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.serializer.date.DateTest5_iso8601.test_date,junit.framework.AssertionFailedError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.serializer.date.DateTest5_iso8601.test_date,5,PASS,NO
+com.alibaba.json.bvt.serializer.date.DateTest_ISO8601_ThreeLetterISO8601TimeZone#test_date_9,FAIL,junit.framework.AssertionFailedError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.serializer.date.DateTest5_iso8601.test_date,junit.framework.AssertionFailedError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.serializer.date.DateTest5_iso8601.test_date,4,PASS,NO
+com.alibaba.json.bvt.serializer.date.DateTest_ISO8601_TimeZone#test_date1,PASS,,,,,37,PASS,YES
+com.alibaba.json.bvt.serializer.date.DateTest_ISO8601_TimeZone#test_date2,PASS,,,,,6,PASS,YES
+com.alibaba.json.bvt.serializer.date.DateTest_ISO8601_TimeZone#test_date3,PASS,,,,,31,PASS,YES
+com.alibaba.json.bvt.serializer.date.DateTest_ISO8601_TwoLetterISO8601TimeZone#test_date_9,FAIL,junit.framework.AssertionFailedError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.serializer.date.DateTest5_iso8601.test_date,junit.framework.AssertionFailedError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.serializer.date.DateTest5_iso8601.test_date,5,PASS,NO
+com.alibaba.json.bvt.serializer.date.DateTest_ISO8601_UTCTime#test_date,FAIL,junit.framework.AssertionFailedError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.serializer.date.DateTest5_iso8601.test_date,junit.framework.AssertionFailedError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.serializer.date.DateTest5_iso8601.test_date,5,PASS,NO

@@ -1,0 +1,290 @@
+OR-01__r0	2026-09-04 12:17:56,701 [INFO] SchemaUtils dropping schema 'schema'
+OR-01__r0	2026-09-04 12:17:56,967 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+OR-01__r0	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+OR-01__r0	2026-09-04 12:17:56,968 [INFO] SchemaUtils dropping schema 'schema'
+OR-01__r0	2026-09-04 12:17:56,968 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+OR-01__r0	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+OR-01__r0	2026-09-04 12:17:56,969 [INFO] SchemaUtils creating schema 'schema'
+OR-01__r0	2026-09-04 12:17:56,969 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+OR-01__r0	2026-09-04 12:17:56,969 [INFO] SchemaUtils creating schema 'schema'
+OR-01__r0	2026-09-04 12:17:56,969 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+OR-01__r0	FT	1	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				570
+OR-01__r1	2026-09-04 12:17:57,299 [INFO] SchemaUtils dropping schema 'schema'
+OR-01__r1	2026-09-04 12:17:57,518 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+OR-01__r1	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+OR-01__r1	2026-09-04 12:17:57,519 [INFO] SchemaUtils dropping schema 'schema'
+OR-01__r1	2026-09-04 12:17:57,519 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+OR-01__r1	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+OR-01__r1	2026-09-04 12:17:57,519 [INFO] SchemaUtils creating schema 'schema'
+OR-01__r1	2026-09-04 12:17:57,520 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+OR-01__r1	2026-09-04 12:17:57,520 [INFO] SchemaUtils creating schema 'schema'
+OR-01__r1	2026-09-04 12:17:57,521 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+OR-01__r1	FT	1	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				469
+OR-01__r2	2026-09-04 12:17:57,840 [INFO] SchemaUtils dropping schema 'schema'
+OR-01__r2	2026-09-04 12:17:58,051 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+OR-01__r2	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+OR-01__r2	2026-09-04 12:17:58,052 [INFO] SchemaUtils dropping schema 'schema'
+OR-01__r2	2026-09-04 12:17:58,053 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+OR-01__r2	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+OR-01__r2	2026-09-04 12:17:58,053 [INFO] SchemaUtils creating schema 'schema'
+OR-01__r2	2026-09-04 12:17:58,053 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+OR-01__r2	2026-09-04 12:17:58,053 [INFO] SchemaUtils creating schema 'schema'
+OR-01__r2	2026-09-04 12:17:58,054 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+OR-01__r2	FT	1	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				451
+OR-01__r3	2026-09-04 12:17:58,378 [INFO] SchemaUtils dropping schema 'schema'
+OR-01__r3	2026-09-04 12:17:58,586 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+OR-01__r3	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+OR-01__r3	2026-09-04 12:17:58,586 [INFO] SchemaUtils dropping schema 'schema'
+OR-01__r3	2026-09-04 12:17:58,587 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+OR-01__r3	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+OR-01__r3	2026-09-04 12:17:58,587 [INFO] SchemaUtils creating schema 'schema'
+OR-01__r3	2026-09-04 12:17:58,588 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+OR-01__r3	2026-09-04 12:17:58,588 [INFO] SchemaUtils creating schema 'schema'
+OR-01__r3	2026-09-04 12:17:58,588 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+OR-01__r3	FT	1	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				451
+OR-01__r4	2026-09-04 12:17:58,956 [INFO] SchemaUtils dropping schema 'schema'
+OR-01__r4	2026-09-04 12:17:59,210 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+OR-01__r4	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+OR-01__r4	2026-09-04 12:17:59,211 [INFO] SchemaUtils dropping schema 'schema'
+OR-01__r4	2026-09-04 12:17:59,213 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+OR-01__r4	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+OR-01__r4	2026-09-04 12:17:59,213 [INFO] SchemaUtils creating schema 'schema'
+OR-01__r4	2026-09-04 12:17:59,214 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+OR-01__r4	2026-09-04 12:17:59,214 [INFO] SchemaUtils creating schema 'schema'
+OR-01__r4	2026-09-04 12:17:59,215 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+OR-01__r4	FT	1	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				540
+OR-01__r5	2026-09-04 12:17:59,591 [INFO] SchemaUtils dropping schema 'schema'
+OR-01__r5	2026-09-04 12:17:59,808 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+OR-01__r5	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+OR-01__r5	2026-09-04 12:17:59,809 [INFO] SchemaUtils dropping schema 'schema'
+OR-01__r5	2026-09-04 12:17:59,810 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+OR-01__r5	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+OR-01__r5	2026-09-04 12:17:59,810 [INFO] SchemaUtils creating schema 'schema'
+OR-01__r5	2026-09-04 12:17:59,810 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+OR-01__r5	2026-09-04 12:17:59,810 [INFO] SchemaUtils creating schema 'schema'
+OR-01__r5	2026-09-04 12:17:59,811 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+OR-01__r5	FT	1	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				497
+OR-01__r6	2026-09-04 12:18:00,158 [INFO] SchemaUtils dropping schema 'schema'
+OR-01__r6	2026-09-04 12:18:00,371 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+OR-01__r6	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+OR-01__r6	2026-09-04 12:18:00,372 [INFO] SchemaUtils dropping schema 'schema'
+OR-01__r6	2026-09-04 12:18:00,373 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+OR-01__r6	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+OR-01__r6	2026-09-04 12:18:00,373 [INFO] SchemaUtils creating schema 'schema'
+OR-01__r6	2026-09-04 12:18:00,374 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+OR-01__r6	2026-09-04 12:18:00,374 [INFO] SchemaUtils creating schema 'schema'
+OR-01__r6	2026-09-04 12:18:00,375 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+OR-01__r6	FT	1	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				477
+OR-01__r7	2026-09-04 12:18:00,715 [INFO] SchemaUtils dropping schema 'schema'
+OR-01__r7	2026-09-04 12:18:00,926 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+OR-01__r7	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+OR-01__r7	2026-09-04 12:18:00,926 [INFO] SchemaUtils dropping schema 'schema'
+OR-01__r7	2026-09-04 12:18:00,927 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+OR-01__r7	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+OR-01__r7	2026-09-04 12:18:00,927 [INFO] SchemaUtils creating schema 'schema'
+OR-01__r7	2026-09-04 12:18:00,928 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+OR-01__r7	2026-09-04 12:18:00,928 [INFO] SchemaUtils creating schema 'schema'
+OR-01__r7	2026-09-04 12:18:00,928 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+OR-01__r7	FT	1	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				463
+OR-01__r8	2026-09-04 12:18:01,267 [INFO] SchemaUtils dropping schema 'schema'
+OR-01__r8	2026-09-04 12:18:01,479 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+OR-01__r8	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+OR-01__r8	2026-09-04 12:18:01,480 [INFO] SchemaUtils dropping schema 'schema'
+OR-01__r8	2026-09-04 12:18:01,481 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+OR-01__r8	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+OR-01__r8	2026-09-04 12:18:01,481 [INFO] SchemaUtils creating schema 'schema'
+OR-01__r8	2026-09-04 12:18:01,481 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+OR-01__r8	2026-09-04 12:18:01,482 [INFO] SchemaUtils creating schema 'schema'
+OR-01__r8	2026-09-04 12:18:01,482 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+OR-01__r8	FT	1	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				469
+OR-01__r9	2026-09-04 12:18:01,810 [INFO] SchemaUtils dropping schema 'schema'
+OR-01__r9	2026-09-04 12:18:02,023 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+OR-01__r9	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+OR-01__r9	2026-09-04 12:18:02,024 [INFO] SchemaUtils dropping schema 'schema'
+OR-01__r9	2026-09-04 12:18:02,024 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+OR-01__r9	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+OR-01__r9	2026-09-04 12:18:02,025 [INFO] SchemaUtils creating schema 'schema'
+OR-01__r9	2026-09-04 12:18:02,025 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+OR-01__r9	2026-09-04 12:18:02,026 [INFO] SchemaUtils creating schema 'schema'
+OR-01__r9	2026-09-04 12:18:02,026 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+OR-01__r9	FT	1	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				462
+OR-02__r0	2026-09-04 12:18:02,420 [INFO] TableUtils dropping table 'foo'
+OR-02__r0	2026-09-04 12:18:02,653 [INFO] TableUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "FOO" not found; SQL statement:
+OR-02__r0	DROP TABLE `foo`  [42102-200]' for statement: DROP TABLE `foo` 
+OR-02__r0	2026-09-04 12:18:02,653 [INFO] TableUtils creating table 'foo'
+OR-02__r0	2026-09-04 12:18:02,688 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE `foo` (`id` INTEGER AUTO_INCREMENT , `val` INTEGER , `equal` INTEGER , `string` VARCHAR(255) , PRIMARY KEY (`id`) ) 
+OR-02__r0	2026-09-04 12:18:02,725 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r0	2026-09-04 12:18:02,725 [TRACE] BaseMappedStatement insert arguments: [1, 0, null]
+OR-02__r0	2026-09-04 12:18:02,725 [DEBUG] BaseMappedStatement assigned id '1' from keyholder to 'id' in Foo object
+OR-02__r0	2026-09-04 12:18:02,726 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r0	2026-09-04 12:18:02,726 [TRACE] BaseMappedStatement insert arguments: [2, 0, null]
+OR-02__r0	2026-09-04 12:18:02,726 [DEBUG] BaseMappedStatement assigned id '2' from keyholder to 'id' in Foo object
+OR-02__r0	2026-09-04 12:18:02,726 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r0	2026-09-04 12:18:02,726 [TRACE] BaseMappedStatement insert arguments: [3, 0, null]
+OR-02__r0	2026-09-04 12:18:02,726 [DEBUG] BaseMappedStatement assigned id '3' from keyholder to 'id' in Foo object
+OR-02__r0	FT	1	com.j256.ormlite.misc.TransactionManagerTest#testConnectionLeakCreateList	PASS				614
+OR-02__r1	2026-09-04 12:18:03,075 [INFO] TableUtils dropping table 'foo'
+OR-02__r1	2026-09-04 12:18:03,290 [INFO] TableUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "FOO" not found; SQL statement:
+OR-02__r1	DROP TABLE `foo`  [42102-200]' for statement: DROP TABLE `foo` 
+OR-02__r1	2026-09-04 12:18:03,290 [INFO] TableUtils creating table 'foo'
+OR-02__r1	2026-09-04 12:18:03,312 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE `foo` (`id` INTEGER AUTO_INCREMENT , `val` INTEGER , `equal` INTEGER , `string` VARCHAR(255) , PRIMARY KEY (`id`) ) 
+OR-02__r1	2026-09-04 12:18:03,338 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r1	2026-09-04 12:18:03,338 [TRACE] BaseMappedStatement insert arguments: [1, 0, null]
+OR-02__r1	2026-09-04 12:18:03,339 [DEBUG] BaseMappedStatement assigned id '1' from keyholder to 'id' in Foo object
+OR-02__r1	2026-09-04 12:18:03,339 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r1	2026-09-04 12:18:03,339 [TRACE] BaseMappedStatement insert arguments: [2, 0, null]
+OR-02__r1	2026-09-04 12:18:03,339 [DEBUG] BaseMappedStatement assigned id '2' from keyholder to 'id' in Foo object
+OR-02__r1	2026-09-04 12:18:03,340 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r1	2026-09-04 12:18:03,340 [TRACE] BaseMappedStatement insert arguments: [3, 0, null]
+OR-02__r1	2026-09-04 12:18:03,340 [DEBUG] BaseMappedStatement assigned id '3' from keyholder to 'id' in Foo object
+OR-02__r1	FT	1	com.j256.ormlite.misc.TransactionManagerTest#testConnectionLeakCreateList	PASS				528
+OR-02__r2	2026-09-04 12:18:03,682 [INFO] TableUtils dropping table 'foo'
+OR-02__r2	2026-09-04 12:18:03,881 [INFO] TableUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "FOO" not found; SQL statement:
+OR-02__r2	DROP TABLE `foo`  [42102-200]' for statement: DROP TABLE `foo` 
+OR-02__r2	2026-09-04 12:18:03,881 [INFO] TableUtils creating table 'foo'
+OR-02__r2	2026-09-04 12:18:03,905 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE `foo` (`id` INTEGER AUTO_INCREMENT , `val` INTEGER , `equal` INTEGER , `string` VARCHAR(255) , PRIMARY KEY (`id`) ) 
+OR-02__r2	2026-09-04 12:18:03,925 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r2	2026-09-04 12:18:03,925 [TRACE] BaseMappedStatement insert arguments: [1, 0, null]
+OR-02__r2	2026-09-04 12:18:03,925 [DEBUG] BaseMappedStatement assigned id '1' from keyholder to 'id' in Foo object
+OR-02__r2	2026-09-04 12:18:03,926 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r2	2026-09-04 12:18:03,926 [TRACE] BaseMappedStatement insert arguments: [2, 0, null]
+OR-02__r2	2026-09-04 12:18:03,926 [DEBUG] BaseMappedStatement assigned id '2' from keyholder to 'id' in Foo object
+OR-02__r2	2026-09-04 12:18:03,926 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r2	2026-09-04 12:18:03,926 [TRACE] BaseMappedStatement insert arguments: [3, 0, null]
+OR-02__r2	2026-09-04 12:18:03,926 [DEBUG] BaseMappedStatement assigned id '3' from keyholder to 'id' in Foo object
+OR-02__r2	FT	1	com.j256.ormlite.misc.TransactionManagerTest#testConnectionLeakCreateList	PASS				502
+OR-02__r3	2026-09-04 12:18:04,277 [INFO] TableUtils dropping table 'foo'
+OR-02__r3	2026-09-04 12:18:04,476 [INFO] TableUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "FOO" not found; SQL statement:
+OR-02__r3	DROP TABLE `foo`  [42102-200]' for statement: DROP TABLE `foo` 
+OR-02__r3	2026-09-04 12:18:04,477 [INFO] TableUtils creating table 'foo'
+OR-02__r3	2026-09-04 12:18:04,501 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE `foo` (`id` INTEGER AUTO_INCREMENT , `val` INTEGER , `equal` INTEGER , `string` VARCHAR(255) , PRIMARY KEY (`id`) ) 
+OR-02__r3	2026-09-04 12:18:04,523 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r3	2026-09-04 12:18:04,523 [TRACE] BaseMappedStatement insert arguments: [1, 0, null]
+OR-02__r3	2026-09-04 12:18:04,523 [DEBUG] BaseMappedStatement assigned id '1' from keyholder to 'id' in Foo object
+OR-02__r3	2026-09-04 12:18:04,524 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r3	2026-09-04 12:18:04,524 [TRACE] BaseMappedStatement insert arguments: [2, 0, null]
+OR-02__r3	2026-09-04 12:18:04,524 [DEBUG] BaseMappedStatement assigned id '2' from keyholder to 'id' in Foo object
+OR-02__r3	2026-09-04 12:18:04,524 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r3	2026-09-04 12:18:04,524 [TRACE] BaseMappedStatement insert arguments: [3, 0, null]
+OR-02__r3	2026-09-04 12:18:04,525 [DEBUG] BaseMappedStatement assigned id '3' from keyholder to 'id' in Foo object
+OR-02__r3	FT	1	com.j256.ormlite.misc.TransactionManagerTest#testConnectionLeakCreateList	PASS				513
+OR-02__r4	2026-09-04 12:18:04,876 [INFO] TableUtils dropping table 'foo'
+OR-02__r4	2026-09-04 12:18:05,086 [INFO] TableUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "FOO" not found; SQL statement:
+OR-02__r4	DROP TABLE `foo`  [42102-200]' for statement: DROP TABLE `foo` 
+OR-02__r4	2026-09-04 12:18:05,086 [INFO] TableUtils creating table 'foo'
+OR-02__r4	2026-09-04 12:18:05,111 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE `foo` (`id` INTEGER AUTO_INCREMENT , `val` INTEGER , `equal` INTEGER , `string` VARCHAR(255) , PRIMARY KEY (`id`) ) 
+OR-02__r4	2026-09-04 12:18:05,139 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r4	2026-09-04 12:18:05,139 [TRACE] BaseMappedStatement insert arguments: [1, 0, null]
+OR-02__r4	2026-09-04 12:18:05,139 [DEBUG] BaseMappedStatement assigned id '1' from keyholder to 'id' in Foo object
+OR-02__r4	2026-09-04 12:18:05,140 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r4	2026-09-04 12:18:05,140 [TRACE] BaseMappedStatement insert arguments: [2, 0, null]
+OR-02__r4	2026-09-04 12:18:05,141 [DEBUG] BaseMappedStatement assigned id '2' from keyholder to 'id' in Foo object
+OR-02__r4	2026-09-04 12:18:05,141 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r4	2026-09-04 12:18:05,141 [TRACE] BaseMappedStatement insert arguments: [3, 0, null]
+OR-02__r4	2026-09-04 12:18:05,141 [DEBUG] BaseMappedStatement assigned id '3' from keyholder to 'id' in Foo object
+OR-02__r4	FT	1	com.j256.ormlite.misc.TransactionManagerTest#testConnectionLeakCreateList	PASS				524
+OR-02__r5	2026-09-04 12:18:05,480 [INFO] TableUtils dropping table 'foo'
+OR-02__r5	2026-09-04 12:18:05,680 [INFO] TableUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "FOO" not found; SQL statement:
+OR-02__r5	DROP TABLE `foo`  [42102-200]' for statement: DROP TABLE `foo` 
+OR-02__r5	2026-09-04 12:18:05,681 [INFO] TableUtils creating table 'foo'
+OR-02__r5	2026-09-04 12:18:05,707 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE `foo` (`id` INTEGER AUTO_INCREMENT , `val` INTEGER , `equal` INTEGER , `string` VARCHAR(255) , PRIMARY KEY (`id`) ) 
+OR-02__r5	2026-09-04 12:18:05,727 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r5	2026-09-04 12:18:05,728 [TRACE] BaseMappedStatement insert arguments: [1, 0, null]
+OR-02__r5	2026-09-04 12:18:05,728 [DEBUG] BaseMappedStatement assigned id '1' from keyholder to 'id' in Foo object
+OR-02__r5	2026-09-04 12:18:05,728 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r5	2026-09-04 12:18:05,728 [TRACE] BaseMappedStatement insert arguments: [2, 0, null]
+OR-02__r5	2026-09-04 12:18:05,728 [DEBUG] BaseMappedStatement assigned id '2' from keyholder to 'id' in Foo object
+OR-02__r5	2026-09-04 12:18:05,729 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r5	2026-09-04 12:18:05,729 [TRACE] BaseMappedStatement insert arguments: [3, 0, null]
+OR-02__r5	2026-09-04 12:18:05,729 [DEBUG] BaseMappedStatement assigned id '3' from keyholder to 'id' in Foo object
+OR-02__r5	FT	1	com.j256.ormlite.misc.TransactionManagerTest#testConnectionLeakCreateList	PASS				498
+OR-02__r6	2026-09-04 12:18:06,065 [INFO] TableUtils dropping table 'foo'
+OR-02__r6	2026-09-04 12:18:06,281 [INFO] TableUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "FOO" not found; SQL statement:
+OR-02__r6	DROP TABLE `foo`  [42102-200]' for statement: DROP TABLE `foo` 
+OR-02__r6	2026-09-04 12:18:06,281 [INFO] TableUtils creating table 'foo'
+OR-02__r6	2026-09-04 12:18:06,308 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE `foo` (`id` INTEGER AUTO_INCREMENT , `val` INTEGER , `equal` INTEGER , `string` VARCHAR(255) , PRIMARY KEY (`id`) ) 
+OR-02__r6	2026-09-04 12:18:06,331 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r6	2026-09-04 12:18:06,331 [TRACE] BaseMappedStatement insert arguments: [1, 0, null]
+OR-02__r6	2026-09-04 12:18:06,332 [DEBUG] BaseMappedStatement assigned id '1' from keyholder to 'id' in Foo object
+OR-02__r6	2026-09-04 12:18:06,332 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r6	2026-09-04 12:18:06,332 [TRACE] BaseMappedStatement insert arguments: [2, 0, null]
+OR-02__r6	2026-09-04 12:18:06,332 [DEBUG] BaseMappedStatement assigned id '2' from keyholder to 'id' in Foo object
+OR-02__r6	2026-09-04 12:18:06,333 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r6	2026-09-04 12:18:06,333 [TRACE] BaseMappedStatement insert arguments: [3, 0, null]
+OR-02__r6	2026-09-04 12:18:06,333 [DEBUG] BaseMappedStatement assigned id '3' from keyholder to 'id' in Foo object
+OR-02__r6	FT	1	com.j256.ormlite.misc.TransactionManagerTest#testConnectionLeakCreateList	PASS				518
+OR-02__r7	2026-09-04 12:18:05,920 [INFO] TableUtils dropping table 'foo'
+OR-02__r7	2026-09-04 12:18:06,133 [INFO] TableUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "FOO" not found; SQL statement:
+OR-02__r7	DROP TABLE `foo`  [42102-200]' for statement: DROP TABLE `foo` 
+OR-02__r7	2026-09-04 12:18:06,134 [INFO] TableUtils creating table 'foo'
+OR-02__r7	2026-09-04 12:18:05,045 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE `foo` (`id` INTEGER AUTO_INCREMENT , `val` INTEGER , `equal` INTEGER , `string` VARCHAR(255) , PRIMARY KEY (`id`) ) 
+OR-02__r7	2026-09-04 12:18:05,068 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r7	2026-09-04 12:18:05,068 [TRACE] BaseMappedStatement insert arguments: [1, 0, null]
+OR-02__r7	2026-09-04 12:18:05,068 [DEBUG] BaseMappedStatement assigned id '1' from keyholder to 'id' in Foo object
+OR-02__r7	2026-09-04 12:18:05,069 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r7	2026-09-04 12:18:05,069 [TRACE] BaseMappedStatement insert arguments: [2, 0, null]
+OR-02__r7	2026-09-04 12:18:05,069 [DEBUG] BaseMappedStatement assigned id '2' from keyholder to 'id' in Foo object
+OR-02__r7	2026-09-04 12:18:05,069 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r7	2026-09-04 12:18:05,069 [TRACE] BaseMappedStatement insert arguments: [3, 0, null]
+OR-02__r7	2026-09-04 12:18:05,069 [DEBUG] BaseMappedStatement assigned id '3' from keyholder to 'id' in Foo object
+OR-02__r7	FT	1	com.j256.ormlite.misc.TransactionManagerTest#testConnectionLeakCreateList	PASS				-1350
+OR-02__r8	2026-09-04 12:18:05,420 [INFO] TableUtils dropping table 'foo'
+OR-02__r8	2026-09-04 12:18:05,647 [INFO] TableUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "FOO" not found; SQL statement:
+OR-02__r8	DROP TABLE `foo`  [42102-200]' for statement: DROP TABLE `foo` 
+OR-02__r8	2026-09-04 12:18:05,648 [INFO] TableUtils creating table 'foo'
+OR-02__r8	2026-09-04 12:18:05,674 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE `foo` (`id` INTEGER AUTO_INCREMENT , `val` INTEGER , `equal` INTEGER , `string` VARCHAR(255) , PRIMARY KEY (`id`) ) 
+OR-02__r8	2026-09-04 12:18:05,695 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r8	2026-09-04 12:18:05,695 [TRACE] BaseMappedStatement insert arguments: [1, 0, null]
+OR-02__r8	2026-09-04 12:18:05,695 [DEBUG] BaseMappedStatement assigned id '1' from keyholder to 'id' in Foo object
+OR-02__r8	2026-09-04 12:18:05,696 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r8	2026-09-04 12:18:05,696 [TRACE] BaseMappedStatement insert arguments: [2, 0, null]
+OR-02__r8	2026-09-04 12:18:05,696 [DEBUG] BaseMappedStatement assigned id '2' from keyholder to 'id' in Foo object
+OR-02__r8	2026-09-04 12:18:05,696 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r8	2026-09-04 12:18:05,696 [TRACE] BaseMappedStatement insert arguments: [3, 0, null]
+OR-02__r8	2026-09-04 12:18:05,697 [DEBUG] BaseMappedStatement assigned id '3' from keyholder to 'id' in Foo object
+OR-02__r8	FT	1	com.j256.ormlite.misc.TransactionManagerTest#testConnectionLeakCreateList	PASS				550
+OR-02__r9	2026-09-04 12:18:06,048 [INFO] TableUtils dropping table 'foo'
+OR-02__r9	2026-09-04 12:18:06,265 [INFO] TableUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "FOO" not found; SQL statement:
+OR-02__r9	DROP TABLE `foo`  [42102-200]' for statement: DROP TABLE `foo` 
+OR-02__r9	2026-09-04 12:18:06,266 [INFO] TableUtils creating table 'foo'
+OR-02__r9	2026-09-04 12:18:06,294 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE `foo` (`id` INTEGER AUTO_INCREMENT , `val` INTEGER , `equal` INTEGER , `string` VARCHAR(255) , PRIMARY KEY (`id`) ) 
+OR-02__r9	2026-09-04 12:18:06,315 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r9	2026-09-04 12:18:06,316 [TRACE] BaseMappedStatement insert arguments: [1, 0, null]
+OR-02__r9	2026-09-04 12:18:06,316 [DEBUG] BaseMappedStatement assigned id '1' from keyholder to 'id' in Foo object
+OR-02__r9	2026-09-04 12:18:06,316 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r9	2026-09-04 12:18:06,316 [TRACE] BaseMappedStatement insert arguments: [2, 0, null]
+OR-02__r9	2026-09-04 12:18:06,316 [DEBUG] BaseMappedStatement assigned id '2' from keyholder to 'id' in Foo object
+OR-02__r9	2026-09-04 12:18:06,317 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+OR-02__r9	2026-09-04 12:18:06,317 [TRACE] BaseMappedStatement insert arguments: [3, 0, null]
+OR-02__r9	2026-09-04 12:18:06,317 [DEBUG] BaseMappedStatement assigned id '3' from keyholder to 'id' in Foo object
+OR-02__r9	FT	1	com.j256.ormlite.misc.TransactionManagerTest#testConnectionLeakCreateList	PASS				526
+OR-03__r0	2026-09-04 12:18:06,644 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+OR-03__r0	FT	1	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				240
+OR-03__r1	2026-09-04 12:18:06,953 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+OR-03__r1	FT	1	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				221
+OR-03__r2	2026-09-04 12:18:07,261 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+OR-03__r2	FT	1	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				229
+OR-03__r3	2026-09-04 12:18:07,577 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+OR-03__r3	FT	1	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				232
+OR-03__r4	2026-09-04 12:18:07,930 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+OR-03__r4	FT	1	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				270
+OR-03__r5	2026-09-04 12:18:08,269 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+OR-03__r5	FT	1	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				246
+OR-03__r6	2026-09-04 12:18:08,606 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+OR-03__r6	FT	1	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				245
+OR-03__r7	2026-09-04 12:18:08,922 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+OR-03__r7	FT	1	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				230
+OR-03__r8	2026-09-04 12:18:09,239 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+OR-03__r8	FT	1	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				233
+OR-03__r9	2026-09-04 12:18:09,563 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+OR-03__r9	FT	1	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				236
+OR-04__r0	FT	1	com.j256.ormlite.dao.RuntimeExceptionDaoTest#testAssignEmptyForeignCollectionThrow	PASS				267
+OR-04__r1	FT	1	com.j256.ormlite.dao.RuntimeExceptionDaoTest#testAssignEmptyForeignCollectionThrow	PASS				284
+OR-04__r2	FT	1	com.j256.ormlite.dao.RuntimeExceptionDaoTest#testAssignEmptyForeignCollectionThrow	PASS				262
+OR-04__r3	FT	1	com.j256.ormlite.dao.RuntimeExceptionDaoTest#testAssignEmptyForeignCollectionThrow	PASS				267
+OR-04__r4	FT	1	com.j256.ormlite.dao.RuntimeExceptionDaoTest#testAssignEmptyForeignCollectionThrow	PASS				264
+OR-04__r5	FT	1	com.j256.ormlite.dao.RuntimeExceptionDaoTest#testAssignEmptyForeignCollectionThrow	PASS				259
+OR-04__r6	FT	1	com.j256.ormlite.dao.RuntimeExceptionDaoTest#testAssignEmptyForeignCollectionThrow	PASS				268
+OR-04__r7	FT	1	com.j256.ormlite.dao.RuntimeExceptionDaoTest#testAssignEmptyForeignCollectionThrow	PASS				271
+OR-04__r8	FT	1	com.j256.ormlite.dao.RuntimeExceptionDaoTest#testAssignEmptyForeignCollectionThrow	PASS				269
+OR-04__r9	FT	1	com.j256.ormlite.dao.RuntimeExceptionDaoTest#testAssignEmptyForeignCollectionThrow	PASS				310

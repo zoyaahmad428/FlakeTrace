@@ -1,0 +1,38 @@
+# Frozen environment - FlakeTrace POC
+Recorded: 2026-08-28T15:44:19+05:00
+
+## Container
+image:        maven:3.9-eclipse-temurin-8
+repo_digest:  maven@sha256:15522857a08bc468b05f4284d4a5a6c49eff7af7abfe16dc7770609484a67b8b
+image_id:     sha256:15522857a08bc468b05f4284d4a5a6c49eff7af7abfe16dc7770609484a67b8b
+maven_volume: ftm2 (mounted at /root/.m2)
+
+## Toolchain (from container)
+  Apache Maven 3.9.16 (2bdd9fddda4b155ebf8000e807eb73fd829a51d5)
+  Maven home: /usr/share/maven
+  Java version: 1.8.0_502, vendor: Temurin, runtime: /opt/java/openjdk/jre
+  Default locale: en_US, platform encoding: UTF-8
+  OS name: "linux", version: "6.6.87.2-microsoft-standard-wsl2", arch: "amd64", family: "unix"
+  
+  openjdk version "1.8.0_502"
+  OpenJDK Runtime Environment (Temurin)(build 1.8.0_502-b07)
+  OpenJDK 64-Bit Server VM (Temurin)(build 25.502-b07, mixed mode)
+
+## Host
+  docker:  Docker version 29.4.1, build 055a478
+  kernel:  Linux 6.6.87.2-microsoft-standard-WSL2
+
+## Subjects
+  jsoniter: 6925cf4c19d313504b416f58a349a36bf563e0e1
+  fastjson: e05e9c5e4be580691cc55a59f3256595393203a1
+
+## Dataset provenance
+  IDoFT snapshot: 4903dc9233eead4e4191c66f9ed0b14eea091052 (2026-05-03)
+
+## Per-project environment (discovered Hour 2, required for isolation pass)
+  fastjson: TZ=Asia/Shanghai
+    fastjson date tests hard-code UTC+8 expectations. Under the container
+    default (UTC) FJ-01 and FJ-02 fail 0/10 in isolation by exactly 8 hours,
+    independently of test order. TZ is therefore a frozen environment
+    parameter, not an order-dependence signal.
+  jsoniter: none (passes under container default UTC)

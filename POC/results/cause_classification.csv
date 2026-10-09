@@ -1,0 +1,9 @@
+case_id,project,direction,scope,depth,n_relevant,cause,evidence
+FJ-01,fastjson,BRITTLE,package (frozen),2,42,A_DIRECT_PUTSTATIC,com/alibaba/fastjson/JSON.defaultLocale:Ljava/util/Locale;
+FJ-02,fastjson,BRITTLE,package (frozen),2,24,A_DIRECT_PUTSTATIC,com/alibaba/fastjson/JSON.DEFFAULT_DATE_FORMAT:Ljava/lang/String;
+FJ-03,fastjson,VICTIM,package (frozen),2,6,B_VIA_STATIC_REF,com/alibaba/fastjson/JSON.DEFAULT_GENERATE_FEATURE:I
+FJ-04,fastjson,VICTIM,package (frozen),2,2,B_VIA_STATIC_REF,com/alibaba/fastjson/JSON.DEFAULT_GENERATE_FEATURE:I
+OR-01,ormlite,VICTIM,full module (widened),2,1,D_VIA_CLINIT,LogBackendFactory; -> DaoManager.<clinit>
+OR-02,ormlite,VICTIM,full module (widened),2,1,B_VIA_STATIC_REF,com/j256/ormlite/logger/Logger.UNKNOWN_ARG:Ljava/lang/Object;
+OR-03,ormlite,VICTIM,full module (widened),2,1,C_UNSUPPORTED,
+OR-04,ormlite,VICTIM,full module (widened),2,1,C_UNSUPPORTED,

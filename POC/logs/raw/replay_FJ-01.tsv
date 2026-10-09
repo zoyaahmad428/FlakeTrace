@@ -1,0 +1,30 @@
+FJ-01__rp0	{"publishTime":"2026/09/04 23:14:04","serverTime":"2026-09-04 23:14:04","startDate":"2026-09-04"}
+FJ-01__rp0	FT	1	com.alibaba.json.bvt.date.DateFieldFormatTest#test_format_	PASS				290
+FJ-01__rp0	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				3
+FJ-01__rp1	{"publishTime":"2026/09/04 23:14:04","serverTime":"2026-09-04 23:14:04","startDate":"2026-09-04"}
+FJ-01__rp1	FT	1	com.alibaba.json.bvt.date.DateFieldFormatTest#test_format_	PASS				254
+FJ-01__rp1	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				3
+FJ-01__rp2	{"publishTime":"2026/09/04 23:14:05","serverTime":"2026-09-04 23:14:05","startDate":"2026-09-04"}
+FJ-01__rp2	FT	1	com.alibaba.json.bvt.date.DateFieldFormatTest#test_format_	PASS				230
+FJ-01__rp2	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				3
+FJ-01__rp3	{"publishTime":"2026/09/04 23:14:05","serverTime":"2026-09-04 23:14:05","startDate":"2026-09-04"}
+FJ-01__rp3	FT	1	com.alibaba.json.bvt.date.DateFieldFormatTest#test_format_	PASS				270
+FJ-01__rp3	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				5
+FJ-01__rp4	{"publishTime":"2026/09/04 23:14:05","serverTime":"2026-09-04 23:14:05","startDate":"2026-09-04"}
+FJ-01__rp4	FT	1	com.alibaba.json.bvt.date.DateFieldFormatTest#test_format_	PASS				260
+FJ-01__rp4	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				3
+FJ-01__rp5	{"publishTime":"2026/09/04 23:14:06","serverTime":"2026-09-04 23:14:06","startDate":"2026-09-04"}
+FJ-01__rp5	FT	1	com.alibaba.json.bvt.date.DateFieldFormatTest#test_format_	PASS				230
+FJ-01__rp5	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				4
+FJ-01__rp6	{"publishTime":"2026/09/04 23:14:06","serverTime":"2026-09-04 23:14:06","startDate":"2026-09-04"}
+FJ-01__rp6	FT	1	com.alibaba.json.bvt.date.DateFieldFormatTest#test_format_	PASS				238
+FJ-01__rp6	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				3
+FJ-01__rp7	{"publishTime":"2026/09/04 23:14:06","serverTime":"2026-09-04 23:14:06","startDate":"2026-09-04"}
+FJ-01__rp7	FT	1	com.alibaba.json.bvt.date.DateFieldFormatTest#test_format_	PASS				239
+FJ-01__rp7	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				3
+FJ-01__rp8	{"publishTime":"2026/09/04 23:14:07","serverTime":"2026-09-04 23:14:07","startDate":"2026-09-04"}
+FJ-01__rp8	FT	1	com.alibaba.json.bvt.date.DateFieldFormatTest#test_format_	PASS				232
+FJ-01__rp8	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				3
+FJ-01__rp9	{"publishTime":"2026/09/04 23:14:07","serverTime":"2026-09-04 23:14:07","startDate":"2026-09-04"}
+FJ-01__rp9	FT	1	com.alibaba.json.bvt.date.DateFieldFormatTest#test_format_	PASS				238
+FJ-01__rp9	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				4

@@ -1,0 +1,37 @@
+== HO-01 [VICTIM] victim=com.alibaba.json.bvt.bug.Issue_717#test_for_issue candidates=508
+   HO-01  300/508  (3.0 min)
+   HO-01  508/508  (5.2 min)
+   HO-01 DONE: 0/508 OD-relevant candidates (target -> FAIL)  (5.2 min)
+== HO-02 [VICTIM] victim=com.alibaba.json.bvt.date.DateTest_tz#test_codec candidates=72
+   HO-02  72/72  (0.7 min)
+   HO-02 DONE: 30/72 OD-relevant candidates (target -> FAIL)  (0.7 min)
+== HO-03 [VICTIM] victim=com.alibaba.json.bvt.issue_1200.Issue1298#test_for_issue candidates=30
+   HO-03  30/30  (0.4 min)
+   HO-03 DONE: 29/30 OD-relevant candidates (target -> FAIL)  (0.4 min)
+== HO-04 [VICTIM] victim=com.alibaba.json.bvt.issue_1200.Issue1298#test_for_issue_1 candidates=30
+   HO-04  30/30  (0.2 min)
+   HO-04 DONE: 29/30 OD-relevant candidates (target -> FAIL)  (0.2 min)
+== HO-05 [VICTIM] victim=com.alibaba.json.bvt.issue_1600.Issue1679#test_for_issue candidates=34
+   HO-05  34/34  (0.3 min)
+   HO-05 DONE: 33/34 OD-relevant candidates (target -> FAIL)  (0.3 min)
+== HO-06 [VICTIM] victim=com.alibaba.json.bvt.issue_1700.Issue1769#test_for_issue candidates=18
+   HO-06  18/18  (0.1 min)
+   HO-06 DONE: 18/18 OD-relevant candidates (target -> FAIL)  (0.1 min)
+== HO-07 [VICTIM] victim=com.alibaba.json.bvt.issue_1900.Issue1977#test_for_issue candidates=17
+   HO-07  17/17  (0.1 min)
+   HO-07 DONE: 16/17 OD-relevant candidates (target -> FAIL)  (0.1 min)
+== HO-08 [VICTIM] victim=com.alibaba.json.bvt.parser.DefaultExtJSONParser_parseArray#test_8 candidates=722
+   HO-08  300/722  (2.0 min)
+   HO-08  600/722  (4.0 min)
+   HO-08  722/722  (4.8 min)
+   HO-08 DONE: 698/722 OD-relevant candidates (target -> FAIL)  (4.8 min)
+== HO-09 [VICTIM] victim=com.alibaba.json.bvt.serializer.JSONFieldTest5#test_jsonField candidates=524
+   HO-09  300/524  (2.0 min)
+   HO-09  524/524  (3.2 min)
+   HO-09 DONE: 0/524 OD-relevant candidates (target -> FAIL)  (3.2 min)
+== HO-10 [VICTIM] victim=com.alibaba.json.bvt.serializer.date.DateTest4_indian#test_date candidates=20
+   HO-10  20/20  (0.1 min)
+   HO-10 DONE: 7/20 OD-relevant candidates (target -> FAIL)  (0.1 min)
+== HO-11 [VICTIM] victim=com.alibaba.json.bvt.serializer.date.DateTest5_iso8601#test_date candidates=20
+   HO-11  20/20  (0.1 min)
+   HO-11 DONE: 7/20 OD-relevant candidates (target -> FAIL)  (0.1 min)

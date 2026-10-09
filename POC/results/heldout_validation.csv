@@ -1,0 +1,5 @@
+case_id,candidates,obo,w_r_rank,lex_rank,saving_pct,top20pct
+OR-01,1219,769,769,788,-2.5,no
+OR-02,1219,769,769,70,90.9,YES
+OR-03,1219,769,769,769,0.0,no
+OR-04,1219,768,768,768,0.0,no

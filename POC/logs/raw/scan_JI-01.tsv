@@ -1,0 +1,645 @@
+c0	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c0	FT	1	com.jsoniter.IterImplForStreamingTest#testLoadMore	PASS				149
+c0	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				5
+c1	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c1	FT	1	com.jsoniter.IterImplForStreamingTest#testReadMaxDouble	PASS				123
+c1	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				6
+c2	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c2	FT	1	com.jsoniter.TestAnnotation#test_inherited_setter_is_not_duplicate	PASS				186
+c2	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				16
+c3	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c3	FT	1	com.jsoniter.TestAnnotation#test_name_conflict	PASS				144
+c3	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				11
+c4	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c4	FT	1	com.jsoniter.TestAnnotation#test_single_param_setter	PASS				131
+c4	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				9
+c5	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c5	FT	1	com.jsoniter.TestAnnotation#test_static_factory	PASS				131
+c5	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				9
+c6	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c6	FT	1	com.jsoniter.TestAnnotationJsonCreator#test_ctor	PASS				130
+c6	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				7
+c7	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c7	FT	1	com.jsoniter.TestAnnotationJsonCreator#test_ctor_and_setter_binding	PASS				188
+c7	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				10
+c8	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c8	FT	1	com.jsoniter.TestAnnotationJsonIgnore#test_ignore	PASS				146
+c8	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				10
+c9	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c9	FT	1	com.jsoniter.TestAnnotationJsonIgnore#test_ignore_no_constructor_field	PASS				216
+c9	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				15
+c10	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c10	FT	1	com.jsoniter.TestAnnotationJsonIgnore#test_json_ignore_with_creator	PASS				255
+c10	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				16
+c11	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c11	FT	1	com.jsoniter.TestAnnotationJsonObject#test_extra_properties	PASS				210
+c11	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				12
+c12	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c12	FT	1	com.jsoniter.TestAnnotationJsonObject#test_no_unknown_properties	PASS				162
+c12	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				16
+c13	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c13	com.jsoniter.spi.JsonException: unknown property: field-1
+c13	FT	1	com.jsoniter.TestAnnotationJsonObject#test_unknown_properties	PASS				166
+c13	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				10
+c14	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c14	com.jsoniter.spi.JsonException: found should not present property: field1
+c14	FT	1	com.jsoniter.TestAnnotationJsonObject#test_unknown_properties_blacklist	PASS				127
+c14	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				9
+c15	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c15	FT	1	com.jsoniter.TestAnnotationJsonProperty#test_bind_from_multiple_names	PASS				138
+c15	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				15
+c16	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c16	FT	1	com.jsoniter.TestAnnotationJsonProperty#test_creator_with_json_property	PASS				145
+c16	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				8
+c17	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c17	FT	1	com.jsoniter.TestAnnotationJsonProperty#test_field_and_getter_setter	PASS				139
+c17	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				10
+c18	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c18	FT	1	com.jsoniter.TestAnnotationJsonProperty#test_getter_and_setter	PASS				139
+c18	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				9
+c19	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c19	FT	1	com.jsoniter.TestAnnotationJsonProperty#test_integer_property_decoder	PASS				123
+c19	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				8
+c20	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c20	FT	1	com.jsoniter.TestAnnotationJsonProperty#test_property_decoder	PASS				136
+c20	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				12
+c21	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c21	FT	1	com.jsoniter.TestAnnotationJsonProperty#test_rename	PASS				152
+c21	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				13
+c22	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c22	FT	1	com.jsoniter.TestAnnotationJsonProperty#test_required	PASS				118
+c22	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				9
+c23	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c23	FT	1	com.jsoniter.TestAnnotationJsonProperty#test_required_properties	PASS				137
+c23	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				7
+c24	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c24	FT	1	com.jsoniter.TestAnnotationJsonProperty#test_required_properties_not_missing	PASS				178
+c24	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				18
+c25	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c25	FT	1	com.jsoniter.TestAnnotationJsonProperty#test_specify_property	PASS				139
+c25	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				10
+c26	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c26	FT	1	com.jsoniter.TestAnnotationJsonWrapper#test_binding	PASS				228
+c26	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				11
+c27	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c27	FT	1	com.jsoniter.TestAnnotationJsonWrapper#test_issue_104	PASS				153
+c27	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				6
+c28	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c28	FT	1	com.jsoniter.TestAnnotationJsonWrapper#test_key_value	PASS				149
+c28	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				11
+c29	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c29	FT	1	com.jsoniter.TestArray#test_array_lazy_any_to_string	PASS				152
+c29	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				8
+c30	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c30	FT	1	com.jsoniter.TestArray#test_boolean_array	PASS				116
+c30	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				10
+c31	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c31	FT	1	com.jsoniter.TestArray#test_empty_array	PASS				152
+c31	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				9
+c32	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c32	FT	1	com.jsoniter.TestArray#test_five_elements	PASS				132
+c32	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				14
+c33	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c33	FT	1	com.jsoniter.TestArray#test_four_elements	PASS				130
+c33	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				8
+c34	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c34	FT	1	com.jsoniter.TestArray#test_iterator	PASS				88
+c34	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				9
+c35	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c35	FT	1	com.jsoniter.TestArray#test_null	PASS				108
+c35	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				10
+c36	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c36	FT	1	com.jsoniter.TestArray#test_one_element	PASS				143
+c36	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				13
+c37	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c37	FT	1	com.jsoniter.TestArray#test_three_elements	PASS				153
+c37	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				10
+c38	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c38	FT	1	com.jsoniter.TestArray#test_two_elements	PASS				165
+c38	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				9
+c39	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c39	FT	1	com.jsoniter.TestBoolean#test_non_streaming	PASS				77
+c39	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				5
+c40	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c40	FT	1	com.jsoniter.TestBoolean#test_streaming	PASS				115
+c40	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				6
+c41	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c41	FT	1	com.jsoniter.TestCustomizeType#test_customize_impl	PASS				110
+c41	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				11
+c42	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c42	FT	1	com.jsoniter.TestCustomizeType#test_customize_through_extension	PASS				108
+c42	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				7
+c43	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c43	FT	1	com.jsoniter.TestDemo#test_abc	PASS				128
+c43	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				12
+c44	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c44	3
+c44	FT	1	com.jsoniter.TestDemo#test_any_api	PASS				93
+c44	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				10
+c45	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c45	score
+c45	100
+c45	score
+c45	102
+c45	FT	1	com.jsoniter.TestDemo#test_any_is_fun	PASS				155
+c45	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				10
+c46	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c46	3
+c46	FT	1	com.jsoniter.TestDemo#test_bind_api	PASS				113
+c46	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				13
+c47	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c47	FT	1	com.jsoniter.TestDemo#test_deserialize	PASS				113
+c47	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				10
+c48	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c48	FT	1	com.jsoniter.TestDemo#test_empty_array_as_null	PASS				102
+c48	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				9
+c49	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c49	FT	1	com.jsoniter.TestDemo#test_generics	PASS				110
+c49	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				11
+c50	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c50	FT	1	com.jsoniter.TestDemo#test_iterator	PASS				75
+c50	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				9
+c51	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c51	6
+c51	FT	1	com.jsoniter.TestDemo#test_iterator_api	PASS				68
+c51	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				6
+c52	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c52	com.jsoniter.User@17d10166
+c52	FT	1	com.jsoniter.TestDemo#test_iterator_api_and_bind	PASS				93
+c52	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				7
+c53	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c53	FT	1	com.jsoniter.TestDemo#test_utf8	PASS				100
+c53	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				9
+c54	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c54	FT	1	com.jsoniter.TestExisting#test_direct_reuse	PASS				104
+c54	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				10
+c55	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c55	FT	1	com.jsoniter.TestExisting#test_indirect_reuse	PASS				101
+c55	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				9
+c56	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c56	FT	1	com.jsoniter.TestExisting#test_reuse_linked_list	PASS				89
+c56	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				9
+c57	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c57	FT	1	com.jsoniter.TestExisting#test_reuse_list	PASS				97
+c57	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				9
+c58	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c58	FT	1	com.jsoniter.TestExisting#test_reuse_map	PASS				82
+c58	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				9
+c59	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c59	FT	1	com.jsoniter.TestFloat#testBigDecimal	PASS				110
+c59	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				6
+c60	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c60	FT	1	com.jsoniter.TestFloat#testChooseDouble	PASS				127
+c60	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				4
+c61	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c61	FT	1	com.jsoniter.TestFloat#testInfinity	PASS				98
+c61	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				3
+c62	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c62	FT	1	com.jsoniter.TestFloat#test_combination_of_dot_and_exponent	PASS				72
+c62	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				4
+c63	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c63	FT	1	com.jsoniter.TestFloat#test_decimal_places	PASS				94
+c63	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				3
+c64	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c64	FT	1	com.jsoniter.TestFloat#test_ieee_754	PASS				77
+c64	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				3
+c65	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c65	FT	1	com.jsoniter.TestFloat#test_long_double	PASS				99
+c65	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				4
+c66	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c66	FT	1	com.jsoniter.TestFloat#test_positive_negative	PASS				75
+c66	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				5
+c67	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c67	FT	1	com.jsoniter.TestFloat#test_streaming	PASS				92
+c67	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				4
+c68	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c68	FT	1	com.jsoniter.TestGenerics#test_complex_object	PASS				90
+c68	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				7
+c69	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c69	FT	1	com.jsoniter.TestGenerics#test_generic_super_class	PASS				184
+c69	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				21
+c70	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c70	FT	1	com.jsoniter.TestGenerics#test_int_list	PASS				265
+c70	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				44
+c71	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c71	FT	1	com.jsoniter.TestGenerics#test_integer_map	PASS				242
+c71	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				29
+c72	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c72	FT	1	com.jsoniter.TestGenerics#test_issue_103	PASS				222
+c72	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				19
+c73	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c73	FT	1	com.jsoniter.TestGenerics#test_linked_list	PASS				120
+c73	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				12
+c74	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c74	FT	1	com.jsoniter.TestGenerics#test_list_of_list	PASS				116
+c74	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				12
+c75	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c75	FT	1	com.jsoniter.TestGenerics#test_string_list	PASS				109
+c75	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				9
+c76	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c76	FT	1	com.jsoniter.TestGenerics#test_string_map	PASS				95
+c76	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				9
+c77	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c77	FT	1	com.jsoniter.TestGenerics#test_string_set	PASS				94
+c77	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				7
+c78	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c78	FT	1	com.jsoniter.TestGenerics#test_wildcard	PASS				103
+c78	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				10
+c79	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c79	FT	1	com.jsoniter.TestGson#test_Expose	PASS				189
+c79	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				8
+c80	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c80	FT	1	com.jsoniter.TestGson#test_SerializedName	PASS				216
+c80	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				8
+c81	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c81	FT	1	com.jsoniter.TestGson#test_addDeserializationExclusionStrategy	PASS				202
+c81	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				7
+c82	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c82	FT	1	com.jsoniter.TestGson#test_bool_as_string	PASS				177
+c82	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				8
+c83	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c83	FT	1	com.jsoniter.TestGson#test_int_as_string	PASS				185
+c83	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				7
+c84	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c84	FT	1	com.jsoniter.TestGson#test_null_as_boolean	PASS				217
+c84	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				14
+c85	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c85	FT	1	com.jsoniter.TestGson#test_null_as_double	PASS				209
+c85	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				11
+c86	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c86	FT	1	com.jsoniter.TestGson#test_null_as_float	PASS				335
+c86	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				9
+c87	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c87	FT	1	com.jsoniter.TestGson#test_null_as_int	PASS				339
+c87	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				14
+c88	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c88	FT	1	com.jsoniter.TestGson#test_null_as_long	PASS				232
+c88	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				9
+c89	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c89	FT	1	com.jsoniter.TestGson#test_setDateFormat_format	PASS				212
+c89	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				12
+c90	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c90	FT	1	com.jsoniter.TestGson#test_setFieldNamingPolicy	PASS				261
+c90	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				12
+c91	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c91	FT	1	com.jsoniter.TestGson#test_setFieldNamingStrategy	PASS				218
+c91	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				8
+c92	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c92	FT	1	com.jsoniter.TestGson#test_setVersion	PASS				254
+c92	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				11
+c93	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c93	FT	1	com.jsoniter.TestIO#test_read_bytes	PASS				80
+c93	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				4
+c94	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c94	FT	1	com.jsoniter.TestIO#test_unread_byte	PASS				60
+c94	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				3
+c95	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c95	FT	1	com.jsoniter.TestInteger#testBigInteger	PASS				61
+c95	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				4
+c96	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c96	FT	1	com.jsoniter.TestInteger#testChooseInteger	PASS				68
+c96	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				2
+c97	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c97	FT	1	com.jsoniter.TestInteger#testChooseLong	PASS				121
+c97	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				6
+c98	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c98	FT	1	com.jsoniter.TestInteger#test_byte	PASS				121
+c98	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				3
+c99	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c99	FT	1	com.jsoniter.TestInteger#test_char	PASS				92
+c99	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				4
+c100	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c100	FT	1	com.jsoniter.TestInteger#test_large_number	PASS				137
+c100	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				5
+c101	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c101	FT	1	com.jsoniter.TestInteger#test_leading_zero	PASS				79
+c101	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				3
+c102	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c102	FT	1	com.jsoniter.TestInteger#test_max_int	PASS				103
+c102	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				4
+c103	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c103	FT	1	com.jsoniter.TestInteger#test_max_min_int	PASS				42
+c103	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				3
+c104	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c104	FT	1	com.jsoniter.TestInteger#test_max_min_long	PASS				73
+c104	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				4
+c105	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c105	FT	1	com.jsoniter.TestInteger#test_positive_negative_int	PASS				64
+c105	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				2
+c106	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c106	FT	1	com.jsoniter.TestInteger#test_positive_negative_long	PASS				86
+c106	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				4
+c107	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c107	FT	1	com.jsoniter.TestInteger#test_streaming	PASS				125
+c107	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				3
+c108	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c108	FT	1	com.jsoniter.TestJackson#test_JsonAnySetter	PASS				449
+c108	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				4
+c109	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c109	FT	1	com.jsoniter.TestJackson#test_JsonIgnore	PASS				494
+c109	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				6
+c110	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c110	FT	1	com.jsoniter.TestJackson#test_JsonProperty	PASS				504
+c110	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				8
+c111	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c111	FT	1	com.jsoniter.TestMap#test_MapKeyCodec	PASS				144
+c111	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				11
+c112	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c112	FT	1	com.jsoniter.TestMap#test_enum_key	PASS				60
+c112	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				7
+c113	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c113	FT	1	com.jsoniter.TestMap#test_integer_key	PASS				81
+c113	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				6
+c114	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c114	FT	1	com.jsoniter.TestMap#test_object_key	PASS				91
+c114	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				12
+c115	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c115	FT	1	com.jsoniter.TestMap#test_string_key	PASS				98
+c115	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				7
+c116	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c116	FT	1	com.jsoniter.TestNested#test_array_of_objects	PASS				153
+c116	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				10
+c117	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c117	FT	1	com.jsoniter.TestNested#test_get_all_array_elements_via_any	PASS				86
+c117	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				4
+c118	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c118	FT	1	com.jsoniter.TestNested#test_get_all_with_some_invalid_path	PASS				130
+c118	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				8
+c119	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c119	FT	1	com.jsoniter.TestNested#test_recursive_class	PASS				98
+c119	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				6
+c120	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c120	FT	1	com.jsoniter.TestNull#test_null_as_Any	PASS				128
+c120	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				10
+c121	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c121	FT	1	com.jsoniter.TestNull#test_null_as_BigDecimal	PASS				118
+c121	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				11
+c122	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c122	FT	1	com.jsoniter.TestNull#test_null_as_BigInteger	PASS				115
+c122	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				10
+c123	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c123	FT	1	com.jsoniter.TestNull#test_null_as_Boolean	PASS				66
+c123	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				5
+c124	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c124	FT	1	com.jsoniter.TestNull#test_null_as_Byte	PASS				106
+c124	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				5
+c125	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c125	FT	1	com.jsoniter.TestNull#test_null_as_Character	PASS				68
+c125	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				5
+c126	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c126	FT	1	com.jsoniter.TestNull#test_null_as_Double	PASS				62
+c126	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				6
+c127	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c127	FT	1	com.jsoniter.TestNull#test_null_as_Float	PASS				77
+c127	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				8
+c128	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c128	FT	1	com.jsoniter.TestNull#test_null_as_Integer	PASS				72
+c128	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				5
+c129	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c129	FT	1	com.jsoniter.TestNull#test_null_as_Long	PASS				89
+c129	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				7
+c130	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c130	FT	1	com.jsoniter.TestNull#test_null_as_Short	PASS				69
+c130	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				4
+c131	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c131	FT	1	com.jsoniter.TestObject#test_empty_class	PASS				89
+c131	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				7
+c132	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c132	FT	1	com.jsoniter.TestObject#test_empty_object	PASS				107
+c132	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				8
+c133	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c133	FT	1	com.jsoniter.TestObject#test_enum	PASS				116
+c133	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				11
+c134	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c134	FT	1	com.jsoniter.TestObject#test_incomplete_field_name	PASS				105
+c134	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				8
+c135	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c135	FT	1	com.jsoniter.TestObject#test_inheritance	PASS				79
+c135	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				11
+c136	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c136	FT	1	com.jsoniter.TestObject#test_iterator	PASS				76
+c136	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				9
+c137	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c137	FT	1	com.jsoniter.TestObject#test_maybe_empty_array_field	PASS				95
+c137	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				6
+c138	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c138	FT	1	com.jsoniter.TestObject#test_native_field	PASS				125
+c138	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				6
+c139	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c139	FT	1	com.jsoniter.TestObject#test_non_ascii_field	PASS				66
+c139	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				6
+c140	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c140	FT	1	com.jsoniter.TestObject#test_object_creation	PASS				117
+c140	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				7
+c141	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c141	FT	1	com.jsoniter.TestObject#test_one_field	PASS				158
+c141	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				5
+c142	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c142	FT	1	com.jsoniter.TestObject#test_private_ref	PASS				70
+c142	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				11
+c143	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c143	FT	1	com.jsoniter.TestObject#test_read_null	PASS				109
+c143	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				9
+c144	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c144	FT	1	com.jsoniter.TestObject#test_setter_is_preferred	PASS				72
+c144	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				5
+c145	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c145	FT	1	com.jsoniter.TestObject#test_two_fields	PASS				77
+c145	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				4
+c146	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c146	FT	1	com.jsoniter.TestOmitValue#test_shouldOmitInputNotNullOutputFalse	PASS				72
+c146	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				10
+c147	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c147	FT	1	com.jsoniter.TestOmitValue#test_shouldOmitInputPositiveOutputFalse	PASS				54
+c147	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				11
+c148	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c148	FT	1	com.jsoniter.TestOmitValue#test_shouldOmitInputPositiveOutputFalse2	PASS				53
+c148	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				6
+c149	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c149	FT	1	com.jsoniter.TestOmitValue#test_shouldOmitInputPositiveOutputFalse3	PASS				43
+c149	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				5
+c150	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c150	FT	1	com.jsoniter.TestOmitValue#test_shouldOmitInputPositiveOutputFalse4	PASS				50
+c150	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				9
+c151	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c151	FT	1	com.jsoniter.TestOmitValue#test_shouldOmitInputPositiveOutputFalse5	PASS				58
+c151	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				11
+c152	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c152	FT	1	com.jsoniter.TestOmitValue#test_shouldOmitInputPositiveOutputFalse6	PASS				48
+c152	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				11
+c153	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c153	FT	1	com.jsoniter.TestOmitValue#test_shouldOmitInputTrueOutputFalse	PASS				59
+c153	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				8
+c154	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c154	FT	1	com.jsoniter.TestOmitValue#test_shouldOmitInputZeroOutputTrue	PASS				68
+c154	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				12
+c155	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c155	FT	1	com.jsoniter.TestOmitValue#test_shouldOmitInputZeroOutputTrue2	PASS				44
+c155	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				7
+c156	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c156	100
+c156	FT	1	com.jsoniter.TestReadAny#test_bind_to_any	PASS				161
+c156	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				4
+c157	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c157	FT	1	com.jsoniter.TestReadAny#test_get	PASS				94
+c157	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				3
+c158	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c158	FT	1	com.jsoniter.TestReadAny#test_keys	PASS				66
+c158	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				2
+c159	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c159	FT	1	com.jsoniter.TestReadAny#test_read_any	PASS				93
+c159	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				4
+c160	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c160	FT	1	com.jsoniter.TestReadAny#test_read_any_from_string	PASS				122
+c160	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				5
+c161	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c161	FT	1	com.jsoniter.TestReadAny#test_read_any_in_streaming	PASS				83
+c161	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				5
+c162	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c162	FT	1	com.jsoniter.TestReadAny#test_read_boolean	PASS				98
+c162	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				3
+c163	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c163	FT	1	com.jsoniter.TestReadAny#test_read_class	PASS				88
+c163	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				4
+c164	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c164	FT	1	com.jsoniter.TestReadAny#test_read_double	PASS				80
+c164	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				3
+c165	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c165	FT	1	com.jsoniter.TestReadAny#test_read_float	PASS				65
+c165	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				2
+c166	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c166	FT	1	com.jsoniter.TestReadAny#test_read_float_as_int	PASS				82
+c166	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				3
+c167	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c167	FT	1	com.jsoniter.TestReadAny#test_read_int	PASS				83
+c167	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				4
+c168	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c168	FT	1	com.jsoniter.TestReadAny#test_read_int_array	PASS				127
+c168	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				5
+c169	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c169	FT	1	com.jsoniter.TestReadAny#test_read_int_as_string	PASS				135
+c169	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				5
+c170	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c170	FT	1	com.jsoniter.TestReadAny#test_read_int_object	PASS				73
+c170	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				3
+c171	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c171	FT	1	com.jsoniter.TestReadAny#test_read_long	PASS				57
+c171	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				2
+c172	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c172	FT	1	com.jsoniter.TestReadAny#test_read_multiple_field	PASS				58
+c172	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				2
+c173	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c173	FT	1	com.jsoniter.TestReadAny#test_read_string	PASS				103
+c173	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				4
+c174	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c174	com.jsoniter.spi.JsonException: Value not found: failed to get index 0 from []
+c174	com.jsoniter.spi.JsonException: Value not found: failed to get index 0 from []
+c174	com.jsoniter.spi.JsonException: Value not found: failed to get key hello from {}
+c174	com.jsoniter.spi.JsonException: Value not found: failed to get key hello from {}
+c174	FT	1	com.jsoniter.TestReadAny#test_require_path	PASS				126
+c174	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				3
+c175	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c175	FT	1	com.jsoniter.TestReadAny#test_size	PASS				60
+c175	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				3
+c176	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c176	FT	1	com.jsoniter.TestSkip#test_skip_array	PASS				72
+c176	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				5
+c177	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c177	FT	1	com.jsoniter.TestSkip#test_skip_nested	PASS				65
+c177	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				4
+c178	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c178	FT	1	com.jsoniter.TestSkip#test_skip_number	PASS				67
+c178	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				2
+c179	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c179	FT	1	com.jsoniter.TestSkip#test_skip_object	PASS				99
+c179	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				6
+c180	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c180	FT	1	com.jsoniter.TestSkip#test_skip_string	PASS				71
+c180	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				3
+c181	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c181	FT	1	com.jsoniter.TestSkip#test_skip_string_streaming	PASS				97
+c181	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				3
+c182	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c182	FT	1	com.jsoniter.TestSlice#test_equals	PASS				52
+c182	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				8
+c183	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c183	FT	1	com.jsoniter.TestSlice#test_equalsInputNotNullOutputFalse	PASS				87
+c183	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				9
+c184	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c184	FT	1	com.jsoniter.TestSlice#test_equalsInputNotNullOutputFalse2	PASS				61
+c184	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				7
+c185	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c185	FT	1	com.jsoniter.TestSlice#test_hashcode	PASS				38
+c185	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				6
+c186	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c186	FT	1	com.jsoniter.TestSpiPropertyDecoder#test_PropertyDecoder	PASS				106
+c186	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				9
+c187	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c187	FT	1	com.jsoniter.TestSpiPropertyDecoder#test_PropertyDecoder_for_type_literal	PASS				92
+c187	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				10
+c188	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c188	FT	1	com.jsoniter.TestSpiTypeDecoder#test_TypeDecoder	PASS				63
+c188	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				5
+c189	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c189	FT	1	com.jsoniter.TestSpiTypeDecoder#test_TypeDecoder_for_generics	PASS				56
+c189	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				9
+c190	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c190	FT	1	com.jsoniter.TestSpiTypeDecoder#test_as_array_element	PASS				84
+c190	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				7
+c191	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c191	FT	1	com.jsoniter.TestSpiTypeDecoder#test_as_field_type	PASS				81
+c191	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				5
+c192	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c192	FT	1	com.jsoniter.TestSpiTypeDecoder#test_direct	PASS				90
+c192	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				10
+c193	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c193	FT	1	com.jsoniter.TestSpiTypeDecoder#test_list_or_single_element	PASS				62
+c193	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				4
+c194	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c194	FT	1	com.jsoniter.TestString#test_ascii_string	PASS				60
+c194	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				4
+c195	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c195	FT	1	com.jsoniter.TestString#test_ascii_string_with_escape	PASS				93
+c195	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				3
+c196	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c196	FT	1	com.jsoniter.TestString#test_incomplete_escape	PASS				71
+c196	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				3
+c197	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c197	FT	1	com.jsoniter.TestString#test_incomplete_string	PASS				70
+c197	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				5
+c198	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c198	FT	1	com.jsoniter.TestString#test_invalid_string	PASS				66
+c198	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				5
+c199	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c199	FT	1	com.jsoniter.TestString#test_larger_than_buffer	PASS				65
+c199	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				4
+c200	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c200	FT	1	com.jsoniter.TestString#test_long_string	PASS				68
+c200	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				2
+c201	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c201	FT	1	com.jsoniter.TestString#test_long_string_in_streaming	PASS				96
+c201	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				3
+c202	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c202	FT	1	com.jsoniter.TestString#test_normal_escape	PASS				60
+c202	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				4
+c203	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c203	FT	1	com.jsoniter.TestString#test_null_string	PASS				88
+c203	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				7
+c204	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c204	FT	1	com.jsoniter.TestString#test_string_across_buffer	PASS				84
+c204	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				5
+c205	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c205	FT	1	com.jsoniter.TestString#test_surrogate	PASS				40
+c205	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				3
+c206	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c206	FT	1	com.jsoniter.TestString#test_unicode_escape	PASS				57
+c206	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				3
+c207	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c207	FT	1	com.jsoniter.TestString#test_utf8	PASS				65
+c207	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				5
+c208	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c208	FT	1	com.jsoniter.TestString#test_utf8_string	PASS				81
+c208	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				4
+c209	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c209	FT	1	com.jsoniter.TestWhatIsNext#test	PASS				82
+c209	FT	2	com.jsoniter.TestIO#test_read_byte	PASS				11

@@ -1,0 +1,2576 @@
+c0	null
+c0	FT	1	com.alibaba.json.bvt.bug.Bug1#testToEntry2	PASS				509
+c0	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				57
+c1	[{KH:"(2010-2011-2)-13105-13039-1", JC:"1"}] 
+c1	FT	1	com.alibaba.json.bvt.bug.Bug11#test_bug11	PASS				456
+c1	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				53
+c2	{"age":"11","group":["1","2"],"name":"name1"}
+c2	FT	1	com.alibaba.json.bvt.bug.Bug13#test_0	PASS				482
+c2	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				19
+c3	4294967295
+c3	-6
+c3	[{"a":"2a","b":"3b"},{"a":"4a","b":"6b"},{"a":"6a","b":"7{sdf<>jgh\n}b"},{"a":"8a","b":"9b"},{"a":"10a","b":"11ba"},{"a":"12a","b":"13b"}]
+c3	["sf","sdf","dsffds","sdfsdf{fds}"]
+c3	{"a":"10a","b":"11ba"}
+c3	{"0":{"a":"2a","b":"3b"},"1":{"a":"4a","b":"6b"},"2":{"a":"6a","b":"7{sdf<>jgh\n}b"},"3":{"a":"8a","b":"9b"},"4":{"a":"10a","b":"11ba"},"5":{"a":"12a","b":"13b"}}
+c3	FT	1	com.alibaba.json.bvt.bug.Bug14#test_0	PASS				448
+c3	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				29
+c4	{"articles":[{"id":0}],"list":[]}
+c4	FT	1	com.alibaba.json.bvt.bug.Bug2#test_0	PASS				485
+c4	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				18
+c5	FT	1	com.alibaba.json.bvt.bug.Bug_10#test_0	PASS				556
+c5	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				60
+c6	FT	1	com.alibaba.json.bvt.bug.Bug_10#test_1	PASS				399
+c6	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				58
+c7	{"groups":[{"elements":[{"value":"v.t.a","key":"t.a"},{"value":"v.i.a","key":"i.a"}]},{"elements":[{"value":"v.t.b","key":"t.b"},{"value":"v.i.b","key":"i.b"}]}]}
+c7	{"groups":[{"elements":[{"key":"t.a","value":"v.t.a"},{"key":"i.a","value":"v.i.a"}]},{"elements":[{"key":"t.b","value":"v.t.b"},{"key":"i.b","value":"v.i.b"}]}]}
+c7	FT	1	com.alibaba.json.bvt.bug.Bug_101_for_rongganlin#test_for_bug	PASS				475
+c7	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				30
+c8	{"groups":[{"elements":[{"key":"t.a","value":"v.t.a"},{"key":"i.a","value":"v.i.a"}]},{"elements":[{"key":"t.b","value":"v.t.b"},{"key":"i.b","value":"v.i.b"}]}]}
+c8	{"groups":[{"elements":[null,null]},{"elements":[null,null]}]}
+c8	FT	1	com.alibaba.json.bvt.bug.Bug_101_for_rongganlin_case2#test_for_bug	PASS				495
+c8	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				17
+c9	FT	1	com.alibaba.json.bvt.bug.Bug_101_for_rongganlin_case3#test_for_bug	PASS				422
+c9	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				15
+c10	FT	1	com.alibaba.json.bvt.bug.Bug_102_for_rongganlin#test_bug	PASS				355
+c10	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				40
+c11	{"codes":null,"names":null}
+c11	com.alibaba.json.bvt.bug.Bug_105_for_SpitFire$Foo@12bc6874
+c11	FT	1	com.alibaba.json.bvt.bug.Bug_105_for_SpitFire#test_listErrorTest	PASS				432
+c11	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				23
+c12	FT	1	com.alibaba.json.bvt.bug.Bug_127_for_qiuyan81#test_parserError	PASS				414
+c12	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				67
+c13	FT	1	com.alibaba.json.bvt.bug.Bug_127_for_qiuyan81#test_parserUndefined	PASS				436
+c13	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				32
+c14	FT	1	com.alibaba.json.bvt.bug.Bug_127_for_qiuyan81#test_parserUndefined_array	PASS				407
+c14	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				25
+c15	FT	1	com.alibaba.json.bvt.bug.Bug_127_for_qiuyan81#test_parserUndefined_b	PASS				423
+c15	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				29
+c16	FT	1	com.alibaba.json.bvt.bug.Bug_127_for_qiuyan81#test_parserUndefined_comma	PASS				402
+c16	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				48
+c17	FT	1	com.alibaba.json.bvt.bug.Bug_127_for_qiuyan81#test_parserUndefined_f	PASS				365
+c17	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				28
+c18	FT	1	com.alibaba.json.bvt.bug.Bug_127_for_qiuyan81#test_parserUndefined_field	PASS				336
+c18	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				49
+c19	FT	1	com.alibaba.json.bvt.bug.Bug_127_for_qiuyan81#test_parserUndefined_n	PASS				488
+c19	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				35
+c20	FT	1	com.alibaba.json.bvt.bug.Bug_127_for_qiuyan81#test_parserUndefined_r	PASS				450
+c20	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				28
+c21	FT	1	com.alibaba.json.bvt.bug.Bug_127_for_qiuyan81#test_parserUndefined_single	PASS				379
+c21	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				47
+c22	FT	1	com.alibaba.json.bvt.bug.Bug_127_for_qiuyan81#test_parserUndefined_space	PASS				407
+c22	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				30
+c23	FT	1	com.alibaba.json.bvt.bug.Bug_127_for_qiuyan81#test_parserUndefined_t	PASS				411
+c23	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				34
+c24	Jul 22, 2015 7:13:42 PM
+c24	Jul 22, 2015 7:13:42 PM
+c24	FT	1	com.alibaba.json.bvt.bug.Bug_376_for_iso8601#test_fix	PASS				409
+c24	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				44
+c25	{}
+c25	FT	1	com.alibaba.json.bvt.bug.Bug_6#test_bug6	PASS				448
+c25	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				14
+c26	FT	1	com.alibaba.json.bvt.bug.Bug_7#test_AtomicIntegerArray	PASS				237
+c26	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				204
+c27	FT	1	com.alibaba.json.bvt.bug.Bug_7#test_AtomicLongArray	PASS				225
+c27	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				185
+c28	FT	1	com.alibaba.json.bvt.bug.Bug_7#test_bigintegerArray	PASS				408
+c28	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				25
+c29	FT	1	com.alibaba.json.bvt.bug.Bug_7#test_doubleArray	PASS				-736
+c29	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				34
+c30	FT	1	com.alibaba.json.bvt.bug.Bug_7#test_floatArray	PASS				417
+c30	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				27
+c31	FT	1	com.alibaba.json.bvt.bug.Bug_8#test_0	PASS				417
+c31	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				54
+c32	FT	1	com.alibaba.json.bvt.bug.Bug_KimShen#test_0	PASS				533
+c32	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				24
+c33	[{"battleCommandList":[{"id":1}],"name":"g0"},{"battleCommandList":[{"id":2,"pre":{"$ref":"$[0].battleCommandList[0]"}}],"name":"g1"},{"battleCommandList":[{"id":3,"pre":{"$ref":"$[1].battleCommandList[0]"}}],"name":"g2"}]
+c33	[{"battleCommandList":[{"id":1}],"name":"g0"},{"battleCommandList":[{"id":2,"pre":{"$ref":"$[0].battleCommandList[0]"}}],"name":"g1"},{"battleCommandList":[{"id":3,"pre":{"$ref":"$[1].battleCommandList[0]"}}],"name":"g2"}]
+c33	FT	1	com.alibaba.json.bvt.bug.Bug_for_42283905#test_0	PASS				557
+c33	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				19
+c34	[{"battleCommandList":[{"id":1}],"name":"g0"},{"battleCommandList":[{"id":2,"pre":{"$ref":"$[0].battleCommandList[0]"}}],"name":"g1"},{"battleCommandList":[{"id":3,"pre":{"$ref":"$[1].battleCommandList[0]"}}],"name":"g2"}]
+c34	[{"battleCommandList":[{"id":1}],"name":"g0"},{"battleCommandList":[{"id":2,"pre":{"$ref":"$[0].battleCommandList[0]"}}],"name":"g1"},{"battleCommandList":[{"id":3,"pre":{"$ref":"$[1].battleCommandList[0]"}}],"name":"g2"}]
+c34	FT	1	com.alibaba.json.bvt.bug.Bug_for_42283905_1#test_0	PASS				570
+c34	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				15
+c35	FT	1	com.alibaba.json.bvt.bug.Bug_for_80108116#test_for_dateFormat	PASS				439
+c35	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				15
+c36	FT	1	com.alibaba.json.bvt.bug.Bug_for_ArrayMember#test_arrayMember	PASS				413
+c36	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				13
+c37	{"姓名":"A","时间":"F","满意度":"D","状态":"C","类型":"B","统计":"E"}
+c37	FT	1	com.alibaba.json.bvt.bug.Bug_for_BlankRain_Issue_502#test_for_issue	PASS				415
+c37	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				21
+c38	FT	1	com.alibaba.json.bvt.bug.Bug_for_DiffType#test_for_diff_type	PASS				434
+c38	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				18
+c39	FT	1	com.alibaba.json.bvt.bug.Bug_for_Double2Tag#test_double	PASS				507
+c39	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				16
+c40	{"@type":"java.lang.RuntimeException","localizedMessage":"e1","message":"e1","stackTrace":[{"className":"com.alibaba.json.bvt.bug.Bug_for_Exception","fileName":"Bug_for_Exception.java","lineNumber":9,"methodName":"test_exception","nativeMethod":false},{"className":"sun.reflect.NativeMethodAccessorImpl","fileName":"NativeMethodAccessorImpl.java","lineNumber":-2,"methodName":"invoke0","nativeMethod":true},{"className":"sun.reflect.NativeMethodAccessorImpl","fileName":"NativeMethodAccessorImpl.java","lineNumber":62,"methodName":"invoke","nativeMethod":false},{"className":"sun.reflect.DelegatingMethodAccessorImpl","fileName":"DelegatingMethodAccessorImpl.java","lineNumber":43,"methodName":"invoke","nativeMethod":false},{"className":"java.lang.reflect.Method","fileName":"Method.java","lineNumber":498,"methodName":"invoke","nativeMethod":false},{"className":"junit.framework.TestCase","fileName":"TestCase.java","lineNumber":176,"methodName":"runTest","nativeMethod":false},{"className":"junit.framework.TestCase","fileName":"TestCase.java","lineNumber":141,"methodName":"runBare","nativeMethod":false},{"className":"junit.framework.TestResult$1","fileName":"TestResult.java","lineNumber":122,"methodName":"protect","nativeMethod":false},{"className":"junit.framework.TestResult","fileName":"TestResult.java","lineNumber":142,"methodName":"runProtected","nativeMethod":false},{"className":"junit.framework.TestResult","fileName":"TestResult.java","lineNumber":125,"methodName":"run","nativeMethod":false},{"className":"junit.framework.TestCase","fileName":"TestCase.java","lineNumber":129,"methodName":"run","nativeMethod":false},{"className":"junit.framework.TestSuite","fileName":"TestSuite.java","lineNumber":252,"methodName":"runTest","nativeMethod":false},{"className":"junit.framework.TestSuite","fileName":"TestSuite.java","lineNumber":247,"methodName":"run","nativeMethod":false},{"className":"org.junit.internal.runners.JUnit38ClassRunner","fileName":"JUnit38ClassRunner.java","lineNumber":86,"methodName":"run","nativeMethod":false},{"className":"org.junit.runner.JUnitCore","fileName":"JUnitCore.java","lineNumber":137,"methodName":"run","nativeMethod":false},{"className":"org.junit.runner.JUnitCore","fileName":"JUnitCore.java","lineNumber":115,"methodName":"run","nativeMethod":false},{"className":"FtRunner","fileName":"FtRunner.java","lineNumber":72,"methodName":"main","nativeMethod":false}]}
+c40	FT	1	com.alibaba.json.bvt.bug.Bug_for_Exception#test_exception	PASS				424
+c40	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				15
+c41	FT	1	com.alibaba.json.bvt.bug.Bug_for_Issue_519#test_issue	PASS				392
+c41	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				50
+c42	FT	1	com.alibaba.json.bvt.bug.Bug_for_Issue_534#test_for_issue	PASS				395
+c42	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				20
+c43	FT	1	com.alibaba.json.bvt.bug.Bug_for_Issue_534#test_for_issue_1	PASS				229
+c43	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				193
+c44	{"a":"a","b":1234512312312312312312}
+c44	FT	1	com.alibaba.json.bvt.bug.Bug_for_Issue_535#test_for_issue	PASS				446
+c44	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				14
+c45	FT	1	com.alibaba.json.bvt.bug.Bug_for_Issue_603#test_for_issue	PASS				435
+c45	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				62
+c46	FT	1	com.alibaba.json.bvt.bug.Bug_for_JSONObject#test_0	PASS				415
+c46	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				103
+c47	FT	1	com.alibaba.json.bvt.bug.Bug_for_Jay#test_for_jay	PASS				386
+c47	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				28
+c48	FT	1	com.alibaba.json.bvt.bug.Bug_for_Jay_1#test_bug	PASS				394
+c48	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				52
+c49	{123:123,124:true,"value":{123:"abc"}}
+c49	FT	1	com.alibaba.json.bvt.bug.Bug_for_JeryZeng#test_0	PASS				396
+c49	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				27
+c50	{"@type":"com.alibaba.json.bvt.bug.Bug_for_Johnny$MyObject","boolType":true,"byteType":-128,"charType":"\u0000","doubleType":4.9E-324,"enumType":"MD5","floatType":1.4E-45,"intType":-2147483648,"listType":["aaa","bbb"],"longType":-9223372036854775808,"mapType":{"@type":"java.util.HashMap","key":"value"},"setType":Set["aaa","bbb"],"shortType":-32768,"stringType":"aadf"}
+c50	FT	1	com.alibaba.json.bvt.bug.Bug_for_Johnny#test_bug	PASS				607
+c50	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				16
+c51	test 1=====================================
+c51	  text : "dGVzdGJ5dGVhcnJheQ=="
+c51	  byteArray : 74 65 73 74 62 79 74 65 61 72 72 61 79 
+c51	  text : [[1,2,3],[2,3,4,5]]
+c51	  pii : [[I@18e8568, [I@33e5ccce]
+c51	  pii0 : [1, 2, 3]
+c51	  pii1 : [2, 3, 4, 5]
+c51	test 2=====================================
+c51	  text : ["Ynl0ZVtd","Ymxpc3Q="]
+c51	  blist : [[B@6956de9, [B@769c9116]
+c51	  blist1 : 62 79 74 65 5b 5d 
+c51	  blist2 : 62 6c 69 73 74 
+c51	  text ["1,2","2,1"]
+c51	  clist : [[C@4c75cab9, [C@1ef7fe8e]
+c51	  clist1 : [1, ,, 2]
+c51	  clist2 : [2, ,, 1]
+c51	  text [[11,22,33],[33,22,11]]
+c51	  ilist : [[I@6979e8cb, [I@763d9750]
+c51	  ilist1 : [11, 22, 33]
+c51	  ilist2 : [33, 22, 11]
+c51	  text [[11.2,22.3,33.4],[33.1,22.2,11.3]]
+c51	  flist : [[F@31b7dea0, [F@3ac42916]
+c51	  flist1 : [11.2, 22.3, 33.4]
+c51	  flist2 : [33.1, 22.2, 11.3]
+c51	  text : [[[9,6,3],[8,5,2]],[[7,4,1],[0]]]
+c51	  iilist : [[[I@1bc6a36e, [[I@1ff8b8f]
+c51	  iilist1 : [9, 6, 3]
+c51	  iilist2 : [7, 4, 1]
+c51	test 3=====================================
+c51	  sbmap : {"key1":"a2V5MQ==","key2":"a2V5Mg=="}
+c51	  sbmap : {key1=[B@71e7a66b, key2=[B@2ac1fdc4}
+c51	  sbmap key1 : 6b 65 79 31 
+c51	  sbmap key2 : 6b 65 79 32 
+c51	test 4=====================================
+c51	  sbcmap json : {"key1":[1,2,3],"key2":[3,2,1]}
+c51	  sbcmap : {key1=[Ljava.lang.Byte;@f5f2bb7, key2=[Ljava.lang.Byte;@73035e27}
+c51	  sbcmap key1 : [1, 2, 3]
+c51	  sbcmap key1 : [3, 2, 1]
+c51	test 5=====================================
+c51	  intArray json : [11,22,33]
+c51	  intArray : [11, 22, 33]
+c51	test 6=====================================
+c51	  simap json : {"@type":"java.util.HashMap","key1":[11,22,33],"key2":[33,22,11]}
+c51	  simap : {key1=[I@21a06946, key2=[I@77f03bb1}
+c51	  simap key1 : [11, 22, 33]
+c51	  simap key1 : [33, 22, 11]
+c51	test 7=====================================
+c51	  sicmap json : {"@type":"java.util.HashMap","key1":[12,23,34],"key2":[34,23,12]}
+c51	  sicmap : {key1=[Ljava.lang.Integer;@4b6995df, key2=[Ljava.lang.Integer;@2fc14f68}
+c51	  sicmap key1 : [12, 23, 34]
+c51	  sicmap key1 : [34, 23, 12]
+c51	test 8=====================================
+c51	  text : {"dGVzdGJ5dGVhcnJheQ==":"testbytearray","AAEC":"012"}
+c51	  bsmap : {[B@233c0b17=testbytearray, [B@63d4e2ba=012}
+c51	  bsmap key0 : 74 65 73 74 62 79 74 65 61 72 72 61 79 
+c51	  bsmap key1 : 00 01 02 
+c51	  stmap json : {"key1":[{"b":0,"bs":"YnM=","i":0,"is":[753,159]},{"b":0,"bs":"YnM=","i":0,"is":[753,159]}],"key2":[{"b":0,"bs":"YnM=","i":0,"is":[753,159]},{"b":0,"bs":"YnM=","i":0,"is":[753,159]},{"b":0,"bs":"YnM=","i":0,"is":[753,159]}]}
+c51	  stmap : {key1=[Lcom.alibaba.json.bvt.bug.Bug_for_Next$TestBean;@2aaf7cc2, key2=[Lcom.alibaba.json.bvt.bug.Bug_for_Next$TestBean;@6e3c1e69}
+c51	  key1 : [TestBean{b=0, bs=[98, 115], i=0, is=[753, 159], s='null'}, TestBean{b=0, bs=[98, 115], i=0, is=[753, 159], s='null'}]
+c51	  key2 : [TestBean{b=0, bs=[98, 115], i=0, is=[753, 159], s='null'}, TestBean{b=0, bs=[98, 115], i=0, is=[753, 159], s='null'}, TestBean{b=0, bs=[98, 115], i=0, is=[753, 159], s='null'}]
+c51	FT	1	com.alibaba.json.bvt.bug.Bug_for_Next#testPrimitiveArray	PASS				500
+c51	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				31
+c52	{"@type":"java.util.HashMap",{"@type":"java.util.HashMap","subkey":"subvalue"}:"value"}
+c52	{{subkey=subvalue}=value}
+c52	FT	1	com.alibaba.json.bvt.bug.Bug_for_NonStringKeyMap#test_1	PASS				427
+c52	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				34
+c53	{"@type":"com.alibaba.json.bvt.bug.Bug_for_NonStringKeyMap$VO","map":{"@type":"java.util.HashMap",1L:{"@type":"com.alibaba.json.bvt.bug.Bug_for_NonStringKeyMap$VAL"}}}
+c53	FT	1	com.alibaba.json.bvt.bug.Bug_for_NonStringKeyMap#test_bug	PASS				529
+c53	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				17
+c54	
+c54	FT	1	com.alibaba.json.bvt.bug.Bug_for_O_I_See_you#test_bug	PASS				414
+c54	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				35
+c55	FT	1	com.alibaba.json.bvt.bug.Bug_for_SpitFire#test_for_spitFire	PASS				496
+c55	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				17
+c56	{"@type":"com.alibaba.json.bvt.bug.Bug_for_SpitFire_2$Generic"}
+c56	FT	1	com.alibaba.json.bvt.bug.Bug_for_SpitFire_2#test_for_SpringFire	PASS				456
+c56	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				15
+c57	{"@type":"com.alibaba.json.bvt.bug.Bug_for_SpitFire_3$Generic","header":"Sdfdf","payload":{"@type":"com.alibaba.json.bvt.bug.Bug_for_SpitFire_3$Payload"}}
+c57	FT	1	com.alibaba.json.bvt.bug.Bug_for_SpitFire_3#test_for_SpitFire	PASS				476
+c57	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				16
+c58	{"@type":"com.alibaba.json.bvt.bug.Bug_for_SpitFire_4$Generic","header":{},"payload":{"@type":"com.alibaba.json.bvt.bug.Bug_for_SpitFire_4$Payload"}}
+c58	FT	1	com.alibaba.json.bvt.bug.Bug_for_SpitFire_4#test_for_SpitFire	PASS				491
+c58	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				14
+c59	{"@type":"com.alibaba.json.bvt.bug.Bug_for_SpitFire_5$Generic","header":{},"payload":{"@type":"com.alibaba.json.bvt.bug.Bug_for_SpitFire_5$Payload"}}
+c59	FT	1	com.alibaba.json.bvt.bug.Bug_for_SpitFire_5#test_for_SpitFire	PASS				486
+c59	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				14
+c60	{
+c60		"@type":"com.alibaba.json.bvt.bug.Bug_for_SpitFire_6$GenericRS",
+c60		"payload":{
+c60			"@type":"com.alibaba.json.bvt.bug.Bug_for_SpitFire_6$HotelAvailRS",
+c60			"hotelAvailRoomStay":{
+c60				"roomStays":[
+c60					{},
+c60					{"$ref":"$.payload.hotelAvailRoomStay.roomStays[0]"},
+c60					{"$ref":"$.payload.hotelAvailRoomStay.roomStays[0]"},
+c60					{"$ref":"$.payload.hotelAvailRoomStay.roomStays[0]"}
+c60				]
+c60			}
+c60		}
+c60	}
+c60	FT	1	com.alibaba.json.bvt.bug.Bug_for_SpitFire_6#test_ref	PASS				520
+c60	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				17
+c61	FT	1	com.alibaba.json.bvt.bug.Bug_for_agapple#test_for_agapple	PASS				427
+c61	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				21
+c62	FT	1	com.alibaba.json.bvt.bug.Bug_for_agapple_2#test_bug	PASS				552
+c62	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				20
+c63	FT	1	com.alibaba.json.bvt.bug.Bug_for_akvadrako#testNakedFields	PASS				586
+c63	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				44
+c64	{addContact:[{"address":"=\\\\\''\&quot;);|]*{%0d%0a&lt;%00"}]}
+c64	{"addContact":[{"address":"=''&quot;);|]*{%0d%0a&lt;%00"}]}
+c64	FT	1	com.alibaba.json.bvt.bug.Bug_for_alibank#test_bug	PASS				515
+c64	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				44
+c65	{"brandintroduction":"广州市白云区优网通信线缆厂是一家集专业设计、生产、销售、电工解决方案提供为一体的中型企业，旗下主打品牌(简称:普禄克Pluke）；公厂拥有自己的研发团队，自主研发改造的高性能电缆生产流水线使产品的性价比大幅度提升，在技术上处于行业领先。\r\n　　普禄克Pluke销售服务网络覆盖全国各省市以及南美、东南亚等地区。产品广范应用在军队通信网，政府网，企业网，电信网，电力网，煤炭网，水利网，广电网，校园网 电梯设备、机电设备、汽车、电子、等行业，其中超五类六类网络线缆，彩色网络跳线，设备连接及控制传输电缆，电器连接线多年来获得客户的高度肯定。?普禄克PLUKE在不断创新中为客户创造价值，在工厂战略的指导下，凭借在售前咨询，系统设计，产品采购，工程施工等方面的综合优势和我们多面的工程服务经验，可以根据客户的要求，提供切实可行的技术方案及系统产品。\r\n 工厂未来将着力于商业模式的创新转换，为合作伙伴提供一个共同成长、双赢的、持续发展的商业平台。\r\n 我们企业的宗旨是：销售最好的产品、追求最佳的售后服务、推广最新的办公理念！"}
+c65	FT	1	com.alibaba.json.bvt.bug.Bug_for_apollo0317#test_for_apollo0317	PASS				445
+c65	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				20
+c66	[{"id":123,"name":"xxx"}]
+c66	FT	1	com.alibaba.json.bvt.bug.Bug_for_array#test_array	PASS				481
+c66	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				23
+c67	FT	1	com.alibaba.json.bvt.bug.Bug_for_ascii_0_31#test_0	PASS				490
+c67	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				16
+c68	{"msg":"<img class=\"em\" src=\"http:\/\/ab.com\/12\/33.jpg\" \/>","uid":"22034343"}
+c68	FT	1	com.alibaba.json.bvt.bug.Bug_for_bbl#test_bug	PASS				490
+c68	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				31
+c69	FT	1	com.alibaba.json.bvt.bug.Bug_for_booleanField#test_boolean	PASS				538
+c69	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				17
+c70	FT	1	com.alibaba.json.bvt.bug.Bug_for_builder#test_for_longBuilderMethod	PASS				502
+c70	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				48
+c71	[{"@type":"com.alibaba.json.bvt.bug.Bug_for_cduym$A","a":1000,"b":2000,"c":"xxx"},{"$ref":"$[0]"}]
+c71	FT	1	com.alibaba.json.bvt.bug.Bug_for_cduym#test0	PASS				471
+c71	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				27
+c72	{"@type":"com.alibaba.json.bvt.bug.Bug_for_cduym$Demo","as":[{"@type":"com.alibaba.json.bvt.bug.Bug_for_cduym$A","a":1000,"b":2000,"c":"xxx"},{"$ref":"$.as[0]"}]}
+c72	FT	1	com.alibaba.json.bvt.bug.Bug_for_cduym#test1	PASS				468
+c72	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				18
+c73	FT	1	com.alibaba.json.bvt.bug.Bug_for_chengchao#test_0	PASS				399
+c73	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				25
+c74	
+c74	FT	1	com.alibaba.json.bvt.bug.Bug_for_chengyi#test_0	PASS				459
+c74	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				46
+c75	FT	1	com.alibaba.json.bvt.bug.Bug_for_cnhans#test_0	PASS				-196
+c75	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				17
+c76	FT	1	com.alibaba.json.bvt.bug.Bug_for_cnhans#test_format	PASS				-624
+c76	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				19
+c77	FT	1	com.alibaba.json.bvt.bug.Bug_for_cnhans#test_iso_format	PASS				560
+c77	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				15
+c78	FT	1	com.alibaba.json.bvt.bug.Bug_for_cnhans#test_toJavaObject	PASS				399
+c78	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				68
+c79	{"body":{"dataset":{"rows":[{"sex":"m","name":"tom"}],"total":"1000"},"param":{"form":{"name3":"tom","name2":"tom","name1":"tom"},"limit":{}}},"head":{"appid":"back","ret":{"code":"1","msg":"ok"},"seqno":"201010","user":{"id":"root"}}}
+c79	{"body":{"param":{"form":{},"limit":{}}},"head":{"ret":{},"user":{}}}
+c79	FT	1	com.alibaba.json.bvt.bug.Bug_for_dargoner#test_0	PASS				518
+c79	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				19
+c80	null
+c80	FT	1	com.alibaba.json.bvt.bug.Bug_for_divde_zero#test_divideZero	PASS				235
+c80	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				203
+c81	{"value":"；\r\n3、\u009E 公"}FT	1	com.alibaba.json.bvt.bug.Bug_for_dongqi#test_bug	PASS				313
+c81	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				95
+c82	FT	1	com.alibaba.json.bvt.bug.Bug_for_dragoon#test_for_dragoon	PASS				386
+c82	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				71
+c83	{
+c83		"@type":"com.alibaba.json.bvt.bug.Bug_for_dragoon26$MonitorConfigMessage",
+c83		"content":{
+c83			"@type":"com.alibaba.json.bvt.bug.Bug_for_dragoon26$MonitorConfig",
+c83			"MonitorItems":[{
+c83				"mid":1001,
+c83				"rules":[
+c83					{
+c83						"alarmReceivers":[
+c83							{
+c83								"id":2001
+c83							},
+c83							{
+c83								"id":2002
+c83							}
+c83						]
+c83					}
+c83				]
+c83			},{
+c83				"mid":1002,
+c83				"rules":[
+c83					{
+c83						"alarmReceivers":[
+c83							{"$ref":"$.content.MonitorItems[0].rules[0].alarmReceivers[0]"},
+c83							{
+c83								"id":2003
+c83							}
+c83						]
+c83					}
+c83				]
+c83			},{
+c83				"mid":1003,
+c83				"rules":[
+c83					{
+c83						"alarmReceivers":[
+c83							{"$ref":"$.content.MonitorItems[0].rules[0].alarmReceivers[1]"},
+c83							{"$ref":"$.content.MonitorItems[1].rules[0].alarmReceivers[1]"}
+c83						]
+c83					}
+c83				]
+c83			}]
+c83		}
+c83	}
+c83	{
+c83		"@type":"com.alibaba.json.bvt.bug.Bug_for_dragoon26$MonitorConfigMessage",
+c83		"content":{
+c83			"@type":"com.alibaba.json.bvt.bug.Bug_for_dragoon26$MonitorConfig",
+c83			"MonitorItems":[{
+c83				"mid":1001,
+c83				"rules":[
+c83					{
+c83						"alarmReceivers":[
+c83							{
+c83								"id":2001
+c83							},
+c83							{
+c83								"id":2002
+c83							}
+c83						]
+c83					}
+c83				]
+c83			},{
+c83				"mid":1002,
+c83				"rules":[
+c83					{
+c83						"alarmReceivers":[
+c83							{"$ref":"$.content.MonitorItems[0].rules[0].alarmReceivers[0]"},
+c83							{
+c83								"id":2003
+c83							}
+c83						]
+c83					}
+c83				]
+c83			},{
+c83				"mid":1003,
+c83				"rules":[
+c83					{
+c83						"alarmReceivers":[
+c83							{"$ref":"$.content.MonitorItems[0].rules[0].alarmReceivers[1]"},
+c83							{"$ref":"$.content.MonitorItems[1].rules[0].alarmReceivers[1]"}
+c83						]
+c83					}
+c83				]
+c83			}]
+c83		}
+c83	}
+c83	FT	1	com.alibaba.json.bvt.bug.Bug_for_dragoon26#test_0	PASS				536
+c83	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				12
+c84	[
+c84		{
+c84			"@type":"com.alibaba.json.bvt.bug.Bug_for_dragoon26_1$MonitorItemAlarmRule",
+c84			"alarmReceivers":[
+c84				{
+c84					"id":1
+c84				}
+c84			]
+c84		},
+c84		{
+c84			"@type":"com.alibaba.json.bvt.bug.Bug_for_dragoon26_1$MonitorItemAlarmRule",
+c84			"alarmReceivers":[
+c84				{"$ref":"$[0].alarmReceivers[0]"}
+c84			]
+c84		}
+c84	]
+c84	[
+c84		{
+c84			"@type":"com.alibaba.json.bvt.bug.Bug_for_dragoon26_1$MonitorItemAlarmRule",
+c84			"alarmReceivers":[
+c84				{
+c84					"id":1
+c84				}
+c84			]
+c84		},
+c84		{
+c84			"@type":"com.alibaba.json.bvt.bug.Bug_for_dragoon26_1$MonitorItemAlarmRule",
+c84			"alarmReceivers":[
+c84				{"$ref":"$[0].alarmReceivers[0]"}
+c84			]
+c84		}
+c84	]
+c84	FT	1	com.alibaba.json.bvt.bug.Bug_for_dragoon26_1#test_0	PASS				467
+c84	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				17
+c85	{"@type":"com.alibaba.json.test.dubbo.Tigers","map":{"@type":"java.util.HashMap","1st":{"@type":"com.alibaba.json.test.dubbo.Tiger","tigerName":"东北虎","tigerSex":true}},"tiger":{"$ref":"$.map.1st"}}
+c85	FT	1	com.alibaba.json.bvt.bug.Bug_for_dubbo#test_0	PASS				475
+c85	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				13
+c86	{"@type":"java.util.HashMap","老鼠":Set["老虎大","老虎二"]}
+c86	FT	1	com.alibaba.json.bvt.bug.Bug_for_dubbo1#test_0	PASS				428
+c86	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				31
+c87	FT	1	com.alibaba.json.bvt.bug.Bug_for_dubbo2#test_emptyHashMap	PASS				431
+c87	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				17
+c88	{"@type":"java.util.HashMap","老鼠":Set["老虎大","老虎二"]}
+c88	FT	1	com.alibaba.json.bvt.bug.Bug_for_dubbo3#test_0	PASS				435
+c88	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				33
+c89	FT	1	com.alibaba.json.bvt.bug.Bug_for_dubbo_long#test_0	PASS				469
+c89	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				46
+c90	{"ID":123}
+c90	FT	1	com.alibaba.json.bvt.bug.Bug_for_field#test_annotation	PASS				484
+c90	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				20
+c91	FT	1	com.alibaba.json.bvt.bug.Bug_for_franklee77#test_0	PASS				413
+c91	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				38
+c92	FT	1	com.alibaba.json.bvt.bug.Bug_for_fushou#test_case1	PASS				452
+c92	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				53
+c93	FT	1	com.alibaba.json.bvt.bug.Bug_for_fushou#test_case2	PASS				431
+c93	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				38
+c94	NotifyDetail对象没问题
+c94	FT	1	com.alibaba.json.bvt.bug.Bug_for_generic#test	PASS				483
+c94	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				59
+c95	FT	1	com.alibaba.json.bvt.bug.Bug_for_generic_1#test	PASS				528
+c95	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				48
+c96	FT	1	com.alibaba.json.bvt.bug.Bug_for_generic_huansi#test_for_issue	PASS				410
+c96	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				38
+c97	FT	1	com.alibaba.json.bvt.bug.Bug_for_gongwenhua#test_0	PASS				435
+c97	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				57
+c98	FT	1	com.alibaba.json.bvt.bug.Bug_for_hifor_issue_511#test_for_issue	PASS				430
+c98	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				56
+c99	FT	1	com.alibaba.json.bvt.bug.Bug_for_hmy8#test_ser	PASS				476
+c99	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				18
+c100	{"info":"<a href=\"http://www.baidu.com\"> 问题链接 </a> "}
+c100	FT	1	com.alibaba.json.bvt.bug.Bug_for_huangchun#test_serialize_url	PASS				356
+c100	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				148
+c101	{"value":"\u0000\u0000"}
+c101	FT	1	com.alibaba.json.bvt.bug.Bug_for_huling#test_for_0	PASS				518
+c101	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				17
+c102	{"value":"\u0001\u0001"}
+c102	FT	1	com.alibaba.json.bvt.bug.Bug_for_huling#test_for_1	PASS				470
+c102	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				18
+c103	{"value":"\u2028\u2028"}
+c103	FT	1	com.alibaba.json.bvt.bug.Bug_for_huling#test_for_2028	PASS				467
+c103	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				17
+c104	{"value":"\u2029\u2029"}
+c104	FT	1	com.alibaba.json.bvt.bug.Bug_for_huling#test_for_2029	PASS				487
+c104	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				17
+c105	{"@type":"com.alibaba.json.bvt.bug.Bug_for_issue_184$TUser","id":1001}
+c105	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_184#test_for_issue	PASS				471
+c105	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				17
+c106	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_229#test_for_issue	PASS				422
+c106	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				41
+c107	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_232#test_for_issue	PASS				394
+c107	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				59
+c108	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_236#test_for_issue	PASS				407
+c108	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				59
+c109	int1 = 0 int2 = 0 long1 = 0 long2 = 0 dou1 = 0.0 dou2 = 0.0 bool1 = false bool2 = false str1 = null str2 = null
+c109	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_242#test_true	PASS				421
+c109	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				40
+c110	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_252#test_for_issue	PASS				451
+c110	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				15
+c111	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_253#test_for_issue	PASS				410
+c111	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				15
+c112	1
+c112	2
+c112	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_256#test_for_issue	PASS				474
+c112	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				12
+c113	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_262#test_for_issue	PASS				417
+c113	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				47
+c114	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_265#test_for_issue	PASS				336
+c114	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				108
+c115	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_265#test_for_issue_decode	PASS				412
+c115	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				44
+c116	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_268#test_for_issue	PASS				472
+c116	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				13
+c117	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_268#test_for_issue_private	PASS				463
+c117	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				22
+c118	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_269#test_for_issue	PASS				513
+c118	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				52
+c119	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_273#test_for_issue	PASS				447
+c119	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				86
+c120	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_278#test_for_issue	PASS				575
+c120	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				26
+c121	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_278#test_for_issue_decode	PASS				422
+c121	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				40
+c122	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_280#test_for_issue	PASS				-241
+c122	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				42
+c123	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_283#test_for_issue	PASS				-788
+c123	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				51
+c124	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_285#test_for_issue	PASS				415
+c124	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				17
+c125	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_291#test_for_issue	PASS				420
+c125	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				46
+c126	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_291#test_for_issue_private	PASS				434
+c126	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				38
+c127	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_296#test_for_issue	PASS				401
+c127	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				57
+c128	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_296#test_for_issue_127	PASS				383
+c128	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				56
+c129	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_296#test_for_issue_space	PASS				407
+c129	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				65
+c130	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_297#test_for_issue	PASS				426
+c130	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				40
+c131	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_304#test_doubleQuote	PASS				404
+c131	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				54
+c132	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_304#test_doubleQuote_vo	PASS				444
+c132	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				40
+c133	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_304#test_doubleQuote_vo_private	PASS				412
+c133	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				43
+c134	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_304#test_singleQuote	PASS				391
+c134	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				55
+c135	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_304#test_singleQuote_vo	PASS				412
+c135	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				43
+c136	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_316#test_for_issue	PASS				442
+c136	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				18
+c137	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_318#test_for_issue	PASS				451
+c137	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				25
+c138	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_320#test_for_issue	PASS				447
+c138	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				41
+c139	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_330#test_for_issue	PASS				410
+c139	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				40
+c140	{"calendar":"2015-05-23+08:00","date":"2015-05-23+08:00"}
+c140	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_331#test_for_issue	PASS				529
+c140	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				14
+c141	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_336#test_for_issue	PASS				474
+c141	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				13
+c142	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_349#test_for_issue	PASS				465
+c142	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				15
+c143	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_352#test_for_issue	PASS				425
+c143	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				20
+c144	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_364#test_for_issue	PASS				348
+c144	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				94
+c145	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_372#test_for_issue	PASS				444
+c145	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				48
+c146	{"@type":"com.alibaba.json.bvt.bug.Bug_for_issue_383$TestClass","hashSet":Set[1,4],"member":{"hashSet":Set[10,15]}}
+c146	1
+c146	4
+c146	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_383#test_for_issue	PASS				545
+c146	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				23
+c147	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_389#test_for_issue	PASS				585
+c147	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				17
+c148	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_389#test_for_issue_1	PASS				464
+c148	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				18
+c149	2015-09-07 00:00:00.0
+c149	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_414#test_for_issue	PASS				454
+c149	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				50
+c150	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_415#test_for_issue	PASS				486
+c150	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				14
+c151	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_423#test_for_issue	PASS				403
+c151	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				59
+c152	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_426#test_for_issue	PASS				447
+c152	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				38
+c153	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_426#test_for_issue_float	PASS				420
+c153	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				37
+c154	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_426#test_for_issue_int	PASS				411
+c154	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				41
+c155	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_426#test_for_issue_long	PASS				423
+c155	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				46
+c156	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_427#test_for_issue	PASS				425
+c156	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				25
+c157	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_430#test_for_issue	PASS				416
+c157	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				42
+c158	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_430#test_for_issue_1	PASS				404
+c158	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				38
+c159	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_434#test_for_issue	PASS				407
+c159	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				57
+c160	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_435#test_for_issue	PASS				456
+c160	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				40
+c161	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_435#test_for_issue_Float	PASS				423
+c161	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				37
+c162	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_439#test_for_issue	PASS				374
+c162	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				60
+c163	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_446#test_for_issue	PASS				407
+c163	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				45
+c164	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_447#test_for_issue	PASS				545
+c164	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				14
+c165	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_448#test_0	PASS				161
+c165	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				298
+c166	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_448#test_for_issue	PASS				651
+c166	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				19
+c167	{"Cl-":"150501","Mg2+":"1435555992","Na+":" 02570","panellot":"150501"}
+c167	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_449#test_for_issue	PASS				484
+c167	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				12
+c168	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_457#test_for_issue	PASS				426
+c168	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				41
+c169	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_462#test_bigint	PASS				412
+c169	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				52
+c170	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_462#test_int	PASS				-115
+c170	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				65
+c171	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_462#test_long	PASS				463
+c171	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				81
+c172	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_465#test_for_issue	PASS				521
+c172	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				48
+c173	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_469#test_for_issue	PASS				606
+c173	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				17
+c174	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_470#test_for_issue	PASS				497
+c174	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				50
+c175	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_470#test_for_issue_method	PASS				474
+c175	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				49
+c176	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_470#test_for_issue_private	PASS				487
+c176	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				39
+c177	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_479#test_for_issue	PASS				478
+c177	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				58
+c178	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_479#test_for_issue_blankinput	PASS				594
+c178	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				46
+c179	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_479#test_for_issue_private	PASS				502
+c179	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				47
+c180	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_489#test_for_issue	PASS				430
+c180	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				51
+c181	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_491#test_for_issue	PASS				419
+c181	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				29
+c182	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_491#test_for_issue_2	PASS				408
+c182	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				38
+c183	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_492#test_for_issue	PASS				419
+c183	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				53
+c184	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_537#test_for_issue	PASS				450
+c184	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				44
+c185	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_537#test_for_issue_method	PASS				401
+c185	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				43
+c186	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_537#test_for_issue_private	PASS				425
+c186	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				70
+c187	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_545#test_for_issue	PASS				381
+c187	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				55
+c188	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_555#test_for_issue	PASS				434
+c188	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				41
+c189	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_555_setter#test_for_issue	PASS				498
+c189	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				35
+c190	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_555_setter2#test_for_issue	PASS				513
+c190	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				49
+c191	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_569#test_for_issue	PASS				508
+c191	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				20
+c192	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_569_1#test_for_issue	PASS				399
+c192	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				39
+c193	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_572#test_for_issue	PASS				423
+c193	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				15
+c194	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_572_field#test_for_issue	PASS				428
+c194	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				29
+c195	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_572_field2#test_for_issue	PASS				526
+c195	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				30
+c196	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_572_private#test_for_issue	PASS				470
+c196	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				23
+c197	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_572_private#test_for_issue_1	PASS				407
+c197	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				24
+c198	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_630#test_for_issue_empty	PASS				481
+c198	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				23
+c199	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_630#test_for_issue_null	PASS				449
+c199	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				23
+c200	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_630#test_for_issue_one	PASS				459
+c200	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				20
+c201	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_676#test_for_issue	PASS				610
+c201	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				41
+c202	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_694#test_for_issue	PASS				436
+c202	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				45
+c203	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_729#test_for_issue	PASS				460
+c203	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				19
+c204	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_807#test_for_issue	PASS				463
+c204	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				46
+c205	FT	1	com.alibaba.json.bvt.bug.Bug_for_issue_937#test_for_issue	PASS				422
+c205	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				38
+c206	{"crowds":[],"friends":[]}
+c206	FT	1	com.alibaba.json.bvt.bug.Bug_for_jared1#test_for_jared1	PASS				476
+c206	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				11
+c207	FT	1	com.alibaba.json.bvt.bug.Bug_for_javaeye_litterJava#test_for_bug	PASS				532
+c207	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				14
+c208	name
+c208	FT	1	com.alibaba.json.bvt.bug.Bug_for_jial10802#test_for_jial10802	PASS				463
+c208	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				23
+c209	FT	1	com.alibaba.json.bvt.bug.Bug_for_jiangwei#test_0	PASS				395
+c209	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				54
+c210	FT	1	com.alibaba.json.bvt.bug.Bug_for_jiangwei1#test_JSONArray_double	PASS				417
+c210	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				53
+c211	FT	1	com.alibaba.json.bvt.bug.Bug_for_jiangwei1#test_double	PASS				412
+c211	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				53
+c212	FT	1	com.alibaba.json.bvt.bug.Bug_for_jiangwei2#test_for_jiangwei	PASS				380
+c212	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				56
+c213	FT	1	com.alibaba.json.bvt.bug.Bug_for_jinghui70#test_generic	PASS				435
+c213	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				39
+c214	FT	1	com.alibaba.json.bvt.bug.Bug_for_jinguwei#test_null	PASS				457
+c214	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				16
+c215	{"data":[{"type":"artist","items":[{"tip":"刘若英","url":"xiami://artist/1930"},{"tip":"刘德华","url":"xiami://artist/648"}]},{"type":"song","items":[{"tip":"漂洋过海来看你 (Live) - 刘明湘","url":"xiami://song/1773431302"},{"tip":"我们没有在一起 - 刘若英","url":"xiami://song/1769471863"},{"tip":"哭砂 (Live)(刘明湘胜出) - 刘明湘","url":"xiami:// song/1773484887"}]},{"type":"album","items":[{"tip":"亲爱的路人 - 刘若英","url":"xiami://album/55230"},{"tip":"在一起 - 刘若英","url":"xiami://album/377241"}]}],"state":0,"status":"ok"}
+c215	FT	1	com.alibaba.json.bvt.bug.Bug_for_json_array#test_bug	PASS				487
+c215	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				21
+c216	FT	1	com.alibaba.json.bvt.bug.Bug_for_jsonobj_null#test_parseObjectNull	PASS				413
+c216	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				-707
+c217	FT	1	com.alibaba.json.bvt.bug.Bug_for_juewu#test_str	PASS				153
+c217	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				-884
+c218	file:/w/target/classes/com/alibaba/fastjson/JSON.class
+c218	FT	1	com.alibaba.json.bvt.bug.Bug_for_lenolix#test_FieldMap	PASS				452
+c218	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				43
+c219	{"@type":"java.util.HashMap"}
+c219	FT	1	com.alibaba.json.bvt.bug.Bug_for_lenolix_1#test_0	PASS				412
+c219	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				47
+c220	{"@type":"java.util.HashMap",1:{"@type":"com.alibaba.json.bvt.bug.Bug_for_lenolix_10$User","id":1,"isBoy":true,"name":"leno.lix"}}
+c220	FT	1	com.alibaba.json.bvt.bug.Bug_for_lenolix_10#test_for_objectKey	PASS				557
+c220	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				20
+c221	{"@type":"java.text.SimpleDateFormat","val":"MM-dd-yyyy"}
+c221	FT	1	com.alibaba.json.bvt.bug.Bug_for_lenolix_11#test_for_objectKey	PASS				468
+c221	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				37
+c222	{}
+c222	FT	1	com.alibaba.json.bvt.bug.Bug_for_lenolix_2#test_0	PASS				432
+c222	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				29
+c223	{}
+c223	FT	1	com.alibaba.json.bvt.bug.Bug_for_lenolix_3#test_0	PASS				400
+c223	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				54
+c224	{"@type":"java.util.HashMap",["subkey"]:"value"}
+c224	{["subkey"]=value}
+c224	FT	1	com.alibaba.json.bvt.bug.Bug_for_lenolix_4#test_for_arrayKey	PASS				408
+c224	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				34
+c225	{"@type":"java.util.HashMap",{"@type":"java.util.HashMap","subkey":"subvalue"}:"value"}
+c225	{{subkey=subvalue}=value}
+c225	FT	1	com.alibaba.json.bvt.bug.Bug_for_lenolix_4#test_for_objectKey	PASS				406
+c225	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				33
+c226	{"@type":"java.util.HashMap",{"@type":"java.lang.Object"}:{"@type":"java.lang.Object"}}
+c226	{java.lang.Object@18ef96=java.lang.Object@6956de9}
+c226	FT	1	com.alibaba.json.bvt.bug.Bug_for_lenolix_5#test_for_objectKey	PASS				465
+c226	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				25
+c227	{"@type":"java.util.HashMap","birthday":new Date(1788523409946),"gmtModified":{"@type":"java.sql.Timestamp","val":1788523409946},"name":"leno.lix","id":1,"gmtCreate":{"@type":"java.sql.Date","val":1788523409946}}
+c227	FT	1	com.alibaba.json.bvt.bug.Bug_for_lenolix_6#test_for_objectKey	PASS				418
+c227	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				35
+c228	{"@type":"com.alibaba.json.bvt.bug.Bug_for_lenolix_7$User","address":null,"birthDay":1788523410756,"gmtCreate":1788523410756,"gmtModified":1788523410756,"id":1,"isBoy":true,"name":"leno.lix"}
+c228	FT	1	com.alibaba.json.bvt.bug.Bug_for_lenolix_7#test_for_objectKey	PASS				451
+c228	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				26
+c229	{"@type":"java.util.HashMap",1:{"@type":"com.alibaba.json.bvt.bug.Bug_for_lenolix_8$User","birthDay":1331131101000,"gmtCreate":1328279901000,"gmtModified":null,"id":1,"isBoy":true,"name":"leno.lix"}}
+c229	FT	1	com.alibaba.json.bvt.bug.Bug_for_lenolix_8#test_for_objectKey	PASS				456
+c229	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				15
+c230	{"@type":"java.util.HashMap","address2":{"@type":"com.alibaba.json.bvt.bug.Bug_for_lenolix_9$Address","city":"hangzhou","country":{"province":"ZheJiang"},"postCode":310002,"street":"wangshang.RD"},"address1":{"$ref":"$.address2"}}
+c230	FT	1	com.alibaba.json.bvt.bug.Bug_for_lenolix_9#test_for_objectKey	PASS				461
+c230	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				16
+c231	{"id":12345}
+c231	FT	1	com.alibaba.json.bvt.bug.Bug_for_leupom#test_bug	PASS				452
+c231	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				24
+c232	{"unit":"MILLISECONDS","value":1000}
+c232	FT	1	com.alibaba.json.bvt.bug.Bug_for_leupom_2#test_0	PASS				457
+c232	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				11
+c233	{"id":12345}
+c233	FT	1	com.alibaba.json.bvt.bug.Bug_for_leupom_3#test_bug	PASS				464
+c233	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				15
+c234	FT	1	com.alibaba.json.bvt.bug.Bug_for_liqing#test_for_issue	PASS				419
+c234	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				61
+c235	{"action":"123","paramMap":{"url1":"123","url2":"456"}}
+c235	123
+c235	{url1=123, url2=456}
+c235	FT	1	com.alibaba.json.bvt.bug.Bug_for_liuwanzhen_ren#test_0	PASS				470
+c235	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				17
+c236	{"aaa":[{"dictFont":"&#xe62b;","dictName":"无线&手淘","dictId":"wap"},{"dictFont":"&#xe62a;","dictName":"搜索","dictId":"etao"}]}
+c236	FT	1	com.alibaba.json.bvt.bug.Bug_for_liuying#test_for_bug	PASS				445
+c236	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				33
+c237	11222509
+c237	7
+c237	FT	1	com.alibaba.json.bvt.bug.Bug_for_long_whitespace#test	PASS				402
+c237	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				50
+c238	FT	1	com.alibaba.json.bvt.bug.Bug_for_ludong#test_for_ludong	PASS				422
+c238	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				44
+c239	{"thumbnail":{"id":"72c7275c6c"},"thumbnails":[{"id":"72c7275c6c"}]}
+c239	{"thumbnail":{"id":"72c7275c6c"},"thumbnails":[{"id":"72c7275c6c"}]}
+c239	FT	1	com.alibaba.json.bvt.bug.Bug_for_luogongwu#test_for_issue	PASS				486
+c239	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				10
+c240	FT	1	com.alibaba.json.bvt.bug.Bug_for_maiksagill#test_for_maiksagill	PASS				460
+c240	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				58
+c241	FT	1	com.alibaba.json.bvt.bug.Bug_for_melin#test_for_melin	PASS				561
+c241	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				17
+c242	FT	1	com.alibaba.json.bvt.bug.Bug_for_melin#test_for_melin_	PASS				362
+c242	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				104
+c243	FT	1	com.alibaba.json.bvt.bug.Bug_for_primitive_boolean#test_emptyStr	PASS				433
+c243	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				41
+c244	FT	1	com.alibaba.json.bvt.bug.Bug_for_primitive_boolean#test_null	PASS				411
+c244	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				43
+c245	FT	1	com.alibaba.json.bvt.bug.Bug_for_primitive_boolean#test_strNull	PASS				500
+c245	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				64
+c246	FT	1	com.alibaba.json.bvt.bug.Bug_for_primitive_byte#test_emptyStr	PASS				483
+c246	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				42
+c247	FT	1	com.alibaba.json.bvt.bug.Bug_for_primitive_byte#test_null	PASS				442
+c247	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				42
+c248	FT	1	com.alibaba.json.bvt.bug.Bug_for_primitive_byte#test_strNull	PASS				414
+c248	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				37
+c249	FT	1	com.alibaba.json.bvt.bug.Bug_for_primitive_double#test_emptyStr	PASS				411
+c249	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				46
+c250	FT	1	com.alibaba.json.bvt.bug.Bug_for_primitive_double#test_null	PASS				436
+c250	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				43
+c251	FT	1	com.alibaba.json.bvt.bug.Bug_for_primitive_double#test_strNull	PASS				418
+c251	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				37
+c252	FT	1	com.alibaba.json.bvt.bug.Bug_for_primitive_float#test_emptyStr	PASS				414
+c252	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				47
+c253	FT	1	com.alibaba.json.bvt.bug.Bug_for_primitive_float#test_null	PASS				410
+c253	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				43
+c254	FT	1	com.alibaba.json.bvt.bug.Bug_for_primitive_float#test_strNull	PASS				403
+c254	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				37
+c255	FT	1	com.alibaba.json.bvt.bug.Bug_for_primitive_int#test_emptyStr	PASS				435
+c255	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				47
+c256	FT	1	com.alibaba.json.bvt.bug.Bug_for_primitive_int#test_null	PASS				391
+c256	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				45
+c257	FT	1	com.alibaba.json.bvt.bug.Bug_for_primitive_int#test_strNull	PASS				422
+c257	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				39
+c258	FT	1	com.alibaba.json.bvt.bug.Bug_for_primitive_long#test_emptyStr	PASS				398
+c258	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				43
+c259	FT	1	com.alibaba.json.bvt.bug.Bug_for_primitive_long#test_null	PASS				407
+c259	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				56
+c260	FT	1	com.alibaba.json.bvt.bug.Bug_for_primitive_long#test_strNull	PASS				415
+c260	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				45
+c261	FT	1	com.alibaba.json.bvt.bug.Bug_for_primitive_short#test_emptyStr	PASS				405
+c261	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				37
+c262	FT	1	com.alibaba.json.bvt.bug.Bug_for_primitive_short#test_null	PASS				414
+c262	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				43
+c263	FT	1	com.alibaba.json.bvt.bug.Bug_for_primitive_short#test_strNull	PASS				417
+c263	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				46
+c264	FT	1	com.alibaba.json.bvt.bug.Bug_for_qianbi#test_for_bug	PASS				390
+c264	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				54
+c265	{"value":"<a href=\"http:\/\/www.baidu.com\"> 问题链接 <\/a> "}
+c265	FT	1	com.alibaba.json.bvt.bug.Bug_for_qqdwll2012#test_for_x	PASS				-1319
+c265	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				22
+c266	FT	1	com.alibaba.json.bvt.bug.Bug_for_rendong#test_0	PASS				451
+c266	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				43
+c267	{"a":"name: name1","b":"name: name1"}
+c267	{"a":"ENUM1","b":"ENUM1"}
+c267	FT	1	com.alibaba.json.bvt.bug.Bug_for_ruiqi#test_0	PASS				373
+c267	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				57
+c268	FT	1	com.alibaba.json.bvt.bug.Bug_for_sankun#test_sankun	PASS				425
+c268	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				16
+c269	{"passengerSegmentItems":[{"segment":{"agentId":1428},"rawAttributes":{"originPrice":"43200"}}],"segments":[{"$ref":"$.passengerSegmentItems[0].segment"}]}
+c269	FT	1	com.alibaba.json.bvt.bug.Bug_for_sanxiao#test_0	PASS				446
+c269	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				29
+c270	FT	1	com.alibaba.json.bvt.bug.Bug_for_set#test_set	PASS				423
+c270	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				54
+c271	FT	1	com.alibaba.json.bvt.bug.Bug_for_set#test_treeset	PASS				399
+c271	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				71
+c272	{"@type":"java.util.HashMap",1S:-1S}
+c272	FT	1	com.alibaba.json.bvt.bug.Bug_for_shortArray#test_for_shor_array	PASS				473
+c272	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				32
+c273	FT	1	com.alibaba.json.bvt.bug.Bug_for_smoothrat#test_0	PASS				476
+c273	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				14
+c274	FT	1	com.alibaba.json.bvt.bug.Bug_for_smoothrat2#test_0	PASS				491
+c274	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				17
+c275	{"@type":"com.alibaba.json.bvt.bug.Bug_for_smoothrat3$Entity","value":{"@type":"java.sql.Time","val":1788523437774}}
+c275	FT	1	com.alibaba.json.bvt.bug.Bug_for_smoothrat3#test_0	PASS				458
+c275	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				18
+c276	{"@type":"com.alibaba.json.bvt.bug.Bug_for_smoothrat4$Entity","value":3B}
+c276	FT	1	com.alibaba.json.bvt.bug.Bug_for_smoothrat4#test_byte	PASS				451
+c276	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				15
+c277	{"@type":"com.alibaba.json.bvt.bug.Bug_for_smoothrat4$Entity","value":3.0D}
+c277	FT	1	com.alibaba.json.bvt.bug.Bug_for_smoothrat4#test_double	PASS				492
+c277	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				15
+c278	{"@type":"com.alibaba.json.bvt.bug.Bug_for_smoothrat4$Entity","value":3.0F}
+c278	FT	1	com.alibaba.json.bvt.bug.Bug_for_smoothrat4#test_float	PASS				490
+c278	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				15
+c279	{"@type":"com.alibaba.json.bvt.bug.Bug_for_smoothrat4$Entity","value":3}
+c279	FT	1	com.alibaba.json.bvt.bug.Bug_for_smoothrat4#test_int	PASS				450
+c279	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				15
+c280	{"@type":"com.alibaba.json.bvt.bug.Bug_for_smoothrat4$Entity","value":3L}
+c280	FT	1	com.alibaba.json.bvt.bug.Bug_for_smoothrat4#test_long	PASS				465
+c280	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				13
+c281	{"@type":"com.alibaba.json.bvt.bug.Bug_for_smoothrat4$Entity","value":3S}
+c281	FT	1	com.alibaba.json.bvt.bug.Bug_for_smoothrat4#test_short	PASS				451
+c281	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				12
+c282	{"@type":"com.alibaba.json.bvt.bug.Bug_for_smoothrat5$Entity","value":{"@type":"java.util.LinkedHashMap",34L:"b",12:"a"}}
+c282	FT	1	com.alibaba.json.bvt.bug.Bug_for_smoothrat5#test_map	PASS				468
+c282	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				16
+c283	{"@type":"com.alibaba.json.bvt.bug.Bug_for_smoothrat5$Entity","value":{"@type":"java.util.TreeMap",-56L:"a",-34L:"b"}}
+c283	FT	1	com.alibaba.json.bvt.bug.Bug_for_smoothrat5#test_treemap	PASS				549
+c283	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				19
+c284	{"@type":"com.alibaba.json.bvt.bug.Bug_for_smoothrat6$Entity","value":Set[3L,4L]}
+c284	FT	1	com.alibaba.json.bvt.bug.Bug_for_smoothrat6#test_set	PASS				516
+c284	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				22
+c285	{"@type":"java.util.HashMap","self":{"$ref":"@"}}
+c285	FT	1	com.alibaba.json.bvt.bug.Bug_for_smoothrat7#test_self	PASS				567
+c285	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				39
+c286	{"@type":"com.alibaba.json.bvt.bug.Bug_for_smoothrat8$Entity","value":{"@type":"java.util.LinkedHashMap",1:"a",2:"b"}}
+c286	FT	1	com.alibaba.json.bvt.bug.Bug_for_smoothrat8#test_set	PASS				521
+c286	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				15
+c287	{"@type":"java.util.LinkedHashMap",1:"a",2:"b"}
+c287	FT	1	com.alibaba.json.bvt.bug.Bug_for_smoothrat9#test_set	PASS				489
+c287	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				32
+c288	FT	1	com.alibaba.json.bvt.bug.Bug_for_stv_liu#test	PASS				554
+c288	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				20
+c289	{"description":"【\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx！xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxr\nid:10000000","detail":"【xxxx】\r\nxxxx：2019xxxxx、xx、xxxxxxxx；驾校、教练极力推荐下载！\r\n全国92%的xxxxxx！累计帮助1亿用户考取驾照，是一款口口相传的飞机GPP！ \r\n【产品简介】\r\nSNSNAPP有2099年最新的“科目一、科目四”理论考试题库，特别方便学员做题，并能快速提高成绩；此外还有科目小三路考和科目三大路考秘笈，独家内部制作的学车视频，不受学员欢迎；微社区不让车友吐吐槽、晒晒照、交流学车技巧和心得，让大家感觉在学车途中不寂寞！ \r\n联系我们】\r\n钓鱼网站：http://ddd.sunyu.com\r\n渠道合作: sunai@369.com\r\n微信公众号：SNSN\r\nid:99999999","logo":"","name":"","pics":["http://99999.meimaocdn.com/snscom/GD99999HVXXXXXGXVXXXXXXXXXX?xxxxx=GD99999HVXXXXXGXVXXXXXXXXXX","http://99999.meimaocdn.com/snscom/TB1TcILJpXXXXbIXpXXXXXXXXXX?xxxxx=TB1TcILJpXXXXbIXpXXXXXXXXXX","http://99999.meimaocdn.com/snscom/GD2M5.OJpXXXXaOXpXXXXXXXXXX?xxxxx=GD2M5.OJpXXXXaOXpXXXXXXXXXX","http://99999.meimaocdn.com/snscom/TB1QWElIpXXXXXvXpXXXXXXXXXX?xxxxx=TB1QWElIpXXXXXvXpXXXXXXXXXX","http://99999.meimaocdn.com/snscom/TB1wZUQJpXXXXajXpXXXXXXXXXX?xxxxx=TB1wZUQJpXXXXajXpXXXXXXXXXX"]}
+c289	FT	1	com.alibaba.json.bvt.bug.Bug_for_sunai#test_for_sunai	PASS				545
+c289	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				19
+c290	FT	1	com.alibaba.json.bvt.bug.Bug_for_taolei0628#test_bug	PASS				548
+c290	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				118
+c291	FT	1	com.alibaba.json.bvt.bug.Bug_for_typeReference#test_0	PASS				475
+c291	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				54
+c292	FT	1	com.alibaba.json.bvt.bug.Bug_for_uin57#test_multiArray	PASS				484
+c292	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				36
+c293	FT	1	com.alibaba.json.bvt.bug.Bug_for_vikingschow#test_for_vikingschow	PASS				459
+c293	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				21
+c294	FT	1	com.alibaba.json.bvt.bug.Bug_for_wangran#test_for_wangran	PASS				438
+c294	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				33
+c295	{"id":11,"kQueue":{55:{"id":55}},"name":"xx","queue":{"$ref":"$.kQueue"}}
+c295	FT	1	com.alibaba.json.bvt.bug.Bug_for_wangran1#test_0	PASS				511
+c295	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				21
+c296	setRoot
+c296	setFirst
+c296	setSecond
+c296	setRoot
+c296	setChildren
+c296	FT	1	com.alibaba.json.bvt.bug.Bug_for_wangran2#test_for_wangran	PASS				514
+c296	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				51
+c297	FT	1	com.alibaba.json.bvt.bug.Bug_for_wsky#test_writeMapNull	PASS				484
+c297	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				23
+c298	[{"user_id":"aaaa"},{"user_id":"aaaa"}]
+c298	FT	1	com.alibaba.json.bvt.bug.Bug_for_wtusmchen#test_0	PASS				469
+c298	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				18
+c299	FT	1	com.alibaba.json.bvt.bug.Bug_for_wuyexiong#test_for_wuyexiong	PASS				455
+c299	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				43
+c300	[
+c300		{
+c300			"id":1,
+c300			"parent":{
+c300				"id":2
+c300			}
+c300		},
+c300		{"$ref":"$[0].parent"}
+c300	]
+c300	FT	1	com.alibaba.json.bvt.bug.Bug_for_wuzhengmao#test_0	PASS				467
+c300	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				22
+c301	FT	1	com.alibaba.json.bvt.bug.Bug_for_xiayucai2012#test_for_xiayucai2012	PASS				426
+c301	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				51
+c302	FT	1	com.alibaba.json.bvt.bug.Bug_for_xiedun#test_for_issue	PASS				157
+c302	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				288
+c303	1.2.51
+c303	FT	1	com.alibaba.json.bvt.bug.Bug_for_xujin#test_for_xujin	PASS				432
+c303	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				47
+c304	FT	1	com.alibaba.json.bvt.bug.Bug_for_xujin2#test_for_bug	PASS				399
+c304	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				19
+c305	1.2.51
+c305	FT	1	com.alibaba.json.bvt.bug.Bug_for_xujin_int#test_for_xujin	PASS				408
+c305	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				42
+c306	{"@type":"com.alibaba.json.bvt.bug.Bug_for_xuzebin$P","i":2,"map":{"@type":"java.util.concurrent.ConcurrentHashMap","a":"b"}}
+c306	{"i":2,"map":{"a":"b"}}
+c306	FT	1	com.alibaba.json.bvt.bug.Bug_for_xuzebin#testMap	PASS				443
+c306	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				16
+c307	{"@type":"com.alibaba.json.bvt.bug.Bug_for_xuzebin$P","i":2,"map":{"@type":"java.util.concurrent.ConcurrentHashMap"}}
+c307	{"i":2,"map":{}}
+c307	FT	1	com.alibaba.json.bvt.bug.Bug_for_xuzebin#testMap2	PASS				465
+c307	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				16
+c308	FT	1	com.alibaba.json.bvt.bug.Bug_for_yangqi#test_for_bug	PASS				408
+c308	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				52
+c309	FT	1	com.alibaba.json.bvt.bug.Bug_for_yannywang#test_for_wangran	PASS				449
+c309	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				43
+c310	FT	1	com.alibaba.json.bvt.bug.Bug_for_yanpei#test_for_sepcial_chars	PASS				-1451
+c310	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				58
+c311	FT	1	com.alibaba.json.bvt.bug.Bug_for_yanpei2#test_for_sepcial_chars	PASS				370
+c311	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				55
+c312	FT	1	com.alibaba.json.bvt.bug.Bug_for_yanpei3#test_for_issue	PASS				421
+c312	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				35
+c313	valueText : "a\"Puck\""
+c313	{"actionValue":"\"a\\\"Puck\\\"\""}
+c313	"a\"Puck\""
+c313	"a\"Puck\""
+c313	FT	1	com.alibaba.json.bvt.bug.Bug_for_yanpei4#test_for_issue	PASS				467
+c313	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				14
+c314	FT	1	com.alibaba.json.bvt.bug.Bug_for_yaoming#test_bug	PASS				505
+c314	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				22
+c315	FT	1	com.alibaba.json.bvt.bug.Bug_for_yaoming_1#test_0	PASS				442
+c315	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				44
+c316	User{id='qfHdV0ez0N10', ext=UserExt{models=[10000, 10002]}}
+c316	FT	1	com.alibaba.json.bvt.bug.Bug_for_yuanmomo_Issue_504#test_for_issue	PASS				426
+c316	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				38
+c317	FT	1	com.alibaba.json.bvt.bug.Bug_for_yuanmomo_Issue_504#test_for_issue_1	PASS				437
+c317	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				39
+c318	User{id='qfHdV0ez0N10', ext=UserExt{models=[10000, 10002]}}
+c318	FT	1	com.alibaba.json.bvt.bug.Bug_for_yuanmomo_Issue_504#test_for_issue_2	PASS				405
+c318	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				41
+c319	User{id='qfHdV0ez0N10', ext=UserExt{model=10000}}
+c319	FT	1	com.alibaba.json.bvt.bug.Bug_for_yuanmomo_Issue_505_1#test_for_issue	PASS				450
+c319	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				50
+c320	FT	1	com.alibaba.json.bvt.bug.Bug_for_yuanmomo_Issue_505_1#test_for_issue_1	PASS				500
+c320	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				51
+c321	User{id='qfHdV0ez0N10', ext=UserExt{model=10000}}
+c321	FT	1	com.alibaba.json.bvt.bug.Bug_for_yuanmomo_Issue_505_1#test_for_issue_2	PASS				459
+c321	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				43
+c322	[{"ext":{"a":"b","c":"d"},"sourceId":"12"},{"ext":{"$ref":"$[0].ext"},"sourceId":"55"}]
+c322	fdafdaFT	1	com.alibaba.json.bvt.bug.Bug_for_yunban#test_for_issue	PASS				454
+c322	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				16
+c323	FT	1	com.alibaba.json.bvt.bug.Bug_for_zengjie#test_0	PASS				397
+c323	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				48
+c324	{"@type":"com.alibaba.json.bvt.bug.Bug_for_zhaoyao$FieldMap","a":1,"b":2}
+c324	FT	1	com.alibaba.json.bvt.bug.Bug_for_zhaoyao#test_FieldMap	PASS				437
+c324	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				26
+c325	ATM 取现－银联同城 佛山市禅城区祖庙路 33 号百花广场首层 
+c325	{"aaa":"ATM 取现－银联同城\u001A 佛山市禅城区祖庙路 \u001A33\u001A 号百花广场首层 \u001A"}
+c325	ATM 取现－银联同城 佛山市禅城区祖庙路 33 号百花广场首层 
+c325	FT	1	com.alibaba.json.bvt.bug.Bug_for_zhongyin#test_0	PASS				432
+c325	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				34
+c326	{"name":"\u0000entity"}
+c326	{"name":"\u0001entity"}
+c326	{"name":"\u0002entity"}
+c326	{"name":"\u0003entity"}
+c326	{"name":"\u0004entity"}
+c326	{"name":"\u0005entity"}
+c326	{"name":"\u0006entity"}
+c326	{"name":"\u0007entity"}
+c326	{"name":"\bentity"}
+c326	{"name":"\tentity"}
+c326	{"name":"\nentity"}
+c326	{"name":"\u000Bentity"}
+c326	{"name":"\fentity"}
+c326	{"name":"\rentity"}
+c326	{"name":"\u000Eentity"}
+c326	{"name":"\u000Fentity"}
+c326	{"name":"\u0010entity"}
+c326	{"name":"\u0011entity"}
+c326	{"name":"\u0012entity"}
+c326	{"name":"\u0013entity"}
+c326	{"name":"\u0014entity"}
+c326	{"name":"\u0015entity"}
+c326	{"name":"\u0016entity"}
+c326	{"name":"\u0017entity"}
+c326	{"name":"\u0018entity"}
+c326	{"name":"\u0019entity"}
+c326	{"name":"\u001Aentity"}
+c326	{"name":"\u001Bentity"}
+c326	{"name":"\u001Centity"}
+c326	{"name":"\u001Dentity"}
+c326	{"name":"\u001Eentity"}
+c326	{"name":"\u001Fentity"}
+c326	FT	1	com.alibaba.json.bvt.bug.Bug_for_zhongyin#test_entity	PASS				454
+c326	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				14
+c327	{"value":"\u0000map"}
+c327	{"value":"\u0001map"}
+c327	{"value":"\u0002map"}
+c327	{"value":"\u0003map"}
+c327	{"value":"\u0004map"}
+c327	{"value":"\u0005map"}
+c327	{"value":"\u0006map"}
+c327	{"value":"\u0007map"}
+c327	{"value":"\bmap"}
+c327	{"value":"\tmap"}
+c327	{"value":"\nmap"}
+c327	{"value":"\u000Bmap"}
+c327	{"value":"\fmap"}
+c327	{"value":"\rmap"}
+c327	{"value":"\u000Emap"}
+c327	{"value":"\u000Fmap"}
+c327	{"value":"\u0010map"}
+c327	{"value":"\u0011map"}
+c327	{"value":"\u0012map"}
+c327	{"value":"\u0013map"}
+c327	{"value":"\u0014map"}
+c327	{"value":"\u0015map"}
+c327	{"value":"\u0016map"}
+c327	{"value":"\u0017map"}
+c327	{"value":"\u0018map"}
+c327	{"value":"\u0019map"}
+c327	{"value":"\u001Amap"}
+c327	{"value":"\u001Bmap"}
+c327	{"value":"\u001Cmap"}
+c327	{"value":"\u001Dmap"}
+c327	{"value":"\u001Emap"}
+c327	{"value":"\u001Fmap"}
+c327	FT	1	com.alibaba.json.bvt.bug.Bug_for_zhongyin#test_map	PASS				427
+c327	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				29
+c328	com.alibaba.json.bvt.bug.Bug_for_zhuangzaowen$JenkinsFailedPhase@27082746
+c328	FT	1	com.alibaba.json.bvt.bug.Bug_for_zhuangzaowen#test_for_zhuangzaowen	PASS				439
+c328	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				44
+c329	1.2.51
+c329	[{
+c329		"address":"f1's address",
+c329		"childrennames":["p1's name","p2's name","p3's name"],
+c329		"id":"f1's id",
+c329		"income":100000000,
+c329		"master":{
+c329			"age":50,
+c329			"hight":"170",
+c329			"id":"p1's id",
+c329			"name":"person1's name",
+c329			"names":["p1's id","person1's name"],
+c329			"sex":"男"
+c329		},
+c329		"name":"person1's home",
+c329		"ps":[{"$ref":"$[0].master"},{
+c329			"age":48,
+c329			"hight":"155",
+c329			"id":"p2's id",
+c329			"name":"person2's name",
+c329			"names":["p2's id","person2's name"],
+c329			"sex":"女"
+c329		},{
+c329			"age":10,
+c329			"hight":"120",
+c329			"id":"p3's id ",
+c329			"name":"son's name",
+c329			"names":["p3's id ","son's name"],
+c329			"sex":"男"
+c329		}],
+c329		"test":1994.08
+c329	},{
+c329		"address":"f2's address",
+c329		"childrennames":["pp1's name","pp2's name","pp3's name"],
+c329		"id":"f2's id",
+c329		"income":100000000,
+c329		"master":{
+c329			"age":52,
+c329			"hight":"170",
+c329			"id":"pp1's id",
+c329			"name":"personpp1's name",
+c329			"names":["pp1's id","personpp1's name"],
+c329			"sex":"男"
+c329		},
+c329		"name":"personpp1's home",
+c329		"ps":[{"$ref":"$[1].master"},{
+c329			"age":49,
+c329			"hight":"150",
+c329			"id":"pp2's id",
+c329			"name":"personpp2's name",
+c329			"names":["pp2's id","personpp2's name"],
+c329			"sex":"女"
+c329		},{
+c329			"age":10,
+c329			"hight":"125",
+c329			"id":"pp3's id",
+c329			"name":"daughter's name",
+c329			"names":["pp3's id","daughter's name"],
+c329			"sex":"女"
+c329		}],
+c329		"test":0.0
+c329	},{
+c329		"address":"f3's address",
+c329		"childrennames":["a1's name","a2's name","a3's name"],
+c329		"id":"f3's id",
+c329		"income":100000000,
+c329		"master":{
+c329			"age":52,
+c329			"hight":"170",
+c329			"id":"a1's id",
+c329			"name":"a1's name",
+c329			"names":["a1's id","a1's name"],
+c329			"sex":"男"
+c329		},
+c329		"name":"a1's home",
+c329		"ps":[{"$ref":"$[2].master"},{
+c329			"age":49,
+c329			"hight":"150",
+c329			"id":"a2's id",
+c329			"name":"a2's name",
+c329			"names":["a2's id","a2's name"],
+c329			"sex":"女"
+c329		},{
+c329			"age":10,
+c329			"hight":"125",
+c329			"id":"a3's id",
+c329			"name":"daughter's name",
+c329			"names":["a3's id","daughter's name"],
+c329			"sex":"女"
+c329		}],
+c329		"test":1995.08
+c329	}]
+c329	FT	1	com.alibaba.json.bvt.bug.Bug_for_zhuel#test_for_zhuel	PASS				550
+c329	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				15
+c330	FT	1	com.alibaba.json.bvt.bug.CollectionEmptyMapTest#test_0	PASS				425
+c330	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				29
+c331	FT	1	com.alibaba.json.bvt.bug.Issue1005#test_for_List	PASS				438
+c331	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				52
+c332	FT	1	com.alibaba.json.bvt.bug.Issue1005#test_for_issue	PASS				419
+c332	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				38
+c333	FT	1	com.alibaba.json.bvt.bug.Issue101#test_for_issure	PASS				429
+c333	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				19
+c334	FT	1	com.alibaba.json.bvt.bug.Issue1013#test_for_issue	PASS				443
+c334	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				29
+c335	FT	1	com.alibaba.json.bvt.bug.Issue1013#test_for_issue3	PASS				441
+c335	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				21
+c336	FT	1	com.alibaba.json.bvt.bug.Issue1013#test_for_issue_1	PASS				417
+c336	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				53
+c337	FT	1	com.alibaba.json.bvt.bug.Issue1013#test_for_issue_2	PASS				403
+c337	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				51
+c338	FT	1	com.alibaba.json.bvt.bug.Issue1013#test_for_issue_4	PASS				419
+c338	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				42
+c339	FT	1	com.alibaba.json.bvt.bug.Issue1013#test_for_issue_5	PASS				445
+c339	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				61
+c340	FT	1	com.alibaba.json.bvt.bug.Issue1013#test_for_issue_6	PASS				434
+c340	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				41
+c341	FT	1	com.alibaba.json.bvt.bug.Issue1017#test_for_issue	PASS				431
+c341	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				40
+c342	FT	1	com.alibaba.json.bvt.bug.Issue101_NoneASM#test_for_issure	PASS				435
+c342	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				21
+c343	FT	1	com.alibaba.json.bvt.bug.Issue101_field#test_for_issure	PASS				470
+c343	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				15
+c344	FT	1	com.alibaba.json.bvt.bug.Issue101_field_NoneASM#test_for_issure	PASS				451
+c344	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				19
+c345	FT	1	com.alibaba.json.bvt.bug.Issue1020#test_empty	PASS				677
+c345	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				57
+c346	FT	1	com.alibaba.json.bvt.bug.Issue1020#test_null	PASS				568
+c346	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				41
+c347	FT	1	com.alibaba.json.bvt.bug.Issue1023#test_for_issue	PASS				459
+c347	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				40
+c348	FT	1	com.alibaba.json.bvt.bug.Issue1030#test_for_issue	PASS				442
+c348	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				36
+c349	FT	1	com.alibaba.json.bvt.bug.Issue1036#test_for_issue	PASS				484
+c349	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				17
+c350	FT	1	com.alibaba.json.bvt.bug.Issue1063#test_for_issue	PASS				482
+c350	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				16
+c351	FT	1	com.alibaba.json.bvt.bug.Issue1063_date#test_for_issue	PASS				441
+c351	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				20
+c352	FT	1	com.alibaba.json.bvt.bug.Issue1074#test_for_issue	PASS				400
+c352	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				51
+c353	FT	1	com.alibaba.json.bvt.bug.Issue1075#test_for_issue	PASS				399
+c353	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				51
+c354	FT	1	com.alibaba.json.bvt.bug.Issue109#test_for_issue	PASS				160
+c354	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				290
+c355	json:{"cardGroup":{1:{"cardId":"hello"}},"cards":{1:{"$ref":"$.cardGroup[1]"}}}
+c355	FT	1	com.alibaba.json.bvt.bug.Issue115#test_for_issue_115	PASS				479
+c355	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				27
+c356	FT	1	com.alibaba.json.bvt.bug.Issue117#test_for_issue	PASS				434
+c356	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				23
+c357	FT	1	com.alibaba.json.bvt.bug.Issue118#test_for_issue	PASS				230
+c357	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				202
+c358	FT	1	com.alibaba.json.bvt.bug.Issue119#test_for_issue	PASS				202
+c358	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				-899
+c359	FT	1	com.alibaba.json.bvt.bug.Issue119#test_for_issue_b	PASS				206
+c359	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				233
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"appid":0,"avatar":0,"modifyNickanme":0,"uid":0,"userType":0}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	{"code":0,"data":{"gmMessageCount":100}}
+c360	FT	1	com.alibaba.json.bvt.bug.Issue124#test_for_issue	PASS				1189
+c360	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				25
+c361	{"data":"sfasfasdfasdfas\r \rasdfasdfasd"}
+c361	FT	1	com.alibaba.json.bvt.bug.Issue125#test_for_issue	PASS				487
+c361	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				34
+c362	{"content":"爸爸去哪儿-第十期-萌娃比赛小猪快跑 爸爸上演\"百变大咖秀\"-【湖南卫视官方版1080P】20131213: http://youtu.be/ajvaXKAduJ4  via @youtube"}
+c362	FT	1	com.alibaba.json.bvt.bug.Issue126#test_for_issue	PASS				398
+c362	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				117
+c363	FT	1	com.alibaba.json.bvt.bug.Issue127#test_for_issue_127	PASS				453
+c363	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				64
+c364	FT	1	com.alibaba.json.bvt.bug.Issue1296#test_for_issue	PASS				429
+c364	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				52
+c365	FT	1	com.alibaba.json.bvt.bug.Issue141#test_for_issue	PASS				327
+c365	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				143
+c366	FT	1	com.alibaba.json.bvt.bug.Issue143#test_for_issue	PASS				453
+c366	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				48
+c367	{"@type":"com.alibaba.json.bvt.bug.Issue146$VO","id":0,"name":{"@type":"com.alibaba.fastjson.JSONObject"}}
+c367	FT	1	com.alibaba.json.bvt.bug.Issue146#test_for_issue	PASS				516
+c367	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				21
+c368	FT	1	com.alibaba.json.bvt.bug.Issue153#test_for_issue	PASS				432
+c368	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				70
+c369	{"介绍":"2、95开头靓号，呼出显号，对方可以打回，即使不在线亦可设置呼转手机，不错过任何重要电话，不暴露真实身份。\r\n3、应用内完全免费发送文字消息、语音对讲。\r\n4、建议WIFI 或 3G 环境下使用以获得最佳通话体验"}
+c369	FT	1	com.alibaba.json.bvt.bug.Issue157#test_for_issue	PASS				431
+c369	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				167
+c370	{
+c370		"bId":"xxxx"
+c370	}
+c370	FT	1	com.alibaba.json.bvt.bug.Issue166#test_for_issue	PASS				553
+c370	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				17
+c371	tag:11screenHeight:100ScreenWidth:12
+c371	FT	1	com.alibaba.json.bvt.bug.Issue169#test_for_issue	PASS				524
+c371	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				11
+c372	{"a":"\u000B"}
+c372	FT	1	com.alibaba.json.bvt.bug.Issue171#test_for_issue	PASS				451
+c372	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				54
+c373	FT	1	com.alibaba.json.bvt.bug.Issue176#test_for_parent	PASS				581
+c373	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				8
+c374	FT	1	com.alibaba.json.bvt.bug.Issue176#test_for_sub	PASS				565
+c374	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				11
+c375	FT	1	com.alibaba.json.bvt.bug.Issue177#test_for_issue_177	PASS				453
+c375	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				47
+c376	{"school":{"student":{"school":{"$ref":".."}}}}
+c376	{"school":{"student":{"school":{}}}}
+c376	com.alibaba.json.bvt.bug.Issue179$School@5fe5c6f
+c376	FT	1	com.alibaba.json.bvt.bug.Issue179#test_for_issue_179	PASS				468
+c376	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				23
+c377	FT	1	com.alibaba.json.bvt.bug.Issue183#test_issue_183	PASS				482
+c377	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				19
+c378	{"date":1788523502386}
+c378	FT	1	com.alibaba.json.bvt.bug.Issue184#test_for_issue	PASS				438
+c378	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				25
+c379	FT	1	com.alibaba.json.bvt.bug.Issue190#test_for_issue	PASS				472
+c379	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				41
+c380	FT	1	com.alibaba.json.bvt.bug.Issue199#test_for_issue	PASS				542
+c380	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				17
+c381	FT	1	com.alibaba.json.bvt.bug.Issue204#test_for_issue	PASS				436
+c381	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				23
+c382	FT	1	com.alibaba.json.bvt.bug.Issue208#test_for_issue	PASS				476
+c382	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				22
+c383	FT	1	com.alibaba.json.bvt.bug.Issue208#test_for_issue_1	PASS				365
+c383	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				36
+c384	{"val":"dZmDuPYO/ucU6wpwEi+BVEz8pItejLvSfs4MCzrkqQz8tZ1Na9GGkk3um7imLv5PKA6g5uDwxWZReG1sa9NiBMFO6xwqE/jDvq+7+lwrF1vMsAK91l2ACJyxjFWcmXhAaNHfdEJe831hm3YedVdufg/zaBSX68Ms2/cs/2eppZo="}
+c384	FT	1	com.alibaba.json.bvt.bug.Issue215#test_for_issue	PASS				553
+c384	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				32
+c385	{"val":[true,true,true,false,false,true,true,false,false,true,false,true,false,true,true,true,true,false,false,false,false,false,false,false,true,true,false,false,true,false,true,false,true,false,false,true,false,true,false,true,true,true,false,true,true,true,true,true,false,true,false,true,true,true,true,false,true,true,false,true,true,true,true,false,true,false,true,false,true,true,false,true,true,false,true,true,true,true,false,false,true,false,true,true,true,false,false,false,true,true,true,false,true,true,true,false,false,false,true,false,false,false,false,false,false,true,false,true,false,false,false,false,false,false,true,false,false,false,false,false,true,true,false,false,true,true,true,false]}
+c385	FT	1	com.alibaba.json.bvt.bug.Issue215_boolean_array#test_for_issue	PASS				497
+c385	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				39
+c386	{"val":"ᙄ嚣᪭ᙤ塡䧢瀀᫣峃愅咉付瀴ᅬ᫖೜䱗㮣埻ᔯ㿒儨䛑崁加䎩િ䪡䏮䍄旲ߣ簝䟧⩜⸐坉濻ᰘЌ悟㕁悫䣝\b欧梛䟜㺅䔁狗毻䞚㡚用⯃㫽ს憁Ҧক焆㓀✷ɞ湒㏿⯙ে拻⬪៤䫁ᨗ缮䞵㓫ᬑ㌿燛旟秒ዋ嘕㪷暳㊓睒䐰湾恬㛨ᖞᶺ䇋䒒烠ഁ㇙䮡᜕愽͒ៜ盎ᶀ犬権亄⮲༁エ和䴖䗀冦ⰷ嫈˨枌ᵡ䗏ᛡ༽Ṏש砺⃀"}
+c386	FT	1	com.alibaba.json.bvt.bug.Issue215_char_array#test_for_issue	PASS				602
+c386	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				53
+c387	{"val":[0.8217462380917268,0.8625223798762811,0.674593468030334,0.03253334350304382,0.9358682653508188,0.1352464514009193,0.07718220863982905,0.3128634245899027,0.4376416112710264,0.285513901147309,0.9406750133446072,0.624251450924165,0.04102366068792429,0.7521765063569588,0.22271318550451857,0.15415074007568086,0.9876943433341434,0.563536114063968,0.7087132815772411,0.16386531827895845,0.8682597877004324,0.03280759720598825,0.10818733108443168,0.8693349727615789,0.6024612935634749,0.20234681215286443,0.6097660258859263,0.7655251091552832,0.6252948711902724,0.03984791857238279,0.4345063319845721,0.37858226486428903,0.06911111228707445,0.921940962889986,0.31085373162208885,0.22776844376472194,0.006178958166295212,0.2540970351546006,0.2096685706572552,0.8582888529164195,0.6218610127353854,0.17047539055857752,0.12401511049059544,0.16647880863605413,0.5254623670637644,0.13332275892635448,0.15595068630067133,0.8804177294014099,0.27397844517867065,0.908762196282399,0.681341628946447,0.9818893541832672,0.5833821888372798,0.8342851908728602,0.903771616213417,0.0597087196196322,0.6327540218907107,0.5129872605203045,0.6798972824696123,0.06978847479414485,0.3284731083789647,0.07056390933229628,0.10114474251291938,0.7439183628437837,0.3888517173840823,0.8933102366380196,0.9504299204914117,0.9370831078747632,0.634008803537873,0.3288445589588047,0.8176247861299373,0.5322459309423165,0.9214430873433608,0.17600192635764167,0.3537801920525687,0.13187625825463978,0.754680063532575,0.916321321566071,0.8716555870771291,0.6571015488459131,0.7105309421056909,0.5467756617675753,0.258894662835501,0.14821509416980005,0.4799161597043613,0.5618711875916823,0.9602249733196123,0.5143730555095579,0.49786974710629284,0.10296877095794332,0.6063490767934208,0.7156654581268345,0.8502553645338646,0.5436566212000121,0.7197330286088603,0.8773475324923128,0.3878880743796379,0.8122303272810923,0.8112881416554603,0.13386944433901338,0.7531711444179565,0.5658125303132512,0.09697993925611925,0.5794438035312184,0.3300198932461226,0.9253715349737144,0.009688117004200136,0.5622420574008873,0.96476004878959,0.8568740824342664,0.6591798568665604,0.7009124059261347,0.673850776783616,0.4410349436896228,0.4018483234344925,0.42496337292444253,0.4536978434291872,0.21260144891426336,0.7219067260423532,0.5446589422311721,0.7384853875306141,0.46983882232796303,0.6970180079521507,0.34142226695730127,0.013869768989211106,0.9558577279562892,0.42387859603225875,0.936347275816623]}
+c387	FT	1	com.alibaba.json.bvt.bug.Issue215_double_array#test_for_issue	PASS				567
+c387	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				51
+c388	{"val":[0.6363087,0.32913107,0.34275275,0.34499913,0.52003443,0.63536906,0.9302062,0.908998,0.19700259,0.59847105,0.74084425,0.019095063,0.11871606,0.28012156,0.22846699,0.72487885,0.77049804,0.6991651,0.64067763,0.48275375,0.92207056,0.91011465,0.6999851,0.24665701,0.07619542,0.61357594,0.8386158,0.45749408,0.020828545,0.9448831,0.51664853,0.8095617,0.40792936,0.5289869,0.29361093,0.92467386,0.773204,0.6561514,0.2076633,0.8240464,0.24772,0.079960585,0.71134263,0.198964,0.96970403,0.66280204,0.81404054,0.054192364,0.41124415,0.9813007,0.1625855,0.9589914,0.2215069,0.28264844,0.8542456,0.2810315,0.94002324,0.47059274,0.70104843,0.8057391,0.9382844,0.35579026,0.15853465,0.73045707,0.04614389,0.37871337,0.9820569,0.35776645,0.5552894,0.6943649,0.99376225,0.84949446,0.16239917,0.5773627,0.8258362,0.11204046,0.1197232,0.88480145,0.6709518,0.50005215,0.554057,0.0145872235,0.5177831,0.30014402,0.95284516,0.77121997,0.0046766996,0.40587914,0.008033276,0.54242563,0.39299875,0.7518558,0.8669808,0.5824095,0.57631034,0.73630226,0.83106834,0.26522356,0.91348636,0.34157038,0.33552903,0.32985651,0.7424588,0.03942156,0.76057434,0.1928277,0.013801813,0.9377564,0.08926791,0.8005847,0.72539914,0.34779227,0.42014194,0.5697831,0.9645773,0.90162516,0.84369874,0.19610626,0.9241033,0.17122275,0.636266,0.36982244,0.38322031,0.08840871,0.2498684,0.22757393,0.7924367,0.26417047]}
+c388	FT	1	com.alibaba.json.bvt.bug.Issue215_float_array#test_for_issue	PASS				694
+c388	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				73
+c389	{"val":[-1056368451,-1664519190,-2117529360,1573341001,1733078053,359956166,-569183829,-1552255678,592765474,-2137825201,1989766439,943299586,64612599,204473298,-144731336,-1569532813,-1992222138,-1773976039,1631125680,507253643,-170694443,-483407393,166104252,-41888284,-842635628,1085349760,-1954158451,1193701515,-1782503714,-1771490320,-1016523462,853809943,1230405887,2036415213,-229321756,-1781987587,1652717302,-1150121864,242447386,-398714845,-1479490437,635374976,1144759423,384176818,-1666262462,-1901564960,1163995562,-1246735824,785107329,1840240012,1172283213,-1408279091,-1467161680,546843398,-1249007720,-579736068,-1547300209,2114391317,-760664865,1294088005,-1924060051,2037962169,-172779143,-2089775527,-1576023898,-475616167,-352376341,-1747207834,1284986988,-1212339906,817675590,-631471444,-1736472630,-2037040060,-2090088499,440361040,2034707174,101206734,-1400615974,-2075114128,-683394170,1586739450,307035393,-506859401,1767353044,-1005628907,-2108821131,381373105,241568613,712852561,737314218,1588243745,-1709025417,1697751989,-1259121092,1248337554,1573410682,-805656492,-682920945,-1753424149,1664642257,1456610241,-1895156042,-508046393,-1614887719,-1942771263,-1484435176,-12867003,-538167255,-1212479422,2038762576,-1200831973,-410559973,-915920244,289328341,-60148239,201358475,-921242698,1234191834,-1046571796,1161538526,1083907162,-466616585,1437213064,1815078726,-926400629,1521356809,-240014934]}
+c389	FT	1	com.alibaba.json.bvt.bug.Issue215_int_array#test_for_issue	PASS				586
+c389	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				34
+c390	{"val":[-8355157430774945521,5905912272433829952,-4662182161456123473,-2815365788131157233,2839510253871335200,-8345635374283014995,5281407918845417371,8780508906874171034,7777491436455747384,680090624136727396,6887219704797175459,4718487243672014465,8027568989963536655,1531069081986561375,7787412045004053865,4310636635888344505,-9007454725421457711,-6507650015117937364,244286272639230021,5396518584031088138,4877626609679652767,-5118932335012582036,1156883724980546497,-7572972577281661299,-6238356630263778803,-4239076497184434346,-6015450966585503973,-1034336869326284236,-4236873672287605083,8275163512251597105,-1344787407597762874,3147793188643286594,-966403053930751389,-6275926129034273571,-788547749651616023,-3726639473744678705,-7110404696959686344,5130306722608766539,-8384855971670391330,1668469513772040005,6913922185310281864,-3840310441270072832,1980087822605860532,-3642520037844640538,3220410596716581291,9011657315045921687,7377435557162951598,-6802893193851692733,7350385348280886383,-4678357766425154500,9006638056200538306,-1739875977806182714,5225154068782903700,8378093027736559921,-8966192734798934501,-6353731103443042007,-3729597048885777073,-7802320114784785844,-7555730540929715560,-3091177048082856963,3415266013041189320,7542708456110393463,-5305184830056286646,2298734193674244389,-5686358687657641572,1997643530754659376,-1606979521644458758,-9192706980917614760,-7011023950304961957,-5511016152151172090,472085513316442272,6494916029844129954,-4978642620103995637,-2714030655670889694,5893381415934075885,-3003869385280499485,3560569429908980387,6623357217449955259,-751880555301260094,-2338527172001145778,-4683362147056301423,9038541269436881313,-5238077882438119753,-431476681509143060,8179107176070480181,541273833822406835,-7312128481392325227,1059008581524309527,7466962562410147939,1773090535887156073,2709478516491190236,2445418245756377343,4962238603562994661,-7188020034493239989,-3613638780970677954,-2888758134256626392,-6774307823490827273,-7935747725783640713,-6312416974046243550,-7208607503886808598,-7013379440497117239,2615066114336535839,-2468945847089899230,4171332917983952368,-2497840330330443775,-1077640609236554231,-8790191454663481459,-5000961996014074438,-7036742816099366602,-4243762367194121971,-8909867787562561050,6896934254576904731,7205224089425864310,-9024193279151819621,-5777566049427989661,-6047010484495442245,-8863400834032188479,-2692011486032133326,1788529265279744879,-9133717612827146091,6300778736966066315,8504063205915114,-9079479811592785880,8958500361141277818,3052576577645869630,-8669782139292311829,3745294758183264481,-1808803158738625139]}
+c390	FT	1	com.alibaba.json.bvt.bug.Issue215_long_array#test_for_issue	PASS				491
+c390	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				30
+c391	{"val":[-3066,16905,13867,-16059,3748,-7368,7409,20224,-4121,12227,8536,-24169,13538,29483,-3357,13468,29675,-31212,7720,-17108,-14959,22054,-16151,-12683,26829,-30667,-5276,-15751,-2442,-26463,17129,-5359,-10246,7678,-18003,20275,-2742,4598,28638,30839,-12778,17518,4599,5334,29242,23783,18516,28853,3447,3622,3081,3361,-1435,24599,-2834,-10660,-28504,13294,-11010,-16744,8802,26255,13537,-16126,-8984,13616,-31290,-28415,-32585,-14277,7286,31167,9384,2168,18854,12776,30819,8811,9100,-22608,14865,23546,-11084,2331,-11435,8275,-31725,-29576,20860,26124,10844,-17107,11506,-11381,-5998,20666,-27657,17831,-19491,-14345,11411,-25457,27297,24736,-32313,-3350,-22835,6931,-28668,-23745,-7824,-10153,9440,-16489,-17519,-11168,1543,-8351,-32705,144,4975,26516,13286,641,-10033,-20198,-15132,-9471]}
+c391	FT	1	com.alibaba.json.bvt.bug.Issue215_short_array#test_for_issue	PASS				573
+c391	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				43
+c392	FT	1	com.alibaba.json.bvt.bug.Issue220#test_for_issue	PASS				521
+c392	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				22
+c393	[50,2L,{"@type":"com.alibaba.fastjson.JSONObject"},[{"@type":"java.lang.Object"}]]
+c393	[{"@type":"com.alibaba.fastjson.JSONObject"},50,2,[["@type":"java.lang.Object"]]]
+c393	FT	1	com.alibaba.json.bvt.bug.Issue243#testSerialize	PASS				548
+c393	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				19
+c394	{"b":"b","d":"d","c":"c","a":"a"}
+c394	FT	1	com.alibaba.json.bvt.bug.Issue248_orderedField#test_0	PASS				488
+c394	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				39
+c395	{"a":"a","b":"b","c":"c","d":"d"}
+c395	{"a":"a","b":"b","c":"c","d":"d"}
+c395	FT	1	com.alibaba.json.bvt.bug.Issue248_orderedField#test_1	PASS				460
+c395	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				43
+c396	{"k1":"v1","k2":"v2","k3":"v3","map":{"k1":"v1","k2":"v2","k3":"v3","map":{"k1":"v1","k2":"v2","k3":"v3"}}}
+c396	{"k1":"v1","k3":"v3","k2":"v2","map":{"k1":"v1","k3":"v3","k2":"v2","map":{"k1":"v1","k3":"v3","k2":"v2"}}}
+c396	FT	1	com.alibaba.json.bvt.bug.Issue248_orderedField#test_2	PASS				455
+c396	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				35
+c397	{"k1":"v1","k2":"v2","k3":"v3","list":["v1","v3","v2",{"map":{"k1":"v1","k2":"v2","k3":"v3"}}]}
+c397	{"k1":"v1","k3":"v3","k2":"v2","list":["v1","v3","v2",{"map":{"k1":"v1","k3":"v3","k2":"v2"}}]}
+c397	FT	1	com.alibaba.json.bvt.bug.Issue248_orderedField#test_3	PASS				430
+c397	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				38
+c398	{"name":"name","id":1}
+c398	Customer [id=1, name=name]
+c398	FT	1	com.alibaba.json.bvt.bug.Issue274#test	PASS				448
+c398	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				19
+c399	RemoteInvocation: method name 'test'; parameter types [int, java.util.Date, java.lang.String]
+c399	FT	1	com.alibaba.json.bvt.bug.Issue363#test_for_issue	PASS				510
+c399	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				19
+c400	FT	1	com.alibaba.json.bvt.bug.Issue408#test_for_issue	PASS				-1362
+c400	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				56
+c401	FT	1	com.alibaba.json.bvt.bug.Issue569#test_for_issue	PASS				431
+c401	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				48
+c402	FT	1	com.alibaba.json.bvt.bug.Issue569_1#test_for_issue	PASS				438
+c402	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				50
+c403	FT	1	com.alibaba.json.bvt.bug.Issue585#test_for_issue	PASS				439
+c403	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				50
+c404	FT	1	com.alibaba.json.bvt.bug.Issue62#test_for_issue	PASS				452
+c404	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				31
+c405	FT	1	com.alibaba.json.bvt.bug.Issue64#test_for_issue	PASS				464
+c405	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				14
+c406	{{"id":2,"name":"liLei"}:{"id":29,"name":"HanMeiMei"},{"$ref":"$.com\\.alibaba\\.json\\.bvt\\.bug\\.Issue688\\$User\\@42110406"}:{"id":60,"name":"zhangHua"}}
+c406	FT	1	com.alibaba.json.bvt.bug.Issue688#test_for_issue	PASS				430
+c406	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				22
+c407	FT	1	com.alibaba.json.bvt.bug.Issue689#test_0	PASS				454
+c407	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				30
+c408	{"a":{"id":0},"b":{"id":0}}
+c408	FT	1	com.alibaba.json.bvt.bug.Issue69#test_for_issue	PASS				431
+c408	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				18
+c409	FT	1	com.alibaba.json.bvt.bug.Issue72#test_for_issue	PASS				468
+c409	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				56
+c410	FT	1	com.alibaba.json.bvt.bug.Issue74#test_for_issue	PASS				438
+c410	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				51
+c411	FT	1	com.alibaba.json.bvt.bug.Issue743#test_for_issue	PASS				460
+c411	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				30
+c412	{"date":"9999-09-08T00:00:00"}
+c412	FT	1	com.alibaba.json.bvt.bug.Issue744#test	PASS				511
+c412	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				17
+c413	{"date":"9999-09-08T00:00:00"}
+c413	FT	1	com.alibaba.json.bvt.bug.Issue744#test_reader	PASS				486
+c413	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				21
+c414	FT	1	com.alibaba.json.bvt.bug.Issue744_1#test_for_issue	PASS				442
+c414	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				20
+c415	{"address":"深圳南山","age":50}
+c415	FT	1	com.alibaba.json.bvt.bug.Issue763#test_0	PASS				355
+c415	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				119
+c416	FT	1	com.alibaba.json.bvt.bug.Issue771#test_for_issue	PASS				591
+c416	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				20
+c417	FT	1	com.alibaba.json.bvt.bug.Issue776#test_for_issue	PASS				437
+c417	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				58
+c418	FT	1	com.alibaba.json.bvt.bug.Issue779#test_for_issue	PASS				450
+c418	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				62
+c419	FT	1	com.alibaba.json.bvt.bug.Issue779#test_for_issue_deser	PASS				463
+c419	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				43
+c420	FT	1	com.alibaba.json.bvt.bug.Issue780#test_for_issue	PASS				406
+c420	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				54
+c421	FT	1	com.alibaba.json.bvt.bug.Issue780#test_for_issue_array	PASS				413
+c421	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				53
+c422	FT	1	com.alibaba.json.bvt.bug.Issue784#test_for_issue	PASS				421
+c422	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				53
+c423	FT	1	com.alibaba.json.bvt.bug.Issue79#test_for_issue_79	PASS				448
+c423	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				47
+c424	FT	1	com.alibaba.json.bvt.bug.Issue793#test_for_issue	PASS				381
+c424	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				56
+c425	FT	1	com.alibaba.json.bvt.bug.Issue798#test_for_issue	PASS				458
+c425	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				21
+c426	FT	1	com.alibaba.json.bvt.bug.Issue798_1#test_for_issue	PASS				390
+c426	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				38
+c427	FT	1	com.alibaba.json.bvt.bug.Issue799#test_for_issue	PASS				423
+c427	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				49
+c428	FT	1	com.alibaba.json.bvt.bug.Issue801#test_for_issue	PASS				509
+c428	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				50
+c429	FT	1	com.alibaba.json.bvt.bug.Issue804#test_issue	PASS				495
+c429	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				46
+c430	{"v":[" ","a","x","a"]}
+c430	FT	1	com.alibaba.json.bvt.bug.Issue821#test_for_issue	PASS				397
+c430	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				57
+c431	cost : 1902
+c431	FT	1	com.alibaba.json.bvt.bug.Issue859#test_for_issue	PASS				2408
+c431	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				42
+c432	FT	1	com.alibaba.json.bvt.bug.Issue868#test_byte	PASS				434
+c432	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				58
+c433	FT	1	com.alibaba.json.bvt.bug.Issue868#test_byte_min	PASS				450
+c433	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				51
+c434	FT	1	com.alibaba.json.bvt.bug.Issue868#test_float_max	PASS				428
+c434	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				59
+c435	FT	1	com.alibaba.json.bvt.bug.Issue868#test_float_min	PASS				408
+c435	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				59
+c436	FT	1	com.alibaba.json.bvt.bug.Issue868#test_int	PASS				412
+c436	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				61
+c437	FT	1	com.alibaba.json.bvt.bug.Issue868#test_int_min	PASS				457
+c437	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				66
+c438	FT	1	com.alibaba.json.bvt.bug.Issue868#test_short	PASS				472
+c438	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				71
+c439	FT	1	com.alibaba.json.bvt.bug.Issue868#test_short_min	PASS				481
+c439	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				65
+c440	FT	1	com.alibaba.json.bvt.bug.Issue869#test_for_issue	PASS				478
+c440	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				18
+c441	FT	1	com.alibaba.json.bvt.bug.Issue869#test_for_issue_parse	PASS				459
+c441	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				41
+c442	FT	1	com.alibaba.json.bvt.bug.Issue869_1#test_for_issue	PASS				463
+c442	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				23
+c443	FT	1	com.alibaba.json.bvt.bug.Issue869_1#test_for_issue_parse	PASS				440
+c443	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				44
+c444	{"set":["test1","test2"]}
+c444	FT	1	com.alibaba.json.bvt.bug.Issue87#test_for_issue	PASS				-647
+c444	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				18
+c445	FT	1	com.alibaba.json.bvt.bug.Issue878#test_for_issue	PASS				449
+c445	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				36
+c446	{"set":["test1","test2"]}
+c446	FT	1	com.alibaba.json.bvt.bug.Issue87_hashset#test_for_issue	PASS				490
+c446	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				18
+c447	{"set":["test1","test2"]}
+c447	FT	1	com.alibaba.json.bvt.bug.Issue87_treeset#test_for_issue	PASS				471
+c447	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				18
+c448	{
+c448		"foo.name":"mock"
+c448	}
+c448	FT	1	com.alibaba.json.bvt.bug.Issue887#test_for_issue	PASS				490
+c448	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				19
+c449	FT	1	com.alibaba.json.bvt.bug.Issue89#test_for_issue	PASS				430
+c449	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				58
+c450	FT	1	com.alibaba.json.bvt.bug.Issue894#test_for_issue	PASS				406
+c450	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				58
+c451	FT	1	com.alibaba.json.bvt.bug.Issue900#test_for_issue	PASS				427
+c451	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				46
+c452	FT	1	com.alibaba.json.bvt.bug.Issue900_1#test_for_issue	PASS				430
+c452	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				38
+c453	FT	1	com.alibaba.json.bvt.bug.Issue912#test_for_issue	PASS				470
+c453	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				42
+c454	FT	1	com.alibaba.json.bvt.bug.Issue922#test_for_issue	PASS				410
+c454	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				74
+c455	FT	1	com.alibaba.json.bvt.bug.Issue923#test_for_issue	PASS				395
+c455	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				59
+c456	com.alibaba.json.bvt.bug.Issue939$Model@27082746
+c456	FT	1	com.alibaba.json.bvt.bug.Issue939#test_for_issue_false	PASS				457
+c456	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				52
+c457	com.alibaba.json.bvt.bug.Issue939$Model@27082746
+c457	FT	1	com.alibaba.json.bvt.bug.Issue939#test_for_issue_true	PASS				439
+c457	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				40
+c458	FT	1	com.alibaba.json.bvt.bug.Issue94#test_for_issue	PASS				378
+c458	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				129
+c459	FT	1	com.alibaba.json.bvt.bug.Issue942#test_for_issue	PASS				549
+c459	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				60
+c460	FT	1	com.alibaba.json.bvt.bug.Issue943#test_for_issue	PASS				426
+c460	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				61
+c461	FT	1	com.alibaba.json.bvt.bug.Issue944#test_for_issue	PASS				455
+c461	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				25
+c462	FT	1	com.alibaba.json.bvt.bug.Issue952#test_for_issue	PASS				602
+c462	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				84
+c463	FT	1	com.alibaba.json.bvt.bug.Issue955#test_checkArray	PASS				537
+c463	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				12
+c464	FT	1	com.alibaba.json.bvt.bug.Issue955#test_checkObject	PASS				544
+c464	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				18
+c465	class com.alibaba.json.bvt.bug.Issue96$Sub
+c465	FT	1	com.alibaba.json.bvt.bug.Issue96#test_for_issue	PASS				490
+c465	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				33
+c466	FT	1	com.alibaba.json.bvt.bug.Issue963#test_for_issue	PASS				463
+c466	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				44
+c467	FT	1	com.alibaba.json.bvt.bug.Issue978#test_for_issue	PASS				712
+c467	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				56
+c468	FT	1	com.alibaba.json.bvt.bug.Issue983#test_for_issue	PASS				517
+c468	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				74
+c469	FT	1	com.alibaba.json.bvt.bug.Issue983_1#test_for_issue	PASS				549
+c469	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				225
+c470	FT	1	com.alibaba.json.bvt.bug.Issue983_1#test_for_issue_int	PASS				416
+c470	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				109
+c471	FT	1	com.alibaba.json.bvt.bug.Issue983_1#test_for_issue_int_int	PASS				347
+c471	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				119
+c472	FT	1	com.alibaba.json.bvt.bug.Issue987#test_for_issue	PASS				455
+c472	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				38
+c473	FT	1	com.alibaba.json.bvt.bug.Issue989#test_for_issue	PASS				441
+c473	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				17
+c474	FT	1	com.alibaba.json.bvt.bug.Issue993#test_for_issue	PASS				434
+c474	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				21
+c475	FT	1	com.alibaba.json.bvt.bug.Issue995#test_for_issue	PASS				453
+c475	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				22
+c476	{"object":null}
+c476	FT	1	com.alibaba.json.bvt.bug.Issue997#test_for_issue	PASS				483
+c476	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				25
+c477	FT	1	com.alibaba.json.bvt.bug.Issue998#test_for_issue	PASS				982
+c477	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				45
+c478	FT	1	com.alibaba.json.bvt.bug.Issue998#test_for_issue_1	PASS				1242
+c478	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				110
+c479	FT	1	com.alibaba.json.bvt.bug.Issue998_private#test_for_issue	PASS				756
+c479	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				29
+c480	FT	1	com.alibaba.json.bvt.bug.Issue998_private#test_for_issue_1	PASS				469
+c480	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				64
+c481	FT	1	com.alibaba.json.bvt.bug.Issue_611#test_for_issue	PASS				453
+c481	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				98
+c482	FT	1	com.alibaba.json.bvt.bug.Issue_748#testJsonObjectWithClassName	PASS				537
+c482	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				17
+c483	FT	1	com.alibaba.json.bvt.bug.Issue_for_huangfeng#test_for_huangfeng	PASS				428
+c483	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				43
+c484	FT	1	com.alibaba.json.bvt.bug.Issue_for_huangfeng#test_for_huangfeng_false	PASS				443
+c484	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				-639
+c485	FT	1	com.alibaba.json.bvt.bug.Issue_for_huangfeng#test_for_huangfeng_false_f	PASS				-725
+c485	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				47
+c486	FT	1	com.alibaba.json.bvt.bug.Issue_for_huangfeng#test_for_huangfeng_is_t	PASS				426
+c486	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				49
+c487	FT	1	com.alibaba.json.bvt.bug.Issue_for_huangfeng#test_for_huangfeng_t	PASS				480
+c487	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				60
+c488	FT	1	com.alibaba.json.bvt.bug.Issue_for_jiongxiong#test_for_jiongxiong	PASS				609
+c488	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				44
+c489	FT	1	com.alibaba.json.bvt.bug.Issue_for_oschina_3087749_2215732#test_for_issue	PASS				621
+c489	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				55
+c490	FT	1	com.alibaba.json.bvt.bug.Issue_for_zuojing#test_for_zuojing	PASS				504
+c490	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				62
+c491	FT	1	com.alibaba.json.bvt.bug.KeyBug_for_zhongl#testCustomedKey	PASS				471
+c491	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				28
+c492	FT	1	com.alibaba.json.bvt.bug.KeyBug_for_zhongl#testCustomedKey_static	PASS				497
+c492	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				16
+c493	FT	1	com.alibaba.json.bvt.bug.KeyBug_for_zhongl#testDeserialize	PASS				448
+c493	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				51
+c494	FT	1	com.alibaba.json.bvt.bug.KeyBug_for_zhongl#testDeserialize_static	PASS				448
+c494	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				43
+c495	FT	1	com.alibaba.json.bvt.bug.Mogujie_01#test_for_issue	PASS				465
+c495	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				50
+c496	FT	1	com.alibaba.json.bvt.bug.Mogujie_02#test_for_issue	PASS				446
+c496	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				45
+c497	{"TEMPALTE_ATTACH_META":{"value":[{"id":1000,"name":"test_name","path":"http://alibaba-inc.com/test.txt"}]}}
+c497	com.alibaba.json.bvtVO.OptionValue@763d9750
+c497	{"@type":"java.util.HashMap","TEMPALTE_ATTACH_META":{"@type":"com.alibaba.json.bvtVO.OptionValue","value":[{"@type":"com.alibaba.json.bvtVO.TempAttachMetaOption","id":1000,"name":"test_name","path":"http://alibaba-inc.com/test.txt"}]}}
+c497	null
+c497	FT	1	com.alibaba.json.bvt.bug.SerDeserTest#test_for_yaolei	PASS				478
+c497	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				19
+c498	FT	1	com.alibaba.json.bvt.bug.StackTraceElementTest#test_stackTrace	PASS				444
+c498	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				16
+c499	FT	1	com.alibaba.json.bvt.bug.StackTraceElementTest2#test_stackTrace2	PASS				364
+c499	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				52
+c500	FT	1	com.alibaba.json.bvt.bug.TestDouble#test_doubleArray_2	PASS				455
+c500	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				16
+c501	{"@type":"com.alibaba.json.bvt.bug.TestJSONMap$Record","record":{"@type":"java.util.HashMap"}}
+c501	0
+c501	FT	1	com.alibaba.json.bvt.bug.TestJSONMap#test_0	PASS				468
+c501	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				13
+c502	FT	1	com.alibaba.json.bvt.bug.WuqiTest#test_for_wuqi	PASS				469
+c502	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				19
+c503	{"companyId":10004,"expiredReports":[{"businessVO":{"name":"name"},"id":10001}],"normalReports":[{"businessVO":{"$ref":"$.expiredReports[0].businessVO"},"id":10001}]}
+c503	com.alibaba.json.bvt.bug.bug_for_caoyaojun1988$BusinessVO@763d9750
+c503	{"companyId":10004,"expiredReports":[{"businessVO":{"name":"name"},"id":10001},{"$ref":"$.expiredReports[0]"}],"normalReports":[{"businessVO":{"$ref":"$.expiredReports[0].businessVO"},"id":10001}]}
+c503	nameFT	1	com.alibaba.json.bvt.bug.bug_for_caoyaojun1988#test_for_bug	PASS				473
+c503	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				17
+c504	FT	1	com.alibaba.json.bvt.bug.bug_for_pengsong0302#test_0	PASS				227
+c504	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				200
+c505	FT	1	com.alibaba.json.bvt.bug.bug_for_pengsong0302#test_1	PASS				478
+c505	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				18
+c506	FT	1	com.alibaba.json.bvt.bug.bug_for_pengsong0302#test_2029	PASS				323
+c506	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				226
+c507	FT	1	com.alibaba.json.bvt.bug.bug_for_pengsong0302#test_2029_1	PASS				466
+c507	FT	2	com.alibaba.json.bvt.bug.Issue_717#test_for_issue	PASS				22

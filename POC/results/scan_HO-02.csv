@@ -1,0 +1,73 @@
+candidate,victim_status,exc,msg_norm,top_frame,signature,ms,cand_status,od_relevant
+com.alibaba.json.bvt.date.CalendarTest#test_codec,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,36,PASS,NO
+com.alibaba.json.bvt.date.CalendarTest#test_codec_iso88591,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,27,PASS,NO
+com.alibaba.json.bvt.date.CalendarTest#test_codec_iso88591_2,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,25,PASS,NO
+com.alibaba.json.bvt.date.CalendarTest#test_null,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,37,PASS,NO
+com.alibaba.json.bvt.date.DateFieldFormatTest#test_format_,PASS,,,,,14,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest#test_codec,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,38,PASS,NO
+com.alibaba.json.bvt.date.DateFieldTest#test_codec_null,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,34,PASS,NO
+com.alibaba.json.bvt.date.DateFieldTest#test_codec_null_1,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,41,PASS,NO
+com.alibaba.json.bvt.date.DateFieldTest#test_codec_null_asm,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,33,PASS,NO
+com.alibaba.json.bvt.date.DateFieldTest10#test_1,PASS,,,,,28,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest10#test_2,PASS,,,,,15,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest10#test_3,PASS,,,,,15,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest10#test_4,PASS,,,,,18,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest10#test_5,PASS,,,,,25,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest10#test_6,PASS,,,,,24,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest10#test_for_zero,PASS,,,,,20,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest11_reader#test_cn,PASS,,,,,21,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest11_reader#test_cn_1,PASS,,,,,27,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest2#test_codec,PASS,,,,,35,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest2#test_codec_asm,PASS,,,,,36,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest2#test_codec_no_asm,PASS,,,,,32,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest2#test_codec_null_1,PASS,,,,,61,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest2#test_codec_null_asm,PASS,,,,,36,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest3#test_codec,PASS,,,,,34,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest3#test_codec_asm,PASS,,,,,32,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest3#test_codec_no_asm,PASS,,,,,35,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest3#test_codec_null_1,PASS,,,,,37,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest3#test_codec_null_asm,PASS,,,,,37,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest3#test_codec_null_no_asm,PASS,,,,,28,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest4#test_codec,PASS,,,,,32,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest4#test_codec_asm,PASS,,,,,33,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest4#test_codec_no_asm,PASS,,,,,36,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest4#test_codec_null_1,PASS,,,,,35,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest4#test_codec_null_asm,PASS,,,,,31,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest5#test_codec,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,66,PASS,NO
+com.alibaba.json.bvt.date.DateFieldTest5#test_codec_asm,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,65,PASS,NO
+com.alibaba.json.bvt.date.DateFieldTest5#test_codec_no_asm,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,62,PASS,NO
+com.alibaba.json.bvt.date.DateFieldTest5#test_codec_null_1,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,36,PASS,NO
+com.alibaba.json.bvt.date.DateFieldTest5#test_codec_null_asm,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,43,PASS,NO
+com.alibaba.json.bvt.date.DateFieldTest6#test_0,PASS,,,,,29,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest7#test_0,PASS,,,,,96,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest8#test_0,PASS,,,,,54,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest8#test_1,PASS,,,,,32,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest9#test_cn,PASS,,,,,24,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest9#test_cn_1,PASS,,,,,30,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest9#test_cn_2,PASS,,,,,28,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest9#test_cn_3,PASS,,,,,20,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest9#test_cn_4,PASS,,,,,21,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest9#test_de,PASS,,,,,19,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest9#test_in,PASS,,,,,25,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest9#test_kr_1,PASS,,,,,23,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest9#test_kr_2,PASS,,,,,24,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest9#test_kr_3,PASS,,,,,21,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest9#test_kr_4,PASS,,,,,19,PASS,YES
+com.alibaba.json.bvt.date.DateFieldTest9#test_tw,PASS,,,,,22,PASS,YES
+com.alibaba.json.bvt.date.DateNewTest#test_date,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,59,PASS,NO
+com.alibaba.json.bvt.date.DateTest#test_date,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,108,FAIL,NO
+com.alibaba.json.bvt.date.DateTest1#test_date,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,55,PASS,NO
+com.alibaba.json.bvt.date.DateTest2#test_date,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,62,PASS,NO
+com.alibaba.json.bvt.date.DateTest_dotnet#test_date,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,38,PASS,NO
+com.alibaba.json.bvt.date.DateTest_dotnet_1#test_date,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,41,PASS,NO
+com.alibaba.json.bvt.date.DateTest_dotnet_2#test_date,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,30,PASS,NO
+com.alibaba.json.bvt.date.DateTest_dotnet_3#test_date,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,31,PASS,NO
+com.alibaba.json.bvt.date.DateTest_dotnet_4#test_date,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,53,PASS,NO
+com.alibaba.json.bvt.date.DateTest_dotnet_5#test_date,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,53,PASS,NO
+com.alibaba.json.bvt.date.DateTest_error#test_error,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,59,PASS,NO
+com.alibaba.json.bvt.date.DateTest_error#test_error_1,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,75,PASS,NO
+com.alibaba.json.bvt.date.DateTest_error#test_error_2,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,58,PASS,NO
+com.alibaba.json.bvt.date.DateTest_error#test_error_3,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,68,PASS,NO
+com.alibaba.json.bvt.date.DateTest_error#test_error_4,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,56,PASS,NO
+com.alibaba.json.bvt.date.DateTest_error#test_error_5,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,64,PASS,NO
+com.alibaba.json.bvt.date.XMLGregorianCalendarTest#test_for_issue,FAIL,java.lang.AssertionError,expected:<<N>> but was:<<N>>,com.alibaba.json.bvt.date.DateTest_tz.test_codec,java.lang.AssertionError || expected:<<N>> but was:<<N>> || com.alibaba.json.bvt.date.DateTest_tz.test_codec,41,PASS,NO

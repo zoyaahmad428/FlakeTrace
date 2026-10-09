@@ -1,0 +1,4 @@
+subjects/
+*.class
+runner/
+results/resources_*.json

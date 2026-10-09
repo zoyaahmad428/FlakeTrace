@@ -1,0 +1,147 @@
+c0	FT	1	com.alibaba.json.bvt.date.CalendarTest#test_codec	PASS				385
+c0	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	11
+c1	FT	1	com.alibaba.json.bvt.date.CalendarTest#test_codec_iso88591	PASS				410
+c1	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	12
+c2	FT	1	com.alibaba.json.bvt.date.CalendarTest#test_codec_iso88591_2	PASS				484
+c2	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	10
+c3	FT	1	com.alibaba.json.bvt.date.CalendarTest#test_null	PASS				402
+c3	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	57
+c4	{"publishTime":"2026/08/28 19:21:21","serverTime":"2026-08-28 19:21:21","startDate":"2026-08-28"}
+c4	FT	1	com.alibaba.json.bvt.date.DateFieldFormatTest#test_format_	PASS				500
+c4	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				9
+c5	FT	1	com.alibaba.json.bvt.date.DateFieldTest#test_codec	PASS				449
+c5	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	26
+c6	FT	1	com.alibaba.json.bvt.date.DateFieldTest#test_codec_null	PASS				473
+c6	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	25
+c7	FT	1	com.alibaba.json.bvt.date.DateFieldTest#test_codec_null_1	PASS				443
+c7	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	19
+c8	FT	1	com.alibaba.json.bvt.date.DateFieldTest#test_codec_null_asm	PASS				439
+c8	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	21
+c9	FT	1	com.alibaba.json.bvt.date.DateFieldTest10#test_1	PASS				372
+c9	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				29
+c10	FT	1	com.alibaba.json.bvt.date.DateFieldTest10#test_2	PASS				406
+c10	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				24
+c11	FT	1	com.alibaba.json.bvt.date.DateFieldTest10#test_3	PASS				406
+c11	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				17
+c12	FT	1	com.alibaba.json.bvt.date.DateFieldTest10#test_4	PASS				334
+c12	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				16
+c13	FT	1	com.alibaba.json.bvt.date.DateFieldTest10#test_5	PASS				424
+c13	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				21
+c14	FT	1	com.alibaba.json.bvt.date.DateFieldTest10#test_6	PASS				468
+c14	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				36
+c15	FT	1	com.alibaba.json.bvt.date.DateFieldTest10#test_for_zero	PASS				412
+c15	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				17
+c16	FT	1	com.alibaba.json.bvt.date.DateFieldTest11_reader#test_cn	PASS				432
+c16	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				31
+c17	1462464000000
+c17	1488297600000
+c17	FT	1	com.alibaba.json.bvt.date.DateFieldTest11_reader#test_cn_1	PASS				357
+c17	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				24
+c18	FT	1	com.alibaba.json.bvt.date.DateFieldTest2#test_codec	PASS				439
+c18	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				4
+c19	FT	1	com.alibaba.json.bvt.date.DateFieldTest2#test_codec_asm	PASS				397
+c19	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				3
+c20	FT	1	com.alibaba.json.bvt.date.DateFieldTest2#test_codec_no_asm	PASS				425
+c20	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				6
+c21	FT	1	com.alibaba.json.bvt.date.DateFieldTest2#test_codec_null_1	PASS				372
+c21	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				28
+c22	FT	1	com.alibaba.json.bvt.date.DateFieldTest2#test_codec_null_asm	PASS				432
+c22	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				25
+c23	FT	1	com.alibaba.json.bvt.date.DateFieldTest3#test_codec	PASS				467
+c23	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				4
+c24	FT	1	com.alibaba.json.bvt.date.DateFieldTest3#test_codec_asm	PASS				412
+c24	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				3
+c25	FT	1	com.alibaba.json.bvt.date.DateFieldTest3#test_codec_no_asm	PASS				429
+c25	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				4
+c26	FT	1	com.alibaba.json.bvt.date.DateFieldTest3#test_codec_null_1	PASS				538
+c26	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				18
+c27	FT	1	com.alibaba.json.bvt.date.DateFieldTest3#test_codec_null_asm	PASS				503
+c27	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				26
+c28	FT	1	com.alibaba.json.bvt.date.DateFieldTest3#test_codec_null_no_asm	PASS				390
+c28	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				31
+c29	FT	1	com.alibaba.json.bvt.date.DateFieldTest4#test_codec	PASS				465
+c29	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				4
+c30	FT	1	com.alibaba.json.bvt.date.DateFieldTest4#test_codec_asm	PASS				445
+c30	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				3
+c31	FT	1	com.alibaba.json.bvt.date.DateFieldTest4#test_codec_no_asm	PASS				482
+c31	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				7
+c32	FT	1	com.alibaba.json.bvt.date.DateFieldTest4#test_codec_null_1	PASS				443
+c32	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				20
+c33	FT	1	com.alibaba.json.bvt.date.DateFieldTest4#test_codec_null_asm	PASS				449
+c33	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				25
+c34	FT	1	com.alibaba.json.bvt.date.DateFieldTest5#test_codec	PASS				444
+c34	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	21
+c35	FT	1	com.alibaba.json.bvt.date.DateFieldTest5#test_codec_asm	PASS				406
+c35	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	15
+c36	FT	1	com.alibaba.json.bvt.date.DateFieldTest5#test_codec_no_asm	PASS				380
+c36	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	18
+c37	FT	1	com.alibaba.json.bvt.date.DateFieldTest5#test_codec_null_1	PASS				485
+c37	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	19
+c38	FT	1	com.alibaba.json.bvt.date.DateFieldTest5#test_codec_null_asm	PASS				433
+c38	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	23
+c39	FT	1	com.alibaba.json.bvt.date.DateFieldTest6#test_0	PASS				444
+c39	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				5
+c40	FT	1	com.alibaba.json.bvt.date.DateFieldTest7#test_0	PASS				425
+c40	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				3
+c41	FT	1	com.alibaba.json.bvt.date.DateFieldTest8#test_0	PASS				442
+c41	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				2
+c42	FT	1	com.alibaba.json.bvt.date.DateFieldTest8#test_1	PASS				463
+c42	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				5
+c43	FT	1	com.alibaba.json.bvt.date.DateFieldTest9#test_cn	PASS				443
+c43	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				37
+c44	FT	1	com.alibaba.json.bvt.date.DateFieldTest9#test_cn_1	PASS				386
+c44	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				26
+c45	FT	1	com.alibaba.json.bvt.date.DateFieldTest9#test_cn_2	PASS				429
+c45	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				45
+c46	FT	1	com.alibaba.json.bvt.date.DateFieldTest9#test_cn_3	PASS				487
+c46	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				37
+c47	FT	1	com.alibaba.json.bvt.date.DateFieldTest9#test_cn_4	PASS				455
+c47	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				35
+c48	FT	1	com.alibaba.json.bvt.date.DateFieldTest9#test_de	PASS				318
+c48	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				27
+c49	FT	1	com.alibaba.json.bvt.date.DateFieldTest9#test_in	PASS				338
+c49	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				23
+c50	FT	1	com.alibaba.json.bvt.date.DateFieldTest9#test_kr_1	PASS				335
+c50	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				25
+c51	FT	1	com.alibaba.json.bvt.date.DateFieldTest9#test_kr_2	PASS				417
+c51	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				44
+c52	FT	1	com.alibaba.json.bvt.date.DateFieldTest9#test_kr_3	PASS				424
+c52	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				22
+c53	FT	1	com.alibaba.json.bvt.date.DateFieldTest9#test_kr_4	PASS				466
+c53	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				54
+c54	FT	1	com.alibaba.json.bvt.date.DateFieldTest9#test_tw	PASS				398
+c54	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	PASS				24
+c55	FT	1	com.alibaba.json.bvt.date.DateNewTest#test_date	PASS				427
+c55	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	52
+c56	FT	1	com.alibaba.json.bvt.date.DateTest1#test_date	PASS				451
+c56	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	20
+c57	FT	1	com.alibaba.json.bvt.date.DateTest2#test_date	PASS				525
+c57	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	19
+c58	FT	1	com.alibaba.json.bvt.date.DateTest_dotnet#test_date	PASS				441
+c58	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	48
+c59	FT	1	com.alibaba.json.bvt.date.DateTest_dotnet_1#test_date	PASS				350
+c59	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	31
+c60	FT	1	com.alibaba.json.bvt.date.DateTest_dotnet_2#test_date	PASS				434
+c60	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	18
+c61	FT	1	com.alibaba.json.bvt.date.DateTest_dotnet_3#test_date	PASS				383
+c61	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	24
+c62	FT	1	com.alibaba.json.bvt.date.DateTest_dotnet_4#test_date	PASS				393
+c62	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	43
+c63	FT	1	com.alibaba.json.bvt.date.DateTest_dotnet_5#test_date	PASS				407
+c63	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	49
+c64	FT	1	com.alibaba.json.bvt.date.DateTest_error#test_error	PASS				366
+c64	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	61
+c65	FT	1	com.alibaba.json.bvt.date.DateTest_error#test_error_1	PASS				415
+c65	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	28
+c66	FT	1	com.alibaba.json.bvt.date.DateTest_error#test_error_2	PASS				413
+c66	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	34
+c67	FT	1	com.alibaba.json.bvt.date.DateTest_error#test_error_3	PASS				362
+c67	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	26
+c68	FT	1	com.alibaba.json.bvt.date.DateTest_error#test_error_4	PASS				402
+c68	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	49
+c69	FT	1	com.alibaba.json.bvt.date.DateTest_error#test_error_5	PASS				398
+c69	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	41
+c70	FT	1	com.alibaba.json.bvt.date.DateTest_tz#test_codec	FAIL	java.lang.AssertionError	expected:<1461859200000> but was:<1461888000000>	org.junit.Assert.fail|org.junit.Assert.failNotEquals|org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest_tz.test_codec|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect	410
+c70	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	24
+c71	FT	1	com.alibaba.json.bvt.date.XMLGregorianCalendarTest#test_for_issue	PASS				451
+c71	FT	2	com.alibaba.json.bvt.date.DateTest#test_date	FAIL	org.junit.ComparisonFailure	expected:<"2011-12-1[8 00]:23:07"> but was:<"2011-12-1[7 16]:23:07">	org.junit.Assert.assertEquals|org.junit.Assert.assertEquals|com.alibaba.json.bvt.date.DateTest.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest|junit.framework.TestCase.runBare|junit.framework.TestResult$1.protect|junit.framework.TestResult.runProtected|junit.framework.TestResult.run	11

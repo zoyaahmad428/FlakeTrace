@@ -1,0 +1,42 @@
+c0	FT	1	com.alibaba.json.bvt.serializer.date.DateTest#test_0	PASS				227
+c0	FT	2	com.alibaba.json.bvt.serializer.date.DateTest5_iso8601#test_date	PASS				100
+c1	FT	1	com.alibaba.json.bvt.serializer.date.DateTest#test_1	PASS				177
+c1	FT	2	com.alibaba.json.bvt.serializer.date.DateTest5_iso8601#test_date	PASS				84
+c2	FT	1	com.alibaba.json.bvt.serializer.date.DateTest#test_2	PASS				199
+c2	FT	2	com.alibaba.json.bvt.serializer.date.DateTest5_iso8601#test_date	PASS				82
+c3	FT	1	com.alibaba.json.bvt.serializer.date.DateTest#test_3	PASS				201
+c3	FT	2	com.alibaba.json.bvt.serializer.date.DateTest5_iso8601#test_date	PASS				80
+c4	FT	1	com.alibaba.json.bvt.serializer.date.DateTest#test_4	PASS				216
+c4	FT	2	com.alibaba.json.bvt.serializer.date.DateTest5_iso8601#test_date	PASS				86
+c5	FT	1	com.alibaba.json.bvt.serializer.date.DateTest#test_5	PASS				202
+c5	FT	2	com.alibaba.json.bvt.serializer.date.DateTest5_iso8601#test_date	PASS				77
+c6	FT	1	com.alibaba.json.bvt.serializer.date.DateTest#test_6	PASS				215
+c6	FT	2	com.alibaba.json.bvt.serializer.date.DateTest5_iso8601#test_date	PASS				77
+c7	FT	1	com.alibaba.json.bvt.serializer.date.DateTest#test_7	PASS				204
+c7	FT	2	com.alibaba.json.bvt.serializer.date.DateTest5_iso8601#test_date	PASS				81
+c8	FT	1	com.alibaba.json.bvt.serializer.date.DateTest#test_8	PASS				220
+c8	FT	2	com.alibaba.json.bvt.serializer.date.DateTest5_iso8601#test_date	PASS				85
+c9	FT	1	com.alibaba.json.bvt.serializer.date.DateTest#test_9	PASS				-851
+c9	FT	2	com.alibaba.json.bvt.serializer.date.DateTest5_iso8601#test_date	PASS				39
+c10	FT	1	com.alibaba.json.bvt.serializer.date.DateTest2#test_null	PASS				196
+c10	FT	2	com.alibaba.json.bvt.serializer.date.DateTest5_iso8601#test_date	FAIL	junit.framework.AssertionFailedError	expected:<83419000> but was:<54619000>	junit.framework.Assert.fail|junit.framework.Assert.failNotEquals|junit.framework.Assert.assertEquals|junit.framework.Assert.assertEquals|junit.framework.Assert.assertEquals|junit.framework.TestCase.assertEquals|com.alibaba.json.bvt.serializer.date.DateTest5_iso8601.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest	66
+c11	FT	1	com.alibaba.json.bvt.serializer.date.DateTest3#test_date	PASS				261
+c11	FT	2	com.alibaba.json.bvt.serializer.date.DateTest5_iso8601#test_date	FAIL	junit.framework.AssertionFailedError	expected:<83419000> but was:<54619000>	junit.framework.Assert.fail|junit.framework.Assert.failNotEquals|junit.framework.Assert.assertEquals|junit.framework.Assert.assertEquals|junit.framework.Assert.assertEquals|junit.framework.TestCase.assertEquals|com.alibaba.json.bvt.serializer.date.DateTest5_iso8601.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest	5
+c12	FT	1	com.alibaba.json.bvt.serializer.date.DateTest4_indian#test_date	FAIL	junit.framework.AssertionFailedError	expected:<17100000> but was:<45900000>	junit.framework.Assert.fail|junit.framework.Assert.failNotEquals|junit.framework.Assert.assertEquals|junit.framework.Assert.assertEquals|junit.framework.Assert.assertEquals|junit.framework.TestCase.assertEquals|com.alibaba.json.bvt.serializer.date.DateTest4_indian.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest	277
+c12	FT	2	com.alibaba.json.bvt.serializer.date.DateTest5_iso8601#test_date	FAIL	junit.framework.AssertionFailedError	expected:<83419000> but was:<54619000>	junit.framework.Assert.fail|junit.framework.Assert.failNotEquals|junit.framework.Assert.assertEquals|junit.framework.Assert.assertEquals|junit.framework.Assert.assertEquals|junit.framework.TestCase.assertEquals|com.alibaba.json.bvt.serializer.date.DateTest5_iso8601.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest	6
+c13	FT	1	com.alibaba.json.bvt.serializer.date.DateTest_ISO8601_OneLetterISO8601TimeZone#test_date_9	PASS				236
+c13	FT	2	com.alibaba.json.bvt.serializer.date.DateTest5_iso8601#test_date	FAIL	junit.framework.AssertionFailedError	expected:<83419000> but was:<54619000>	junit.framework.Assert.fail|junit.framework.Assert.failNotEquals|junit.framework.Assert.assertEquals|junit.framework.Assert.assertEquals|junit.framework.Assert.assertEquals|junit.framework.TestCase.assertEquals|com.alibaba.json.bvt.serializer.date.DateTest5_iso8601.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest	5
+c14	FT	1	com.alibaba.json.bvt.serializer.date.DateTest_ISO8601_ThreeLetterISO8601TimeZone#test_date_9	PASS				255
+c14	FT	2	com.alibaba.json.bvt.serializer.date.DateTest5_iso8601#test_date	FAIL	junit.framework.AssertionFailedError	expected:<83419000> but was:<54619000>	junit.framework.Assert.fail|junit.framework.Assert.failNotEquals|junit.framework.Assert.assertEquals|junit.framework.Assert.assertEquals|junit.framework.Assert.assertEquals|junit.framework.TestCase.assertEquals|com.alibaba.json.bvt.serializer.date.DateTest5_iso8601.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest	4
+c15	FT	1	com.alibaba.json.bvt.serializer.date.DateTest_ISO8601_TimeZone#test_date1	PASS				250
+c15	FT	2	com.alibaba.json.bvt.serializer.date.DateTest5_iso8601#test_date	PASS				37
+c16	{"gmtCreate":"2026-09-04T22:16:34.440+10:00"}
+c16	FT	1	com.alibaba.json.bvt.serializer.date.DateTest_ISO8601_TimeZone#test_date2	PASS				273
+c16	FT	2	com.alibaba.json.bvt.serializer.date.DateTest5_iso8601#test_date	PASS				6
+c17	{"gmtCreate":"2026-09-04T20:16:34.808+08:00"}
+c17	FT	1	com.alibaba.json.bvt.serializer.date.DateTest_ISO8601_TimeZone#test_date3	PASS				250
+c17	FT	2	com.alibaba.json.bvt.serializer.date.DateTest5_iso8601#test_date	PASS				31
+c18	FT	1	com.alibaba.json.bvt.serializer.date.DateTest_ISO8601_TwoLetterISO8601TimeZone#test_date_9	PASS				261
+c18	FT	2	com.alibaba.json.bvt.serializer.date.DateTest5_iso8601#test_date	FAIL	junit.framework.AssertionFailedError	expected:<83419000> but was:<54619000>	junit.framework.Assert.fail|junit.framework.Assert.failNotEquals|junit.framework.Assert.assertEquals|junit.framework.Assert.assertEquals|junit.framework.Assert.assertEquals|junit.framework.TestCase.assertEquals|com.alibaba.json.bvt.serializer.date.DateTest5_iso8601.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest	5
+c19	FT	1	com.alibaba.json.bvt.serializer.date.DateTest_ISO8601_UTCTime#test_date	PASS				239
+c19	FT	2	com.alibaba.json.bvt.serializer.date.DateTest5_iso8601#test_date	FAIL	junit.framework.AssertionFailedError	expected:<83419000> but was:<54619000>	junit.framework.Assert.fail|junit.framework.Assert.failNotEquals|junit.framework.Assert.assertEquals|junit.framework.Assert.assertEquals|junit.framework.Assert.assertEquals|junit.framework.TestCase.assertEquals|com.alibaba.json.bvt.serializer.date.DateTest5_iso8601.test_date|sun.reflect.NativeMethodAccessorImpl.invoke0|sun.reflect.NativeMethodAccessorImpl.invoke|sun.reflect.DelegatingMethodAccessorImpl.invoke|java.lang.reflect.Method.invoke|junit.framework.TestCase.runTest	5

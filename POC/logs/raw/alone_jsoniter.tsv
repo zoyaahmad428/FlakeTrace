@@ -1,0 +1,80 @@
+JI-01__r0	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-01__r0	FT	1	com.jsoniter.TestIO#test_read_byte	PASS				45
+JI-01__r1	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-01__r1	FT	1	com.jsoniter.TestIO#test_read_byte	PASS				45
+JI-01__r2	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-01__r2	FT	1	com.jsoniter.TestIO#test_read_byte	PASS				44
+JI-01__r3	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-01__r3	FT	1	com.jsoniter.TestIO#test_read_byte	PASS				42
+JI-01__r4	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-01__r4	FT	1	com.jsoniter.TestIO#test_read_byte	PASS				43
+JI-01__r5	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-01__r5	FT	1	com.jsoniter.TestIO#test_read_byte	PASS				45
+JI-01__r6	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-01__r6	FT	1	com.jsoniter.TestIO#test_read_byte	PASS				48
+JI-01__r7	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-01__r7	FT	1	com.jsoniter.TestIO#test_read_byte	PASS				46
+JI-01__r8	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-01__r8	FT	1	com.jsoniter.TestIO#test_read_byte	PASS				47
+JI-01__r9	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-01__r9	FT	1	com.jsoniter.TestIO#test_read_byte	PASS				52
+JI-02__r0	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-02__r0	FT	1	com.jsoniter.TestString#test_utf8	PASS				46
+JI-02__r1	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-02__r1	FT	1	com.jsoniter.TestString#test_utf8	PASS				43
+JI-02__r2	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-02__r2	FT	1	com.jsoniter.TestString#test_utf8	PASS				47
+JI-02__r3	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-02__r3	FT	1	com.jsoniter.TestString#test_utf8	PASS				45
+JI-02__r4	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-02__r4	FT	1	com.jsoniter.TestString#test_utf8	PASS				45
+JI-02__r5	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-02__r5	FT	1	com.jsoniter.TestString#test_utf8	PASS				48
+JI-02__r6	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-02__r6	FT	1	com.jsoniter.TestString#test_utf8	PASS				48
+JI-02__r7	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-02__r7	FT	1	com.jsoniter.TestString#test_utf8	PASS				44
+JI-02__r8	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-02__r8	FT	1	com.jsoniter.TestString#test_utf8	PASS				49
+JI-02__r9	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-02__r9	FT	1	com.jsoniter.TestString#test_utf8	PASS				48
+JI-03__r0	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-03__r0	FT	1	com.jsoniter.TestBoolean#test_streaming	PASS				45
+JI-03__r1	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-03__r1	FT	1	com.jsoniter.TestBoolean#test_streaming	PASS				48
+JI-03__r2	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-03__r2	FT	1	com.jsoniter.TestBoolean#test_streaming	PASS				46
+JI-03__r3	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-03__r3	FT	1	com.jsoniter.TestBoolean#test_streaming	PASS				46
+JI-03__r4	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-03__r4	FT	1	com.jsoniter.TestBoolean#test_streaming	PASS				43
+JI-03__r5	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-03__r5	FT	1	com.jsoniter.TestBoolean#test_streaming	PASS				51
+JI-03__r6	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-03__r6	FT	1	com.jsoniter.TestBoolean#test_streaming	PASS				46
+JI-03__r7	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-03__r7	FT	1	com.jsoniter.TestBoolean#test_streaming	PASS				45
+JI-03__r8	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-03__r8	FT	1	com.jsoniter.TestBoolean#test_streaming	PASS				46
+JI-03__r9	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-03__r9	FT	1	com.jsoniter.TestBoolean#test_streaming	PASS				47
+JI-04__r0	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-04__r0	FT	1	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				59
+JI-04__r1	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-04__r1	FT	1	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				61
+JI-04__r2	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-04__r2	FT	1	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				61
+JI-04__r3	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-04__r3	FT	1	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				66
+JI-04__r4	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-04__r4	FT	1	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				62
+JI-04__r5	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-04__r5	FT	1	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				65
+JI-04__r6	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-04__r6	FT	1	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				63
+JI-04__r7	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-04__r7	FT	1	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				61
+JI-04__r8	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-04__r8	FT	1	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				63
+JI-04__r9	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+JI-04__r9	FT	1	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				61

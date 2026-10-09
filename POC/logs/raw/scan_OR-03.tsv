@@ -1,0 +1,158 @@
+c0	FT	1	com.j256.ormlite.support.BaseConnectionSourceTest#testBasicStuff	PASS				336
+c0	2026-09-04 10:29:05,668 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c0	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				4
+c1	2026-09-04 10:29:06,135 [ERROR] BaseConnectionSourceTest no connection has been saved when clear() called
+c1	FT	1	com.j256.ormlite.support.BaseConnectionSourceTest#testClearNone	PASS				329
+c1	2026-09-04 10:29:06,141 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c1	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				3
+c2	FT	1	com.j256.ormlite.support.BaseConnectionSourceTest#testNestedSave	PASS				325
+c2	2026-09-04 10:29:06,620 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c2	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				9
+c3	FT	1	com.j256.ormlite.support.BaseConnectionSourceTest#testSaveDifferentConnection	PASS				322
+c3	2026-09-04 10:29:07,085 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c3	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				4
+c4	2026-09-04 10:29:07,566 [INFO] TableUtils dropping table 'foo'
+c4	2026-09-04 10:29:07,832 [INFO] TableUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "FOO" not found; SQL statement:
+c4	DROP TABLE `foo`  [42102-200]' for statement: DROP TABLE `foo` 
+c4	2026-09-04 10:29:07,832 [INFO] TableUtils creating table 'foo'
+c4	2026-09-04 10:29:07,864 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE `foo` (`id` INTEGER AUTO_INCREMENT , `val` INTEGER , `equal` INTEGER , `string` VARCHAR(255) , PRIMARY KEY (`id`) ) 
+c4	2026-09-04 10:29:07,890 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+c4	2026-09-04 10:29:07,891 [TRACE] BaseMappedStatement insert arguments: [100, 0, null]
+c4	2026-09-04 10:29:07,891 [DEBUG] BaseMappedStatement assigned id '1' from keyholder to 'id' in Foo object
+c4	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyFactoryTest#testBasic	PASS				680
+c4	2026-09-04 10:29:07,921 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c4	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				21
+c5	2026-09-04 10:29:08,445 [INFO] TableUtils dropping table 'foo'
+c5	2026-09-04 10:29:08,781 [INFO] TableUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "FOO" not found; SQL statement:
+c5	DROP TABLE `foo`  [42102-200]' for statement: DROP TABLE `foo` 
+c5	2026-09-04 10:29:08,783 [INFO] TableUtils creating table 'foo'
+c5	2026-09-04 10:29:08,820 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE `foo` (`id` INTEGER AUTO_INCREMENT , `val` INTEGER , `equal` INTEGER , `string` VARCHAR(255) , PRIMARY KEY (`id`) ) 
+c5	2026-09-04 10:29:08,855 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+c5	2026-09-04 10:29:08,856 [TRACE] BaseMappedStatement insert arguments: [131232, 0, null]
+c5	2026-09-04 10:29:08,856 [DEBUG] BaseMappedStatement assigned id '1' from keyholder to 'id' in Foo object
+c5	2026-09-04 10:29:08,869 [DEBUG] BaseMappedStatement query-for-id using 'SELECT * FROM `foo` WHERE `id` = ?' and 1 args, got 1 result
+c5	2026-09-04 10:29:08,869 [TRACE] BaseMappedStatement query-for-id arguments: [1]
+c5	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyFactoryTest#testChangeInsertValue	PASS				827
+c5	2026-09-04 10:29:08,889 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c5	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				15
+c6	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testClose	PASS				228
+c6	2026-09-04 10:29:09,461 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c6	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				209
+c7	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testCloseNull	PASS				184
+c7	2026-09-04 10:29:09,967 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c7	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				201
+c8	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testCloseQuietly	PASS				209
+c8	2026-09-04 10:29:10,489 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c8	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				168
+c9	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testCloseQuietlyNull	PASS				158
+c9	2026-09-04 10:29:10,925 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c9	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				168
+c10	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testCommit	PASS				213
+c10	2026-09-04 10:29:11,415 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c10	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				169
+c11	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testCommitNull	PASS				194
+c11	2026-09-04 10:29:11,961 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c11	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				202
+c12	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testCompileStatementStringStatementTypeFieldTypeArrayInt	PASS				212
+c12	2026-09-04 10:29:12,476 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c12	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				154
+c13	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testCompileStatementStringStatementTypeFieldTypeArrayIntNull	PASS				181
+c13	2026-09-04 10:29:12,989 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c13	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				196
+c14	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testDelete	PASS				229
+c14	2026-09-04 10:29:13,498 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c14	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				176
+c15	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testDeleteNull	PASS				195
+c15	2026-09-04 10:29:13,980 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c15	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				180
+c16	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testExecuteStatement	PASS				204
+c16	2026-09-04 10:29:14,505 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c16	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				186
+c17	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testExecuteStatementNull	PASS				218
+c17	2026-09-04 10:29:15,064 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c17	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				242
+c18	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testInsert	PASS				280
+c18	2026-09-04 10:29:15,637 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c18	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				179
+c19	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testInsertNull	PASS				221
+c19	2026-09-04 10:29:16,176 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c19	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				209
+c20	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testIsAutoCommit	PASS				249
+c20	2026-09-04 10:29:16,725 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c20	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				193
+c21	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testIsAutoCommitNull	PASS				214
+c21	2026-09-04 10:29:16,940 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c21	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				-136
+c22	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testIsAutoCommitSupported	PASS				-967
+c22	2026-09-04 10:29:16,423 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c22	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				300
+c23	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testIsAutoCommitSupportedNull	PASS				196
+c23	2026-09-04 10:29:17,023 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c23	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				256
+c24	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testIsClosed	PASS				245
+c24	2026-09-04 10:29:17,608 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c24	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				205
+c25	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testIsClosedNull	PASS				169
+c25	2026-09-04 10:29:18,106 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c25	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				194
+c26	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testIsTableExists	PASS				193
+c26	2026-09-04 10:29:18,591 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c26	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				167
+c27	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testIsTableExistsNull	PASS				161
+c27	2026-09-04 10:29:19,049 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c27	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				182
+c28	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testQueryForLongString	PASS				202
+c28	2026-09-04 10:29:19,500 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c28	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				143
+c29	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testQueryForLongStringNull	PASS				157
+c29	2026-09-04 10:29:19,961 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c29	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				200
+c30	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testQueryForLongStringObjectArrayFieldTypeArray	PASS				194
+c30	2026-09-04 10:29:20,398 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c30	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				144
+c31	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testQueryForLongStringObjectArrayFieldTypeArrayNull	PASS				169
+c31	2026-09-04 10:29:20,844 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c31	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				173
+c32	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testQueryForOne	PASS				182
+c32	2026-09-04 10:29:21,264 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c32	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				133
+c33	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testQueryForOneNull	PASS				154
+c33	2026-09-04 10:29:21,680 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c33	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				161
+c34	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testRollback	PASS				180
+c34	2026-09-04 10:29:22,102 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c34	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				135
+c35	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testRollbackNull	PASS				137
+c35	2026-09-04 10:29:22,527 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c35	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				160
+c36	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testSetAutoCommit	PASS				185
+c36	2026-09-04 10:29:22,986 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c36	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				168
+c37	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testSetAutoCommitNull	PASS				173
+c37	2026-09-04 10:29:23,484 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c37	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				216
+c38	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testSetSavePoint	PASS				198
+c38	2026-09-04 10:29:24,007 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c38	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				179
+c39	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testSetSavePointNull	PASS				168
+c39	2026-09-04 10:29:24,493 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c39	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				215
+c40	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testUpdate	PASS				199
+c40	2026-09-04 10:29:24,966 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c40	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				148
+c41	FT	1	com.j256.ormlite.support.DatabaseConnectionProxyTest#testUpdateNull	PASS				208
+c41	2026-09-04 10:29:25,448 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c41	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				162
+c42	2026-09-04 10:29:25,888 [INFO] TableUtils dropping table 'foo'
+c42	2026-09-04 10:29:26,231 [INFO] TableUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "FOO" not found; SQL statement:
+c42	DROP TABLE `foo`  [42102-200]' for statement: DROP TABLE `foo` 
+c42	2026-09-04 10:29:26,232 [INFO] TableUtils creating table 'foo'
+c42	2026-09-04 10:29:26,262 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE `foo` (`id` INTEGER AUTO_INCREMENT , `val` INTEGER , `equal` INTEGER , `string` VARCHAR(255) , PRIMARY KEY (`id`) ) 
+c42	2026-09-04 10:29:26,286 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `foo` (`val` ,`equal` ,`string` ) VALUES (?,?,?)' and 3 args, changed 1 rows
+c42	2026-09-04 10:29:26,286 [TRACE] BaseMappedStatement insert arguments: [1131246, 0, null]
+c42	2026-09-04 10:29:26,286 [DEBUG] BaseMappedStatement assigned id '1' from keyholder to 'id' in Foo object
+c42	2026-09-04 10:29:26,300 [DEBUG] BaseMappedStatement query-for-id using 'SELECT * FROM `foo` WHERE `id` = ?' and 1 args, got 1 result
+c42	2026-09-04 10:29:26,301 [TRACE] BaseMappedStatement query-for-id arguments: [1]
+c42	FT	1	com.j256.ormlite.support.ReflectionDatabaseConnectionProxyFactoryTest#testBasic	PASS				755
+c42	2026-09-04 10:29:26,320 [ERROR] BaseConnectionSourceTest connection saved EasyMock for interface com.j256.ormlite.support.DatabaseConnection is not the one being cleared EasyMock for interface com.j256.ormlite.support.DatabaseConnection
+c42	FT	2	com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection	PASS				16

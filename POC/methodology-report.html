@@ -1,0 +1,407 @@
+<title>POC Methodology Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Roboto+Mono:wght@400;500&display=swap">
+
+<style>
+:root{
+  --paper:#F6F6F4; --panel:#FFFFFF; --sunk:#ECECE8; --line:#DCDCD6;
+  --ink:#16181B; --body:#3B3F45; --muted:#6C7076;
+  --accent:#7B2D26; --accent-soft:#F3E5E3;
+  --meets:#2C6446; --meets-bg:#E1EFE8;
+  --below:#8F5A12; --below-bg:#F5EBDA;
+  --term-bg:#1C1E22; --term-ink:#E4E6E9; --term-dim:#8A9099; --term-accent:#E0A090;
+  --shadow:0 1px 2px rgba(22,24,27,.05), 0 14px 34px -26px rgba(22,24,27,.5);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#131417; --panel:#1A1C20; --sunk:#22252A; --line:#2C2F35;
+    --ink:#ECEDEF; --body:#C2C6CC; --muted:#8B9096;
+    --accent:#D68A80; --accent-soft:#2A1D1C;
+    --meets:#6DBB93; --meets-bg:#15261E;
+    --below:#D3A863; --below-bg:#291F12;
+    --term-bg:#101215; --term-ink:#E4E6E9; --term-dim:#7B8189; --term-accent:#E0A090;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 14px 34px -26px rgba(0,0,0,.95);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#131417; --panel:#1A1C20; --sunk:#22252A; --line:#2C2F35;
+  --ink:#ECEDEF; --body:#C2C6CC; --muted:#8B9096;
+  --accent:#D68A80; --accent-soft:#2A1D1C;
+  --meets:#6DBB93; --meets-bg:#15261E;
+  --below:#D3A863; --below-bg:#291F12;
+  --term-bg:#101215; --term-ink:#E4E6E9; --term-dim:#7B8189; --term-accent:#E0A090;
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 14px 34px -26px rgba(0,0,0,.95);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--body);
+  font-family:"Source Serif 4",Georgia,serif; font-size:17px; line-height:1.68;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:"Libre Franklin",Helvetica,Arial,sans-serif; color:var(--ink); margin:0; text-wrap:balance}
+h1{font-size:clamp(1.95rem,4vw,2.6rem); font-weight:700; line-height:1.12; letter-spacing:-.02em}
+h2{font-size:1.32rem; font-weight:700; letter-spacing:-.01em; line-height:1.3}
+h3{font-size:1.02rem; font-weight:600}
+h4{font-size:.86rem; font-weight:600; letter-spacing:.02em}
+p{margin:0}
+a{color:var(--accent)}
+code,.mono{font-family:"Roboto Mono",ui-monospace,Menlo,monospace}
+code{background:var(--sunk); padding:.1em .34em; border-radius:3px; font-size:.82em; color:var(--ink)}
+.num{font-variant-numeric:tabular-nums}
+.lbl{font-family:"Roboto Mono",monospace; font-size:.66rem; letter-spacing:.15em; text-transform:uppercase; color:var(--muted)}
+
+.shell{max-width:1180px; margin:0 auto; padding:0 26px 100px; display:grid; grid-template-columns:1fr; gap:0}
+@media (min-width:1040px){
+  .shell{grid-template-columns:210px minmax(0,1fr); gap:52px}
+  nav.toc{display:block}
+}
+nav.toc{display:none; position:sticky; top:0; align-self:start; padding-top:96px; max-height:100vh; overflow-y:auto}
+nav.toc ol{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px}
+nav.toc a{
+  display:block; padding:5px 9px; border-radius:5px; font-family:"Libre Franklin",sans-serif;
+  font-size:.79rem; color:var(--muted); text-decoration:none; border-left:2px solid transparent;
+}
+nav.toc a:hover{color:var(--ink); background:var(--sunk)}
+nav.toc a .k{font-family:"Roboto Mono",monospace; font-size:.68rem; color:var(--accent); margin-right:7px}
+
+main{min-width:0}
+header.top{padding:70px 0 34px; border-bottom:2px solid var(--ink); margin-bottom:38px}
+.stack{display:flex; flex-direction:column; gap:15px}
+.lede{font-size:1.14rem; line-height:1.6; max-width:62ch; color:var(--body)}
+.meta{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px 24px; margin-top:12px; padding-top:18px; border-top:1px solid var(--line)}
+.meta div{display:flex; flex-direction:column; gap:1px}
+.meta dt{font-family:"Roboto Mono",monospace; font-size:.61rem; letter-spacing:.13em; text-transform:uppercase; color:var(--muted)}
+.meta dd{margin:0; font-family:"Roboto Mono",monospace; font-size:.79rem; color:var(--ink)}
+
+section{margin-bottom:52px; scroll-margin-top:20px}
+.sec-head{display:flex; gap:14px; align-items:baseline; margin-bottom:16px; padding-bottom:9px; border-bottom:1px solid var(--line)}
+.sec-head .k{font-family:"Roboto Mono",monospace; font-size:.86rem; color:var(--accent); font-weight:500}
+.prose{display:flex; flex-direction:column; gap:15px; max-width:68ch}
+.prose h3{margin-top:12px}
+
+/* terminal */
+.term{
+  background:var(--term-bg); border-radius:7px; padding:14px 16px; overflow-x:auto;
+  font-family:"Roboto Mono",monospace; font-size:.775rem; line-height:1.72; color:var(--term-ink);
+  margin:4px 0; box-shadow:var(--shadow);
+}
+.term .c{color:var(--term-dim)}
+.term .p{color:var(--term-accent)}
+.term .o{color:var(--term-dim)}
+.cap{font-size:.83rem; color:var(--muted); margin-top:-2px}
+
+/* why callout */
+.why{
+  background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--accent);
+  border-radius:6px; padding:15px 17px; display:flex; flex-direction:column; gap:8px;
+}
+.why .t{font-family:"Libre Franklin",sans-serif; font-size:.71rem; font-weight:700; letter-spacing:.13em; text-transform:uppercase; color:var(--accent)}
+.why p{font-size:.94rem}
+
+/* tables */
+.scroll{overflow-x:auto; border:1px solid var(--line); border-radius:6px; background:var(--panel)}
+table{border-collapse:collapse; width:100%; font-family:"Libre Franklin",sans-serif; font-size:.82rem}
+th,td{text-align:left; padding:9px 13px; border-bottom:1px solid var(--line); white-space:nowrap}
+thead th{font-family:"Roboto Mono",monospace; font-size:.63rem; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:500; background:var(--sunk)}
+tbody tr:last-child td{border-bottom:none}
+td.n{font-variant-numeric:tabular-nums; font-family:"Roboto Mono",monospace}
+td.k{font-family:"Roboto Mono",monospace; font-size:.78rem}
+.chip{font-family:"Roboto Mono",monospace; font-size:.64rem; font-weight:500; letter-spacing:.08em; padding:.28em .55em; border-radius:4px}
+.chip.m{background:var(--meets-bg); color:var(--meets)}
+.chip.b{background:var(--below-bg); color:var(--below)}
+.zero{color:var(--muted)}
+.hit{color:var(--meets); font-weight:600}
+
+ul.tight{margin:0; padding-left:1.15em; display:flex; flex-direction:column; gap:7px}
+ul.tight li{padding-left:2px}
+ol.steps{margin:0; padding:0; list-style:none; counter-reset:s; display:flex; flex-direction:column; gap:22px}
+ol.steps > li{counter-increment:s; display:grid; grid-template-columns:2rem 1fr; gap:16px}
+ol.steps > li::before{
+  content:counter(s); font-family:"Roboto Mono",monospace; font-size:.8rem; color:var(--accent);
+  border:1px solid var(--line); border-radius:50%; width:1.9rem; height:1.9rem;
+  display:flex; align-items:center; justify-content:center; background:var(--panel);
+}
+ol.steps .in{display:flex; flex-direction:column; gap:10px; min-width:0}
+
+footer{border-top:1px solid var(--line); padding-top:26px; font-size:.85rem; color:var(--muted); display:flex; flex-direction:column; gap:12px}
+.files{display:flex; flex-wrap:wrap; gap:6px}
+.files span{font-family:"Roboto Mono",monospace; font-size:.72rem; background:var(--sunk); padding:.2em .5em; border-radius:3px}
+@media print{nav.toc{display:none} body{background:#fff}}
+</style>
+
+<div class="shell">
+  <nav class="toc" aria-label="Contents">
+    <ol>
+      <li><a href="#s1"><span class="k">1</span>What a POC had to prove</a></li>
+      <li><a href="#s2"><span class="k">2</span>Environment &amp; provenance</a></li>
+      <li><a href="#s3"><span class="k">3</span>Case selection</a></li>
+      <li><a href="#s4"><span class="k">4</span>Harness architecture</a></li>
+      <li><a href="#s5"><span class="k">5</span>Execution</a></li>
+      <li><a href="#s6"><span class="k">6</span>Two validity corrections</a></li>
+      <li><a href="#s7"><span class="k">7</span>Results</a></li>
+      <li><a href="#s8"><span class="k">8</span>Why these results</a></li>
+      <li><a href="#s9"><span class="k">9</span>Gates &amp; decision</a></li>
+      <li><a href="#s10"><span class="k">10</span>Threats to validity</a></li>
+      <li><a href="#s11"><span class="k">11</span>Full reproduction</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="top stack">
+      <p class="lbl">FlakeTrace &middot; Stream B &middot; proposal-stage proof of concept</p>
+      <h1>POC Methodology Report</h1>
+      <p class="lede">A complete account of how the one-day POC was constructed and executed, the commands that produced every figure, and the mechanism behind each result &mdash; including the two harness errors that would have invalidated the findings had they gone unnoticed.</p>
+      <div class="meta">
+        <div><dt>Executed</dt><dd>2026-08-28</dd></div>
+        <div><dt>Container</dt><dd>temurin-8 / Maven 3.9.16</dd></div>
+        <div><dt>Orders run</dt><dd class="num">2,606</dd></div>
+        <div><dt>Invocations</dt><dd class="num">5,212</dd></div>
+        <div><dt>Cases</dt><dd class="num">8 built / 4 reproduced</dd></div>
+        <div><dt>Decision</dt><dd>NARROW</dd></div>
+      </div>
+    </header>
+
+    <!-- 1 -->
+    <section id="s1">
+      <div class="sec-head"><span class="k">01</span><h2>What a POC had to prove</h2></div>
+      <div class="prose">
+        <p>The evaluation guide is explicit that reproducing a flaky test proves nothing &mdash; that order-dependent failures can be rerun is already established. The POC therefore had to test the project's <em>incremental</em> claim:</p>
+        <div class="why">
+          <span class="t">The tested hypothesis</span>
+          <p>Can a bounded static-field overlap signal prioritise true OD-relevant tests and reduce confirmation executions, measured against original-order one-by-one (OBO) and random baselines on real, buildable cases?</p>
+        </div>
+        <p>Two consequences follow. First, a fair baseline is mandatory &mdash; a result is only meaningful relative to OBO and random. Second, the cost unit must be <strong>test-method invocations</strong>, not Maven launches, because one Maven launch can execute wildly different numbers of tests.</p>
+        <p>All definitions were frozen and committed <em>before</em> any experiment ran, so the analysis could not be tuned to flatter the outcome.</p>
+        <div class="term"><span class="c"># the freeze, committed before any run</span><br><span class="p">$</span> git log --oneline<br><span class="o">4b5e7da Freeze POC definitions before any run<br>be8456c POC skeleton</span></div>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section id="s2">
+      <div class="sec-head"><span class="k">02</span><h2>Environment and provenance</h2></div>
+      <div class="prose">
+        <p>Every execution ran inside a pinned container so results do not depend on the host machine. The Maven cache is a named Docker volume, keeping dependency resolution reproducible and separate from test execution.</p>
+        <div class="term"><span class="p">$</span> docker volume create ftm2<br><span class="p">$</span> docker run --rm -v ftm2:/root/.m2 -v "$PWD/subjects/jsoniter":/w -w /w \<br>&nbsp;&nbsp;&nbsp;&nbsp;maven:3.9-eclipse-temurin-8 mvn -B -DskipTests test-compile<br><span class="o">[INFO] BUILD SUCCESS</span></div>
+        <p>JDK 8 is not a convenience choice. fastjson declares <code>&lt;jdk.version&gt;1.5&lt;/jdk.version&gt;</code> and jsoniter <code>&lt;source&gt;1.6&lt;/source&gt;</code>; <code>javac</code> dropped <code>1.5</code> after JDK 11 and <code>1.6</code> after JDK 12, so any modern JDK refuses both outright.</p>
+        <p>Dataset provenance matters because IDoFT is a living catalogue &mdash; rows and statuses change over time, so an unpinned clone would not reproduce the same case pool.</p>
+        <div class="term"><span class="c"># the exact dataset snapshot every selection derives from</span><br><span class="o">IDoFT: 4903dc9233eead4e4191c66f9ed0b14eea091052  (2026-05-03)</span><br><span class="o">jsoniter: 6925cf4c19d313504b416f58a349a36bf563e0e1</span><br><span class="o">fastjson: e05e9c5e4be580691cc55a59f3256595393203a1</span></div>
+        <p class="cap">Recorded in full, with image digest and toolchain versions, in <code>manifest/environment.txt</code>.</p>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section id="s3">
+      <div class="sec-head"><span class="k">03</span><h2>Case selection</h2></div>
+      <div class="prose">
+        <p>Selection began from IDoFT's 8,075-row catalogue and narrowed by declared rules rather than convenience.</p>
+        <div class="term"><span class="c"># 1. OD / OD-Vic rows with a usable status  ->  1,438 rows</span><br><span class="p">$</span> python3 -c "..."  <span class="c"># proper CSV parse, not awk -F,</span><br><span class="o">rows written: 1438</span><br><br><span class="c"># 2. rank projects by OD density</span><br><span class="p">$</span> awk -F, '{print $1}' manifest/pool_raw.csv | sort | uniq -c | sort -rn | head -25</div>
+        <div class="why">
+          <span class="t">Why a CSV parser, not awk</span>
+          <p>Test names in this file contain commas inside quoted fields. Splitting on <code>-F,</code> shifts columns and produces phantom categories such as <code>[])</code> and <code> with existent item</code>. A real parser also guarantees no legitimate OD row is silently dropped.</p>
+        </div>
+        <p>The top-25 projects were filtered against the declared rejection rules (no Android, Spring, web frameworks, databases, Kafka, Docker, Hadoop, Spark, Flink, Cassandra; no <code>integration-test</code>/<code>e2e</code>/<code>benchmark</code> modules; prefer small pure-Java libraries). Four survived; two were selected: <strong>json-iterator/java</strong> and <strong>alibaba/fastjson</strong>, both single-module JSON libraries.</p>
+        <p>Eight victims were drawn, 4 + 4, each in a <em>distinct test class</em>. One initially chosen fastjson victim was replaced after cross-referencing fixing PRs:</p>
+        <div class="why">
+          <span class="t">Why one case was swapped before any run</span>
+          <p><code>DateTest5_iso8601.test_date</code> and <code>DateTest.test_date</code> were both fixed by fastjson PR 2148 &mdash; one PR, one root cause. Keeping both would have spent two of four slots on the same underlying defect. It was replaced by <code>MaxBufSizeTest.test_max_buf</code>, giving four distinct fixing PRs (2148, 3291, 2291, 2133) and therefore four independent root causes.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section id="s4">
+      <div class="sec-head"><span class="k">04</span><h2>Harness architecture</h2></div>
+      <div class="prose">
+        <p>Five components in <code>src/</code>. Each design decision below was forced by a property of the subjects, not chosen for elegance.</p>
+      </div>
+      <div style="height:14px"></div>
+      <ol class="steps">
+        <li><div class="in">
+          <h3><code>runner/FtRunner.java</code> &mdash; order executor</h3>
+          <p>Executes a declared sequence of test methods <strong>in one JVM, in order</strong>, emitting one machine-readable line per test with status, exception, message and stack frames.</p>
+          <div class="why"><span class="t">Two decisions that determine validity</span>
+          <p><strong>One fresh JVM per order.</strong> Static state is the phenomenon under study; if orders shared a JVM, pollution would leak between experiments and every measurement would be meaningless. One container per <em>batch</em> keeps this affordable &mdash; a container per order would make a 722-candidate scan unusable.</p>
+          <p><strong>Driven through JUnit 4's <code>Request.method()</code>.</strong> Both subjects are JUnit 3 (2,132 of fastjson's classes extend <code>TestCase</code>; jsoniter has zero <code>@Test</code> annotations). <code>Request.method()</code> routes JUnit 3 classes through <code>JUnit38ClassRunner</code>, so one code path covers both styles.</p></div>
+        </div></li>
+
+        <li><div class="in">
+          <h3><code>runner/FtList.java</code> &mdash; candidate enumeration</h3>
+          <p>Implements the frozen definition literally: a public, no-arg, void method named <code>test*</code> on a non-abstract public <code>TestCase</code> subclass. Classes are loaded with <code>Class.forName(name, <strong>false</strong>, loader)</code> so no subject static initialiser runs during enumeration.</p>
+          <div class="term"><span class="p">$</span> java -cp "$CP" FtList /w/target/test-classes<br><span class="o">jsoniter  TOTAL  383<br>fastjson  TOTAL  4445</span></div>
+        </div></li>
+
+        <li><div class="in">
+          <h3><code>extract_static.py</code> &mdash; resource extractor</h3>
+          <p>The hypothesis under test. Disassembles bytecode and records every <code>getstatic</code> / <code>putstatic</code> as <code>owner.field:descriptor</code> with its bytecode offset. Attribution per test method covers the method itself plus <code>setUp</code>, <code>tearDown</code> and <code>&lt;clinit&gt;</code>, then N hops into project-owned callees.</p>
+          <div class="term"><span class="p">$</span> javap -p -c -cp "$CP" com.alibaba.json.bvt.parser.DateParserTest<br><span class="o">5: putstatic #5  // Field com/alibaba/fastjson/JSON.defaultTimeZone:Ljava/util/TimeZone;</span></div>
+          <div class="why"><span class="t">Why javap instead of ASM</span>
+          <p>Zero external dependencies, and <code>javap -c</code> already resolves the constant pool into exactly the frozen identifier format &mdash; owner, field, descriptor &mdash; with the bytecode offset attached. That satisfies the evidence-integrity gate ("every overlap names the exact field and bytecode location") without extra machinery.</p></div>
+          <p>One parsing defect was found and fixed: <code>javap</code> omits the owner for fields declared in the class being disassembled, printing bare <code>DEFAULT_GENERATE_FEATURE:I</code>. Left unqualified, identically-named fields in different classes collapse into one phantom shared resource. They are now qualified with the declaring class.</p>
+        </div></li>
+
+        <li><div class="in">
+          <h3><code>step_scan.py</code> &mdash; exhaustive single scan</h3>
+          <p>For each case, runs <code>[candidate, victim]</code> for <em>every</em> candidate and records the victim's outcome and normalised failure signature. Per the frozen single-scan protocol this executes <strong>once</strong>; every strategy is later replayed offline against this one table, so no strategy can trigger extra executions and inflate its own apparent cost advantage.</p>
+        </div></li>
+
+        <li><div class="in">
+          <h3><code>step_analyze.py</code> / <code>step_replay.py</code> &mdash; offline evaluation</h3>
+          <p>OBO, five seeded random orders and the resource ranking are replayed against the stored outcome table; accepted pairs then get 10 clean replays with Wilson 95% intervals. A replay counts only when the <em>normalised signature matches</em> &mdash; a timeout, compile error or OOM is never scored as the same reproduction.</p>
+        </div></li>
+      </ol>
+    </section>
+
+    <!-- 5 -->
+    <section id="s5">
+      <div class="sec-head"><span class="k">05</span><h2>Execution</h2></div>
+      <div class="prose">
+        <div class="term"><span class="c"># Hour 1 -- build gate, both subjects, clean containers</span><br><span class="p">$</span> docker run --rm -v ftm2:/root/.m2 ... mvn -B -DskipTests test-compile<br><span class="o">jsoniter BUILD SUCCESS (5:17)   fastjson BUILD SUCCESS (5:46)</span><br><br><span class="c"># Hour 2 -- isolation behaviour, 10 runs each</span><br><span class="p">$</span> python3 src/step_alone.py<br><span class="o">VICTIM   6  JI-01 JI-02 JI-03 JI-04 FJ-03 FJ-04<br>BRITTLE  2  FJ-01 FJ-02<br>UNSTABLE 0</span><br><br><span class="c"># Hours 3-4 -- static-field extraction</span><br><span class="p">$</span> python3 src/extract_static.py<br><span class="o">jsoniter: 383 methods, 158 with evidence, 4 written fields<br>fastjson: 4449 methods, 3725 with evidence, 52 written fields</span><br><br><span class="c"># Hours 5-6 -- the single exhaustive scan</span><br><span class="p">$</span> python3 src/step_scan.py<br><span class="o">2,606 orders / 5,212 test-method invocations</span><br><br><span class="c"># Hour 7 -- replay accepted pairs 10x</span><br><span class="p">$</span> python3 src/step_replay.py<br><span class="o">FJ-01..04  10/10  rate=1.00  95%CI=[0.72,1.00]  REPRODUCED</span></div>
+        <div class="why">
+          <span class="t">A classification that was not in the plan</span>
+          <p>Hour 2 was expected to confirm every target passes alone. Two did not. FJ-01 and FJ-02 fail alone <em>10/10</em> and pass after a predecessor &mdash; they are <strong>brittle</strong> tests needing a state-setter, not victims needing a polluter. The protocol was generalised to both directions: an OD-relevant candidate is one that <em>flips</em> the target away from its isolation behaviour.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section id="s6">
+      <div class="sec-head"><span class="k">06</span><h2>Two validity corrections</h2></div>
+      <div class="prose">
+        <p>Both were caught by checking results that looked too good, and both would have produced a confidently wrong report.</p>
+
+        <h3>6.1 &nbsp;jsoniter's suite execution context</h3>
+        <p>The first scan reported <strong>182 of 210</strong> candidates as polluters of JI-01 &mdash; an apparently excellent result. Every one carried the identical exception:</p>
+        <div class="term"><span class="o">com.jsoniter.spi.JsonException: javassist.CannotCompileException:<br>&nbsp;&nbsp;by java.lang.LinkageError: attempt to duplicate class definition</span></div>
+        <p>An identical signature across 182 supposedly independent polluters is not order dependence; it is one systematic fault. Inspecting the build configuration revealed the cause:</p>
+        <div class="term"><span class="p">$</span> grep -A15 surefire subjects/jsoniter/pom.xml<br><span class="o">&lt;reuseForks&gt;false&lt;/reuseForks&gt;  &lt;forkCount&gt;4&lt;/forkCount&gt;<br>&lt;include&gt;com.jsoniter.suite.StreamingTests&lt;/include&gt;<br>&lt;include&gt;com.jsoniter.suite.NonStreamingTests&lt;/include&gt; ...</span></div>
+        <p>jsoniter <em>never runs test classes directly</em>. Surefire runs five suite classes, each in a fresh JVM, and each suite's <code>@BeforeClass</code> selects the runtime codegen mode (<code>JsonIterator.enableStreamingSupport()</code>). Running raw test methods without that context left jsoniter's javassist codegen to define the same generated class twice.</p>
+        <div class="why">
+          <span class="t">The fix and its effect</span>
+          <p><code>FtRunner</code> gained a <code>-s &lt;SuiteClass&gt;</code> flag that invokes the declared suite's <code>@BeforeClass</code> before every order, reproducing the project's real execution context. The false polluters went from <strong>182 to 0</strong>. A widened scan across the full module (382 candidates) also returned 0, confirming the zero is real rather than a new artifact.</p>
+        </div>
+
+        <h3>6.2 &nbsp;The environment "fix" that erased the phenomenon</h3>
+        <p>FJ-01 and FJ-02 failed alone under the container's UTC default, by exactly eight hours. The apparent fix was to set <code>TZ=Asia/Shanghai</code>, and it worked &mdash; both then passed 10/10 in isolation.</p>
+        <p>That fix was wrong. These tests fail alone <em>because</em> they require <code>JSON.defaultTimeZone</code> to have been set by a predecessor. <code>DateFieldTest8.setUp</code> writes it globally and never restores it:</p>
+        <div class="term"><span class="o">protected void setUp() throws Exception {<br>&nbsp;&nbsp;&nbsp;&nbsp;JSON.defaultTimeZone = TimeZone.getTimeZone("Asia/Shanghai");<br>&nbsp;&nbsp;&nbsp;&nbsp;JSON.defaultLocale = Locale.CHINA;<br>}  <span class="c">// no tearDown restores either field</span></span></div>
+        <div class="why">
+          <span class="t">Why this matters more than the bug itself</span>
+          <p>Forcing the timezone made the state-setter's write a no-op, deleting the exact order-dependence under measurement. The override was removed and OD direction is now derived empirically from isolation behaviour. The durable rule: <strong>"target fails alone" is a classification, never an environment defect to be fixed.</strong></p>
+        </div>
+        <div class="term"><span class="c"># the decisive check, run with no TZ override</span><br><span class="o">victim alone (UTC)                    -> FAIL<br>[DateFieldTest8#test_0, victim]       -> PASS</span></div>
+      </div>
+    </section>
+
+    <!-- 7 -->
+    <section id="s7">
+      <div class="sec-head"><span class="k">07</span><h2>Results</h2></div>
+      <div class="prose"><p>Four of eight cases reproduced. All four fastjson cases reproduced; no jsoniter case did.</p></div>
+      <div style="height:12px"></div>
+      <div class="scroll"><table>
+        <thead><tr><th>Case</th><th>Direction</th><th>Candidates</th><th>OD-relevant</th><th>OBO</th><th>Resource</th><th>Random (median)</th><th>Replay</th></tr></thead>
+        <tbody>
+          <tr><td class="k">FJ-01</td><td>BRITTLE</td><td class="n">72</td><td class="n">42</td><td class="n">5</td><td class="n">5</td><td class="n">3</td><td class="n hit">10/10</td></tr>
+          <tr><td class="k">FJ-02</td><td>BRITTLE</td><td class="n">722</td><td class="n">24</td><td class="n">39</td><td class="n">39</td><td class="n">29</td><td class="n hit">10/10</td></tr>
+          <tr><td class="k">FJ-03</td><td>VICTIM</td><td class="n">524</td><td class="n">6</td><td class="n">368</td><td class="n">368</td><td class="n">43</td><td class="n hit">10/10</td></tr>
+          <tr><td class="k">FJ-04</td><td>VICTIM</td><td class="n">524</td><td class="n">2</td><td class="n">220</td><td class="n">220</td><td class="n">224</td><td class="n hit">10/10</td></tr>
+          <tr><td class="k">JI-01&hellip;04</td><td>VICTIM</td><td class="n">210/210/210/134</td><td class="n zero">0</td><td class="zero">&mdash;</td><td class="zero">&mdash;</td><td class="zero">&mdash;</td><td class="zero">not reproduced</td></tr>
+        </tbody>
+      </table></div>
+      <p class="cap">Resource and OBO columns are identical in every row. That is the central finding, and section 8 explains it.</p>
+    </section>
+
+    <!-- 8 -->
+    <section id="s8">
+      <div class="sec-head"><span class="k">08</span><h2>Why the results came out this way</h2></div>
+      <div class="prose">
+        <h3>8.1 &nbsp;The overlap signal scored zero everywhere</h3>
+        <p><code>|writes(candidate) &cap; reads(victim)|</code> was <strong>0 for every candidate in every case</strong>. The ranking therefore fell back entirely to tie-breaking by declared order, making the resource strategy byte-identical to OBO and the saving exactly 0%.</p>
+        <p>This is not a weak signal. It is <em>no</em> signal, and the cause is <strong>call depth</strong>, not a flaw in the principle. Traced concretely on FJ-02:</p>
+        <div class="term"><span class="o">DateParserTest.setUp@5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--PUTSTATIC-->&nbsp;&nbsp;JSON.defaultTimeZone<br>JSON.defaultTimeZone&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--GETSTATIC-->&nbsp;&nbsp;TypeUtils.cast@536</span></div>
+        <p>The target calls <code>JSON.parseObject(...)</code>. The read of <code>defaultTimeZone</code> happens inside <code>TypeUtils.cast</code>, which is <strong>two hops below</strong> the test method. The frozen scope permits one hop, so the extractor sees the write but never the matching read &mdash; and an intersection needs both sides.</p>
+
+        <h3>8.2 &nbsp;What the depth ablation shows</h3>
+        <div class="scroll"><table>
+          <thead><tr><th>Callee depth</th><th>FJ-01</th><th>FJ-02</th><th>FJ-03</th><th>FJ-04</th><th>Median saving</th></tr></thead>
+          <tbody>
+            <tr><td class="k">1 (frozen)</td><td class="n zero">0%</td><td class="n zero">0%</td><td class="n zero">0%</td><td class="n zero">0%</td><td class="n zero">0%</td></tr>
+            <tr><td class="k">2</td><td class="n zero">0%</td><td class="n hit">97.4%</td><td class="n zero">0%</td><td class="n zero">0%</td><td class="n zero">0%</td></tr>
+            <tr><td class="k">3</td><td class="n zero">0%</td><td class="n hit">97.4%</td><td class="n zero">0%</td><td class="n zero">0%</td><td class="n zero">0%</td></tr>
+          </tbody>
+        </table></div>
+        <p style="margin-top:14px">At depth 2 the FJ-02 state-setter is ranked <strong>first of 722</strong> instead of 39th &mdash; the effect the project claims, demonstrated. But the other three cases do not move at all, so the <em>median</em> saving stays 0% and the gate still fails. Depth 3 adds nothing beyond depth 2.</p>
+        <div class="why">
+          <span class="t">The precise conclusion</span>
+          <p>Deepening the resource scope is <strong>necessary but not sufficient</strong>. Where a static field genuinely mediates the interference and lies within reach, the signal is decisive. Where the interference travels through paths this model does not represent, more depth changes nothing.</p>
+        </div>
+
+        <h3>8.3 &nbsp;Why jsoniter produced nothing</h3>
+        <p>After the suite-context fix, no single predecessor reproduced any jsoniter failure &mdash; not within the declared package scope (210 candidates), and not across the full module (382). The IDoFT labels were derived from whole-suite reordering, where a failure may require several predecessors or a suite-level state accumulation. The frozen pairwise <code>[c, v]</code> model cannot express that, so these are true negatives <em>of the model</em>, not evidence that the labels are wrong.</p>
+
+        <h3>8.4 &nbsp;Why random beat both baselines on three cases</h3>
+        <p>Random ordering is not smarter; it is unbiased. FJ-03 has 6 relevant candidates among 524, and OBO's alphabetical ordering happens to place them late (rank 368). A shuffle has no such systematic bias, so its expected position is roughly uniform. This is a genuine caution for the project: <strong>OBO is a weak baseline on alphabetically-clustered suites</strong>, and any future claim must beat random, not only OBO.</p>
+      </div>
+    </section>
+
+    <!-- 9 -->
+    <section id="s9">
+      <div class="sec-head"><span class="k">09</span><h2>Gates and decision</h2></div>
+      <div class="scroll"><table>
+        <thead><tr><th>#</th><th>Gate</th><th>Threshold</th><th>Observed</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr><td class="n">1</td><td>Build / reproduction yield</td><td>&ge;3 of 4</td><td>8/8 build, 4/8 reproduce</td><td><span class="chip b">BELOW</span></td></tr>
+          <tr><td class="n">2</td><td>True OD-relevant ranking</td><td>top-5 or top-20% in &ge;3</td><td>score 0 everywhere; 1&ndash;2 of 4</td><td><span class="chip b">BELOW</span></td></tr>
+          <tr><td class="n">3</td><td>Execution saving vs OBO</td><td>&ge;30% median</td><td>0.0%</td><td><span class="chip b">BELOW</span></td></tr>
+          <tr><td class="n">4</td><td>Replay reliability</td><td>&ge;9/10 each</td><td>10/10 all four, CI [0.72,1.00]</td><td><span class="chip m">MEETS</span></td></tr>
+          <tr><td class="n">5</td><td>Evidence integrity</td><td>field + bytecode location</td><td>format satisfied; vacuous at hop-1</td><td><span class="chip m">MEETS</span></td></tr>
+        </tbody>
+      </table></div>
+      <div class="prose" style="margin-top:18px">
+        <div class="why">
+          <span class="t">Decision: NARROW</span>
+          <p>Not <em>Go</em> &mdash; three of five gates fail and the headline mechanism returned a null result at its frozen scope. Not <em>Pivot</em> &mdash; the product contract held: the containerised runner, failure-signature equivalence, deletion checks and statistical replay all worked, and where the signal could see the resource it delivered a 97.4% saving. What is refuted is the <strong>resource scope</strong>, not the approach.</p>
+        </div>
+        <p><strong>Scope changes carried into the proposal:</strong></p>
+        <ul class="tight">
+          <li>Redefine resource scope as transitive intra-project reachability at a declared depth (&ge;2), reporting depth and its cost; hop-1 survives only as an ablation.</li>
+          <li>Classify OD direction (victim / brittle) before search; forbid environment changes that alter isolation behaviour without recorded justification.</li>
+          <li>Require execution-context fidelity as a build-gate artefact, proven against an uninstrumented baseline; treat harness-induced outcomes as a first-class failure mode.</li>
+          <li>Add order-history evidence as a ranked component.</li>
+          <li>Benchmark against <em>random</em>, not only OBO.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section id="s10">
+      <div class="sec-head"><span class="k">10</span><h2>Threats to validity</h2></div>
+      <div class="prose">
+        <ul class="tight">
+          <li><strong>n = 4 reproduced cases, both subjects JSON libraries.</strong> No claim generalises to Java projects at large.</li>
+          <li><strong>One protocol deviation.</strong> <code>definitions.md</code> was frozen before the run, then amended to require execution-context fidelity after the jsoniter artifact was found. The alternative was knowingly reporting fabricated polluters. This is disclosed rather than hidden, and is the item most likely to be probed.</li>
+          <li><strong>The package restriction can hide polluters.</strong> Both modules exceed 300 test methods, so the frozen rule restricts candidates to the victim's package. For FJ-02 that still leaves 722 candidates, so the rule fires without making the search tractable.</li>
+          <li><strong>OBO is implemented as declared (alphabetical) order</strong>, a proxy for Surefire's filesystem order. Section 8.4 shows this proxy is itself a weak baseline.</li>
+          <li><strong>Static analysis only.</strong> Reflection, filesystem, system properties, network and database state are out of scope and recorded as UNSUPPORTED &mdash; never as zero-overlap.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 11 -->
+    <section id="s11">
+      <div class="sec-head"><span class="k">11</span><h2>Full reproduction</h2></div>
+      <div class="prose">
+        <p>From a clean machine with Docker, git and Python 3:</p>
+        <div class="term"><span class="p">$</span> cd ~/flaketrace/poc<br><span class="p">$</span> docker volume create ftm2<br><br><span class="c"># clone both subjects at their pinned commits</span><br><span class="p">$</span> for n in jsoniter:json-iterator/java:6925cf4c19d313504b416f58a349a36bf563e0e1 \<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fastjson:alibaba/fastjson:e05e9c5e4be580691cc55a59f3256595393203a1; do<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="c"># git init / remote add / fetch --depth 1 &lt;sha&gt; / checkout FETCH_HEAD</span><br>&nbsp;&nbsp;done<br><br><span class="c"># build, resolve classpath, compile runner, enumerate candidates</span><br><span class="p">$</span> docker run --rm -v ftm2:/root/.m2 ... sh /src/setup_project.sh<br><br><span class="c"># the experiment, in order</span><br><span class="p">$</span> python3 src/step_alone.py&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c"># isolation + OD direction</span><br><span class="p">$</span> python3 src/extract_static.py&nbsp;&nbsp;<span class="c"># static-field resources (FT_HOPS=2 for the ablation)</span><br><span class="p">$</span> python3 src/step_scan.py&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c"># the single exhaustive scan (~45 min)</span><br><span class="p">$</span> python3 src/step_analyze.py&nbsp;&nbsp;&nbsp;<span class="c"># baselines + ranked strategy, offline</span><br><span class="p">$</span> python3 src/step_replay.py&nbsp;&nbsp;&nbsp;&nbsp;<span class="c"># 10x replay + Wilson intervals</span></div>
+        <p>Inspect any figure quoted in this report directly:</p>
+        <div class="term"><span class="p">$</span> column -t -s, results/strategies.csv&nbsp;&nbsp;&nbsp;<span class="c"># every strategy, every case</span><br><span class="p">$</span> column -t -s, results/replay.csv&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c"># verification statistics</span><br><span class="p">$</span> cat results/hop_ablation.json&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c"># depth ablation</span><br><span class="p">$</span> grep ",YES$" results/scan_FJ-02.csv&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c"># the 24 confirmed state-setters</span><br><span class="p">$</span> less decision/decision_record.md</div>
+      </div>
+    </section>
+
+    <footer>
+      <p>All figures in this report are read from committed evidence; none are estimated. The protocol was frozen and committed before any experiment ran, and the single deviation is disclosed in section 10.</p>
+      <div class="files"><span>manifest/definitions.md</span><span>manifest/environment.txt</span><span>manifest/cases.csv</span><span>manifest/exclusions.md</span><span>results/</span><span>logs/raw/</span><span>src/</span><span>decision/decision_record.md</span></div>
+    </footer>
+  </main>
+</div>

@@ -1,0 +1,645 @@
+c0	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c0	FT	1	com.jsoniter.IterImplForStreamingTest#testLoadMore	PASS				70
+c0	FT	2	com.jsoniter.TestString#test_utf8	PASS				4
+c1	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c1	FT	1	com.jsoniter.IterImplForStreamingTest#testReadMaxDouble	PASS				57
+c1	FT	2	com.jsoniter.TestString#test_utf8	PASS				5
+c2	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c2	FT	1	com.jsoniter.TestAnnotation#test_inherited_setter_is_not_duplicate	PASS				56
+c2	FT	2	com.jsoniter.TestString#test_utf8	PASS				7
+c3	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c3	FT	1	com.jsoniter.TestAnnotation#test_name_conflict	PASS				129
+c3	FT	2	com.jsoniter.TestString#test_utf8	PASS				18
+c4	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c4	FT	1	com.jsoniter.TestAnnotation#test_single_param_setter	PASS				127
+c4	FT	2	com.jsoniter.TestString#test_utf8	PASS				14
+c5	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c5	FT	1	com.jsoniter.TestAnnotation#test_static_factory	PASS				105
+c5	FT	2	com.jsoniter.TestString#test_utf8	PASS				14
+c6	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c6	FT	1	com.jsoniter.TestAnnotationJsonCreator#test_ctor	PASS				95
+c6	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c7	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c7	FT	1	com.jsoniter.TestAnnotationJsonCreator#test_ctor_and_setter_binding	PASS				99
+c7	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c8	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c8	FT	1	com.jsoniter.TestAnnotationJsonIgnore#test_ignore	PASS				114
+c8	FT	2	com.jsoniter.TestString#test_utf8	PASS				10
+c9	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c9	FT	1	com.jsoniter.TestAnnotationJsonIgnore#test_ignore_no_constructor_field	PASS				62
+c9	FT	2	com.jsoniter.TestString#test_utf8	PASS				6
+c10	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c10	FT	1	com.jsoniter.TestAnnotationJsonIgnore#test_json_ignore_with_creator	PASS				131
+c10	FT	2	com.jsoniter.TestString#test_utf8	PASS				14
+c11	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c11	FT	1	com.jsoniter.TestAnnotationJsonObject#test_extra_properties	PASS				74
+c11	FT	2	com.jsoniter.TestString#test_utf8	PASS				6
+c12	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c12	FT	1	com.jsoniter.TestAnnotationJsonObject#test_no_unknown_properties	PASS				68
+c12	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c13	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c13	com.jsoniter.spi.JsonException: unknown property: field-1
+c13	FT	1	com.jsoniter.TestAnnotationJsonObject#test_unknown_properties	PASS				146
+c13	FT	2	com.jsoniter.TestString#test_utf8	PASS				17
+c14	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c14	com.jsoniter.spi.JsonException: found should not present property: field1
+c14	FT	1	com.jsoniter.TestAnnotationJsonObject#test_unknown_properties_blacklist	PASS				85
+c14	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c15	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c15	FT	1	com.jsoniter.TestAnnotationJsonProperty#test_bind_from_multiple_names	PASS				73
+c15	FT	2	com.jsoniter.TestString#test_utf8	PASS				7
+c16	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c16	FT	1	com.jsoniter.TestAnnotationJsonProperty#test_creator_with_json_property	PASS				189
+c16	FT	2	com.jsoniter.TestString#test_utf8	PASS				28
+c17	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c17	FT	1	com.jsoniter.TestAnnotationJsonProperty#test_field_and_getter_setter	PASS				114
+c17	FT	2	com.jsoniter.TestString#test_utf8	PASS				12
+c18	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c18	FT	1	com.jsoniter.TestAnnotationJsonProperty#test_getter_and_setter	PASS				89
+c18	FT	2	com.jsoniter.TestString#test_utf8	PASS				6
+c19	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c19	FT	1	com.jsoniter.TestAnnotationJsonProperty#test_integer_property_decoder	PASS				103
+c19	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c20	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c20	FT	1	com.jsoniter.TestAnnotationJsonProperty#test_property_decoder	PASS				130
+c20	FT	2	com.jsoniter.TestString#test_utf8	PASS				16
+c21	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c21	FT	1	com.jsoniter.TestAnnotationJsonProperty#test_rename	PASS				135
+c21	FT	2	com.jsoniter.TestString#test_utf8	PASS				12
+c22	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c22	FT	1	com.jsoniter.TestAnnotationJsonProperty#test_required	PASS				79
+c22	FT	2	com.jsoniter.TestString#test_utf8	PASS				11
+c23	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c23	FT	1	com.jsoniter.TestAnnotationJsonProperty#test_required_properties	PASS				108
+c23	FT	2	com.jsoniter.TestString#test_utf8	PASS				14
+c24	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c24	FT	1	com.jsoniter.TestAnnotationJsonProperty#test_required_properties_not_missing	PASS				75
+c24	FT	2	com.jsoniter.TestString#test_utf8	PASS				6
+c25	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c25	FT	1	com.jsoniter.TestAnnotationJsonProperty#test_specify_property	PASS				99
+c25	FT	2	com.jsoniter.TestString#test_utf8	PASS				9
+c26	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c26	FT	1	com.jsoniter.TestAnnotationJsonWrapper#test_binding	PASS				121
+c26	FT	2	com.jsoniter.TestString#test_utf8	PASS				6
+c27	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c27	FT	1	com.jsoniter.TestAnnotationJsonWrapper#test_issue_104	PASS				187
+c27	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c28	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c28	FT	1	com.jsoniter.TestAnnotationJsonWrapper#test_key_value	PASS				145
+c28	FT	2	com.jsoniter.TestString#test_utf8	PASS				14
+c29	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c29	FT	1	com.jsoniter.TestArray#test_array_lazy_any_to_string	PASS				112
+c29	FT	2	com.jsoniter.TestString#test_utf8	PASS				15
+c30	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c30	FT	1	com.jsoniter.TestArray#test_boolean_array	PASS				125
+c30	FT	2	com.jsoniter.TestString#test_utf8	PASS				20
+c31	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c31	FT	1	com.jsoniter.TestArray#test_empty_array	PASS				73
+c31	FT	2	com.jsoniter.TestString#test_utf8	PASS				6
+c32	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c32	FT	1	com.jsoniter.TestArray#test_five_elements	PASS				86
+c32	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c33	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c33	FT	1	com.jsoniter.TestArray#test_four_elements	PASS				120
+c33	FT	2	com.jsoniter.TestString#test_utf8	PASS				15
+c34	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c34	FT	1	com.jsoniter.TestArray#test_iterator	PASS				79
+c34	FT	2	com.jsoniter.TestString#test_utf8	PASS				14
+c35	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c35	FT	1	com.jsoniter.TestArray#test_null	PASS				76
+c35	FT	2	com.jsoniter.TestString#test_utf8	PASS				15
+c36	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c36	FT	1	com.jsoniter.TestArray#test_one_element	PASS				87
+c36	FT	2	com.jsoniter.TestString#test_utf8	PASS				9
+c37	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c37	FT	1	com.jsoniter.TestArray#test_three_elements	PASS				149
+c37	FT	2	com.jsoniter.TestString#test_utf8	PASS				14
+c38	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c38	FT	1	com.jsoniter.TestArray#test_two_elements	PASS				123
+c38	FT	2	com.jsoniter.TestString#test_utf8	PASS				9
+c39	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c39	FT	1	com.jsoniter.TestBoolean#test_non_streaming	PASS				53
+c39	FT	2	com.jsoniter.TestString#test_utf8	PASS				5
+c40	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c40	FT	1	com.jsoniter.TestBoolean#test_streaming	PASS				91
+c40	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c41	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c41	FT	1	com.jsoniter.TestCustomizeType#test_customize_impl	PASS				112
+c41	FT	2	com.jsoniter.TestString#test_utf8	PASS				13
+c42	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c42	FT	1	com.jsoniter.TestCustomizeType#test_customize_through_extension	PASS				113
+c42	FT	2	com.jsoniter.TestString#test_utf8	PASS				13
+c43	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c43	FT	1	com.jsoniter.TestDemo#test_abc	PASS				147
+c43	FT	2	com.jsoniter.TestString#test_utf8	PASS				14
+c44	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c44	3
+c44	FT	1	com.jsoniter.TestDemo#test_any_api	PASS				97
+c44	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c45	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c45	score
+c45	100
+c45	score
+c45	102
+c45	FT	1	com.jsoniter.TestDemo#test_any_is_fun	PASS				81
+c45	FT	2	com.jsoniter.TestString#test_utf8	PASS				12
+c46	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c46	3
+c46	FT	1	com.jsoniter.TestDemo#test_bind_api	PASS				55
+c46	FT	2	com.jsoniter.TestString#test_utf8	PASS				12
+c47	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c47	FT	1	com.jsoniter.TestDemo#test_deserialize	PASS				85
+c47	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c48	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c48	FT	1	com.jsoniter.TestDemo#test_empty_array_as_null	PASS				79
+c48	FT	2	com.jsoniter.TestString#test_utf8	PASS				9
+c49	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c49	FT	1	com.jsoniter.TestDemo#test_generics	PASS				82
+c49	FT	2	com.jsoniter.TestString#test_utf8	PASS				9
+c50	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c50	FT	1	com.jsoniter.TestDemo#test_iterator	PASS				80
+c50	FT	2	com.jsoniter.TestString#test_utf8	PASS				13
+c51	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c51	6
+c51	FT	1	com.jsoniter.TestDemo#test_iterator_api	PASS				49
+c51	FT	2	com.jsoniter.TestString#test_utf8	PASS				9
+c52	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c52	com.jsoniter.User@17d10166
+c52	FT	1	com.jsoniter.TestDemo#test_iterator_api_and_bind	PASS				83
+c52	FT	2	com.jsoniter.TestString#test_utf8	PASS				10
+c53	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c53	FT	1	com.jsoniter.TestDemo#test_utf8	PASS				138
+c53	FT	2	com.jsoniter.TestString#test_utf8	PASS				12
+c54	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c54	FT	1	com.jsoniter.TestExisting#test_direct_reuse	PASS				72
+c54	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c55	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c55	FT	1	com.jsoniter.TestExisting#test_indirect_reuse	PASS				124
+c55	FT	2	com.jsoniter.TestString#test_utf8	PASS				6
+c56	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c56	FT	1	com.jsoniter.TestExisting#test_reuse_linked_list	PASS				97
+c56	FT	2	com.jsoniter.TestString#test_utf8	PASS				9
+c57	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c57	FT	1	com.jsoniter.TestExisting#test_reuse_list	PASS				69
+c57	FT	2	com.jsoniter.TestString#test_utf8	PASS				13
+c58	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c58	FT	1	com.jsoniter.TestExisting#test_reuse_map	PASS				69
+c58	FT	2	com.jsoniter.TestString#test_utf8	PASS				7
+c59	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c59	FT	1	com.jsoniter.TestFloat#testBigDecimal	PASS				126
+c59	FT	2	com.jsoniter.TestString#test_utf8	PASS				7
+c60	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c60	FT	1	com.jsoniter.TestFloat#testChooseDouble	PASS				69
+c60	FT	2	com.jsoniter.TestString#test_utf8	PASS				4
+c61	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c61	FT	1	com.jsoniter.TestFloat#testInfinity	PASS				70
+c61	FT	2	com.jsoniter.TestString#test_utf8	PASS				4
+c62	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c62	FT	1	com.jsoniter.TestFloat#test_combination_of_dot_and_exponent	PASS				54
+c62	FT	2	com.jsoniter.TestString#test_utf8	PASS				6
+c63	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c63	FT	1	com.jsoniter.TestFloat#test_decimal_places	PASS				55
+c63	FT	2	com.jsoniter.TestString#test_utf8	PASS				5
+c64	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c64	FT	1	com.jsoniter.TestFloat#test_ieee_754	PASS				65
+c64	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c65	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c65	FT	1	com.jsoniter.TestFloat#test_long_double	PASS				108
+c65	FT	2	com.jsoniter.TestString#test_utf8	PASS				7
+c66	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c66	FT	1	com.jsoniter.TestFloat#test_positive_negative	PASS				75
+c66	FT	2	com.jsoniter.TestString#test_utf8	PASS				6
+c67	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c67	FT	1	com.jsoniter.TestFloat#test_streaming	PASS				57
+c67	FT	2	com.jsoniter.TestString#test_utf8	PASS				4
+c68	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c68	FT	1	com.jsoniter.TestGenerics#test_complex_object	PASS				74
+c68	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c69	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c69	FT	1	com.jsoniter.TestGenerics#test_generic_super_class	PASS				68
+c69	FT	2	com.jsoniter.TestString#test_utf8	PASS				10
+c70	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c70	FT	1	com.jsoniter.TestGenerics#test_int_list	PASS				82
+c70	FT	2	com.jsoniter.TestString#test_utf8	PASS				11
+c71	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c71	FT	1	com.jsoniter.TestGenerics#test_integer_map	PASS				95
+c71	FT	2	com.jsoniter.TestString#test_utf8	PASS				10
+c72	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c72	FT	1	com.jsoniter.TestGenerics#test_issue_103	PASS				95
+c72	FT	2	com.jsoniter.TestString#test_utf8	PASS				12
+c73	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c73	FT	1	com.jsoniter.TestGenerics#test_linked_list	PASS				97
+c73	FT	2	com.jsoniter.TestString#test_utf8	PASS				16
+c74	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c74	FT	1	com.jsoniter.TestGenerics#test_list_of_list	PASS				103
+c74	FT	2	com.jsoniter.TestString#test_utf8	PASS				21
+c75	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c75	FT	1	com.jsoniter.TestGenerics#test_string_list	PASS				86
+c75	FT	2	com.jsoniter.TestString#test_utf8	PASS				10
+c76	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c76	FT	1	com.jsoniter.TestGenerics#test_string_map	PASS				77
+c76	FT	2	com.jsoniter.TestString#test_utf8	PASS				9
+c77	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c77	FT	1	com.jsoniter.TestGenerics#test_string_set	PASS				77
+c77	FT	2	com.jsoniter.TestString#test_utf8	PASS				11
+c78	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c78	FT	1	com.jsoniter.TestGenerics#test_wildcard	PASS				99
+c78	FT	2	com.jsoniter.TestString#test_utf8	PASS				9
+c79	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c79	FT	1	com.jsoniter.TestGson#test_Expose	PASS				201
+c79	FT	2	com.jsoniter.TestString#test_utf8	PASS				13
+c80	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c80	FT	1	com.jsoniter.TestGson#test_SerializedName	PASS				365
+c80	FT	2	com.jsoniter.TestString#test_utf8	PASS				9
+c81	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c81	FT	1	com.jsoniter.TestGson#test_addDeserializationExclusionStrategy	PASS				205
+c81	FT	2	com.jsoniter.TestString#test_utf8	PASS				9
+c82	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c82	FT	1	com.jsoniter.TestGson#test_bool_as_string	PASS				175
+c82	FT	2	com.jsoniter.TestString#test_utf8	PASS				9
+c83	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c83	FT	1	com.jsoniter.TestGson#test_int_as_string	PASS				159
+c83	FT	2	com.jsoniter.TestString#test_utf8	PASS				11
+c84	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c84	FT	1	com.jsoniter.TestGson#test_null_as_boolean	PASS				153
+c84	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c85	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c85	FT	1	com.jsoniter.TestGson#test_null_as_double	PASS				170
+c85	FT	2	com.jsoniter.TestString#test_utf8	PASS				14
+c86	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c86	FT	1	com.jsoniter.TestGson#test_null_as_float	PASS				177
+c86	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c87	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c87	FT	1	com.jsoniter.TestGson#test_null_as_int	PASS				167
+c87	FT	2	com.jsoniter.TestString#test_utf8	PASS				9
+c88	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c88	FT	1	com.jsoniter.TestGson#test_null_as_long	PASS				206
+c88	FT	2	com.jsoniter.TestString#test_utf8	PASS				16
+c89	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c89	FT	1	com.jsoniter.TestGson#test_setDateFormat_format	PASS				240
+c89	FT	2	com.jsoniter.TestString#test_utf8	PASS				16
+c90	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c90	FT	1	com.jsoniter.TestGson#test_setFieldNamingPolicy	PASS				223
+c90	FT	2	com.jsoniter.TestString#test_utf8	PASS				12
+c91	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c91	FT	1	com.jsoniter.TestGson#test_setFieldNamingStrategy	PASS				197
+c91	FT	2	com.jsoniter.TestString#test_utf8	PASS				10
+c92	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c92	FT	1	com.jsoniter.TestGson#test_setVersion	PASS				185
+c92	FT	2	com.jsoniter.TestString#test_utf8	PASS				9
+c93	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c93	FT	1	com.jsoniter.TestIO#test_read_byte	PASS				70
+c93	FT	2	com.jsoniter.TestString#test_utf8	PASS				6
+c94	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c94	FT	1	com.jsoniter.TestIO#test_read_bytes	PASS				60
+c94	FT	2	com.jsoniter.TestString#test_utf8	PASS				7
+c95	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c95	FT	1	com.jsoniter.TestIO#test_unread_byte	PASS				55
+c95	FT	2	com.jsoniter.TestString#test_utf8	PASS				7
+c96	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c96	FT	1	com.jsoniter.TestInteger#testBigInteger	PASS				94
+c96	FT	2	com.jsoniter.TestString#test_utf8	PASS				6
+c97	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c97	FT	1	com.jsoniter.TestInteger#testChooseInteger	PASS				103
+c97	FT	2	com.jsoniter.TestString#test_utf8	PASS				5
+c98	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c98	FT	1	com.jsoniter.TestInteger#testChooseLong	PASS				133
+c98	FT	2	com.jsoniter.TestString#test_utf8	PASS				7
+c99	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c99	FT	1	com.jsoniter.TestInteger#test_byte	PASS				85
+c99	FT	2	com.jsoniter.TestString#test_utf8	PASS				9
+c100	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c100	FT	1	com.jsoniter.TestInteger#test_char	PASS				55
+c100	FT	2	com.jsoniter.TestString#test_utf8	PASS				4
+c101	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c101	FT	1	com.jsoniter.TestInteger#test_large_number	PASS				86
+c101	FT	2	com.jsoniter.TestString#test_utf8	PASS				4
+c102	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c102	FT	1	com.jsoniter.TestInteger#test_leading_zero	PASS				62
+c102	FT	2	com.jsoniter.TestString#test_utf8	PASS				7
+c103	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c103	FT	1	com.jsoniter.TestInteger#test_max_int	PASS				78
+c103	FT	2	com.jsoniter.TestString#test_utf8	PASS				7
+c104	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c104	FT	1	com.jsoniter.TestInteger#test_max_min_int	PASS				66
+c104	FT	2	com.jsoniter.TestString#test_utf8	PASS				6
+c105	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c105	FT	1	com.jsoniter.TestInteger#test_max_min_long	PASS				50
+c105	FT	2	com.jsoniter.TestString#test_utf8	PASS				5
+c106	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c106	FT	1	com.jsoniter.TestInteger#test_positive_negative_int	PASS				83
+c106	FT	2	com.jsoniter.TestString#test_utf8	PASS				10
+c107	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c107	FT	1	com.jsoniter.TestInteger#test_positive_negative_long	PASS				61
+c107	FT	2	com.jsoniter.TestString#test_utf8	PASS				4
+c108	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c108	FT	1	com.jsoniter.TestInteger#test_streaming	PASS				158
+c108	FT	2	com.jsoniter.TestString#test_utf8	PASS				11
+c109	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c109	FT	1	com.jsoniter.TestJackson#test_JsonAnySetter	PASS				458
+c109	FT	2	com.jsoniter.TestString#test_utf8	PASS				7
+c110	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c110	FT	1	com.jsoniter.TestJackson#test_JsonIgnore	PASS				298
+c110	FT	2	com.jsoniter.TestString#test_utf8	PASS				14
+c111	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c111	FT	1	com.jsoniter.TestJackson#test_JsonProperty	PASS				379
+c111	FT	2	com.jsoniter.TestString#test_utf8	PASS				16
+c112	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c112	FT	1	com.jsoniter.TestMap#test_MapKeyCodec	PASS				150
+c112	FT	2	com.jsoniter.TestString#test_utf8	PASS				9
+c113	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c113	FT	1	com.jsoniter.TestMap#test_enum_key	PASS				78
+c113	FT	2	com.jsoniter.TestString#test_utf8	PASS				20
+c114	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c114	FT	1	com.jsoniter.TestMap#test_integer_key	PASS				101
+c114	FT	2	com.jsoniter.TestString#test_utf8	PASS				12
+c115	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c115	FT	1	com.jsoniter.TestMap#test_object_key	PASS				64
+c115	FT	2	com.jsoniter.TestString#test_utf8	PASS				10
+c116	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c116	FT	1	com.jsoniter.TestMap#test_string_key	PASS				72
+c116	FT	2	com.jsoniter.TestString#test_utf8	PASS				10
+c117	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c117	FT	1	com.jsoniter.TestNested#test_array_of_objects	PASS				149
+c117	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c118	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c118	FT	1	com.jsoniter.TestNested#test_get_all_array_elements_via_any	PASS				88
+c118	FT	2	com.jsoniter.TestString#test_utf8	PASS				6
+c119	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c119	FT	1	com.jsoniter.TestNested#test_get_all_with_some_invalid_path	PASS				75
+c119	FT	2	com.jsoniter.TestString#test_utf8	PASS				14
+c120	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c120	FT	1	com.jsoniter.TestNested#test_recursive_class	PASS				68
+c120	FT	2	com.jsoniter.TestString#test_utf8	PASS				4
+c121	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c121	FT	1	com.jsoniter.TestNull#test_null_as_Any	PASS				58
+c121	FT	2	com.jsoniter.TestString#test_utf8	PASS				6
+c122	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c122	FT	1	com.jsoniter.TestNull#test_null_as_BigDecimal	PASS				64
+c122	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c123	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c123	FT	1	com.jsoniter.TestNull#test_null_as_BigInteger	PASS				93
+c123	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c124	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c124	FT	1	com.jsoniter.TestNull#test_null_as_Boolean	PASS				81
+c124	FT	2	com.jsoniter.TestString#test_utf8	PASS				12
+c125	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c125	FT	1	com.jsoniter.TestNull#test_null_as_Byte	PASS				85
+c125	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c126	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c126	FT	1	com.jsoniter.TestNull#test_null_as_Character	PASS				72
+c126	FT	2	com.jsoniter.TestString#test_utf8	PASS				7
+c127	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c127	FT	1	com.jsoniter.TestNull#test_null_as_Double	PASS				105
+c127	FT	2	com.jsoniter.TestString#test_utf8	PASS				12
+c128	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c128	FT	1	com.jsoniter.TestNull#test_null_as_Float	PASS				106
+c128	FT	2	com.jsoniter.TestString#test_utf8	PASS				10
+c129	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c129	FT	1	com.jsoniter.TestNull#test_null_as_Integer	PASS				70
+c129	FT	2	com.jsoniter.TestString#test_utf8	PASS				5
+c130	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c130	FT	1	com.jsoniter.TestNull#test_null_as_Long	PASS				116
+c130	FT	2	com.jsoniter.TestString#test_utf8	PASS				12
+c131	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c131	FT	1	com.jsoniter.TestNull#test_null_as_Short	PASS				62
+c131	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c132	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c132	FT	1	com.jsoniter.TestObject#test_empty_class	PASS				96
+c132	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c133	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c133	FT	1	com.jsoniter.TestObject#test_empty_object	PASS				108
+c133	FT	2	com.jsoniter.TestString#test_utf8	PASS				11
+c134	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c134	FT	1	com.jsoniter.TestObject#test_enum	PASS				73
+c134	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c135	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c135	FT	1	com.jsoniter.TestObject#test_incomplete_field_name	PASS				92
+c135	FT	2	com.jsoniter.TestString#test_utf8	PASS				14
+c136	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c136	FT	1	com.jsoniter.TestObject#test_inheritance	PASS				79
+c136	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c137	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c137	FT	1	com.jsoniter.TestObject#test_iterator	PASS				80
+c137	FT	2	com.jsoniter.TestString#test_utf8	PASS				9
+c138	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c138	FT	1	com.jsoniter.TestObject#test_maybe_empty_array_field	PASS				64
+c138	FT	2	com.jsoniter.TestString#test_utf8	PASS				6
+c139	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c139	FT	1	com.jsoniter.TestObject#test_native_field	PASS				100
+c139	FT	2	com.jsoniter.TestString#test_utf8	PASS				9
+c140	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c140	FT	1	com.jsoniter.TestObject#test_non_ascii_field	PASS				70
+c140	FT	2	com.jsoniter.TestString#test_utf8	PASS				9
+c141	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c141	FT	1	com.jsoniter.TestObject#test_object_creation	PASS				110
+c141	FT	2	com.jsoniter.TestString#test_utf8	PASS				10
+c142	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c142	FT	1	com.jsoniter.TestObject#test_one_field	PASS				118
+c142	FT	2	com.jsoniter.TestString#test_utf8	PASS				13
+c143	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c143	FT	1	com.jsoniter.TestObject#test_private_ref	PASS				77
+c143	FT	2	com.jsoniter.TestString#test_utf8	PASS				9
+c144	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c144	FT	1	com.jsoniter.TestObject#test_read_null	PASS				89
+c144	FT	2	com.jsoniter.TestString#test_utf8	PASS				6
+c145	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c145	FT	1	com.jsoniter.TestObject#test_setter_is_preferred	PASS				52
+c145	FT	2	com.jsoniter.TestString#test_utf8	PASS				5
+c146	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c146	FT	1	com.jsoniter.TestObject#test_two_fields	PASS				96
+c146	FT	2	com.jsoniter.TestString#test_utf8	PASS				10
+c147	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c147	FT	1	com.jsoniter.TestOmitValue#test_shouldOmitInputNotNullOutputFalse	PASS				73
+c147	FT	2	com.jsoniter.TestString#test_utf8	PASS				13
+c148	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c148	FT	1	com.jsoniter.TestOmitValue#test_shouldOmitInputPositiveOutputFalse	PASS				41
+c148	FT	2	com.jsoniter.TestString#test_utf8	PASS				10
+c149	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c149	FT	1	com.jsoniter.TestOmitValue#test_shouldOmitInputPositiveOutputFalse2	PASS				38
+c149	FT	2	com.jsoniter.TestString#test_utf8	PASS				7
+c150	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c150	FT	1	com.jsoniter.TestOmitValue#test_shouldOmitInputPositiveOutputFalse3	PASS				48
+c150	FT	2	com.jsoniter.TestString#test_utf8	PASS				10
+c151	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c151	FT	1	com.jsoniter.TestOmitValue#test_shouldOmitInputPositiveOutputFalse4	PASS				46
+c151	FT	2	com.jsoniter.TestString#test_utf8	PASS				9
+c152	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c152	FT	1	com.jsoniter.TestOmitValue#test_shouldOmitInputPositiveOutputFalse5	PASS				60
+c152	FT	2	com.jsoniter.TestString#test_utf8	PASS				11
+c153	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c153	FT	1	com.jsoniter.TestOmitValue#test_shouldOmitInputPositiveOutputFalse6	PASS				74
+c153	FT	2	com.jsoniter.TestString#test_utf8	PASS				13
+c154	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c154	FT	1	com.jsoniter.TestOmitValue#test_shouldOmitInputTrueOutputFalse	PASS				54
+c154	FT	2	com.jsoniter.TestString#test_utf8	PASS				6
+c155	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c155	FT	1	com.jsoniter.TestOmitValue#test_shouldOmitInputZeroOutputTrue	PASS				52
+c155	FT	2	com.jsoniter.TestString#test_utf8	PASS				12
+c156	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c156	FT	1	com.jsoniter.TestOmitValue#test_shouldOmitInputZeroOutputTrue2	PASS				76
+c156	FT	2	com.jsoniter.TestString#test_utf8	PASS				19
+c157	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c157	100
+c157	FT	1	com.jsoniter.TestReadAny#test_bind_to_any	PASS				122
+c157	FT	2	com.jsoniter.TestString#test_utf8	PASS				10
+c158	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c158	FT	1	com.jsoniter.TestReadAny#test_get	PASS				95
+c158	FT	2	com.jsoniter.TestString#test_utf8	PASS				4
+c159	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c159	FT	1	com.jsoniter.TestReadAny#test_keys	PASS				86
+c159	FT	2	com.jsoniter.TestString#test_utf8	PASS				4
+c160	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c160	FT	1	com.jsoniter.TestReadAny#test_read_any	PASS				70
+c160	FT	2	com.jsoniter.TestString#test_utf8	PASS				6
+c161	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c161	FT	1	com.jsoniter.TestReadAny#test_read_any_from_string	PASS				75
+c161	FT	2	com.jsoniter.TestString#test_utf8	PASS				4
+c162	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c162	FT	1	com.jsoniter.TestReadAny#test_read_any_in_streaming	PASS				85
+c162	FT	2	com.jsoniter.TestString#test_utf8	PASS				4
+c163	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c163	FT	1	com.jsoniter.TestReadAny#test_read_boolean	PASS				96
+c163	FT	2	com.jsoniter.TestString#test_utf8	PASS				5
+c164	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c164	FT	1	com.jsoniter.TestReadAny#test_read_class	PASS				111
+c164	FT	2	com.jsoniter.TestString#test_utf8	PASS				7
+c165	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c165	FT	1	com.jsoniter.TestReadAny#test_read_double	PASS				95
+c165	FT	2	com.jsoniter.TestString#test_utf8	PASS				6
+c166	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c166	FT	1	com.jsoniter.TestReadAny#test_read_float	PASS				78
+c166	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c167	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c167	FT	1	com.jsoniter.TestReadAny#test_read_float_as_int	PASS				57
+c167	FT	2	com.jsoniter.TestString#test_utf8	PASS				4
+c168	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c168	FT	1	com.jsoniter.TestReadAny#test_read_int	PASS				92
+c168	FT	2	com.jsoniter.TestString#test_utf8	PASS				6
+c169	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c169	FT	1	com.jsoniter.TestReadAny#test_read_int_array	PASS				98
+c169	FT	2	com.jsoniter.TestString#test_utf8	PASS				5
+c170	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c170	FT	1	com.jsoniter.TestReadAny#test_read_int_as_string	PASS				63
+c170	FT	2	com.jsoniter.TestString#test_utf8	PASS				4
+c171	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c171	FT	1	com.jsoniter.TestReadAny#test_read_int_object	PASS				99
+c171	FT	2	com.jsoniter.TestString#test_utf8	PASS				3
+c172	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c172	FT	1	com.jsoniter.TestReadAny#test_read_long	PASS				83
+c172	FT	2	com.jsoniter.TestString#test_utf8	PASS				4
+c173	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c173	FT	1	com.jsoniter.TestReadAny#test_read_multiple_field	PASS				107
+c173	FT	2	com.jsoniter.TestString#test_utf8	PASS				6
+c174	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c174	FT	1	com.jsoniter.TestReadAny#test_read_string	PASS				96
+c174	FT	2	com.jsoniter.TestString#test_utf8	PASS				3
+c175	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c175	com.jsoniter.spi.JsonException: Value not found: failed to get index 0 from []
+c175	com.jsoniter.spi.JsonException: Value not found: failed to get index 0 from []
+c175	com.jsoniter.spi.JsonException: Value not found: failed to get key hello from {}
+c175	com.jsoniter.spi.JsonException: Value not found: failed to get key hello from {}
+c175	FT	1	com.jsoniter.TestReadAny#test_require_path	PASS				71
+c175	FT	2	com.jsoniter.TestString#test_utf8	PASS				5
+c176	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c176	FT	1	com.jsoniter.TestReadAny#test_size	PASS				81
+c176	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c177	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c177	FT	1	com.jsoniter.TestSkip#test_skip_array	PASS				70
+c177	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c178	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c178	FT	1	com.jsoniter.TestSkip#test_skip_nested	PASS				48
+c178	FT	2	com.jsoniter.TestString#test_utf8	PASS				5
+c179	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c179	FT	1	com.jsoniter.TestSkip#test_skip_number	PASS				40
+c179	FT	2	com.jsoniter.TestString#test_utf8	PASS				4
+c180	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c180	FT	1	com.jsoniter.TestSkip#test_skip_object	PASS				37
+c180	FT	2	com.jsoniter.TestString#test_utf8	PASS				5
+c181	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c181	FT	1	com.jsoniter.TestSkip#test_skip_string	PASS				66
+c181	FT	2	com.jsoniter.TestString#test_utf8	PASS				9
+c182	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c182	FT	1	com.jsoniter.TestSkip#test_skip_string_streaming	PASS				61
+c182	FT	2	com.jsoniter.TestString#test_utf8	PASS				3
+c183	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c183	FT	1	com.jsoniter.TestSlice#test_equals	PASS				75
+c183	FT	2	com.jsoniter.TestString#test_utf8	PASS				14
+c184	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c184	FT	1	com.jsoniter.TestSlice#test_equalsInputNotNullOutputFalse	PASS				47
+c184	FT	2	com.jsoniter.TestString#test_utf8	PASS				12
+c185	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c185	FT	1	com.jsoniter.TestSlice#test_equalsInputNotNullOutputFalse2	PASS				71
+c185	FT	2	com.jsoniter.TestString#test_utf8	PASS				14
+c186	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c186	FT	1	com.jsoniter.TestSlice#test_hashcode	PASS				67
+c186	FT	2	com.jsoniter.TestString#test_utf8	PASS				9
+c187	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c187	FT	1	com.jsoniter.TestSpiPropertyDecoder#test_PropertyDecoder	PASS				91
+c187	FT	2	com.jsoniter.TestString#test_utf8	PASS				12
+c188	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c188	FT	1	com.jsoniter.TestSpiPropertyDecoder#test_PropertyDecoder_for_type_literal	PASS				116
+c188	FT	2	com.jsoniter.TestString#test_utf8	PASS				9
+c189	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c189	FT	1	com.jsoniter.TestSpiTypeDecoder#test_TypeDecoder	PASS				92
+c189	FT	2	com.jsoniter.TestString#test_utf8	PASS				16
+c190	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c190	FT	1	com.jsoniter.TestSpiTypeDecoder#test_TypeDecoder_for_generics	PASS				98
+c190	FT	2	com.jsoniter.TestString#test_utf8	PASS				13
+c191	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c191	FT	1	com.jsoniter.TestSpiTypeDecoder#test_as_array_element	PASS				104
+c191	FT	2	com.jsoniter.TestString#test_utf8	PASS				31
+c192	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c192	FT	1	com.jsoniter.TestSpiTypeDecoder#test_as_field_type	PASS				93
+c192	FT	2	com.jsoniter.TestString#test_utf8	PASS				12
+c193	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c193	FT	1	com.jsoniter.TestSpiTypeDecoder#test_direct	PASS				65
+c193	FT	2	com.jsoniter.TestString#test_utf8	PASS				10
+c194	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c194	FT	1	com.jsoniter.TestSpiTypeDecoder#test_list_or_single_element	PASS				67
+c194	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c195	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c195	FT	1	com.jsoniter.TestString#test_ascii_string	PASS				75
+c195	FT	2	com.jsoniter.TestString#test_utf8	PASS				7
+c196	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c196	FT	1	com.jsoniter.TestString#test_ascii_string_with_escape	PASS				72
+c196	FT	2	com.jsoniter.TestString#test_utf8	PASS				5
+c197	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c197	FT	1	com.jsoniter.TestString#test_incomplete_escape	PASS				85
+c197	FT	2	com.jsoniter.TestString#test_utf8	PASS				7
+c198	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c198	FT	1	com.jsoniter.TestString#test_incomplete_string	PASS				108
+c198	FT	2	com.jsoniter.TestString#test_utf8	PASS				9
+c199	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c199	FT	1	com.jsoniter.TestString#test_invalid_string	PASS				84
+c199	FT	2	com.jsoniter.TestString#test_utf8	PASS				2
+c200	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c200	FT	1	com.jsoniter.TestString#test_larger_than_buffer	PASS				80
+c200	FT	2	com.jsoniter.TestString#test_utf8	PASS				6
+c201	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c201	FT	1	com.jsoniter.TestString#test_long_string	PASS				83
+c201	FT	2	com.jsoniter.TestString#test_utf8	PASS				7
+c202	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c202	FT	1	com.jsoniter.TestString#test_long_string_in_streaming	PASS				81
+c202	FT	2	com.jsoniter.TestString#test_utf8	PASS				6
+c203	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c203	FT	1	com.jsoniter.TestString#test_normal_escape	PASS				64
+c203	FT	2	com.jsoniter.TestString#test_utf8	PASS				4
+c204	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c204	FT	1	com.jsoniter.TestString#test_null_string	PASS				74
+c204	FT	2	com.jsoniter.TestString#test_utf8	PASS				7
+c205	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c205	FT	1	com.jsoniter.TestString#test_string_across_buffer	PASS				56
+c205	FT	2	com.jsoniter.TestString#test_utf8	PASS				6
+c206	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c206	FT	1	com.jsoniter.TestString#test_surrogate	PASS				63
+c206	FT	2	com.jsoniter.TestString#test_utf8	PASS				7
+c207	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c207	FT	1	com.jsoniter.TestString#test_unicode_escape	PASS				83
+c207	FT	2	com.jsoniter.TestString#test_utf8	PASS				8
+c208	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c208	FT	1	com.jsoniter.TestString#test_utf8_string	PASS				51
+c208	FT	2	com.jsoniter.TestString#test_utf8	PASS				4
+c209	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c209	FT	1	com.jsoniter.TestWhatIsNext#test	PASS				52
+c209	FT	2	com.jsoniter.TestString#test_utf8	PASS				10

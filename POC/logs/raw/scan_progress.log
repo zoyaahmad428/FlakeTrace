@@ -1,0 +1,28 @@
+== JI-01 [VICTIM] victim=com.jsoniter.TestIO#test_read_byte candidates=210
+   JI-01  210/210  (1.5 min)
+   JI-01 DONE: 0/210 OD-relevant candidates (target -> FAIL)  (1.5 min)
+== JI-02 [VICTIM] victim=com.jsoniter.TestString#test_utf8 candidates=210
+   JI-02  210/210  (1.3 min)
+   JI-02 DONE: 0/210 OD-relevant candidates (target -> FAIL)  (1.3 min)
+== JI-03 [VICTIM] victim=com.jsoniter.TestBoolean#test_streaming candidates=210
+   JI-03  210/210  (1.3 min)
+   JI-03 DONE: 0/210 OD-relevant candidates (target -> FAIL)  (1.3 min)
+== JI-04 [VICTIM] victim=com.jsoniter.output.TestObject#test_transient_field_getter candidates=134
+   JI-04  134/134  (0.9 min)
+   JI-04 DONE: 0/134 OD-relevant candidates (target -> FAIL)  (0.9 min)
+== FJ-01 [BRITTLE] victim=com.alibaba.json.bvt.date.DateTest#test_date candidates=72
+   FJ-01  72/72  (0.7 min)
+   FJ-01 DONE: 42/72 OD-relevant candidates (target -> PASS)  (0.7 min)
+== FJ-02 [BRITTLE] victim=com.alibaba.json.bvt.parser.DefaultExtJSONParser_parseArray#test_7 candidates=722
+   FJ-02  300/722  (2.8 min)
+   FJ-02  600/722  (5.5 min)
+   FJ-02  722/722  (6.7 min)
+   FJ-02 DONE: 24/722 OD-relevant candidates (target -> PASS)  (6.7 min)
+== FJ-03 [VICTIM] victim=com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf candidates=524
+   FJ-03  300/524  (2.8 min)
+   FJ-03  524/524  (4.4 min)
+   FJ-03 DONE: 6/524 OD-relevant candidates (target -> FAIL)  (4.4 min)
+== FJ-04 [VICTIM] victim=com.alibaba.json.bvt.serializer.JSONSerializerTest2#test_0 candidates=524
+   FJ-04  300/524  (3.0 min)
+   FJ-04  524/524  (5.1 min)
+   FJ-04 DONE: 2/524 OD-relevant candidates (target -> FAIL)  (5.1 min)

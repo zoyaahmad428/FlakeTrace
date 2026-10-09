@@ -1,0 +1,405 @@
+c0	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c0	FT	1	com.jsoniter.output.TestAnnotationJsonIgnore#test_ignore	PASS				67
+c0	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				10
+c1	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c1	FT	1	com.jsoniter.output.TestAnnotationJsonIgnore#test_ignore_decoding_only	PASS				120
+c1	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				9
+c2	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c2	FT	1	com.jsoniter.output.TestAnnotationJsonIgnore#test_private_serialize	PASS				112
+c2	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				10
+c3	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c3	FT	1	com.jsoniter.output.TestAnnotationJsonProperty#test_encoder	PASS				85
+c3	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				6
+c4	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c4	FT	1	com.jsoniter.output.TestAnnotationJsonProperty#test_getter	PASS				81
+c4	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				6
+c5	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c5	FT	1	com.jsoniter.output.TestAnnotationJsonProperty#test_getter_and_setter	PASS				75
+c5	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				8
+c6	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c6	FT	1	com.jsoniter.output.TestAnnotationJsonProperty#test_property	PASS				96
+c6	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				10
+c7	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c7	FT	1	com.jsoniter.output.TestAnnotationJsonUnwrapper#test_unwrapper	PASS				92
+c7	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				7
+c8	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c8	FT	1	com.jsoniter.output.TestAnnotationJsonUnwrapper#test_unwrapper_with_map	PASS				68
+c8	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				7
+c9	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c9	FT	1	com.jsoniter.output.TestAny#test_array	PASS				126
+c9	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				19
+c10	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c10	FT	1	com.jsoniter.output.TestAny#test_boolean	PASS				121
+c10	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				19
+c11	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c11	FT	1	com.jsoniter.output.TestAny#test_double	PASS				106
+c11	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				19
+c12	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c12	FT	1	com.jsoniter.output.TestAny#test_float	PASS				67
+c12	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				11
+c13	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c13	FT	1	com.jsoniter.output.TestAny#test_int	PASS				116
+c13	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				23
+c14	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c14	FT	1	com.jsoniter.output.TestAny#test_list	PASS				68
+c14	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				13
+c15	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c15	FT	1	com.jsoniter.output.TestAny#test_long	PASS				91
+c15	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				13
+c16	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c16	FT	1	com.jsoniter.output.TestAny#test_not_found	PASS				106
+c16	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				16
+c17	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c17	FT	1	com.jsoniter.output.TestAny#test_null	PASS				70
+c17	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				9
+c18	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c18	FT	1	com.jsoniter.output.TestAny#test_object	PASS				88
+c18	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				8
+c19	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c19	FT	1	com.jsoniter.output.TestAny#test_string	PASS				72
+c19	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				10
+c20	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c20	FT	1	com.jsoniter.output.TestArray#test_array_of_null	PASS				76
+c20	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				12
+c21	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c21	FT	1	com.jsoniter.output.TestArray#test_arrays_as_list	PASS				77
+c21	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				12
+c22	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c22	FT	1	com.jsoniter.output.TestArray#test_collection	PASS				78
+c22	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				8
+c23	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c23	FT	1	com.jsoniter.output.TestArray#test_collection_without_type	PASS				61
+c23	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				14
+c24	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c24	FT	1	com.jsoniter.output.TestArray#test_default_empty_collection	PASS				107
+c24	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				7
+c25	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c25	FT	1	com.jsoniter.output.TestArray#test_empty_array	PASS				95
+c25	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				8
+c26	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c26	FT	1	com.jsoniter.output.TestArray#test_empty_collection	PASS				56
+c26	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				9
+c27	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c27	FT	1	com.jsoniter.output.TestArray#test_gen_array	PASS				56
+c27	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				9
+c28	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c28	FT	1	com.jsoniter.output.TestArray#test_hash_set	PASS				76
+c28	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				11
+c29	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c29	FT	1	com.jsoniter.output.TestArray#test_indention	PASS				93
+c29	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				8
+c30	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c30	FT	1	com.jsoniter.output.TestArray#test_indention_with_empty_array	PASS				155
+c30	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				9
+c31	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c31	FT	1	com.jsoniter.output.TestArray#test_list_of_null	PASS				111
+c31	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				22
+c32	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c32	FT	1	com.jsoniter.output.TestArray#test_list_of_objects	PASS				83
+c32	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				10
+c33	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c33	FT	1	com.jsoniter.output.TestArray#test_null_array	PASS				43
+c33	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				23
+c34	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c34	FT	1	com.jsoniter.output.TestArray#test_null_collection	PASS				78
+c34	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				27
+c35	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c35	FT	1	com.jsoniter.output.TestCollection#test_indention	PASS				102
+c35	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				8
+c36	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c36	FT	1	com.jsoniter.output.TestCollection#test_indention_with_empty_array	PASS				103
+c36	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				7
+c37	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c37	FT	1	com.jsoniter.output.TestFloat#testBigDecimal	PASS				75
+c37	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				14
+c38	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c38	FT	1	com.jsoniter.output.TestFloat#test_infinity	PASS				66
+c38	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				17
+c39	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c39	FT	1	com.jsoniter.output.TestGenerics#test_inherited_getter_is_not_duplicate	PASS				51
+c39	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				5
+c40	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c40	FT	1	com.jsoniter.output.TestGenerics#test_wildcard	PASS				102
+c40	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				11
+c41	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c41	FT	1	com.jsoniter.output.TestGson#test_Expose	PASS				208
+c41	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				11
+c42	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c42	FT	1	com.jsoniter.output.TestGson#test_SerializedName_on_field	PASS				156
+c42	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				6
+c43	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c43	FT	1	com.jsoniter.output.TestGson#test_addSerializationExclusionStrategy	PASS				191
+c43	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				9
+c44	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c44	FT	1	com.jsoniter.output.TestGson#test_disableHtmlEscaping_off	PASS				145
+c44	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				22
+c45	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c45	FT	1	com.jsoniter.output.TestGson#test_disableHtmlEscaping_on	PASS				118
+c45	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				13
+c46	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c46	FT	1	com.jsoniter.output.TestGson#test_excludeFieldsWithoutExposeAnnotation	PASS				222
+c46	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				9
+c47	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c47	FT	1	com.jsoniter.output.TestGson#test_getter_should_be_ignored	PASS				243
+c47	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				6
+c48	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c48	FT	1	com.jsoniter.output.TestGson#test_serializeNulls	PASS				151
+c48	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				6
+c49	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c49	FT	1	com.jsoniter.output.TestGson#test_setDateFormat_with_format	PASS				129
+c49	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				12
+c50	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c50	FT	1	com.jsoniter.output.TestGson#test_setDateFormat_with_style	PASS				207
+c50	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				21
+c51	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c51	FT	1	com.jsoniter.output.TestGson#test_setFieldNamingPolicy	PASS				186
+c51	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				12
+c52	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c52	FT	1	com.jsoniter.output.TestGson#test_setFieldNamingStrategy	PASS				185
+c52	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				7
+c53	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c53	FT	1	com.jsoniter.output.TestGson#test_setPrettyPrinting	PASS				173
+c53	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				11
+c54	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c54	FT	1	com.jsoniter.output.TestGson#test_setVersion	PASS				231
+c54	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				12
+c55	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c55	Gson: {"test":"lorem-👄👀"}
+c55	jsoniter: {"test":"lorem-👄👀"}
+c55	FT	1	com.jsoniter.output.TestGson#test_surrogate	PASS				187
+c55	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				9
+c56	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c56	FT	1	com.jsoniter.output.TestInteger#testBigInteger	PASS				68
+c56	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				24
+c57	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c57	FT	1	com.jsoniter.output.TestJackson#test_JsonAnyGetter	PASS				410
+c57	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				7
+c58	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c58	FT	1	com.jsoniter.output.TestJackson#test_JsonIgnore	PASS				282
+c58	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				7
+c59	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c59	FT	1	com.jsoniter.output.TestJackson#test_JsonProperty	PASS				334
+c59	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				9
+c60	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c60	FT	1	com.jsoniter.output.TestList#test_indention	PASS				152
+c60	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				10
+c61	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c61	FT	1	com.jsoniter.output.TestList#test_indention_with_empty_array	PASS				170
+c61	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				17
+c62	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c62	FT	1	com.jsoniter.output.TestMap#test	PASS				76
+c62	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				11
+c63	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c63	FT	1	com.jsoniter.output.TestMap#test_MapKeyCodec	PASS				99
+c63	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				10
+c64	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c64	FT	1	com.jsoniter.output.TestMap#test_empty	PASS				81
+c64	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				18
+c65	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c65	FT	1	com.jsoniter.output.TestMap#test_enum_key	PASS				78
+c65	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				13
+c66	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c66	FT	1	com.jsoniter.output.TestMap#test_indention_with_empty_map	PASS				139
+c66	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				8
+c67	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c67	FT	1	com.jsoniter.output.TestMap#test_int_as_map_key	PASS				74
+c67	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				11
+c68	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c68	FT	1	com.jsoniter.output.TestMap#test_integer_key	PASS				103
+c68	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				15
+c69	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c69	FT	1	com.jsoniter.output.TestMap#test_multiple_keys	PASS				113
+c69	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				13
+c70	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c70	FT	1	com.jsoniter.output.TestMap#test_null	PASS				96
+c70	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				40
+c71	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c71	FT	1	com.jsoniter.output.TestMap#test_object_key	PASS				111
+c71	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				20
+c72	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c72	FT	1	com.jsoniter.output.TestMap#test_value_is_null	PASS				55
+c72	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				12
+c73	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c73	FT	1	com.jsoniter.output.TestNative#test_big_decimal	PASS				95
+c73	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				13
+c74	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c74	FT	1	com.jsoniter.output.TestNative#test_big_float	PASS				65
+c74	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				34
+c75	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c75	FT	1	com.jsoniter.output.TestNative#test_big_integer	PASS				66
+c75	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				13
+c76	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c76	FT	1	com.jsoniter.output.TestNative#test_boolean	PASS				65
+c76	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				26
+c77	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c77	FT	1	com.jsoniter.output.TestNative#test_boxed_int	PASS				79
+c77	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				12
+c78	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c78	FT	1	com.jsoniter.output.TestNative#test_double	PASS				67
+c78	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				34
+c79	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c79	FT	1	com.jsoniter.output.TestNative#test_escape	PASS				96
+c79	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				36
+c80	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c80	FT	1	com.jsoniter.output.TestNative#test_float2	PASS				85
+c80	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				45
+c81	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c81	FT	1	com.jsoniter.output.TestNative#test_float3	PASS				74
+c81	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				42
+c82	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c82	FT	1	com.jsoniter.output.TestNative#test_int	PASS				80
+c82	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				42
+c83	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c83	FT	1	com.jsoniter.output.TestNative#test_large_double	PASS				49
+c83	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				21
+c84	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c84	FT	1	com.jsoniter.output.TestNative#test_large_int	PASS				57
+c84	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				19
+c85	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c85	FT	1	com.jsoniter.output.TestNative#test_long	PASS				68
+c85	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				18
+c86	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c86	FT	1	com.jsoniter.output.TestNative#test_negative_int	PASS				75
+c86	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				30
+c87	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c87	FT	1	com.jsoniter.output.TestNative#test_negative_long	PASS				73
+c87	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				42
+c88	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c88	FT	1	com.jsoniter.output.TestNative#test_no_decimal_float	PASS				77
+c88	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				34
+c89	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c89	FT	1	com.jsoniter.output.TestNative#test_raw	PASS				42
+c89	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				26
+c90	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c90	FT	1	com.jsoniter.output.TestNative#test_short	PASS				105
+c90	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				18
+c91	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c91	FT	1	com.jsoniter.output.TestNative#test_slash	PASS				74
+c91	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				27
+c92	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c92	FT	1	com.jsoniter.output.TestNative#test_small_int	PASS				73
+c92	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				23
+c93	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c93	FT	1	com.jsoniter.output.TestNative#test_string	PASS				57
+c93	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				20
+c94	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c94	FT	1	com.jsoniter.output.TestNative#test_utf8	PASS				53
+c94	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				29
+c95	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c95	FT	1	com.jsoniter.output.TestNested#test_array_of_objects	PASS				91
+c95	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				9
+c96	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c96	FT	1	com.jsoniter.output.TestNested#test_collection_of_objects	PASS				94
+c96	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				7
+c97	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c97	FT	1	com.jsoniter.output.TestNested#test_map_of_objects	PASS				88
+c97	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				6
+c98	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c98	FT	1	com.jsoniter.output.TestNested#test_object_of_array	PASS				65
+c98	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				7
+c99	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c99	FT	1	com.jsoniter.output.TestNested#test_recursive_class	PASS				99
+c99	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				7
+c100	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c100	FT	1	com.jsoniter.output.TestObject#test_array_field	PASS				83
+c100	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				4
+c101	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c101	FT	1	com.jsoniter.output.TestObject#test_array_field_is_null	PASS				113
+c101	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				10
+c102	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c102	FT	1	com.jsoniter.output.TestObject#test_array_field_is_null_via_getter	PASS				87
+c102	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				6
+c103	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c103	FT	1	com.jsoniter.output.TestObject#test_collection_value_not_nullable	PASS				222
+c103	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				4
+c104	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c104	FT	1	com.jsoniter.output.TestObject#test_empty_object	PASS				78
+c104	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				8
+c105	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c105	FT	1	com.jsoniter.output.TestObject#test_enum	PASS				149
+c105	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				4
+c106	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c106	FT	1	com.jsoniter.output.TestObject#test_field	PASS				85
+c106	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				3
+c107	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c107	FT	1	com.jsoniter.output.TestObject#test_indention	PASS				116
+c107	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				4
+c108	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c108	FT	1	com.jsoniter.output.TestObject#test_indention_with_empty_object	PASS				195
+c108	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				7
+c109	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c109	FT	1	com.jsoniter.output.TestObject#test_missing_notFirst	PASS				169
+c109	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				4
+c110	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c110	FT	1	com.jsoniter.output.TestObject#test_name_conflict	PASS				116
+c110	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				8
+c111	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c111	FT	1	com.jsoniter.output.TestObject#test_not_nullable	PASS				206
+c111	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				7
+c112	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c112	FT	1	com.jsoniter.output.TestObject#test_not_omit_null	PASS				116
+c112	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				4
+c113	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c113	FT	1	com.jsoniter.output.TestObject#test_null	PASS				74
+c113	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				21
+c114	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c114	FT	1	com.jsoniter.output.TestObject#test_null_field	PASS				112
+c114	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				4
+c115	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c115	FT	1	com.jsoniter.output.TestObject#test_omit_default	PASS				209
+c115	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				7
+c116	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c116	FT	1	com.jsoniter.output.TestObject#test_omit_null	PASS				112
+c116	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				6
+c117	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c117	FT	1	com.jsoniter.output.TestObject#test_omit_selft_defined	PASS				193
+c117	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				6
+c118	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c118	FT	1	com.jsoniter.output.TestObject#test_private_class	PASS				90
+c118	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				24
+c119	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c119	FT	1	com.jsoniter.output.TestSpiPropertyEncoder#test_PropertyEncoder	PASS				95
+c119	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				12
+c120	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c120	FT	1	com.jsoniter.output.TestSpiPropertyEncoder#test_PropertyEncoder_for_type_literal	PASS				73
+c120	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				9
+c121	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c121	jsoniter_codegen.cfg1830135045.
+c121	FT	1	com.jsoniter.output.TestSpiTypeEncoder#test_TypeEncoder	PASS				90
+c121	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				16
+c122	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c122	FT	1	com.jsoniter.output.TestSpiTypeEncoder#test_TypeEncoder_for_type_literal	PASS				72
+c122	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				13
+c123	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c123	FT	1	com.jsoniter.output.TestStreamBuffer#test_write_bytes	PASS				48
+c123	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				28
+c124	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c124	FT	1	com.jsoniter.output.TestStreamBuffer#test_write_indention	PASS				60
+c124	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				16
+c125	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c125	FT	1	com.jsoniter.output.TestStreamBuffer#test_write_int	PASS				53
+c125	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				34
+c126	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c126	FT	1	com.jsoniter.output.TestStreamBuffer#test_write_long	PASS				57
+c126	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				45
+c127	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c127	FT	1	com.jsoniter.output.TestStreamBuffer#test_write_raw	PASS				48
+c127	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				35
+c128	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c128	FT	1	com.jsoniter.output.TestStreamBuffer#test_write_string	PASS				65
+c128	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				43
+c129	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c129	FT	1	com.jsoniter.output.TestString#test_escape_control_character	PASS				47
+c129	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				21
+c130	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c130	FT	1	com.jsoniter.output.TestString#test_escape_unicode	PASS				47
+c130	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				8
+c131	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c131	FT	1	com.jsoniter.output.TestString#test_serialize_into_output_stream	PASS				97
+c131	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				13
+c132	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c132	FT	1	com.jsoniter.output.TestString#test_unicode	PASS				78
+c132	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				11
+c133	FTSETUP	com.jsoniter.suite.StreamingTests.setup	OK
+c133	FT	1	com.jsoniter.output.TestString#test_unicode_tilde	PASS				64
+c133	FT	2	com.jsoniter.output.TestObject#test_transient_field_getter	PASS				13

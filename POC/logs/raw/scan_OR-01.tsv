@@ -1,0 +1,930 @@
+c0	FT	1	com.j256.ormlite.table.DatabaseTableConfigLoaderTest#testConfigEntriesFromStream	PASS				194
+c0	2026-09-04 10:27:39,526 [INFO] SchemaUtils dropping schema 'schema'
+c0	2026-09-04 10:27:39,876 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c0	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c0	2026-09-04 10:27:39,876 [INFO] SchemaUtils dropping schema 'schema'
+c0	2026-09-04 10:27:39,877 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c0	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c0	2026-09-04 10:27:39,877 [INFO] SchemaUtils creating schema 'schema'
+c0	2026-09-04 10:27:39,878 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c0	2026-09-04 10:27:39,878 [INFO] SchemaUtils creating schema 'schema'
+c0	2026-09-04 10:27:39,879 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c0	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				513
+c1	FT	1	com.j256.ormlite.table.DatabaseTableConfigLoaderTest#testConfigFile	PASS				217
+c1	2026-09-04 10:27:40,345 [INFO] SchemaUtils dropping schema 'schema'
+c1	2026-09-04 10:27:40,669 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c1	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c1	2026-09-04 10:27:40,669 [INFO] SchemaUtils dropping schema 'schema'
+c1	2026-09-04 10:27:40,670 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c1	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c1	2026-09-04 10:27:40,670 [INFO] SchemaUtils creating schema 'schema'
+c1	2026-09-04 10:27:40,671 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c1	2026-09-04 10:27:40,671 [INFO] SchemaUtils creating schema 'schema'
+c1	2026-09-04 10:27:40,671 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c1	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				475
+c2	FT	1	com.j256.ormlite.table.DatabaseTableConfigLoaderTest#testConfigInvalidLine	PASS				157
+c2	2026-09-04 10:27:41,150 [INFO] SchemaUtils dropping schema 'schema'
+c2	2026-09-04 10:27:41,459 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c2	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c2	2026-09-04 10:27:41,460 [INFO] SchemaUtils dropping schema 'schema'
+c2	2026-09-04 10:27:41,460 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c2	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c2	2026-09-04 10:27:41,460 [INFO] SchemaUtils creating schema 'schema'
+c2	2026-09-04 10:27:41,461 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c2	2026-09-04 10:27:41,461 [INFO] SchemaUtils creating schema 'schema'
+c2	2026-09-04 10:27:41,462 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c2	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				527
+c3	FT	1	com.j256.ormlite.table.DatabaseTableConfigLoaderTest#testConfigUnknownClass	PASS				144
+c3	2026-09-04 10:27:41,905 [INFO] SchemaUtils dropping schema 'schema'
+c3	2026-09-04 10:27:42,182 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c3	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c3	2026-09-04 10:27:42,182 [INFO] SchemaUtils dropping schema 'schema'
+c3	2026-09-04 10:27:42,183 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c3	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c3	2026-09-04 10:27:42,183 [INFO] SchemaUtils creating schema 'schema'
+c3	2026-09-04 10:27:42,184 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c3	2026-09-04 10:27:42,184 [INFO] SchemaUtils creating schema 'schema'
+c3	2026-09-04 10:27:42,184 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c3	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				458
+c4	FT	1	com.j256.ormlite.table.DatabaseTableConfigLoaderTest#testQuickEndOfConfig	PASS				203
+c4	2026-09-04 10:27:42,685 [INFO] SchemaUtils dropping schema 'schema'
+c4	2026-09-04 10:27:42,958 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c4	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c4	2026-09-04 10:27:42,958 [INFO] SchemaUtils dropping schema 'schema'
+c4	2026-09-04 10:27:42,959 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c4	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c4	2026-09-04 10:27:42,959 [INFO] SchemaUtils creating schema 'schema'
+c4	2026-09-04 10:27:42,960 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c4	2026-09-04 10:27:42,960 [INFO] SchemaUtils creating schema 'schema'
+c4	2026-09-04 10:27:42,960 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c4	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				447
+c5	FT	1	com.j256.ormlite.table.DatabaseTableConfigTest#testBadSpringWiring	PASS				320
+c5	2026-09-04 10:27:43,469 [INFO] SchemaUtils dropping schema 'schema'
+c5	2026-09-04 10:27:43,763 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c5	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c5	2026-09-04 10:27:43,764 [INFO] SchemaUtils dropping schema 'schema'
+c5	2026-09-04 10:27:43,765 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c5	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c5	2026-09-04 10:27:43,765 [INFO] SchemaUtils creating schema 'schema'
+c5	2026-09-04 10:27:43,766 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c5	2026-09-04 10:27:43,766 [INFO] SchemaUtils creating schema 'schema'
+c5	2026-09-04 10:27:43,767 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c5	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				372
+c6	FT	1	com.j256.ormlite.table.DatabaseTableConfigTest#testBaseClassHandling	PASS				359
+c6	2026-09-04 10:27:44,269 [INFO] SchemaUtils dropping schema 'schema'
+c6	2026-09-04 10:27:44,562 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c6	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c6	2026-09-04 10:27:44,562 [INFO] SchemaUtils dropping schema 'schema'
+c6	2026-09-04 10:27:44,563 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c6	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c6	2026-09-04 10:27:44,563 [INFO] SchemaUtils creating schema 'schema'
+c6	2026-09-04 10:27:44,564 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c6	2026-09-04 10:27:44,564 [INFO] SchemaUtils creating schema 'schema'
+c6	2026-09-04 10:27:44,564 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c6	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				326
+c7	FT	1	com.j256.ormlite.table.DatabaseTableConfigTest#testBaseClassHandlingWithoutAnno	PASS				332
+c7	2026-09-04 10:27:45,039 [INFO] SchemaUtils dropping schema 'schema'
+c7	2026-09-04 10:27:45,327 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c7	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c7	2026-09-04 10:27:45,327 [INFO] SchemaUtils dropping schema 'schema'
+c7	2026-09-04 10:27:45,328 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c7	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c7	2026-09-04 10:27:45,328 [INFO] SchemaUtils creating schema 'schema'
+c7	2026-09-04 10:27:45,329 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c7	2026-09-04 10:27:45,329 [INFO] SchemaUtils creating schema 'schema'
+c7	2026-09-04 10:27:45,330 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c7	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				326
+c8	FT	1	com.j256.ormlite.table.DatabaseTableConfigTest#testDatabaseTableConfig	PASS				340
+c8	2026-09-04 10:27:45,790 [INFO] SchemaUtils dropping schema 'schema'
+c8	2026-09-04 10:27:46,110 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c8	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c8	2026-09-04 10:27:46,111 [INFO] SchemaUtils dropping schema 'schema'
+c8	2026-09-04 10:27:46,111 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c8	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c8	2026-09-04 10:27:46,112 [INFO] SchemaUtils creating schema 'schema'
+c8	2026-09-04 10:27:46,115 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c8	2026-09-04 10:27:46,116 [INFO] SchemaUtils creating schema 'schema'
+c8	2026-09-04 10:27:46,116 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c8	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				359
+c9	FT	1	com.j256.ormlite.table.DatabaseTableConfigTest#testDatabaseTableWithEntity	PASS				336
+c9	2026-09-04 10:27:46,598 [INFO] SchemaUtils dropping schema 'schema'
+c9	2026-09-04 10:27:46,895 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c9	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c9	2026-09-04 10:27:46,896 [INFO] SchemaUtils dropping schema 'schema'
+c9	2026-09-04 10:27:46,897 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c9	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c9	2026-09-04 10:27:46,897 [INFO] SchemaUtils creating schema 'schema'
+c9	2026-09-04 10:27:46,898 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c9	2026-09-04 10:27:46,898 [INFO] SchemaUtils creating schema 'schema'
+c9	2026-09-04 10:27:46,899 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c9	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				340
+c10	FT	1	com.j256.ormlite.table.DatabaseTableConfigTest#testFieldConfigConstructor	PASS				357
+c10	2026-09-04 10:27:47,410 [INFO] SchemaUtils dropping schema 'schema'
+c10	2026-09-04 10:27:47,759 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c10	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c10	2026-09-04 10:27:47,760 [INFO] SchemaUtils dropping schema 'schema'
+c10	2026-09-04 10:27:47,761 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c10	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c10	2026-09-04 10:27:47,762 [INFO] SchemaUtils creating schema 'schema'
+c10	2026-09-04 10:27:47,763 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c10	2026-09-04 10:27:47,763 [INFO] SchemaUtils creating schema 'schema'
+c10	2026-09-04 10:27:47,763 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c10	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				395
+c11	FT	1	com.j256.ormlite.table.DatabaseTableConfigTest#testFieldConfigConstructorDataType	PASS				341
+c11	2026-09-04 10:27:48,263 [INFO] SchemaUtils dropping schema 'schema'
+c11	2026-09-04 10:27:48,530 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c11	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c11	2026-09-04 10:27:48,531 [INFO] SchemaUtils dropping schema 'schema'
+c11	2026-09-04 10:27:48,531 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c11	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c11	2026-09-04 10:27:48,531 [INFO] SchemaUtils creating schema 'schema'
+c11	2026-09-04 10:27:48,532 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c11	2026-09-04 10:27:48,532 [INFO] SchemaUtils creating schema 'schema'
+c11	2026-09-04 10:27:48,532 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c11	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				318
+c12	FT	1	com.j256.ormlite.table.DatabaseTableConfigTest#testNoFields	PASS				292
+c12	2026-09-04 10:27:48,995 [INFO] SchemaUtils dropping schema 'schema'
+c12	2026-09-04 10:27:49,308 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c12	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c12	2026-09-04 10:27:49,309 [INFO] SchemaUtils dropping schema 'schema'
+c12	2026-09-04 10:27:49,310 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c12	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c12	2026-09-04 10:27:49,310 [INFO] SchemaUtils creating schema 'schema'
+c12	2026-09-04 10:27:49,311 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c12	2026-09-04 10:27:49,311 [INFO] SchemaUtils creating schema 'schema'
+c12	2026-09-04 10:27:49,311 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c12	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				374
+c13	FT	1	com.j256.ormlite.table.DatabaseTableConfigTest#testNoFieldsClass	PASS				359
+c13	2026-09-04 10:27:49,811 [INFO] SchemaUtils dropping schema 'schema'
+c13	2026-09-04 10:27:50,117 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c13	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c13	2026-09-04 10:27:50,118 [INFO] SchemaUtils dropping schema 'schema'
+c13	2026-09-04 10:27:50,119 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c13	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c13	2026-09-04 10:27:50,119 [INFO] SchemaUtils creating schema 'schema'
+c13	2026-09-04 10:27:50,120 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c13	2026-09-04 10:27:50,121 [INFO] SchemaUtils creating schema 'schema'
+c13	2026-09-04 10:27:50,122 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c13	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				349
+c14	FT	1	com.j256.ormlite.table.DatabaseTableConfigTest#testSetFieldConfigs	PASS				592
+c14	2026-09-04 10:27:50,946 [INFO] SchemaUtils dropping schema 'schema'
+c14	2026-09-04 10:27:51,634 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c14	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c14	2026-09-04 10:27:51,636 [INFO] SchemaUtils dropping schema 'schema'
+c14	2026-09-04 10:27:51,637 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c14	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c14	2026-09-04 10:27:51,637 [INFO] SchemaUtils creating schema 'schema'
+c14	2026-09-04 10:27:51,638 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c14	2026-09-04 10:27:51,639 [INFO] SchemaUtils creating schema 'schema'
+c14	2026-09-04 10:27:51,639 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c14	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				781
+c15	FT	1	com.j256.ormlite.table.DatabaseTableConfigTest#testSetFieldConfigsNoMatchingField	PASS				-892
+c15	2026-09-04 10:27:50,994 [INFO] SchemaUtils dropping schema 'schema'
+c15	2026-09-04 10:27:51,592 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c15	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c15	2026-09-04 10:27:51,599 [INFO] SchemaUtils dropping schema 'schema'
+c15	2026-09-04 10:27:51,600 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c15	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c15	2026-09-04 10:27:51,600 [INFO] SchemaUtils creating schema 'schema'
+c15	2026-09-04 10:27:51,602 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c15	2026-09-04 10:27:51,602 [INFO] SchemaUtils creating schema 'schema'
+c15	2026-09-04 10:27:51,602 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c15	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				694
+c16	FT	1	com.j256.ormlite.table.DatabaseTableConfigTest#testSetNoFields	PASS				784
+c16	2026-09-04 10:27:52,834 [INFO] SchemaUtils dropping schema 'schema'
+c16	2026-09-04 10:27:53,915 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c16	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c16	2026-09-04 10:27:53,916 [INFO] SchemaUtils dropping schema 'schema'
+c16	2026-09-04 10:27:53,916 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c16	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c16	2026-09-04 10:27:53,917 [INFO] SchemaUtils creating schema 'schema'
+c16	2026-09-04 10:27:53,929 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c16	2026-09-04 10:27:53,929 [INFO] SchemaUtils creating schema 'schema'
+c16	2026-09-04 10:27:53,930 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c16	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				1352
+c17	FT	1	com.j256.ormlite.table.DatabaseTableConfigTest#testSetTableNameCase	PASS				667
+c17	2026-09-04 10:27:54,902 [INFO] SchemaUtils dropping schema 'schema'
+c17	2026-09-04 10:27:55,330 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c17	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c17	2026-09-04 10:27:55,331 [INFO] SchemaUtils dropping schema 'schema'
+c17	2026-09-04 10:27:55,331 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c17	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c17	2026-09-04 10:27:55,331 [INFO] SchemaUtils creating schema 'schema'
+c17	2026-09-04 10:27:55,332 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c17	2026-09-04 10:27:55,332 [INFO] SchemaUtils creating schema 'schema'
+c17	2026-09-04 10:27:55,333 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c17	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				522
+c18	FT	1	com.j256.ormlite.table.DatabaseTableConfigTest#testSpringWiring	PASS				479
+c18	2026-09-04 10:27:55,998 [INFO] SchemaUtils dropping schema 'schema'
+c18	2026-09-04 10:27:56,371 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c18	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c18	2026-09-04 10:27:56,371 [INFO] SchemaUtils dropping schema 'schema'
+c18	2026-09-04 10:27:56,372 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c18	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c18	2026-09-04 10:27:56,372 [INFO] SchemaUtils creating schema 'schema'
+c18	2026-09-04 10:27:56,373 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c18	2026-09-04 10:27:56,373 [INFO] SchemaUtils creating schema 'schema'
+c18	2026-09-04 10:27:56,373 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c18	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				425
+c19	FT	1	com.j256.ormlite.table.DatabaseTableConfigTest#testSpringWiringNoTableName	PASS				397
+c19	2026-09-04 10:27:56,985 [INFO] SchemaUtils dropping schema 'schema'
+c19	2026-09-04 10:27:57,279 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c19	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c19	2026-09-04 10:27:57,280 [INFO] SchemaUtils dropping schema 'schema'
+c19	2026-09-04 10:27:57,280 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c19	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c19	2026-09-04 10:27:57,281 [INFO] SchemaUtils creating schema 'schema'
+c19	2026-09-04 10:27:57,283 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c19	2026-09-04 10:27:57,283 [INFO] SchemaUtils creating schema 'schema'
+c19	2026-09-04 10:27:57,284 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c19	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				369
+c20	2026-09-04 10:27:57,819 [INFO] SchemaUtils dropping schema 'schema'
+c20	2026-09-04 10:27:58,115 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c20	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c20	2026-09-04 10:27:58,116 [INFO] SchemaUtils creating schema 'schema'
+c20	2026-09-04 10:27:58,120 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA `schema`
+c20	FT	1	com.j256.ormlite.table.SchemaUtilsTest#testCreateSchema	PASS				684
+c20	2026-09-04 10:27:58,125 [INFO] SchemaUtils dropping schema 'schema'
+c20	2026-09-04 10:27:58,128 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c20	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c20	2026-09-04 10:27:58,128 [INFO] SchemaUtils dropping schema 'schema'
+c20	2026-09-04 10:27:58,128 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c20	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c20	2026-09-04 10:27:58,128 [INFO] SchemaUtils creating schema 'schema'
+c20	2026-09-04 10:27:58,129 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c20	2026-09-04 10:27:58,129 [INFO] SchemaUtils creating schema 'schema'
+c20	2026-09-04 10:27:58,129 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c20	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				7
+c21	2026-09-04 10:27:58,631 [INFO] SchemaUtils dropping schema 'schema'
+c21	2026-09-04 10:27:58,956 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c21	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c21	2026-09-04 10:27:58,957 [INFO] SchemaUtils creating schema 'schema'
+c21	2026-09-04 10:27:58,958 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA `schema`
+c21	FT	1	com.j256.ormlite.table.SchemaUtilsTest#testCreateSchemaDao	PASS				699
+c21	2026-09-04 10:27:58,961 [INFO] SchemaUtils dropping schema 'schema'
+c21	2026-09-04 10:27:58,963 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c21	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c21	2026-09-04 10:27:58,963 [INFO] SchemaUtils dropping schema 'schema'
+c21	2026-09-04 10:27:58,964 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c21	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c21	2026-09-04 10:27:58,964 [INFO] SchemaUtils creating schema 'schema'
+c21	2026-09-04 10:27:58,964 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c21	2026-09-04 10:27:58,964 [INFO] SchemaUtils creating schema 'schema'
+c21	2026-09-04 10:27:58,965 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c21	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				5
+c22	2026-09-04 10:27:59,412 [INFO] SchemaUtils dropping schema 'schema'
+c22	2026-09-04 10:27:59,716 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c22	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c22	2026-09-04 10:27:59,717 [INFO] SchemaUtils creating schema 'schema'
+c22	2026-09-04 10:27:59,718 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA `schema`
+c22	FT	1	com.j256.ormlite.table.SchemaUtilsTest#testCreateSchemaName	PASS				642
+c22	2026-09-04 10:27:59,769 [INFO] SchemaUtils dropping schema 'schema'
+c22	2026-09-04 10:27:59,772 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c22	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c22	2026-09-04 10:27:59,772 [INFO] SchemaUtils dropping schema 'schema'
+c22	2026-09-04 10:27:59,772 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c22	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c22	2026-09-04 10:27:59,772 [INFO] SchemaUtils creating schema 'schema'
+c22	2026-09-04 10:27:59,773 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c22	2026-09-04 10:27:59,773 [INFO] SchemaUtils creating schema 'schema'
+c22	2026-09-04 10:27:59,773 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c22	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				53
+c23	FT	1	com.j256.ormlite.table.SchemaUtilsTest#testCreateSchemaStatements	PASS				328
+c23	2026-09-04 10:28:00,277 [INFO] SchemaUtils dropping schema 'schema'
+c23	2026-09-04 10:28:00,587 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c23	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c23	2026-09-04 10:28:00,588 [INFO] SchemaUtils dropping schema 'schema'
+c23	2026-09-04 10:28:00,588 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c23	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c23	2026-09-04 10:28:00,588 [INFO] SchemaUtils creating schema 'schema'
+c23	2026-09-04 10:28:00,589 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c23	2026-09-04 10:28:00,590 [INFO] SchemaUtils creating schema 'schema'
+c23	2026-09-04 10:28:00,590 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c23	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				379
+c24	2026-09-04 10:28:01,088 [INFO] SchemaUtils dropping schema 'schema'
+c24	2026-09-04 10:28:01,384 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c24	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c24	2026-09-04 10:28:01,385 [INFO] SchemaUtils creating schema 'schema'
+c24	2026-09-04 10:28:01,386 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA `schema`
+c24	2026-09-04 10:28:01,386 [INFO] SchemaUtils dropping schema 'schema'
+c24	2026-09-04 10:28:01,389 [INFO] SchemaUtils executed drop schema statement changed 0 rows: DROP SCHEMA `schema` 
+c24	2026-09-04 10:28:01,390 [INFO] SchemaUtils creating schema 'schema'
+c24	2026-09-04 10:28:01,390 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA `schema`
+c24	2026-09-04 10:28:01,390 [INFO] SchemaUtils dropping schema 'schema'
+c24	2026-09-04 10:28:01,391 [INFO] SchemaUtils executed drop schema statement changed 0 rows: DROP SCHEMA `schema` 
+c24	2026-09-04 10:28:01,391 [INFO] SchemaUtils dropping schema 'schema'
+c24	2026-09-04 10:28:01,391 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c24	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c24	FT	1	com.j256.ormlite.table.SchemaUtilsTest#testDropSchema	PASS				682
+c24	2026-09-04 10:28:01,397 [INFO] SchemaUtils dropping schema 'schema'
+c24	2026-09-04 10:28:01,399 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c24	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c24	2026-09-04 10:28:01,399 [INFO] SchemaUtils dropping schema 'schema'
+c24	2026-09-04 10:28:01,400 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c24	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c24	2026-09-04 10:28:01,400 [INFO] SchemaUtils creating schema 'schema'
+c24	2026-09-04 10:28:01,401 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c24	2026-09-04 10:28:01,401 [INFO] SchemaUtils creating schema 'schema'
+c24	2026-09-04 10:28:01,402 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c24	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				8
+c25	2026-09-04 10:28:01,877 [INFO] SchemaUtils dropping schema 'schema'
+c25	2026-09-04 10:28:02,196 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c25	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c25	2026-09-04 10:28:02,197 [INFO] SchemaUtils dropping schema 'schema'
+c25	FT	1	com.j256.ormlite.table.SchemaUtilsTest#testDropSchemaThrow	PASS				686
+c25	2026-09-04 10:28:02,212 [INFO] SchemaUtils dropping schema 'schema'
+c25	2026-09-04 10:28:02,220 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c25	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c25	2026-09-04 10:28:02,221 [INFO] SchemaUtils dropping schema 'schema'
+c25	2026-09-04 10:28:02,222 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c25	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c25	2026-09-04 10:28:02,222 [INFO] SchemaUtils creating schema 'schema'
+c25	2026-09-04 10:28:02,224 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c25	2026-09-04 10:28:02,224 [INFO] SchemaUtils creating schema 'schema'
+c25	2026-09-04 10:28:02,225 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c25	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				19
+c26	FT	1	com.j256.ormlite.table.TableInfoTest#testBasic	PASS				388
+c26	2026-09-04 10:28:02,769 [INFO] SchemaUtils dropping schema 'schema'
+c26	2026-09-04 10:28:03,067 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c26	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c26	2026-09-04 10:28:03,069 [INFO] SchemaUtils dropping schema 'schema'
+c26	2026-09-04 10:28:03,070 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c26	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c26	2026-09-04 10:28:03,070 [INFO] SchemaUtils creating schema 'schema'
+c26	2026-09-04 10:28:03,071 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c26	2026-09-04 10:28:03,071 [INFO] SchemaUtils creating schema 'schema'
+c26	2026-09-04 10:28:03,072 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c26	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				317
+c27	2026-09-04 10:28:03,579 [INFO] TableUtils dropping table 'tablename'
+c27	2026-09-04 10:28:03,896 [INFO] TableUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "TABLENAME" not found; SQL statement:
+c27	DROP TABLE `tablename`  [42102-200]' for statement: DROP TABLE `tablename` 
+c27	2026-09-04 10:28:03,896 [INFO] TableUtils creating table 'tablename'
+c27	2026-09-04 10:28:03,913 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE `tablename` (`column2` VARCHAR(255) , PRIMARY KEY (`column2`) ) 
+c27	FT	1	com.j256.ormlite.table.TableInfoTest#testHasColumnName	PASS				717
+c27	2026-09-04 10:28:03,923 [INFO] SchemaUtils dropping schema 'schema'
+c27	2026-09-04 10:28:03,928 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c27	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c27	2026-09-04 10:28:03,929 [INFO] SchemaUtils dropping schema 'schema'
+c27	2026-09-04 10:28:03,929 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c27	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c27	2026-09-04 10:28:03,929 [INFO] SchemaUtils creating schema 'schema'
+c27	2026-09-04 10:28:03,930 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c27	2026-09-04 10:28:03,930 [INFO] SchemaUtils creating schema 'schema'
+c27	2026-09-04 10:28:03,930 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c27	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				14
+c28	FT	1	com.j256.ormlite.table.TableInfoTest#testNoNoArgConstructor	PASS				344
+c28	2026-09-04 10:28:04,456 [INFO] SchemaUtils dropping schema 'schema'
+c28	2026-09-04 10:28:04,781 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c28	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c28	2026-09-04 10:28:04,781 [INFO] SchemaUtils dropping schema 'schema'
+c28	2026-09-04 10:28:04,782 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c28	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c28	2026-09-04 10:28:04,782 [INFO] SchemaUtils creating schema 'schema'
+c28	2026-09-04 10:28:04,783 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c28	2026-09-04 10:28:04,783 [INFO] SchemaUtils creating schema 'schema'
+c28	2026-09-04 10:28:04,784 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c28	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				383
+c29	FT	1	com.j256.ormlite.table.TableInfoTest#testNoTableNameInAnnotation	PASS				355
+c29	2026-09-04 10:28:05,273 [INFO] SchemaUtils dropping schema 'schema'
+c29	2026-09-04 10:28:05,565 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c29	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c29	2026-09-04 10:28:05,565 [INFO] SchemaUtils dropping schema 'schema'
+c29	2026-09-04 10:28:05,566 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c29	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c29	2026-09-04 10:28:05,566 [INFO] SchemaUtils creating schema 'schema'
+c29	2026-09-04 10:28:05,568 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c29	2026-09-04 10:28:05,568 [INFO] SchemaUtils creating schema 'schema'
+c29	2026-09-04 10:28:05,568 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c29	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				309
+c30	FT	1	com.j256.ormlite.table.TableInfoTest#testObjectDoubleId	PASS				401
+c30	2026-09-04 10:28:06,172 [INFO] SchemaUtils dropping schema 'schema'
+c30	2026-09-04 10:28:06,454 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c30	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c30	2026-09-04 10:28:06,456 [INFO] SchemaUtils dropping schema 'schema'
+c30	2026-09-04 10:28:06,457 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c30	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c30	2026-09-04 10:28:06,457 [INFO] SchemaUtils creating schema 'schema'
+c30	2026-09-04 10:28:06,458 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c30	2026-09-04 10:28:06,458 [INFO] SchemaUtils creating schema 'schema'
+c30	2026-09-04 10:28:06,459 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c30	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				300
+c31	FT	1	com.j256.ormlite.table.TableInfoTest#testObjectNoFields	PASS				290
+c31	2026-09-04 10:28:06,912 [INFO] SchemaUtils dropping schema 'schema'
+c31	2026-09-04 10:28:07,222 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c31	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c31	2026-09-04 10:28:07,223 [INFO] SchemaUtils dropping schema 'schema'
+c31	2026-09-04 10:28:07,224 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c31	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c31	2026-09-04 10:28:07,224 [INFO] SchemaUtils creating schema 'schema'
+c31	2026-09-04 10:28:07,226 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c31	2026-09-04 10:28:07,226 [INFO] SchemaUtils creating schema 'schema'
+c31	2026-09-04 10:28:07,226 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c31	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				363
+c32	FT	1	com.j256.ormlite.table.TableInfoTest#testObjectToString	PASS				425
+c32	2026-09-04 10:28:07,873 [INFO] SchemaUtils dropping schema 'schema'
+c32	2026-09-04 10:28:08,192 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c32	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c32	2026-09-04 10:28:08,192 [INFO] SchemaUtils dropping schema 'schema'
+c32	2026-09-04 10:28:08,193 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c32	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c32	2026-09-04 10:28:08,193 [INFO] SchemaUtils creating schema 'schema'
+c32	2026-09-04 10:28:08,194 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c32	2026-09-04 10:28:08,194 [INFO] SchemaUtils creating schema 'schema'
+c32	2026-09-04 10:28:08,195 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c32	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				332
+c33	2026-09-04 10:28:08,770 [INFO] TableUtils dropping table 'privateconstructor'
+c33	2026-09-04 10:28:09,094 [INFO] TableUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PRIVATECONSTRUCTOR" not found; SQL statement:
+c33	DROP TABLE `privateconstructor`  [42102-200]' for statement: DROP TABLE `privateconstructor` 
+c33	2026-09-04 10:28:09,095 [INFO] TableUtils creating table 'privateconstructor'
+c33	2026-09-04 10:28:09,102 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE `privateconstructor` (`id` INTEGER , PRIMARY KEY (`id`) ) 
+c33	2026-09-04 10:28:09,106 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `privateconstructor` (`id` ) VALUES (?)' and 1 args, changed 1 rows
+c33	2026-09-04 10:28:09,106 [TRACE] BaseMappedStatement insert arguments: [12312321]
+c33	2026-09-04 10:28:09,147 [DEBUG] BaseMappedStatement query-for-id using 'SELECT * FROM `privateconstructor` WHERE `id` = ?' and 1 args, got 1 result
+c33	2026-09-04 10:28:09,147 [TRACE] BaseMappedStatement query-for-id arguments: [12312321]
+c33	FT	1	com.j256.ormlite.table.TableInfoTest#testPrivateConstructor	PASS				770
+c33	2026-09-04 10:28:09,156 [INFO] SchemaUtils dropping schema 'schema'
+c33	2026-09-04 10:28:09,158 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c33	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c33	2026-09-04 10:28:09,159 [INFO] SchemaUtils dropping schema 'schema'
+c33	2026-09-04 10:28:09,159 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c33	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c33	2026-09-04 10:28:09,159 [INFO] SchemaUtils creating schema 'schema'
+c33	2026-09-04 10:28:09,165 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c33	2026-09-04 10:28:09,166 [INFO] SchemaUtils creating schema 'schema'
+c33	2026-09-04 10:28:09,166 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c33	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				18
+c34	FT	1	com.j256.ormlite.table.TableInfoTest#testTableInfo	PASS				397
+c34	2026-09-04 10:28:09,719 [INFO] SchemaUtils dropping schema 'schema'
+c34	2026-09-04 10:28:10,051 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c34	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c34	2026-09-04 10:28:10,051 [INFO] SchemaUtils dropping schema 'schema'
+c34	2026-09-04 10:28:10,052 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c34	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c34	2026-09-04 10:28:10,052 [INFO] SchemaUtils creating schema 'schema'
+c34	2026-09-04 10:28:10,053 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c34	2026-09-04 10:28:10,053 [INFO] SchemaUtils creating schema 'schema'
+c34	2026-09-04 10:28:10,053 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c34	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				360
+c35	FT	1	com.j256.ormlite.table.TableInfoTest#testUnknownForeignField	PASS				403
+c35	2026-09-04 10:28:10,599 [INFO] SchemaUtils dropping schema 'schema'
+c35	2026-09-04 10:28:10,888 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c35	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c35	2026-09-04 10:28:10,889 [INFO] SchemaUtils dropping schema 'schema'
+c35	2026-09-04 10:28:10,890 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c35	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c35	2026-09-04 10:28:10,890 [INFO] SchemaUtils creating schema 'schema'
+c35	2026-09-04 10:28:10,892 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c35	2026-09-04 10:28:10,892 [INFO] SchemaUtils creating schema 'schema'
+c35	2026-09-04 10:28:10,893 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c35	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				306
+c36	FT	1	com.j256.ormlite.table.TableInfoTest#testZeroFieldConfigsSpecified	PASS				283
+c36	2026-09-04 10:28:11,347 [INFO] SchemaUtils dropping schema 'schema'
+c36	2026-09-04 10:28:11,642 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c36	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c36	2026-09-04 10:28:11,643 [INFO] SchemaUtils dropping schema 'schema'
+c36	2026-09-04 10:28:11,644 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c36	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c36	2026-09-04 10:28:11,644 [INFO] SchemaUtils creating schema 'schema'
+c36	2026-09-04 10:28:11,645 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c36	2026-09-04 10:28:11,645 [INFO] SchemaUtils creating schema 'schema'
+c36	2026-09-04 10:28:11,645 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c36	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				351
+c37	2026-09-04 10:28:12,118 [INFO] TableUtils dropping table 'localfoo'
+c37	2026-09-04 10:28:12,428 [INFO] TableUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "LOCALFOO" not found; SQL statement:
+c37	DROP TABLE `localfoo`  [42102-200]' for statement: DROP TABLE `localfoo` 
+c37	2026-09-04 10:28:12,429 [INFO] TableUtils creating table 'localfoo'
+c37	2026-09-04 10:28:12,436 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE `localfoo` (`id` INTEGER , `name` VARCHAR(255) ) 
+c37	2026-09-04 10:28:12,470 [DEBUG] StatementExecutor query of 'SELECT COUNT(*) FROM `localfoo`' returned 0
+c37	2026-09-04 10:28:12,474 [DEBUG] BaseMappedStatement insert data with statement 'INSERT INTO `localfoo` (`id` ,`name` ) VALUES (?,?)' and 2 args, changed 1 rows
+c37	2026-09-04 10:28:12,474 [TRACE] BaseMappedStatement insert arguments: [0, null]
+c37	2026-09-04 10:28:12,475 [DEBUG] StatementExecutor query of 'SELECT COUNT(*) FROM `localfoo`' returned 1
+c37	2026-09-04 10:28:12,475 [INFO] TableUtils clearing table 'localfoo' with 'TRUNCATE TABLE `localfoo`
+c37	2026-09-04 10:28:12,476 [DEBUG] StatementExecutor query of 'SELECT COUNT(*) FROM `localfoo`' returned 0
+c37	FT	1	com.j256.ormlite.table.TableUtilsTest#testClearTable	PASS				724
+c37	2026-09-04 10:28:12,489 [INFO] SchemaUtils dropping schema 'schema'
+c37	2026-09-04 10:28:12,492 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c37	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c37	2026-09-04 10:28:12,493 [INFO] SchemaUtils dropping schema 'schema'
+c37	2026-09-04 10:28:12,494 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c37	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c37	2026-09-04 10:28:12,494 [INFO] SchemaUtils creating schema 'schema'
+c37	2026-09-04 10:28:12,495 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c37	2026-09-04 10:28:12,495 [INFO] SchemaUtils creating schema 'schema'
+c37	2026-09-04 10:28:12,495 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c37	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				17
+c38	FT	1	com.j256.ormlite.table.TableUtilsTest#testColumnDefinition	PASS				364
+c38	2026-09-04 10:28:12,973 [INFO] SchemaUtils dropping schema 'schema'
+c38	2026-09-04 10:28:13,287 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c38	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c38	2026-09-04 10:28:13,288 [INFO] SchemaUtils dropping schema 'schema'
+c38	2026-09-04 10:28:13,289 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c38	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c38	2026-09-04 10:28:13,290 [INFO] SchemaUtils creating schema 'schema'
+c38	2026-09-04 10:28:13,291 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c38	2026-09-04 10:28:13,291 [INFO] SchemaUtils creating schema 'schema'
+c38	2026-09-04 10:28:13,292 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c38	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				328
+c39	2026-09-04 10:28:13,819 [INFO] TableUtils creating table 'comboindex'
+c39	2026-09-04 10:28:13,820 [INFO] TableUtils creating index 'stuffjunk' for table 'comboindex
+c39	2026-09-04 10:28:13,823 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE `comboindex` (`stuff` VARCHAR(255) , `junk` BIGINT ) 
+c39	2026-09-04 10:28:13,825 [INFO] TableUtils executed create table statement changed 0 rows: CREATE INDEX `stuffjunk` ON `comboindex` ( `stuff`, `junk` )
+c39	2026-09-04 10:28:13,825 [INFO] TableUtils dropping index 'stuffjunk' for table 'comboindex
+c39	2026-09-04 10:28:13,825 [INFO] TableUtils dropping table 'comboindex'
+c39	2026-09-04 10:28:13,826 [INFO] TableUtils executed drop table statement changed 0 rows: DROP INDEX `stuffjunk`
+c39	2026-09-04 10:28:13,826 [INFO] TableUtils executed drop table statement changed 0 rows: DROP TABLE `comboindex` 
+c39	FT	1	com.j256.ormlite.table.TableUtilsTest#testComboIndex	PASS				428
+c39	2026-09-04 10:28:13,845 [INFO] SchemaUtils dropping schema 'schema'
+c39	2026-09-04 10:28:14,153 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c39	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c39	2026-09-04 10:28:14,154 [INFO] SchemaUtils dropping schema 'schema'
+c39	2026-09-04 10:28:14,154 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c39	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c39	2026-09-04 10:28:14,155 [INFO] SchemaUtils creating schema 'schema'
+c39	2026-09-04 10:28:14,156 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c39	2026-09-04 10:28:14,156 [INFO] SchemaUtils creating schema 'schema'
+c39	2026-09-04 10:28:14,157 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c39	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				326
+c40	FT	1	com.j256.ormlite.table.TableUtilsTest#testConstructor	PASS				334
+c40	2026-09-04 10:28:14,700 [INFO] SchemaUtils dropping schema 'schema'
+c40	2026-09-04 10:28:15,129 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c40	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c40	2026-09-04 10:28:15,130 [INFO] SchemaUtils dropping schema 'schema'
+c40	2026-09-04 10:28:15,130 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c40	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c40	2026-09-04 10:28:15,131 [INFO] SchemaUtils creating schema 'schema'
+c40	2026-09-04 10:28:15,131 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c40	2026-09-04 10:28:15,132 [INFO] SchemaUtils creating schema 'schema'
+c40	2026-09-04 10:28:15,132 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c40	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				500
+c41	FT	1	com.j256.ormlite.table.TableUtilsTest#testCreateStatements	PASS				447
+c41	2026-09-04 10:28:15,728 [INFO] SchemaUtils dropping schema 'schema'
+c41	2026-09-04 10:28:16,029 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c41	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c41	2026-09-04 10:28:16,030 [INFO] SchemaUtils dropping schema 'schema'
+c41	2026-09-04 10:28:16,030 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c41	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c41	2026-09-04 10:28:16,031 [INFO] SchemaUtils creating schema 'schema'
+c41	2026-09-04 10:28:16,032 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c41	2026-09-04 10:28:16,032 [INFO] SchemaUtils creating schema 'schema'
+c41	2026-09-04 10:28:16,032 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c41	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				314
+c42	FT	1	com.j256.ormlite.table.TableUtilsTest#testCreateStatementsTableConfig	PASS				370
+c42	2026-09-04 10:28:16,538 [INFO] SchemaUtils dropping schema 'schema'
+c42	2026-09-04 10:28:16,847 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c42	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c42	2026-09-04 10:28:16,849 [INFO] SchemaUtils dropping schema 'schema'
+c42	2026-09-04 10:28:16,850 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c42	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c42	2026-09-04 10:28:16,850 [INFO] SchemaUtils creating schema 'schema'
+c42	2026-09-04 10:28:16,852 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c42	2026-09-04 10:28:16,852 [INFO] SchemaUtils creating schema 'schema'
+c42	2026-09-04 10:28:16,852 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c42	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				327
+c43	2026-09-04 10:28:17,338 [INFO] TableUtils dropping table 'localfoo'
+c43	2026-09-04 10:28:17,618 [INFO] TableUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "LOCALFOO" not found; SQL statement:
+c43	DROP TABLE `localfoo`  [42102-200]' for statement: DROP TABLE `localfoo` 
+c43	2026-09-04 10:28:17,619 [INFO] TableUtils creating table 'localfoo'
+c43	2026-09-04 10:28:17,624 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE `localfoo` (`id` INTEGER , `name` VARCHAR(255) ) 
+c43	2026-09-04 10:28:17,643 [DEBUG] BaseMappedStatement prepared statement 'SELECT * FROM `localfoo`' with 0 args
+c43	2026-09-04 10:28:17,666 [DEBUG] StatementExecutor query of 'SELECT * FROM `localfoo`' with 0 args returned 0 results
+c43	2026-09-04 10:28:17,666 [INFO] TableUtils dropping table 'localfoo'
+c43	2026-09-04 10:28:17,668 [INFO] TableUtils executed drop table statement changed 0 rows: DROP TABLE `localfoo` 
+c43	2026-09-04 10:28:17,669 [INFO] TableUtils dropping table 'localfoo'
+c43	2026-09-04 10:28:17,670 [INFO] TableUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "LOCALFOO" not found; SQL statement:
+c43	DROP TABLE `localfoo`  [42102-200]' for statement: DROP TABLE `localfoo` 
+c43	2026-09-04 10:28:17,670 [INFO] TableUtils creating table 'localfoo'
+c43	2026-09-04 10:28:17,671 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE `localfoo` (`id` INTEGER , `name` VARCHAR(255) ) 
+c43	2026-09-04 10:28:17,671 [DEBUG] BaseMappedStatement prepared statement 'SELECT * FROM `localfoo`' with 0 args
+c43	2026-09-04 10:28:17,672 [DEBUG] StatementExecutor query of 'SELECT * FROM `localfoo`' with 0 args returned 0 results
+c43	2026-09-04 10:28:17,672 [INFO] TableUtils dropping table 'localfoo'
+c43	2026-09-04 10:28:17,674 [INFO] TableUtils executed drop table statement changed 0 rows: DROP TABLE `localfoo` 
+c43	FT	1	com.j256.ormlite.table.TableUtilsTest#testCreateTable	PASS				698
+c43	2026-09-04 10:28:17,685 [INFO] SchemaUtils dropping schema 'schema'
+c43	2026-09-04 10:28:17,688 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c43	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c43	2026-09-04 10:28:17,688 [INFO] SchemaUtils dropping schema 'schema'
+c43	2026-09-04 10:28:17,689 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c43	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c43	2026-09-04 10:28:17,689 [INFO] SchemaUtils creating schema 'schema'
+c43	2026-09-04 10:28:17,690 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c43	2026-09-04 10:28:17,690 [INFO] SchemaUtils creating schema 'schema'
+c43	2026-09-04 10:28:17,690 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c43	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				13
+c44	2026-09-04 10:28:18,176 [INFO] TableUtils creating table 'localfoo'
+c44	2026-09-04 10:28:18,177 [INFO] TableUtils executed create table statement changed 1 rows: CREATE TABLE `localfoo` (`id` INTEGER , `name` VARCHAR(255) ) 
+c44	FT	1	com.j256.ormlite.table.TableUtilsTest#testCreateTableAboveZero	PASS				378
+c44	2026-09-04 10:28:18,190 [INFO] SchemaUtils dropping schema 'schema'
+c44	2026-09-04 10:28:18,450 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c44	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c44	2026-09-04 10:28:18,450 [INFO] SchemaUtils dropping schema 'schema'
+c44	2026-09-04 10:28:18,451 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c44	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c44	2026-09-04 10:28:18,451 [INFO] SchemaUtils creating schema 'schema'
+c44	2026-09-04 10:28:18,453 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c44	2026-09-04 10:28:18,453 [INFO] SchemaUtils creating schema 'schema'
+c44	2026-09-04 10:28:18,453 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c44	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				273
+c45	2026-09-04 10:28:18,979 [INFO] TableUtils creating table 'localfoo'
+c45	2026-09-04 10:28:18,982 [INFO] TableUtils executed create table statement changed -1 rows: CREATE TABLE `localfoo` (`id` INTEGER , `name` VARCHAR(255) ) 
+c45	FT	1	com.j256.ormlite.table.TableUtilsTest#testCreateTableBelowZero	PASS				405
+c45	2026-09-04 10:28:18,993 [INFO] SchemaUtils dropping schema 'schema'
+c45	2026-09-04 10:28:19,252 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c45	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c45	2026-09-04 10:28:19,253 [INFO] SchemaUtils dropping schema 'schema'
+c45	2026-09-04 10:28:19,253 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c45	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c45	2026-09-04 10:28:19,253 [INFO] SchemaUtils creating schema 'schema'
+c45	2026-09-04 10:28:19,254 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c45	2026-09-04 10:28:19,254 [INFO] SchemaUtils creating schema 'schema'
+c45	2026-09-04 10:28:19,254 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c45	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				268
+c46	2026-09-04 10:28:19,697 [INFO] TableUtils dropping table 'localfoo'
+c46	2026-09-04 10:28:20,015 [INFO] TableUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "LOCALFOO" not found; SQL statement:
+c46	DROP TABLE `localfoo`  [42102-200]' for statement: DROP TABLE `localfoo` 
+c46	2026-09-04 10:28:20,030 [INFO] TableUtils creating table 'localfoo'
+c46	2026-09-04 10:28:20,033 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE IF NOT EXISTS `localfoo` (`id` INTEGER , `name` VARCHAR(255) ) 
+c46	2026-09-04 10:28:20,059 [DEBUG] StatementExecutor query of 'SELECT COUNT(*) FROM `localfoo`' returned 0
+c46	2026-09-04 10:28:20,060 [INFO] TableUtils creating table 'localfoo'
+c46	2026-09-04 10:28:20,060 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE IF NOT EXISTS `localfoo` (`id` INTEGER , `name` VARCHAR(255) ) 
+c46	2026-09-04 10:28:20,061 [DEBUG] StatementExecutor query of 'SELECT COUNT(*) FROM `localfoo`' returned 0
+c46	FT	1	com.j256.ormlite.table.TableUtilsTest#testCreateTableConfigIfNotExists	PASS				708
+c46	2026-09-04 10:28:20,071 [INFO] SchemaUtils dropping schema 'schema'
+c46	2026-09-04 10:28:20,074 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c46	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c46	2026-09-04 10:28:20,075 [INFO] SchemaUtils dropping schema 'schema'
+c46	2026-09-04 10:28:20,075 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c46	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c46	2026-09-04 10:28:20,077 [INFO] SchemaUtils creating schema 'schema'
+c46	2026-09-04 10:28:20,078 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c46	2026-09-04 10:28:20,078 [INFO] SchemaUtils creating schema 'schema'
+c46	2026-09-04 10:28:20,079 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c46	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				15
+c47	2026-09-04 10:28:20,052 [INFO] TableUtils dropping table 'localfoo'
+c47	2026-09-04 10:28:19,126 [INFO] TableUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "LOCALFOO" not found; SQL statement:
+c47	DROP TABLE `localfoo`  [42102-200]' for statement: DROP TABLE `localfoo` 
+c47	2026-09-04 10:28:19,135 [INFO] TableUtils creating table 'localfoo'
+c47	2026-09-04 10:28:19,137 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE IF NOT EXISTS `localfoo` (`id` INTEGER , `name` VARCHAR(255) ) 
+c47	2026-09-04 10:28:19,161 [DEBUG] StatementExecutor query of 'SELECT COUNT(*) FROM `localfoo`' returned 0
+c47	2026-09-04 10:28:19,161 [INFO] TableUtils creating table 'localfoo'
+c47	2026-09-04 10:28:19,162 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE IF NOT EXISTS `localfoo` (`id` INTEGER , `name` VARCHAR(255) ) 
+c47	2026-09-04 10:28:19,163 [DEBUG] StatementExecutor query of 'SELECT COUNT(*) FROM `localfoo`' returned 0
+c47	FT	1	com.j256.ormlite.table.TableUtilsTest#testCreateTableIfNotExists	PASS				-1017
+c47	2026-09-04 10:28:19,175 [INFO] SchemaUtils dropping schema 'schema'
+c47	2026-09-04 10:28:19,178 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c47	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c47	2026-09-04 10:28:19,178 [INFO] SchemaUtils dropping schema 'schema'
+c47	2026-09-04 10:28:19,179 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c47	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c47	2026-09-04 10:28:19,180 [INFO] SchemaUtils creating schema 'schema'
+c47	2026-09-04 10:28:19,181 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c47	2026-09-04 10:28:19,183 [INFO] SchemaUtils creating schema 'schema'
+c47	2026-09-04 10:28:19,184 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c47	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				15
+c48	2026-09-04 10:28:19,716 [INFO] TableUtils creating table 'localfoo'
+c48	2026-09-04 10:28:19,719 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE `localfoo` (`id` INTEGER , `name` VARCHAR(255) ) 
+c48	2026-09-04 10:28:19,719 [INFO] TableUtils executing create table after-query got 0 results: SELECT * from foo
+c48	FT	1	com.j256.ormlite.table.TableUtilsTest#testCreateTableQueriesAfter	PASS				393
+c48	2026-09-04 10:28:19,729 [INFO] SchemaUtils dropping schema 'schema'
+c48	2026-09-04 10:28:20,014 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c48	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c48	2026-09-04 10:28:20,015 [INFO] SchemaUtils dropping schema 'schema'
+c48	2026-09-04 10:28:20,015 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c48	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c48	2026-09-04 10:28:20,015 [INFO] SchemaUtils creating schema 'schema'
+c48	2026-09-04 10:28:20,016 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c48	2026-09-04 10:28:20,016 [INFO] SchemaUtils creating schema 'schema'
+c48	2026-09-04 10:28:20,016 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c48	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				293
+c49	2026-09-04 10:28:20,520 [INFO] TableUtils creating table 'localfoo'
+c49	2026-09-04 10:28:20,522 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE `localfoo` (`id` INTEGER , `name` VARCHAR(255) ) 
+c49	FT	1	com.j256.ormlite.table.TableUtilsTest#testCreateTableTableConfig	PASS				395
+c49	2026-09-04 10:28:20,533 [INFO] SchemaUtils dropping schema 'schema'
+c49	2026-09-04 10:28:20,814 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c49	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c49	2026-09-04 10:28:20,814 [INFO] SchemaUtils dropping schema 'schema'
+c49	2026-09-04 10:28:20,816 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c49	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c49	2026-09-04 10:28:20,816 [INFO] SchemaUtils creating schema 'schema'
+c49	2026-09-04 10:28:20,818 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c49	2026-09-04 10:28:20,819 [INFO] SchemaUtils creating schema 'schema'
+c49	2026-09-04 10:28:20,819 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c49	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				294
+c50	2026-09-04 10:28:21,383 [INFO] TableUtils creating table 'localfoo'
+c50	FT	1	com.j256.ormlite.table.TableUtilsTest#testCreateTableThrow	PASS				435
+c50	2026-09-04 10:28:21,401 [INFO] SchemaUtils dropping schema 'schema'
+c50	2026-09-04 10:28:21,716 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c50	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c50	2026-09-04 10:28:21,717 [INFO] SchemaUtils dropping schema 'schema'
+c50	2026-09-04 10:28:21,717 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c50	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c50	2026-09-04 10:28:21,718 [INFO] SchemaUtils creating schema 'schema'
+c50	2026-09-04 10:28:21,719 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c50	2026-09-04 10:28:21,719 [INFO] SchemaUtils creating schema 'schema'
+c50	2026-09-04 10:28:21,719 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c50	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				329
+c51	2026-09-04 10:28:22,201 [INFO] TableUtils dropping table 'localfoo'
+c51	2026-09-04 10:28:22,455 [INFO] TableUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "LOCALFOO" not found; SQL statement:
+c51	DROP TABLE `localfoo`  [42102-200]' for statement: DROP TABLE `localfoo` 
+c51	2026-09-04 10:28:22,456 [INFO] TableUtils creating table 'localfoo'
+c51	2026-09-04 10:28:22,459 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE `localfoo` (`id` INTEGER , `name` VARCHAR(255) ) 
+c51	2026-09-04 10:28:22,475 [DEBUG] BaseMappedStatement prepared statement 'SELECT * FROM `localfoo`' with 0 args
+c51	2026-09-04 10:28:22,496 [DEBUG] StatementExecutor query of 'SELECT * FROM `localfoo`' with 0 args returned 0 results
+c51	2026-09-04 10:28:22,496 [INFO] TableUtils dropping table 'localfoo'
+c51	2026-09-04 10:28:22,500 [INFO] TableUtils executed drop table statement changed 0 rows: DROP TABLE `localfoo` 
+c51	2026-09-04 10:28:22,500 [INFO] TableUtils dropping table 'localfoo'
+c51	FT	1	com.j256.ormlite.table.TableUtilsTest#testDoubleDrop	PASS				664
+c51	2026-09-04 10:28:22,508 [INFO] SchemaUtils dropping schema 'schema'
+c51	2026-09-04 10:28:22,510 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c51	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c51	2026-09-04 10:28:22,511 [INFO] SchemaUtils dropping schema 'schema'
+c51	2026-09-04 10:28:22,511 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c51	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c51	2026-09-04 10:28:22,511 [INFO] SchemaUtils creating schema 'schema'
+c51	2026-09-04 10:28:22,511 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c51	2026-09-04 10:28:22,512 [INFO] SchemaUtils creating schema 'schema'
+c51	2026-09-04 10:28:22,513 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c51	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				9
+c52	2026-09-04 10:28:23,058 [INFO] TableUtils dropping table 'localfoo'
+c52	2026-09-04 10:28:23,059 [INFO] TableUtils executed drop table statement changed 0 rows: DROP TABLE `localfoo` 
+c52	FT	1	com.j256.ormlite.table.TableUtilsTest#testDropTable	PASS				441
+c52	2026-09-04 10:28:23,073 [INFO] SchemaUtils dropping schema 'schema'
+c52	2026-09-04 10:28:23,410 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c52	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c52	2026-09-04 10:28:23,411 [INFO] SchemaUtils dropping schema 'schema'
+c52	2026-09-04 10:28:23,412 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c52	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c52	2026-09-04 10:28:23,412 [INFO] SchemaUtils creating schema 'schema'
+c52	2026-09-04 10:28:23,413 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c52	2026-09-04 10:28:23,413 [INFO] SchemaUtils creating schema 'schema'
+c52	2026-09-04 10:28:23,413 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c52	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				351
+c53	2026-09-04 10:28:23,940 [INFO] TableUtils dropping table 'localfoo'
+c53	2026-09-04 10:28:23,943 [INFO] TableUtils executed drop table statement changed -1 rows: DROP TABLE `localfoo` 
+c53	FT	1	com.j256.ormlite.table.TableUtilsTest#testDropTableNegRows	PASS				427
+c53	2026-09-04 10:28:23,954 [INFO] SchemaUtils dropping schema 'schema'
+c53	2026-09-04 10:28:24,224 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c53	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c53	2026-09-04 10:28:24,225 [INFO] SchemaUtils dropping schema 'schema'
+c53	2026-09-04 10:28:24,225 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c53	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c53	2026-09-04 10:28:24,225 [INFO] SchemaUtils creating schema 'schema'
+c53	2026-09-04 10:28:24,226 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c53	2026-09-04 10:28:24,226 [INFO] SchemaUtils creating schema 'schema'
+c53	2026-09-04 10:28:24,227 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c53	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				280
+c54	2026-09-04 10:28:24,720 [INFO] TableUtils dropping table 'localfoo'
+c54	2026-09-04 10:28:24,720 [INFO] TableUtils executed drop table statement changed 0 rows: DROP TABLE `localfoo` 
+c54	FT	1	com.j256.ormlite.table.TableUtilsTest#testDropTableTableConfig	PASS				386
+c54	2026-09-04 10:28:24,730 [INFO] SchemaUtils dropping schema 'schema'
+c54	2026-09-04 10:28:25,047 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c54	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c54	2026-09-04 10:28:25,047 [INFO] SchemaUtils dropping schema 'schema'
+c54	2026-09-04 10:28:25,048 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c54	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c54	2026-09-04 10:28:25,048 [INFO] SchemaUtils creating schema 'schema'
+c54	2026-09-04 10:28:25,049 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c54	2026-09-04 10:28:25,049 [INFO] SchemaUtils creating schema 'schema'
+c54	2026-09-04 10:28:25,049 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c54	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				326
+c55	2026-09-04 10:28:25,559 [INFO] TableUtils dropping table 'localfoo'
+c55	FT	1	com.j256.ormlite.table.TableUtilsTest#testDropTableThrow	PASS				409
+c55	2026-09-04 10:28:25,569 [INFO] SchemaUtils dropping schema 'schema'
+c55	2026-09-04 10:28:25,834 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c55	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c55	2026-09-04 10:28:25,834 [INFO] SchemaUtils dropping schema 'schema'
+c55	2026-09-04 10:28:25,835 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c55	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c55	2026-09-04 10:28:25,835 [INFO] SchemaUtils creating schema 'schema'
+c55	2026-09-04 10:28:25,836 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c55	2026-09-04 10:28:25,836 [INFO] SchemaUtils creating schema 'schema'
+c55	2026-09-04 10:28:25,836 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c55	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				274
+c56	2026-09-04 10:28:26,335 [INFO] TableUtils dropping table 'localfoo'
+c56	2026-09-04 10:28:26,336 [INFO] TableUtils ignoring drop error 'java.sql.SQLException: you asked us to!!' for statement: DROP TABLE `localfoo` 
+c56	FT	1	com.j256.ormlite.table.TableUtilsTest#testDropTableThrowIgnore	PASS				388
+c56	2026-09-04 10:28:26,344 [INFO] SchemaUtils dropping schema 'schema'
+c56	2026-09-04 10:28:26,599 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c56	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c56	2026-09-04 10:28:26,599 [INFO] SchemaUtils dropping schema 'schema'
+c56	2026-09-04 10:28:26,600 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c56	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c56	2026-09-04 10:28:26,600 [INFO] SchemaUtils creating schema 'schema'
+c56	2026-09-04 10:28:26,602 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c56	2026-09-04 10:28:26,602 [INFO] SchemaUtils creating schema 'schema'
+c56	2026-09-04 10:28:26,602 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c56	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				265
+c57	2026-09-04 10:28:27,192 [INFO] TableUtils dropping table 'localfoo'
+c57	2026-09-04 10:28:27,505 [INFO] TableUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "LOCALFOO" not found; SQL statement:
+c57	DROP TABLE `localfoo`  [42102-200]' for statement: DROP TABLE `localfoo` 
+c57	2026-09-04 10:28:27,506 [INFO] TableUtils creating table 'localfoo'
+c57	2026-09-04 10:28:27,512 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE `localfoo` (`id` INTEGER , `name` VARCHAR(255) ) 
+c57	2026-09-04 10:28:27,527 [DEBUG] BaseMappedStatement prepared statement 'SELECT * FROM `localfoo`' with 0 args
+c57	2026-09-04 10:28:27,558 [DEBUG] StatementExecutor query of 'SELECT * FROM `localfoo`' with 0 args returned 0 results
+c57	2026-09-04 10:28:27,559 [INFO] TableUtils dropping table 'localfoo'
+c57	2026-09-04 10:28:27,562 [INFO] TableUtils executed drop table statement changed 0 rows: DROP TABLE `localfoo` 
+c57	FT	1	com.j256.ormlite.table.TableUtilsTest#testDropThenQuery	PASS				794
+c57	2026-09-04 10:28:27,572 [INFO] SchemaUtils dropping schema 'schema'
+c57	2026-09-04 10:28:27,576 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c57	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c57	2026-09-04 10:28:27,576 [INFO] SchemaUtils dropping schema 'schema'
+c57	2026-09-04 10:28:27,577 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c57	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c57	2026-09-04 10:28:27,577 [INFO] SchemaUtils creating schema 'schema'
+c57	2026-09-04 10:28:27,577 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c57	2026-09-04 10:28:27,579 [INFO] SchemaUtils creating schema 'schema'
+c57	2026-09-04 10:28:27,579 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c57	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				13
+c58	FT	1	com.j256.ormlite.table.TableUtilsTest#testFullColumnDefinition	PASS				371
+c58	2026-09-04 10:28:28,078 [INFO] SchemaUtils dropping schema 'schema'
+c58	2026-09-04 10:28:28,429 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c58	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c58	2026-09-04 10:28:28,430 [INFO] SchemaUtils dropping schema 'schema'
+c58	2026-09-04 10:28:28,431 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c58	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c58	2026-09-04 10:28:28,431 [INFO] SchemaUtils creating schema 'schema'
+c58	2026-09-04 10:28:28,433 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c58	2026-09-04 10:28:28,433 [INFO] SchemaUtils creating schema 'schema'
+c58	2026-09-04 10:28:28,433 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c58	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				362
+c59	2026-09-04 10:28:28,954 [INFO] TableUtils creating table 'index'
+c59	2026-09-04 10:28:28,955 [INFO] TableUtils creating index 'index_stuff_idx' for table 'index
+c59	2026-09-04 10:28:28,956 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE `index` (`stuff` VARCHAR(255) ) 
+c59	2026-09-04 10:28:28,956 [INFO] TableUtils executed create table statement changed 0 rows: CREATE INDEX `index_stuff_idx` ON `index` ( `stuff` )
+c59	2026-09-04 10:28:28,957 [INFO] TableUtils dropping index 'index_stuff_idx' for table 'index
+c59	2026-09-04 10:28:28,957 [INFO] TableUtils dropping table 'index'
+c59	2026-09-04 10:28:28,957 [INFO] TableUtils executed drop table statement changed 0 rows: DROP INDEX `index_stuff_idx`
+c59	2026-09-04 10:28:28,957 [INFO] TableUtils executed drop table statement changed 0 rows: DROP TABLE `index` 
+c59	FT	1	com.j256.ormlite.table.TableUtilsTest#testIndex	PASS				396
+c59	2026-09-04 10:28:28,972 [INFO] SchemaUtils dropping schema 'schema'
+c59	2026-09-04 10:28:29,274 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c59	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c59	2026-09-04 10:28:29,275 [INFO] SchemaUtils dropping schema 'schema'
+c59	2026-09-04 10:28:29,276 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c59	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c59	2026-09-04 10:28:29,276 [INFO] SchemaUtils creating schema 'schema'
+c59	2026-09-04 10:28:29,277 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c59	2026-09-04 10:28:29,277 [INFO] SchemaUtils creating schema 'schema'
+c59	2026-09-04 10:28:29,278 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c59	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				314
+c60	FT	1	com.j256.ormlite.table.TableUtilsTest#testMissingCreate	PASS				714
+c60	2026-09-04 10:28:30,123 [INFO] SchemaUtils dropping schema 'schema'
+c60	2026-09-04 10:28:30,145 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c60	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c60	2026-09-04 10:28:30,145 [INFO] SchemaUtils dropping schema 'schema'
+c60	2026-09-04 10:28:30,146 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c60	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c60	2026-09-04 10:28:30,147 [INFO] SchemaUtils creating schema 'schema'
+c60	2026-09-04 10:28:30,148 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c60	2026-09-04 10:28:30,149 [INFO] SchemaUtils creating schema 'schema'
+c60	2026-09-04 10:28:30,150 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c60	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				44
+c61	2026-09-04 10:28:30,676 [INFO] TableUtils dropping table 'localfoo'
+c61	2026-09-04 10:28:30,995 [INFO] TableUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "LOCALFOO" not found; SQL statement:
+c61	DROP TABLE `localfoo`  [42102-200]' for statement: DROP TABLE `localfoo` 
+c61	2026-09-04 10:28:30,996 [INFO] TableUtils creating table 'localfoo'
+c61	2026-09-04 10:28:31,002 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE `localfoo` (`id` INTEGER , `name` VARCHAR(255) ) 
+c61	2026-09-04 10:28:31,002 [DEBUG] StatementExecutor running raw execute statement: DROP TABLE `LocalFoo`
+c61	FT	1	com.j256.ormlite.table.TableUtilsTest#testRawExecuteDropThenQuery	PASS				693
+c61	2026-09-04 10:28:31,029 [INFO] SchemaUtils dropping schema 'schema'
+c61	2026-09-04 10:28:31,032 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c61	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c61	2026-09-04 10:28:31,032 [INFO] SchemaUtils dropping schema 'schema'
+c61	2026-09-04 10:28:31,033 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c61	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c61	2026-09-04 10:28:31,033 [INFO] SchemaUtils creating schema 'schema'
+c61	2026-09-04 10:28:31,034 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c61	2026-09-04 10:28:31,034 [INFO] SchemaUtils creating schema 'schema'
+c61	2026-09-04 10:28:31,034 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c61	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				17
+c62	FT	1	com.j256.ormlite.table.TableUtilsTest#testRecursiveType	PASS				374
+c62	2026-09-04 10:28:31,542 [INFO] SchemaUtils dropping schema 'schema'
+c62	2026-09-04 10:28:31,825 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c62	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c62	2026-09-04 10:28:31,825 [INFO] SchemaUtils dropping schema 'schema'
+c62	2026-09-04 10:28:31,826 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c62	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c62	2026-09-04 10:28:31,826 [INFO] SchemaUtils creating schema 'schema'
+c62	2026-09-04 10:28:31,827 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c62	2026-09-04 10:28:31,827 [INFO] SchemaUtils creating schema 'schema'
+c62	2026-09-04 10:28:31,828 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c62	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				290
+c63	2026-09-04 10:28:32,358 [INFO] TableUtils creating table 'uniqueindex'
+c63	2026-09-04 10:28:32,361 [INFO] TableUtils creating index 'uniqueindex_stuff_idx' for table 'uniqueindex
+c63	2026-09-04 10:28:32,362 [INFO] TableUtils executed create table statement changed 0 rows: CREATE TABLE `uniqueindex` (`stuff` VARCHAR(255) ) 
+c63	2026-09-04 10:28:32,363 [INFO] TableUtils executed create table statement changed 0 rows: CREATE UNIQUE INDEX `uniqueindex_stuff_idx` ON `uniqueindex` ( `stuff` )
+c63	2026-09-04 10:28:32,364 [INFO] TableUtils dropping index 'uniqueindex_stuff_idx' for table 'uniqueindex
+c63	2026-09-04 10:28:32,364 [INFO] TableUtils dropping table 'uniqueindex'
+c63	2026-09-04 10:28:32,364 [INFO] TableUtils executed drop table statement changed 0 rows: DROP INDEX `uniqueindex_stuff_idx`
+c63	2026-09-04 10:28:32,364 [INFO] TableUtils executed drop table statement changed 0 rows: DROP TABLE `uniqueindex` 
+c63	FT	1	com.j256.ormlite.table.TableUtilsTest#testUniqueIndex	PASS				427
+c63	2026-09-04 10:28:32,376 [INFO] SchemaUtils dropping schema 'schema'
+c63	2026-09-04 10:28:32,671 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c63	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c63	2026-09-04 10:28:32,672 [INFO] SchemaUtils dropping schema 'schema'
+c63	2026-09-04 10:28:32,672 [INFO] SchemaUtils ignoring drop error 'org.h2.jdbc.JdbcSQLSyntaxErrorException: Schema "SCHEMA" not found; SQL statement:
+c63	DROP SCHEMA `schema`  [90079-200]' for statement: DROP SCHEMA `schema` 
+c63	2026-09-04 10:28:32,672 [INFO] SchemaUtils creating schema 'schema'
+c63	2026-09-04 10:28:32,674 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c63	2026-09-04 10:28:32,674 [INFO] SchemaUtils creating schema 'schema'
+c63	2026-09-04 10:28:32,674 [INFO] SchemaUtils executed create schema statement changed 0 rows: CREATE SCHEMA IF NOT EXISTS `schema`
+c63	FT	2	com.j256.ormlite.table.SchemaUtilsTest#testCreateIfNotExists	PASS				307
