@@ -76,7 +76,7 @@ How each status fills the counts (follows M3's examples in `eval/examples/`):
 | `POLLUTER_FOUND` | `[polluter, victim]` | from step 6 |
 | `VICTIM_FAILS_ALONE` | `[victim]` | sequence counts = alone counts; `polluters = []` |
 | `NO_SINGLE_POLLUTER` | the full original order (unminimised; W10 minimises) | original order repeated ×n |
-| `NOT_REPRODUCED` | the original order | `sequence_n = n` (attempts made), `sequence_successes = 0`, `sequence_any_failures = 0`; the alone check is not run (there is no reference to match), so `alone_n = 0`, `alone_successes = 0` — see Limitations |
+| `NOT_REPRODUCED` | the original order | `sequence_n = n` (attempts made), `sequence_successes = 0`, `sequence_any_failures` = attempts where the victim crashed, timed out or was skipped (usually 0 — then `decide()` gives `NOT_REPRODUCED`; if > 0 it gives `SIGNATURE_MISMATCH`, which is the honest reading of a sequence that only ever crashed); the alone check is not run (there is no reference to match), so `alone_n = 0`, `alone_successes = 0` — see Limitations |
 
 ### Discovery
 
@@ -106,7 +106,7 @@ duration, timestamp.
 
 | Situation | Behaviour |
 | --- | --- |
-| Victim not in the order; `n < 1` | `ValueError` before any JVM runs |
+| Victim not in the order; `n < 1`; `record_dir` inside the project (a record there would itself fail the integrity check — found in the final review) | `ValueError` before any JVM runs |
 | Project does not compile | Maven's `CalledProcessError` propagates |
 | A run crashes or times out | counted as an any-signature failure, never as a match |
 

@@ -1,7 +1,7 @@
 # runner/ — bounded search and verification (Member 2)
 
-**Owner:** Member 2 · **State:** W6 complete; W7 implemented (2026-10-09) — `diagnose()` on all five fixture cases
-locally (JDK 21); CI pending. W9 (report assembly) next.
+**Owner:** Member 2 · **State:** W6 complete; W7 complete (2026-10-09) — `diagnose()` on all five fixture cases
+locally (JDK 21) and in CI (JDK 8, run `37971869749`). W9 (report assembly) next.
 
 Implements the `OrderRunner` interface in [`eval/baseline.py`](../eval/baseline.py) and
 everything built on it. Contract: [docs/contracts/interfaces.md](../docs/contracts/interfaces.md).
@@ -109,7 +109,7 @@ runs.source_integrity.passed, runs.execution_record   # flaketrace-records/<time
 | `POLLUTER_FOUND` | one earlier test makes the victim fail with the reference signature | `[polluter, victim]` |
 | `VICTIM_FAILS_ALONE` | the victim reproduced its failure with nothing before it — no polluter is blamed | `[victim]` (counts = alone counts) |
 | `NO_SINGLE_POLLUTER` | the original order fails but no single earlier test does (e.g. F3) — for W10 | the original order |
-| `NOT_REPRODUCED` | the victim never failed in `n` runs of the original order; alone check not run (`alone_n = 0`) | the original order |
+| `NOT_REPRODUCED` | the victim never failed with a real failure in `n` runs of the original order (crashes/timeouts are counted in `sequence_any_failures`); alone check not run (`alone_n = 0`) | the original order |
 
 ## Planned components, in build order
 

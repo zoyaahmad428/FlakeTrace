@@ -90,6 +90,18 @@ class TestRunSteps(unittest.TestCase):
         with self.assertRaises(ValueError):
             diagnose(Path("does-not-exist"), V, original_order=[A, B])
 
+    def test_record_folder_inside_the_project_is_refused_before_maven_runs(self):
+        project = Path(tempfile.mkdtemp(prefix="flaketrace-project-"))
+        with self.assertRaises(ValueError):
+            diagnose(project, V, original_order=[V], record_dir=project / "records")
+
+    def test_crash_only_original_order_counts_as_failed_but_not_reproduced(self):
+        crash = RunOutcome(passed=False, failure_signature=FailureSignature("flaketrace.JvmCrash", "", "code 1"))
+        runner = FakeOrderRunner(lambda order, test: crash if test == V else PASS)
+        runs = run_steps(runner, [A, V], V, n=3)
+        self.assertEqual(runs.status, NOT_REPRODUCED)
+        self.assertEqual((runs.sequence_n, runs.sequence_successes, runs.sequence_any_failures), (3, 0, 3))
+
 
 class TestDiagnoseOnFixture(unittest.TestCase):
     """Real JVM runs on fixtures/od-fixture, checked against ground_truth.json."""

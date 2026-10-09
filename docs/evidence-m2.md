@@ -251,3 +251,31 @@ search for a single polluter (priority list first), and matching / any-signature
   handle), discovery assumes alphabetical order. JDK 8 (CI) not yet run.
 - **For Member 3:** N2's failure rate is platform-dependent (`System.nanoTime()` parity); its
   ground-truth outcome assumes it fails. Raised as a note, not edited (fixtures are M3's).
+
+### 2026-10-09 — W7 CI result and final review fixes
+
+**CI:** GitHub Actions run `37971869749` on PR #11 (commit `1c1b329`) — all three jobs succeeded
+(`runner`, `fixture-build`, `python-eval`). The `runner` job's "Runner tests" step (JDK 8,
+Linux, 55 tests at that commit) took 60 s by the step timestamps. Its exact `Ran …` line:
+*not yet recorded (job log needs sign-in).*
+https://github.com/zoyaahmad428/FlakeTrace/actions/runs/37971869749
+
+**Final review** (separate reviewer agent, whole branch): no critical issues; three important:
+1. `NOT_REPRODUCED` stored crash/timeout attempts in `sequence_any_failures`, while ADR-004 said
+   0. The code is kept (a sequence that only crashed should read as `SIGNATURE_MISMATCH`); ADR-004,
+   `runner/README.md` and the four-point note now say so. New test
+   `test_crash_only_original_order_counts_as_failed_but_not_reproduced` pins it (passed on first
+   run — it documents existing behaviour).
+2. A `record_dir` inside the analysed project made the integrity check fail (the reviewer
+   reproduced `added: flaketrace-records/r.jsonl`). New test
+   `test_record_folder_inside_the_project_is_refused_before_maven_runs` failed first (Maven was
+   reached instead of a `ValueError`); `diagnose()` now refuses such a `record_dir` → passes.
+3. Docs still said "CI pending" — corrected by this entry.
+- Full runner suite after the fixes: `Ran 57 tests in 121.281s — OK`. `git status --short fixtures/`
+  empty.
+- Deferred (minor, not fixed): victim first in the order reports `NO_SINGLE_POLLUTER` although
+  there were no candidates; duplicate tests in a supplied order are rejected only after Maven
+  runs; a header-only record is left when a discovered order lacks the victim; a run that raises
+  leaves no record line; a broken symlink in the project crashes hashing; record file names are
+  not sanitised (`:` would write an NTFS stream) and are unique only to the second;
+  Parameterized/Enclosed classes are not discovered (not yet in ADR-004's Discovery section).

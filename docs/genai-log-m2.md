@@ -276,3 +276,21 @@ documented: a rarely-failing flaky victim can produce a spurious polluter (expos
 verify counts).
 
 **What I changed:** *fill after reading the diff.*
+
+## 2026-10-09 — W7 final review and fixes
+
+**Tool:** Claude Opus 5.5 — separate reviewer agent on the whole branch; this session fixed
+the findings · **Level:** L2
+
+**What was found:** no critical issues; important: `NOT_REPRODUCED` counts disagreed with the
+ADR; a record folder inside the project broke the integrity check; docs said CI was pending
+after it had passed. Seven minor items deferred (listed in [[evidence-m2]]).
+
+**What was retained:** a `record_dir` guard in `diagnose()` with a test that failed first; a
+test pinning the crash-only `NOT_REPRODUCED` counts; ADR/README/note wording made to match the
+code; CI run `37971869749` recorded.
+
+**How it was verified:** the record-folder test failed before the guard and passed after; full
+runner suite 57 OK.
+
+**What I changed:** *fill after reading the diff.*

@@ -90,6 +90,10 @@ def diagnose(
     if original_order is not None and victim not in original_order:
         raise ValueError(f"victim {victim} is not in the original order")
     project = Path(project_dir).resolve()
+    records = Path(record_dir).resolve()
+    if records == project or project in records.parents:
+        # A record written inside the project would itself make the integrity check fail.
+        raise ValueError(f"record_dir {records} is inside the analysed project {project}")
     before = snapshot(project)
     runner = OrderRunner(maven_test_classpath(project), working_dir=project, timeout_s=timeout_s)
     order = list(original_order) if original_order is not None else discover_order(

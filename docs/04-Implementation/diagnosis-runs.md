@@ -1,7 +1,7 @@
 # Diagnosis runs — `runner/diagnose.py` and its modules (Member 2, W7)
 
-*Status (2026-10-09): implemented and run on all five fixture cases locally (JDK 21); CI
-pending. Four-point ownership note per [[04-Implementation/README]]. Design:
+*Status (2026-10-09): complete — run on all five fixture cases locally (JDK 21) and in CI
+(JDK 8, run `37971869749`). Four-point ownership note per [[04-Implementation/README]]. Design:
 [[03-Design/decisions/ADR-004-w7-diagnosis-runs]]. Evidence: [[evidence-m2]].*
 
 ## 1. What it does and why it is there
@@ -43,8 +43,11 @@ verdict stays with M3's `decide()`, so the statistics and decision rules live in
 - **A rarely-failing flaky victim** can pass all `n` alone runs by chance and then fail during
   the search, giving a spurious polluter; the verify counts expose it (few matches of `n`), so
   `decide()` can at most say `CANDIDATE`.
-- **The victim never fails** → `NOT_REPRODUCED` with `alone_n = 0`; M3's `decide()` rejects
-  `isolation_n = 0`, so W9 must handle this status before calling it.
+- **The victim never fails for real** → `NOT_REPRODUCED` with `alone_n = 0`; M3's `decide()`
+  rejects `isolation_n = 0`, so W9 must handle this status before calling it. If the original
+  order only crashed or timed out, those runs are counted in `sequence_any_failures`.
+- **`record_dir` inside the analysed project** → refused with `ValueError`; a record written
+  there would itself make the integrity check fail.
 - **Platform-dependent flakiness**: fixture N2 fails on `System.nanoTime()` parity; with Windows'
   10 MHz timer it was observed never to fail (0/80), so it ends `NOT_REPRODUCED` here and is
   expected to end `VICTIM_FAILS_ALONE` on Linux.
