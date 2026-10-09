@@ -1,0 +1,97 @@
+# javap -c -p output, JDK 1.8.0_502 (image maven@sha256:15522857a08bc468b05f4284d4a5a6c49eff7af7abfe16dc7770609484a67b8b)
+# fixture compiled with: mvn -B -q test-compile (fixtures/od-fixture, unmodified), 2026-10-09
+# command: javap -c -p -cp classes:test-classes odfixture.ConfigPolluterTest odfixture.ConfigVictimTest odfixture.FeaturePolluterTest odfixture.FeatureVictimTest odfixture.FeatureFlags odfixture.Config
+Compiled from "ConfigPolluterTest.java"
+public class odfixture.ConfigPolluterTest {
+  public odfixture.ConfigPolluterTest();
+    Code:
+       0: aload_0
+       1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+       4: return
+
+  public void pollute();
+    Code:
+       0: iconst_1
+       1: putstatic     #2                  // Field odfixture/Config.mode:I
+       4: return
+}
+Compiled from "ConfigVictimTest.java"
+public class odfixture.ConfigVictimTest {
+  public odfixture.ConfigVictimTest();
+    Code:
+       0: aload_0
+       1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+       4: return
+
+  public void expectsDefaultMode();
+    Code:
+       0: lconst_0
+       1: getstatic     #2                  // Field odfixture/Config.mode:I
+       4: i2l
+       5: invokestatic  #3                  // Method org/junit/Assert.assertEquals:(JJ)V
+       8: return
+}
+Compiled from "FeaturePolluterTest.java"
+public class odfixture.FeaturePolluterTest {
+  public odfixture.FeaturePolluterTest();
+    Code:
+       0: aload_0
+       1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+       4: return
+
+  public void enableTurbo();
+    Code:
+       0: ldc           #2                  // String odfixture.turbo
+       2: ldc           #3                  // String true
+       4: invokestatic  #4                  // Method java/lang/System.setProperty:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+       7: pop
+       8: return
+}
+Compiled from "FeatureVictimTest.java"
+public class odfixture.FeatureVictimTest {
+  public odfixture.FeatureVictimTest();
+    Code:
+       0: aload_0
+       1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+       4: return
+
+  public void expectsTurboDisabled();
+    Code:
+       0: invokestatic  #2                  // Method odfixture/FeatureFlags.isTurboEnabled:()Z
+       3: invokestatic  #3                  // Method org/junit/Assert.assertFalse:(Z)V
+       6: return
+}
+Compiled from "FeatureFlags.java"
+public class odfixture.FeatureFlags {
+  public odfixture.FeatureFlags();
+    Code:
+       0: aload_0
+       1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+       4: return
+
+  public static boolean isTurboEnabled();
+    Code:
+       0: ldc           #2                  // String odfixture.turbo
+       2: invokestatic  #3                  // Method java/lang/System.getProperty:(Ljava/lang/String;)Ljava/lang/String;
+       5: ifnull        12
+       8: iconst_1
+       9: goto          13
+      12: iconst_0
+      13: ireturn
+}
+Compiled from "Config.java"
+public class odfixture.Config {
+  public static int mode;
+
+  public odfixture.Config();
+    Code:
+       0: aload_0
+       1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+       4: return
+
+  static {};
+    Code:
+       0: iconst_0
+       1: putstatic     #2                  // Field mode:I
+       4: return
+}
