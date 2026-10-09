@@ -51,6 +51,8 @@ python3 -m evidence.extract --classes fixtures/od-fixture/target/classes \
 mvn -B -q -f evidence/tests/resources/m1-selftest/pom.xml test-compile
 mvn -B -q -f fixtures/od-fixture/pom.xml test-compile
 python3 -m unittest evidence.tests.test_extract -v
+# in CI: fail instead of skipping when classes or javap are missing
+FLAKETRACE_REQUIRE_JVM=1 python3 -m unittest evidence.tests.test_extract -v
 
 # what each depth adds on a compiled project
 python3 -m evidence.tools.measure_depth --classes fixtures/od-fixture/target/classes \

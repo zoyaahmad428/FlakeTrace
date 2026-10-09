@@ -533,7 +533,7 @@ def note_rules_and_runners(chain, result):
                                               "detail": "rule field %s is not analysed" % field_name})
 
 
-def analyse_test(project, test_id, depth=1):
+def analyse_test(project, test_id, depth=DEFAULT_DEPTH):
     """Output 1 of the contract for one test method."""
     if "#" not in test_id:
         raise ExtractError("test must be Class#method, got: " + test_id, 2)
