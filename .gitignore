@@ -1,2 +1,6 @@
 __pycache__/
 *.pyc
+
+# Windows download metadata (WSL copies) and local Claude Code settings
+*Zone.Identifier
+**/.claude/settings.local.json
