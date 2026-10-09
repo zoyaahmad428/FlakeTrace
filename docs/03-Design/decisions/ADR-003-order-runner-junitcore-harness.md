@@ -1,4 +1,4 @@
-# ADR-002 — Order runner: Python `OrderRunner` + small JUnitCore harness
+# ADR-003 — Order runner: Python `OrderRunner` + small JUnitCore harness
 
 **Date:** 2026-10-09 · **Status:** `PROPOSED` — chosen by M2; needs M1, M3 agreement because it
 answers open question I1 in [[contracts/interfaces]] · **Owner:** M2 · **Work package:** W6

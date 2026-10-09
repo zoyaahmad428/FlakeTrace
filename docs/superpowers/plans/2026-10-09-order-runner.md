@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.11+ (stdlib only), Java 8+ (`java`, `javac`), JUnit 4.13.2 (from the target project), Maven 3 (only to get the classpath), `unittest`, GitHub Actions.
 
-**Spec:** [ADR-002](../../03-Design/decisions/ADR-002-order-runner-junitcore-harness.md). Contract: [interfaces.md](../../contracts/interfaces.md) Interface 1; protocol in `eval/baseline.py`.
+**Spec:** [ADR-003](../../03-Design/decisions/ADR-003-order-runner-junitcore-harness.md). Contract: [interfaces.md](../../contracts/interfaces.md) Interface 1; protocol in `eval/baseline.py`.
 
 ## Global Constraints
 
@@ -33,10 +33,10 @@
 
 ---
 
-### Task 0: Hand over the design (ADR-002 + this plan)
+### Task 0: Hand over the design (ADR-003 + this plan)
 
 **Files:**
-- Create (already written): `docs/03-Design/decisions/ADR-002-order-runner-junitcore-harness.md`
+- Create (already written): `docs/03-Design/decisions/ADR-003-order-runner-junitcore-harness.md`
 - Create (already written): `docs/superpowers/plans/2026-10-09-order-runner.md`
 - Modify: `docs/genai-log-m2.md` (append entry)
 - Modify: `docs/08-MidEval/genai-register.md` (one row)
@@ -46,7 +46,7 @@
 - [ ] **Step 1: Append to `docs/genai-log-m2.md`**
 
 ```markdown
-## 2026-10-09 — W6 design: order runner (ADR-002) and implementation plan
+## 2026-10-09 — W6 design: order runner (ADR-003) and implementation plan
 
 **Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
 
@@ -54,7 +54,7 @@
 fresh JVM per call, exact order), with trade-offs, classpath without new dependencies, and
 portability on Windows/WSL/CI; stop for my choice; then write the plan.
 
-**What was retained:** option A — Python `OrderRunner` + JUnitCore harness (ADR-002); the
+**What was retained:** option A — Python `OrderRunner` + JUnitCore harness (ADR-003); the
 implementation plan in `docs/superpowers/plans/2026-10-09-order-runner.md`.
 
 **What I decided:** chose A over Maven Surefire (cannot honour a method-level order across
@@ -74,7 +74,7 @@ installed 3.10.0 and added to user PATH.
 - [ ] **Step 2: Add a row to the register table in `docs/08-MidEval/genai-register.md`** (after the last 2026-10-09 M2 row)
 
 ```markdown
-| 2026-10-09 | M2 | Claude Opus 5.5 | L2 | ADR-002 (order-runner design), W6 implementation plan | Design alternatives, ADR text, plan | Chose option A; reviewed ADR | Spike on F1 (not committed): alone PASS, after polluter FAIL | ADR `--release 8` corrected to `-source 8 -target 8` | [[genai-log-m2]] |
+| 2026-10-09 | M2 | Claude Opus 5.5 | L2 | ADR-003 (order-runner design), W6 implementation plan | Design alternatives, ADR text, plan | Chose option A; reviewed ADR | Spike on F1 (not committed): alone PASS, after polluter FAIL | ADR `--release 8` corrected to `-source 8 -target 8` | [[genai-log-m2]] |
 ```
 
 - [ ] **Step 3: Hand over** — show `git status --short`, then give:
@@ -82,9 +82,9 @@ installed 3.10.0 and added to user PATH.
 ```bash
 git config user.email            # must print raffay.moazzam@gmail.com — stop if not
 git switch -c m2/order-runner
-git add docs/03-Design/decisions/ADR-002-order-runner-junitcore-harness.md docs/superpowers/plans/2026-10-09-order-runner.md docs/genai-log-m2.md docs/08-MidEval/genai-register.md
+git add docs/03-Design/decisions/ADR-003-order-runner-junitcore-harness.md docs/superpowers/plans/2026-10-09-order-runner.md docs/genai-log-m2.md docs/08-MidEval/genai-register.md
 git diff --staged
-git commit -m "[M2] docs: propose ADR-002 order runner design and W6 plan" \
+git commit -m "[M2] docs: propose ADR-003 order runner design and W6 plan" \
   -m "Answers open question I1: a Python OrderRunner launches a small JUnitCore harness,
 one fresh JVM per call, tests in exactly the given order. Surefire was rejected because it
 cannot run a method-level order across classes.
@@ -252,7 +252,7 @@ import org.junit.runner.notification.RunListener;
 /**
  * Runs the tests listed on stdin ("Class#method", one per line) in that exact order, in this
  * one JVM, and writes one tab-separated result line per test to the file named in args[0].
- * Launched by runner/order_runner.py; see ADR-002.
+ * Launched by runner/order_runner.py; see ADR-003.
  */
 public class FtHarness {
 
@@ -330,7 +330,7 @@ public class FtHarness {
 - [ ] **Step 4: Write the minimal Python runner** — `runner/order_runner.py`
 
 ```python
-"""Ordered single-JVM test runner for JUnit 4 (W6). Design: docs/03-Design/decisions/ADR-002.
+"""Ordered single-JVM test runner for JUnit 4 (W6). Design: docs/03-Design/decisions/ADR-003-order-runner-junitcore-harness.md.
 
 Implements the OrderRunner protocol from eval/baseline.py: each run_ordered call starts one
 fresh JVM that runs the given tests in exactly the given order (runner/harness/FtHarness.java).
@@ -501,7 +501,7 @@ Expected: `Ran 8 tests … OK` — 4 normalisation, 1 parse, 3 F1. Record the re
 - [ ] **Step 8: Docs (CLAUDE.md §5).** Write each with the real numbers from Steps 5–7:
   - `docs/evidence-m2.md` — replace `*Not started.*` under `## Order runner (W6)` with a dated entry: requirement (contract Interface 1 rules 1–2), files, exact command, real result line, the step 6 mutation result, step 7 result, limitations (each method is its own `Request`, so `@BeforeClass` runs per method; JUnit 4 only; crash/timeout handling arrives in Task 2).
   - `runner/README.md` — set `State` to "W6 in progress"; add a "How to run" section with the `py -m unittest` / `python -m unittest` command, prerequisites (JDK 8+, Maven on PATH), the harness protocol, and "MSYS/Cygwin Python with Windows Java is unsupported".
-  - `docs/04-Implementation/sandbox-runner.md` — four-point note: (1) what/why, (2) alternatives from ADR-002, (3) what breaks (no `mvn`/`java`; a test that hangs; JDK frame differences), (4) how to modify (e.g. grouping consecutive same-class methods into one `Request` changes `runOne` and the signature tests). Link it from the `runner/` row in `docs/04-Implementation/README.md`.
+  - `docs/04-Implementation/sandbox-runner.md` — four-point note: (1) what/why, (2) alternatives from ADR-003, (3) what breaks (no `mvn`/`java`; a test that hangs; JDK frame differences), (4) how to modify (e.g. grouping consecutive same-class methods into one `Request` changes `runOne` and the signature tests). Link it from the `runner/` row in `docs/04-Implementation/README.md`.
   - `docs/08-MidEval/iteration-plan.md` — W6 row: State `In progress`, Evidence `runner/order_runner.py`, `[[evidence-m2]]`.
   - `docs/09-Team/members.md` — row 2 State: "W6: harness + F1 proof done; failure paths next".
   - `docs/genai-log-m2.md` and one `genai-register.md` row (level L2, verification = the Step 5/6 commands).
@@ -519,7 +519,7 @@ one fresh JVM per call, tests in exactly the given order, a normalised failure s
 
 Verified: py -m unittest -v runner.tests.test_order_runner -> <real result>.
 F1 victim passes alone and fails after ConfigPolluterTest#pollute in one JVM.
-Refs: W6, ADR-002" \
+Refs: W6, ADR-003" \
   -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 git push
 ```
@@ -678,7 +678,7 @@ Expected: `Ran 17 tests … OK`. Record the real output.
 
 - [ ] **Step 6: Source integrity** — `git status --short fixtures/` prints nothing.
 
-- [ ] **Step 7: Docs.** `docs/evidence-m2.md` (new dated entry: Review Focus items 1–4 with the real command/result), `runner/README.md` (error table from ADR-002), `docs/04-Implementation/sandbox-runner.md` point 3 (what the runner does on crash/timeout/skip), `docs/genai-log-m2.md` + register row, and a claims-ledger row in the most fitting section of `docs/07-Defense/claims-ledger.md`:
+- [ ] **Step 7: Docs.** `docs/evidence-m2.md` (new dated entry: Review Focus items 1–4 with the real command/result), `runner/README.md` (error table from ADR-003), `docs/04-Implementation/sandbox-runner.md` point 3 (what the runner does on crash/timeout/skip), `docs/genai-log-m2.md` + register row, and a claims-ledger row in the most fitting section of `docs/07-Defense/claims-ledger.md`:
 
 ```markdown
 | <next #> | The order runner executes tests in exactly the requested order in one fresh JVM per call, and never drops a test (crash/timeout/skip are reported as failures) | `runner/tests/test_order_runner.py` on fixture F1 | [[evidence-m2]] | M2 | SETTLED |
@@ -696,7 +696,7 @@ result line now fail as flaketrace.JvmCrash or flaketrace.Timeout; @Ignore/Assum
 fail as flaketrace.NotExecuted; duplicate tests in one order raise ValueError.
 
 Verified: py -m unittest -v runner.tests.test_order_runner -> <real result>.
-Refs: W6, ADR-002" \
+Refs: W6, ADR-003" \
   -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 git push
 ```
