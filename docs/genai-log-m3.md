@@ -433,3 +433,24 @@ something was wrong.
 
 Ownership checkpoint: you need to understand and verify this implementation
 before claiming it as your contribution.
+
+## 2026-10-10 — Random-order baseline run for real, first time
+
+**What I asked:** Member 2 confirmed the real `OrderRunner` is ready for the baseline to use.
+Ran `eval.baseline.run_random_order_baseline` against it for real for the first time since
+Phase 4, and corrected `eval/README.md`'s stale "no implementation exists" claim.
+
+**What was retained:** The real run script and its real output as generated/observed — no
+fabricated numbers.
+
+**How it was verified:** 4 independent real trials against F1 (base seeds 0/100/200/300),
+each using the real `runner.order_runner.OrderRunner` — found in 1, 1, 3, and 2 shuffles.
+Full suite re-run after the `eval/README.md` edit: 69/69 passed.
+
+**Errors found:** None — `eval/baseline.py` worked against the real runner on the first try,
+no interface mismatch.
+
+**Rejections:** None.
+
+Ownership checkpoint: you need to understand and verify this implementation
+before claiming it as your contribution.
