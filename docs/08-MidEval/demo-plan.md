@@ -37,7 +37,7 @@ run and go into `docs/evidence-m2.md`.
 | Component | Implemented | Mocked/substituted | Plan to remove |
 | --- | --- | --- | --- |
 | Runner | Ordered single-JVM runner (W6) and `diagnose()` (W7): reproduce, victim-alone ×n, one-by-one polluter search, repeat ×n, source hash, execution record — real JVM runs on the fixture | None mocked. Not built yet: report assembly (W9), multi-polluter minimisation (W10). N2 may end `NOT_REPRODUCED` on Windows (platform timer) | W9, W10 |
-| Evidence extractor | Depth 1 only, single test (`--test`); real javap on real classes | None mocked; pair mode and depth 2 not built yet, so demo step 3 (F1) works but F2 does not yet | Phases 3–4 |
+| Evidence extractor | Single test (`--test`), depth 1–3 (default 2); real javap on real classes | None mocked; pair mode (polluter→victim edge) not built yet, so the demo shows each test's accesses, not the edge | Phase 4 |
 | Outcome + statistics | Yes (M3, tested) | None | — |
 | UI | Not part of Mid demo | POC UI uses recorded data | FYP-1 Final or later |
 
