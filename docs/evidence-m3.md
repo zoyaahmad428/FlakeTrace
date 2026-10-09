@@ -744,3 +744,66 @@ Member 2 confirmed the real `OrderRunner` is ready to use.
 - File/function: `eval/README.md` — corrected the baseline status section, which still said
   "No implementation of `OrderRunner` exists in this repo yet" (stale since PR #10).
 - Limitation: only F1 run so far; F2/F3/N1/N2 and any idoft case remain.
+
+## 2026-10-10 — Fix two real bugs Member 2 found in the merged W9 work (PR #13)
+
+**Requirement:** Member 2 reviewed the merged W9 work and flagged two concrete problems.
+Verified both against the actual code before acting, not taken on trust.
+
+**Problem 1 — wrong explanation of the absolute execution-record path.**
+`eval/reports/README.md`'s "Known limitation" section claimed
+`runner.diagnose.diagnose()` calls `Path(record_dir).resolve()` internally, making the path
+absolute. Read `runner/diagnose.py` to check:
+- `runner/diagnose.py:93` does call `Path(record_dir).resolve()`, but only to build `records`,
+  used solely for the record-vs-project containment safety check (line 94-96).
+- `runner/diagnose.py:103` builds the actual record path from `Path(record_dir)` — the
+  argument exactly as given, not `records`. `diagnose()` never resolves the path it returns.
+- The real cause: `eval/tools/run_w9_integration.py:27`'s own `RECORD_DIR = REPO_ROOT / "eval"
+  / "reports" / "flaketrace-records"`, where `REPO_ROOT = Path(__file__).resolve().parents[2]`
+  — already absolute before it reaches `diagnose()`.
+- Fix: corrected `eval/reports/README.md`'s "Known limitation" section to attribute the
+  absolute path to the script's own `RECORD_DIR`, with the two line numbers above, and noted
+  the correction was made after Member 2 pointed it out.
+
+**Problem 2 — duplicated resource-correlation logic, called at the wrong depth.**
+Member 2 pointed out that `eval/report.py` had its own `find_resource_edge` instead of using
+Member 1's real `evidence.extract.find_edges`/`report_fields` (landed in `m1/resource-edges`
+after W9's first version), that this duplicate dropped M1's `FIXED_LIMITATIONS`, and that
+`eval/tools/run_w9_integration.py` called `analyse_test(..., depth=1)`, which can never find
+F2's edge.
+- Verified by reading `fixtures/od-fixture/src/test/java/odfixture/FeatureVictimTest.java`:
+  its victim calls `FeatureFlags.isTurboEnabled()` — the actual `System.getProperty` read is
+  one call-level inside that helper, not in the test method itself. `evidence/extract.py`'s
+  `follow_call`/`walk_root` only follow calls when `len(path) + 1 < max_depth`; at `depth=1`
+  that is `0+1 >= 1`, so the call is never followed and the read is never seen. The contract's
+  own `DEFAULT_DEPTH` is 2 (`evidence/extract.py:29`).
+- Confirmed with a direct one-off check (`evidence.extract.find_edges`/`report_fields` called
+  on F2's real polluter/victim at `depth=1` vs `depth=2`, against the already-compiled fixture
+  classes): `depth=1` → `shared_resource: None`; `depth=2` → `shared_resource:
+  {"kind": "system-property", "key": "odfixture.turbo"}`. Reproduces the bug and confirms the
+  fix, independently of any full diagnose() run.
+- Fix: `eval/report.py`'s `assemble_report` now takes `resource_fields` — exactly the dict
+  `evidence.extract.report_fields(pair)` returns — instead of building its own edge; deleted
+  `find_resource_edge` entirely (no longer used anywhere). `eval/tools/run_w9_integration.py`
+  now calls `evidence.extract.find_edges`/`report_fields` at `DEFAULT_DEPTH` (2), for F1 and
+  the newly-added F2. `eval/tests/test_report.py` rewritten to build its `resource_fields`
+  fixtures by calling M1's real `find_edges`/`report_fields` (not a fake, not a re-derived
+  local function).
+- Command: `py -m unittest discover -s eval/tests -v` (full suite, after the rewrite).
+- Result: 68/68 passed.
+- Command: `py eval/tools/run_w9_integration.py` (real Maven/JDK run, native Windows JDK 24).
+- Result: **F1 → `VERIFIED`** (unchanged — its access is at the root, depth-independent).
+  **F2 → `VERIFIED`** for the first time — real edge `system-property:odfixture.turbo`,
+  `victim_read_location` correctly reported as `odfixture.FeatureFlags#isTurboEnabled` (not
+  the test method), proving the helper call was genuinely followed, not special-cased.
+  **N1 → `UNRESOLVED(VICTIM_FAILS_ALONE)`** (unchanged). Saved: `eval/reports/{f1,f2,n1}.json`.
+- Updated `eval/reports/README.md`'s "What's NOT here yet" section: removed the wrong claim
+  that F2 "needs resource-evidence depth 2, not implemented by Member 1 yet" (depth 2 was
+  already implemented; the bug was this script hardcoding `depth=1`), added F2 to the results
+  table, and updated `docs/08-MidEval/iteration-plan.md`'s W9 row accordingly.
+- Limitation: F3 (needs W10's multi-polluter search) and N2 (`NOT_REPRODUCED`, still an
+  unhandled `DiagnosisRuns.status`) remain exactly as before — this fix did not touch either.
+- Still open, not actioned here: Member 2 also asked me to review/approve contract PR #17
+  (`m1/confirm-contract`, already merged) after the fact — a GitHub review action I cannot
+  perform myself (no `gh` CLI, no write-scoped API token in this environment); flagged to the
+  member to do directly.
