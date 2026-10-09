@@ -15,7 +15,13 @@ for the schema validator's `jsonschema` dependency.
 | `benchmark/yield_report.py` | Generates the attempted→built→victim-passes-alone→reproduced→excluded funnel from `benchmark/logs/`, never from hand-typed numbers. |
 | `tests/` | Unit tests for everything above. |
 
-Run everything: `python3 -m unittest discover -s eval/tests -v`
+Run everything (install the dependency first, or you'll hit
+`ModuleNotFoundError: No module named 'jsonschema'`):
+
+```
+pip install -r eval/requirements.txt
+python3 -m unittest discover -s eval/tests -v
+```
 
 ## Random-order baseline status: NOT YET RUN ON REAL TESTS
 

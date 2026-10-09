@@ -531,6 +531,49 @@ assumed).
   or source-integrity checker (Member 2) exists yet. Only the
   reproduction/isolation statistics themselves are now real.
 
+## 2026-10-09 — `eval/README.md` fix: documented test command
+
+**Requirement:** `eval/README.md` documented `python3 -m unittest discover
+-s eval/tests -v` as failing because `eval/tests` has no `__init__.py`.
+Reproduce for real before fixing anything.
+
+- Command: `python3 -m unittest discover -s eval/tests -v` — ran in WSL
+  (Python 3.10.12): **passed, 58/58, exit 0.** The claimed `__init__.py`
+  cause did not reproduce there.
+- Command: the same command on native Windows Python (`py`, 3.14.3, no
+  venv): **failed** — but with `ModuleNotFoundError: No module named
+  'jsonschema'` (import error inside `test_examples.py` and
+  `test_schema_validator.py`), not an `__init__.py`/namespace-package
+  error.
+- Command: `py -m pip install -q -r eval/requirements.txt` then the same
+  command again, same native Python: **passed, 58/58, exit 0.**
+- To rule out any residual state on that machine masking the real bug:
+  created a throwaway venv (`py -m venv .tmp_readme_check_venv`),
+  installed only `eval/requirements.txt` into it, ran the documented
+  command fresh: **passed, 58/58, exit 0.** Deleted the venv afterward,
+  not committed.
+- Conclusion: there is no `__init__.py`/namespace-package bug. The actual,
+  reproducible cause is that `eval/README.md` mentioned
+  `pip install -r eval/requirements.txt` once, at the top, separately
+  from the "Run everything" command — easy to skip if a reader jumps
+  straight to the command.
+- Fix (smallest correct one): moved the `pip install` line to sit directly
+  above the run command, with an explicit note of the exact
+  `ModuleNotFoundError` a reader will hit if they skip it. No code change,
+  no `__init__.py` added (none needed — the namespace-package import
+  already works, confirmed above).
+- Re-verified after the fix, fresh:
+  - Documented command: `pip install -q -r eval/requirements.txt &&
+    python3 -m unittest discover -s eval/tests -v` → **58/58, exit 0.**
+  - CI's actual command (`.github/workflows/ci.yml`, `python-eval` job):
+    `modules=$(ls eval/tests/test_*.py | sed 's#/#.#g; s#\.py$##'); python3
+    -m unittest -v $modules` → **58/58, exit 0.** `python3
+    eval/benchmark/yield_report.py` → exit 0.
+- Limitation: none found beyond the one fixed. The brief's premise
+  (`__init__.py` missing) turned out to be a misdiagnosis of a plain
+  missing-dependency error; worth saying so plainly rather than adding an
+  `__init__.py` that was never the cause.
+
 ## 2026-10-09 — Fix F1 example's illustrative bytecode offsets
 
 **Requirement:** Zoya's `docs/contracts/resource-evidence.md` (open question
