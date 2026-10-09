@@ -342,6 +342,60 @@ part of the original fabricated-data criticism was pushed back on.
 Ownership checkpoint: you need to understand and verify this implementation
 before claiming it as your contribution.
 
+## 2026-10-10 — W9 (report assembly against the real runner and extractor)
+
+**What I asked:** After a fresh review found Members 1 and 2 had landed real, working
+components (`runner/order_runner.py` + `runner/diagnose.py`, `evidence/extract.py`), asked
+to build the W9 report-assembly glue connecting them to `eval.outcome.decide()` and
+`eval.schema_validator.validate_report()`, producing a genuine end-to-end diagnosis report.
+
+**What was retained:** `eval/report.py` (`find_resource_edge`, `assemble_report`,
+`UnhandledStatus`), `eval/tests/test_report.py`, `eval/tools/run_w9_integration.py` as
+generated, after the real runs described below.
+
+**What I changed:**
+- Before writing any code, smoke-tested both real components directly (not assumed to work
+  from reading source) — caught early that this machine's native Java/Maven (JDK 24.0.2,
+  Maven 3.9.11) differs from the Docker/JDK8 setup used in earlier phases, and confirmed it
+  actually works rather than assuming it would.
+- Deliberately scoped `assemble_report` to only `POLLUTER_FOUND` and `VICTIM_FAILS_ALONE`
+  after finding two real interface gaps by reading `runner/diagnose.py` closely: (1)
+  `NOT_REPRODUCED` carries no isolation data because M2's code short-circuits before running
+  it, which would require fabricating an `isolation_n` to satisfy my own function's
+  precondition; (2) `NO_SINGLE_POLLUTER` has no matching reason in the schema's enum yet.
+  Raising `UnhandledStatus` for both rather than inventing a plausible-looking mapping for
+  either.
+- Caught a tooling/process issue mid-session, not told about it: created a branch from the
+  wrong base (`af70048`, an old commit) because the user had been running git commands in
+  their own terminal between my tool calls, moving local `HEAD` without my session seeing it.
+  Diagnosed via `git reflog` rather than guessing, confirmed nothing was committed on the bad
+  branch, deleted it, and re-created correctly from current `main`.
+- Found that `.gitignore` already excludes `flaketrace-records/` (Member 2's own convention)
+  and adjusted the plan to respect it (commit only the final assembled reports, not the raw
+  per-run records) rather than force-adding past another member's established convention.
+
+**How it was verified:**
+- `py -m unittest eval.tests.test_report -v` → 11/11 passed (pure logic, synthetic literal
+  inputs, no Maven/JDK needed).
+- `py -m unittest discover -s eval/tests -v` → 69/69 passed (full suite, no regressions).
+- Real end-to-end run (`eval/tools/run_w9_integration.py`, actual Maven/JDK/JVM calls): F1 →
+  `VERIFIED` with a real resource edge (`odfixture.Config#mode`, offsets 1/1, matching the
+  independently-`javap`-verified value from two sessions ago); N1 →
+  `UNRESOLVED(VICTIM_FAILS_ALONE)`. Both schema-validated for real (`validate_report` did not
+  raise), both match `ground_truth.json` exactly. Cross-checked F1/N1's raw counts against my
+  own independent manual measurement from an earlier session (different machine, different
+  toolchain) — exact agreement.
+
+**Errors found:** The wrong-base-branch issue above (process error, caught via reflog, not a
+code defect). While exploring Member 2's evidence, found that N2 behaves completely
+differently in `diagnose()` on this machine (`NOT_REPRODUCED`, never fails) versus my own
+earlier Docker measurement (`VICTIM_FAILS_ALONE`, 12/20) — traced to `System.nanoTime()`
+timer-resolution differences across machines. Recorded as an open item at the time, resolved
+the same day — see the next section.
+
+**Rejections:** None this session — all design choices (scope limit, branch recovery,
+gitignore respect) were my own judgment calls, not user corrections.
+
 ## 2026-10-10 — Resolve N2's ground-truth discrepancy
 
 **What I asked:** Explicitly told to resolve (not just document) the N2 cross-machine
