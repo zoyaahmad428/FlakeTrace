@@ -168,3 +168,28 @@ diagnosis.
 - Uses M3's `FakeOrderRunner` from `eval/tests/fake_runner.py` (test code only).
 - Limitations: the record is not yet produced by a real diagnosis — that comes with
   `diagnose.py` (Task 5).
+
+### 2026-10-09 — Task 3: discover the original order
+
+**Requirement:** ADR-004 step 2 — when no order is given, use the order Maven Surefire would run
+(the fixture sets `runOrder=alphabetical`), with each class's methods in JUnit's own order.
+
+- Files: `runner/harness/FtHarness.java` (new `--list` mode), `runner/order_runner.py`
+  (`OrderRunner.list_methods`, `java_version`), `runner/discovery.py`,
+  `runner/tests/test_discovery.py`.
+- Command: `py -m unittest -v runner.tests.test_discovery runner.tests.test_order_runner`
+- Before the code existed: `ModuleNotFoundError: No module named 'runner.discovery'`.
+- Result: `Ran 28 tests in 43.807s — OK` (6 discovery tests + the 22 W6 tests, unchanged).
+- Real discovered order of `fixtures/od-fixture` (13 methods):
+  `ConfigPolluterTest#pollute, ConfigVictimTest#expectsDefaultMode, FeaturePolluterTest#enableTurbo,
+  FeatureVictimTest#expectsTurboDisabled, MathUtilTest#squaresANumber, MathUtilTest#addsTwoNumbers,
+  NegativeAloneFailTest#alwaysFails, NegativeFlakyTest#sometimesFails,
+  StringUtilTest#detectsPalindrome, StringUtilTest#reversesAString, ToggleAPolluterTest#setFlagA,
+  ToggleBPolluterTest#setFlagB, ToggleVictimTest#expectsNotBothFlagsSet` (package `odfixture.`).
+  Inside `MathUtilTest`, JUnit runs `squaresANumber` before `addsTwoNumbers` — neither source nor
+  alphabetical order (JUnit 4's default method sorter), which is why methods come from JUnit.
+- Classes JUnit cannot run are left out: `odfixture.Config` (no tests) and a missing class give
+  an empty list. A missing `target/test-classes` gives no classes.
+- `git status --short fixtures/` printed nothing.
+- Limitations: Surefire 2.22's default `runOrder` is `filesystem`; for a project that keeps the
+  default, pass `original_order` explicitly. Parameterised tests are not listed (ADR-003 scope).

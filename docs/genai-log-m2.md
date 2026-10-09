@@ -221,3 +221,21 @@ projects).
 **Errors found:** none.
 
 **What I changed:** *fill after reading the diff.*
+
+## 2026-10-09 — W7 Task 3: discover the original order
+
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+
+**What I asked:** implement Task 3 — list test classes like Surefire and ask JUnit for each
+class's methods through a new `FtHarness --list` mode.
+
+**What was retained:** the `--list` mode, `OrderRunner.list_methods`, `java_version`,
+`runner/discovery.py`, `runner/tests/test_discovery.py`.
+
+**How it was verified:** tests failed first (`ModuleNotFoundError`); then 28 tests OK (6 new +
+22 W6 tests still passing). Printed the real fixture order (13 methods) into [[evidence-m2]].
+
+**Errors found:** none; noted that JUnit's method order inside a class is neither source nor
+alphabetical.
+
+**What I changed:** *fill after reading the diff.*

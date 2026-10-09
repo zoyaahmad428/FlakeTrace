@@ -185,6 +185,31 @@ class OrderRunner:
             text = result_file.read_text(encoding="utf-8") if result_file.exists() else ""
         return parse_results(text, order, *missing)
 
+    def list_methods(self, class_names: Sequence[str]) -> List[TestIdentifier]:
+        """The test methods of each class, in the order JUnit would run them (FtHarness --list).
+        Classes JUnit cannot run (abstract, no @Test methods, fail to load) are left out."""
+        with tempfile.TemporaryDirectory(prefix="flaketrace-list-") as tmp:
+            result_file = Path(tmp) / "methods.txt"
+            subprocess.run(
+                [self._java, "FtHarness", "--list", str(result_file)],
+                input="".join(f"{name}\n" for name in class_names),
+                env=_env_with_classpath([self._harness_dir] + self.classpath),
+                cwd=self._working_dir,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                timeout=self._timeout_s,
+                check=True,
+            )
+            lines = result_file.read_text(encoding="utf-8").split("\n")[:-1]
+        return [TestIdentifier(*line.split("#", 1)) for line in lines]
+
+
+def java_version() -> str:
+    """First line of `java -version` (printed on stderr), for the execution record."""
+    finished = subprocess.run([_tool("java"), "-version"], capture_output=True, text=True)
+    return finished.stderr.strip().splitlines()[0]
+
 
 def _env_with_classpath(classpath: Sequence[str]) -> Dict[str, str]:
     # CLASSPATH in the environment instead of -cp avoids Windows' ~32k command-line limit.
