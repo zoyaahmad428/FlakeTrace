@@ -309,6 +309,89 @@ never edited.
   - This shows the extractor agrees with the ground truth on 5 hand-made cases. It does not show
     accuracy on real projects; that is the fastjson step (Phase 5 part 2, not yet run).
   - CI: Member 2's `evidence` job (PR #20) runs the whole `evidence.tests.test_extract` module,
-    so `GroundTruthTest` runs there with no CI change. Not yet run in CI.
+    so `GroundTruthTest` runs there with no CI change. Ran in CI on PR #23 (JDK 8.0.504):
+    `Ran 30 tests in 24.716s … OK`, no skips.
   - N1 and N2 being edge-free is expected, since neither touches a supported resource. The
     extractor's "no supported evidence" never means "no dependency".
+
+## Phase 5 (part 2): real fastjson cases FJ-01 and FJ-02 (2026-10-09)
+
+**Requirement:** run the extractor on a real project, not only the hand-made fixture: fastjson
+at the POC's pinned commit, case FJ-01 at depths 1 and 2 (and 3), and settle whether FJ-01's
+resource is `JSON.defaultTimeZone` or `JSON.defaultLocale`.
+
+**Setup.**
+- fastjson `https://github.com/alibaba/fastjson` @ `e05e9c5e4be580691cc55a59f3256595393203a1`,
+  from `POC/manifest/cases.csv`. Fetched into a scratch folder outside the repository.
+- Built unmodified in the `ft-jdk8` image (openjdk 1.8.0_502): `mvn -B -DskipTests test-compile`
+  → `BUILD SUCCESS` in 1 min 12 s (172 main and 2,496 test sources compiled). `git status` in the
+  fastjson checkout showed no source changes afterwards. No fastjson test was run.
+- Pairs come from the POC's own records, not memory:
+  - FJ-01: `POC/results/replay.csv` names `DateFieldFormatTest#test_format_` → `DateTest#test_date`,
+    direction BRITTLE (the victim fails alone and passes after this test sets state). So the
+    "polluter" here is a state-setter. The edge rule is the same: it writes, the victim reads.
+    `DateFieldTest8#test_0` was also run, because the original Phase 5 brief named it.
+  - FJ-02: `DateParserTest#test_date_0` → `DefaultExtJSONParser_parseArray#test_7` (BRITTLE).
+- javap excerpt for every method on the paths below: `evidence/javap-dumps/phase5-fastjson.txt` (JDK 8 javap).
+
+**Results with the real CLI** (FJ-01, `python3 -m evidence.extract --classes <fj>/target/classes
+--test-classes <fj>/target/test-classes --polluter com.alibaba.json.bvt.date.DateFieldFormatTest#test_format_
+--victim com.alibaba.json.bvt.date.DateTest#test_date --depth N`, javap 21.0.12.1, one run each):
+
+| `--depth` | exit | edges | `no_supported_resource_evidence` | victim `DEPTH_LIMIT` observations | wall time |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 0 | none | true | 5 | 2.71 s |
+| 2 | 0 | none | true | 3 | 3.33 s |
+| 3 | 0 | none | true | 15 | 6.23 s |
+
+- The same through the in-process API gives the same result, for both state-setters, with javap
+  21.0.12.1 and with JDK 8 javap 1.8.0_502 (outputs identical apart from timing).
+  - javap calls per depth: 7, 8, 12.
+  - The writes are found at every depth: `setUp` writes `JSON.defaultTimeZone` and
+    `JSON.defaultLocale` (`DateFieldFormatTest.setUp@5` and `@11`, attributed `via SETUP`).
+  - The victim's reads of those fields are deeper than 3. So the result is "no supported evidence",
+    with `DEPTH_LIMIT` saying where the walk stopped, never "independent".
+- FJ-02, same API, depths 1–3, both javaps: no edge at any depth.
+
+**Exploration only — depth cap lifted in memory by a scratch script; the code and the contract
+still accept only depths 1–3:**
+- FJ-01: the edge appears at **depth 4**, on both fields. The read path is
+  `DateTest.test_date@69 > JSON.toJSONStringWithDateFormat@10 > JSON.toJSONString@21 >
+  JSONSerializer.<init>@21` (`defaultTimeZone`; `defaultLocale` is `@28`). Every offset matches the
+  JDK 8 javap excerpt. 7.5 s.
+- FJ-02: no edge at depth 4 (12.9 s). The edge appears at **depth 5** (26.3 s), victim accesses
+  75. The read path is `DefaultExtJSONParser_parseArray.test_7@6 > DefaultJSONParser.<init>@8 >
+  DefaultJSONParser.<init>@8 > JSONScanner.<init>@2 > JSONLexerBase.<init>@10`
+  (`defaultTimeZone`; `defaultLocale` is `@17`). The write is `DateParserTest.setUp@5 via SETUP`.
+  At the same depth the walk also reaches the read named in claim C6, by a second path:
+  `test_7@28 > DefaultJSONParser.parseArray@3 > DefaultJSONParser.parseArray@464 >
+  DefaultJSONParser.parseObject@1280 > TypeUtils.cast@536` (also `TypeUtils.cast@625`).
+
+**defaultTimeZone or defaultLocale?** Static analysis cannot tell. Both state-setters write both
+fields in the same `setUp`, and the victims read both. Reasoning from the test's own constants
+(no test was run):
+- `DateTest` expects `"2011-12-18 00:23:07"` for `1324138987429` ms. Computed: that is
+  Asia/Shanghai time (+8); UTC gives `2011-12-17 16:23:07`.
+- The pattern `yyyy-MM-dd HH:mm:ss` is all digits, so the locale cannot change it.
+- So FJ-01's failure follows `defaultTimeZone`. The POC's `cause_classification.csv` label
+  `JSON.defaultLocale` names the other field written in the same `setUp`.
+- Not yet confirmed by a run (that would be Member 2's runner).
+
+**Limitations discovered:**
+- **Depth 1–3 does not reach either real fastjson case.** FJ-01 needs depth 4 and FJ-02 depth 5.
+  The default depth 2 (ADR-002) is enough for the fixture, not for these. Raising the accepted
+  range changes the contract (all three members).
+- **POC claim C6's location is confirmed, its depth is not.** C6 says FJ-02's victim reads
+  `JSON.defaultTimeZone` at `TypeUtils.cast@536`, "two hops down" (POC hops 2 = our depth 3).
+  Following calls from the victim, this extractor reaches that same read only at depth 5, four
+  calls below the test method (path above). The POC counted reachability differently (ADR-002
+  already flagged the numbering). C6 is a joint row, so it is flagged here, not edited.
+- Both fields come out as edges. The extractor reports every shared resource and cannot rank
+  them; picking the causal one needs the runner.
+
+**Integration check (Member 3's PR #21, merged):** `eval/report.py` now calls `find_edges` +
+`report_fields` instead of its own copy, and `run_w9_integration.py` uses `DEFAULT_DEPTH`.
+Member 3's recorded `eval/reports/f2.json` (`VERIFIED`) was compared with a live run of this
+extractor on the F2 pair: `shared_resource`, `polluter_write_location` (`enableTurbo@4`) and
+`victim_read_location` (`FeatureFlags.isTurboEnabled@2`) are identical, and the report carries the
+7 fixed limitation lines. The end-to-end run itself is Member 3's ([[evidence-m3]]).
