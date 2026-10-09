@@ -61,3 +61,106 @@ checked (`grep` for `§` in `CLAUDE.md`). No code changed, so no tests apply.
 
 **Note:** this change was handed to me as a patch to apply and commit myself — the first use
 of the new rule.
+
+## 2026-10-09 — W6 design: order runner (ADR-003) and implementation plan
+
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+
+**What I asked:** propose at least two designs for `OrderRunner.run_ordered` (JUnit 4, one
+fresh JVM per call, exact order), with trade-offs, classpath without new dependencies, and
+portability on Windows/WSL/CI; stop for my choice; then write the plan.
+
+**What was retained:** option A — Python `OrderRunner` + JUnitCore harness (ADR-003); the
+implementation plan in `docs/superpowers/plans/2026-10-09-order-runner.md`.
+
+**What I decided:** chose A over Maven Surefire (cannot honour a method-level order across
+classes) and an all-Java runner (second language boundary with `eval/`).
+
+**How it was verified:** a throwaway spike (not committed) compiled the harness against the
+fixture's own classpath and ran F1 on my laptop (JDK 21): victim alone PASS; polluter then
+victim FAIL `java.lang.AssertionError`; reversed order PASS.
+
+**Errors found:** the ADR first said `javac --release 8`; the spike showed `-source 8 -target 8`
+works on both JDK 8 and 21, so the ADR was corrected. Maven was not installed on my laptop —
+installed 3.10.0 and added to user PATH.
+
+**What I changed:** *fill after reviewing the ADR.*
+
+## 2026-10-09 — W6 hand-over 1: harness + F1 proof
+
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+
+**What I asked:** implement Task 1 of the W6 plan — the JUnitCore harness, the Python
+`OrderRunner`, and tests that prove F1's victim passes alone and fails after its polluter in
+one JVM.
+
+**What was retained:** `runner/harness/FtHarness.java`, `runner/order_runner.py`,
+`runner/tests/test_order_runner.py`, `docs/04-Implementation/sandbox-runner.md`.
+
+**How it was verified:** test written first and seen failing (`ModuleNotFoundError`); then
+`py -m unittest -v runner.tests.test_order_runner` → 8 tests OK; the F1 test was deliberately
+broken (order reversed) and failed, then restored and passed. `git status --short fixtures/`
+empty — fixture source untouched.
+
+**Errors found:** Member 1 had merged their own ADR-002 first; ours was renumbered to ADR-003
+and every reference updated. During the merge of `main`, a local merge commit kept conflict
+markers in `genai-register.md`; fixed by taking the clean GitHub resolution.
+
+**What I changed:** *fill after reading the diff.*
+
+## 2026-10-09 — W6 hand-over 2: every test always reported
+
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+
+**What I asked:** implement Task 2 of the W6 plan — a crash, timeout, skipped test, misspelt
+test or duplicate must never make a test disappear from the result.
+
+**What was retained:** the new `parse_results` (incomplete lines ignored, `SKIP` →
+`flaketrace.NotExecuted`, missing tests filled in) and `run_ordered` (duplicate check, empty
+order, timeout → `flaketrace.Timeout`, early exit → `flaketrace.JvmCrash`); 9 new tests; claims
+ledger row E8.
+
+**How it was verified:** the 9 tests were added first: 5 failed for the predicted reasons and
+4 already passed because the harness handled them (recorded in [[evidence-m2]]). After the
+change: `py -m unittest -v runner.tests.test_order_runner` → 17 tests OK.
+
+**Errors found:** none in the code. Gap stated honestly: a real JVM crash and a real `@Ignore`
+are only tested through hand-written result lines, because the fixture has no such test.
+
+**What I changed:** *fill after reading the diff.*
+
+## 2026-10-09 — W6 hand-over 3: runner tests in CI
+
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+
+**What I asked:** add the runner's tests to CI on JDK 8 so they can never be skipped silently,
+then record the real CI result and close W6.
+
+**What was retained:** the `runner` job in `.github/workflows/ci.yml` with
+`FLAKETRACE_REQUIRE_JVM=1`; the test command in `README.md` and `CLAUDE.md` section 8.
+
+**How it was verified:** locally, with java/mvn hidden from PATH the tests skip without the
+switch and fail with it. On GitHub Actions run `37957537495` (PR #10) all three jobs passed;
+job `runner` on JDK 8: `Ran 17 tests in 16.911s — OK` (I copied this line from the job log,
+which needs a signed-in account; Claude read the job/step status from the public API).
+
+**Errors found:** none. Noted for Member 1: `evidence/tests/` is not yet run by CI.
+
+**What I changed:** *fill after reading the diff.*
+
+## 2026-10-09 — W6 final review and fixes
+
+**Tool:** Claude Opus 5.5 (Claude Code) — a separate reviewer agent read the whole branch;
+the session that wrote the code fixed the findings · **Level:** L2
+
+**What was found:** no critical issues; important: (1) form-feed in a message misreported as a
+JVM crash, (2) a cut-off result line could still be parsed, (3) tests ran in the caller's
+directory, (4) docs overclaimed JDK-independent signatures. Five minor items deferred (listed
+in [[evidence-m2]]).
+
+**What was retained:** fixes for 1–3 with a failing test first for each; `ProbeTest.java` test
+asset; reworded docs for 4.
+
+**How it was verified:** 3 new tests failed before the fix, as predicted; 22 tests OK after.
+
+**What I changed:** *fill after reading the diff.*

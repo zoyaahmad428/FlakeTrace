@@ -95,6 +95,7 @@ published finding — defend as a choice) · `FROZEN` (committed pre-registratio
 | E5 | CDR does not violate our own repair exclusion | What was excluded is *automatic source-code repair* — the system deciding and applying a fix. CDR consumes a Verified certificate, produces ranked options, a human applies | [[07-Defense/decisions/cdr-gated-module]] | M3 | GATED — *see contradiction note* |
 | **E6** | **CDR wording is consistent across our own documents** | **CHECK REQUIRED.** Rev 2 added CDR after the original scope excluded automatic repair. A panel that finds two of our own documents contradicting each other pursues it much harder than a gap we name ourselves | [[07-Defense/weak-points]] | Joint | **OPEN — audit slide deck, proposal doc and Rev 2 before defence** |
 | E7 | "Deployed" has a testable definition | Third party installs on clean Linux from documentation, runs one frozen case, obtains same certificate class, replays the order, removes all containers and workspaces | [[02-Requirements/non-functional]] | M2 | COMMITTED |
+| E8 | The order runner executes tests in exactly the requested order in one fresh JVM per call, and never drops a test (crash, timeout and skip are reported as failures) | 17 tests in `runner/tests/test_order_runner.py`, including real-JVM runs on fixture F1 (victim alone PASS, after polluter FAIL, reversed order PASS); passes on JDK 21 (local) and JDK 8 (CI run `37957537495`) | [[evidence-m2]] | M2 | SETTLED |
 
 ## F. Team and process
 
