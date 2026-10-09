@@ -129,4 +129,6 @@ critical issues and four important ones; three needed code fixes, one a docs cor
 - Deferred (minor, not fixed): harness temp directory is not deleted; unused stdout/stderr are
   decoded as strict UTF-8; stdin is read while tests run; result index is not cross-checked
   against the test name; `ClassNotFoundException` stacks contain JDK class-loader frames.
-- JDK 8: not yet run with these fixes — CI runs on the next push.
+- JDK 8: GitHub Actions run `37959672072` on PR #10 (commit `3579e47`), 2026-10-09 — all three
+  jobs succeeded; job `runner` (Temurin JDK 8): `Ran 22 tests in 17.2s — OK`.
+  https://github.com/zoyaahmad428/FlakeTrace/actions/runs/37959672072
