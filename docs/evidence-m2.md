@@ -80,3 +80,17 @@ crash is reported as a failure.
   `parse_results` with a hand-written result file — the fixture has no test that kills the JVM,
   and the fixture is Member 3's to change. `@Ignore`/`Assume` → `SKIP` is tested the same way
   (no ignored test in the fixture).
+
+### 2026-10-09 — Hand-over 3: runner tests in CI
+
+**Requirement:** CI runs every test added to the repo (CLAUDE.md §8); the real-JVM tests must
+not be skipped silently in CI.
+
+- File: `.github/workflows/ci.yml`, new job `runner` (Temurin JDK 8, Python 3.11, env
+  `FLAKETRACE_REQUIRE_JVM=1`).
+- Local check: the workflow parses with PyYAML into jobs `['fixture-build', 'python-eval', 'runner']`.
+- Local check of the CI switch, with `java`/`javac`/`mvn` removed from `PATH`:
+  without the switch → `OK (skipped=1)`; with `FLAKETRACE_REQUIRE_JVM=1` →
+  `RuntimeError: FLAKETRACE_REQUIRE_JVM is set but ['java', 'javac', 'mvn'] not on PATH`,
+  `FAILED (errors=1)`.
+- GitHub Actions result: *not yet run — recorded after the push.*

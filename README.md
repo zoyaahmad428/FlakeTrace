@@ -38,6 +38,7 @@ replays — without needing application logs and without modifying the project's
 pip install -r eval/requirements.txt
 python3 -m unittest -v $(ls eval/tests/test_*.py | sed 's#/#.#g; s#\.py$##')
 mvn -B -f fixtures/od-fixture/pom.xml test-compile
+python3 -m unittest -v runner.tests.test_order_runner   # needs JDK 8+ and Maven on PATH
 ```
 
 CI (`.github/workflows/ci.yml`) runs these on every pull request.
