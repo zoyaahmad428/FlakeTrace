@@ -6,6 +6,10 @@ altered it before accepting; "rejected" means discarded.
 
 ## 2026-10-09 — Phase 0 (inspection), repo housekeeping, Phase 1 (output contract)
 
+**Assistance level:** L2 (Assisted): the contract text and the check script were
+generated; I chose the approach and must review the contract before it goes
+to Member 3. No extraction code yet.
+
 **What I asked:**
 - Phase 0: inspect the repo (tree, git log, existing POC extractor and
   manifests, Member 3's fixture and report schema) and recommend javap
@@ -43,7 +47,7 @@ altered it before accepting; "rejected" means discarded.
 - Fixture compiled unmodified with `mvn -B -q test-compile` in the POC-frozen
   image `maven@sha256:15522857…` (JDK 1.8.0_502), exit 0. Classes
   disassembled with that JDK's `javap -c -p`. Output saved at
-  `resource-evidence/evidence/phase1-javap-f1-f2.txt`.
+  `evidence/javap-dumps/phase1-f1-f2.txt`.
 - A script checked that every offset/call frame in the contract example
   resolves to the expected instruction in that javap output, that the example
   JSON parses, and that the projected `shared_resource` / `codeLocation`

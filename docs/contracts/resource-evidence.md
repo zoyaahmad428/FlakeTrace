@@ -9,6 +9,13 @@ This file defines what the Resource Evidence component (Member 1) outputs, and
 how that output is projected into the shared diagnosis report
 ([report-schema.md](report-schema.md), owned by Member 3).
 
+It details **Interface 2** of [interfaces.md](interfaces.md) and does not change
+it: the three report fields named there (`shared_resource`,
+`polluter_write_location`, `victim_read_location`) are produced exactly as
+described under "Projection into Member 3's report" below. This file lives in
+`docs/contracts/`, so per CONTRIBUTING.md it needs approval from both other
+members.
+
 ## Scope (Iteration 1)
 
 - **Static only.** Reads compiled `.class` files via `javap` (JDK 8). Never runs
@@ -128,7 +135,7 @@ in Output 2).
 
 All class names, offsets and call paths below come from real `javap -c -p`
 output (JDK 1.8.0_502) of the unmodified `fixtures/od-fixture`, saved at
-`resource-evidence/evidence/phase1-javap-f1-f2.txt`. The JSON itself was
+`evidence/javap-dumps/phase1-f1-f2.txt`. The JSON itself was
 **written by hand from that output**, because the extractor does not exist yet.
 
 ```json

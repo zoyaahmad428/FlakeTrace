@@ -12,7 +12,7 @@ report schema.
 
 - File: `docs/contracts/resource-evidence.md` (status: DRAFT, awaiting
   Member 3's confirmation).
-- Input evidence: `resource-evidence/evidence/phase1-javap-f1-f2.txt`.
+- Input evidence: `evidence/javap-dumps/phase1-f1-f2.txt`.
 - Command (fixture build, unmodified `fixtures/od-fixture`, image
   `maven@sha256:15522857a08bc468b05f4284d4a5a6c49eff7af7abfe16dc7770609484a67b8b`):
   `mvn -B -q test-compile` → exit 0.
