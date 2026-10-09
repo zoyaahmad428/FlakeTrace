@@ -12,6 +12,9 @@ target/
 Thumbs.db
 .idea/
 .vscode/
+# Windows download metadata (WSL copies) and local Claude Code settings
+*Zone.Identifier
+**/.claude/settings.local.json
 
 # LaTeX build output
 *.aux
