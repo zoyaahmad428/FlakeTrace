@@ -107,3 +107,24 @@ and every reference updated. During the merge of `main`, a local merge commit ke
 markers in `genai-register.md`; fixed by taking the clean GitHub resolution.
 
 **What I changed:** *fill after reading the diff.*
+
+## 2026-10-09 — W6 hand-over 2: every test always reported
+
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+
+**What I asked:** implement Task 2 of the W6 plan — a crash, timeout, skipped test, misspelt
+test or duplicate must never make a test disappear from the result.
+
+**What was retained:** the new `parse_results` (incomplete lines ignored, `SKIP` →
+`flaketrace.NotExecuted`, missing tests filled in) and `run_ordered` (duplicate check, empty
+order, timeout → `flaketrace.Timeout`, early exit → `flaketrace.JvmCrash`); 9 new tests; claims
+ledger row E8.
+
+**How it was verified:** the 9 tests were added first: 5 failed for the predicted reasons and
+4 already passed because the harness handled them (recorded in [[evidence-m2]]). After the
+change: `py -m unittest -v runner.tests.test_order_runner` → 17 tests OK.
+
+**Errors found:** none in the code. Gap stated honestly: a real JVM crash and a real `@Ignore`
+are only tested through hand-written result lines, because the fixture has no such test.
+
+**What I changed:** *fill after reading the diff.*

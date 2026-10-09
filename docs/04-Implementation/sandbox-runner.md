@@ -1,6 +1,7 @@
 # Order runner — `runner/order_runner.py` + `runner/harness/FtHarness.java` (Member 2)
 
-*Status (2026-10-09): W6 hand-over 1 — happy path proven on fixture F1. Four-point ownership
+*Status (2026-10-09): W6 hand-over 2 — happy path proven on fixture F1; every test always
+reported (crash, timeout, skip, bad input). Four-point ownership
 note per [[04-Implementation/README]]. Contract: [[contracts/interfaces]] Interface 1. Design:
 [[03-Design/decisions/ADR-003-order-runner-junitcore-harness]]. Evidence: [[evidence-m2]].*
 
@@ -37,7 +38,13 @@ JUnit Platform launcher (needs the Vintage engine, a new dependency).
 - **Class-level setup:** each method is its own `Request`, so `@BeforeClass` runs once per
   method. A project whose tests rely on one shared `@BeforeClass` per class could behave
   differently than under Surefire.
-- **A JVM that crashes, hangs or skips a test** is not yet handled (hand-over 2).
+- **A JVM that crashes, hangs or skips a test.** The contract says every test must appear in
+  the result, so nothing is dropped: tests without a result line fail as `flaketrace.JvmCrash`
+  or (after `timeout_s`) `flaketrace.Timeout`; `@Ignore`/`Assume` fail as
+  `flaketrace.NotExecuted`, because counting a skip as a pass could make a victim look clean
+  when it never ran. A misspelt class or method fails with the JVM's own exception and the
+  rest of the order still runs. A duplicate test in one order raises `ValueError` (the result
+  is keyed by test and cannot hold two outcomes).
 
 ## 4. How to modify it
 

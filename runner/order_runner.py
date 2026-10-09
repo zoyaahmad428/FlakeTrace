@@ -75,13 +75,24 @@ def _unescape(text: str) -> str:
 def parse_results(
     text: str, order: Sequence[TestIdentifier], missing_type: str, missing_message: str
 ) -> Dict[TestIdentifier, RunOutcome]:
-    """Turn the harness's result file into one RunOutcome per test in `order`."""
+    """Turn the harness's result file into one RunOutcome per test in `order`. A test with no
+    complete result line (the JVM crashed or timed out first) fails with `missing_type`."""
     results: Dict[TestIdentifier, RunOutcome] = {}
     for line in text.splitlines():
-        index, _spec, status, exception_type, message, frames = line.split("\t")
+        fields = line.split("\t")
+        if len(fields) != 6:
+            continue
+        index, _spec, status, exception_type, message, frames = fields
         test = order[int(index)]
         if status == "PASS":
             results[test] = RunOutcome(passed=True)
+        elif status == "SKIP":
+            results[test] = RunOutcome(
+                passed=False,
+                failure_signature=FailureSignature(
+                    "flaketrace.NotExecuted", "", "ignored or an assumption failed"
+                ),
+            )
         else:
             frame_list = _unescape(frames).split("|") if frames else []
             results[test] = RunOutcome(
@@ -89,6 +100,11 @@ def parse_results(
                 failure_signature=FailureSignature(
                     exception_type, normalise_stack(frame_list), normalise_message(_unescape(message))
                 ),
+            )
+    for test in order:
+        if test not in results:
+            results[test] = RunOutcome(
+                passed=False, failure_signature=FailureSignature(missing_type, "", missing_message)
             )
     return results
 
@@ -138,19 +154,30 @@ class OrderRunner:
 
     def run_ordered(self, order: List[TestIdentifier]) -> Dict[TestIdentifier, RunOutcome]:
         order = list(order)
+        if len(set(order)) != len(order):
+            raise ValueError("order contains the same test more than once")
+        if not order:
+            return {}
         with tempfile.TemporaryDirectory(prefix="flaketrace-run-") as tmp:
             result_file = Path(tmp) / "results.tsv"
-            subprocess.run(
-                [self._java, "FtHarness", str(result_file)],
-                input="".join(f"{test}\n" for test in order),
-                env=_env_with_classpath([self._harness_dir] + self.classpath),
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                timeout=self._timeout_s,
-            )
-            text = result_file.read_text(encoding="utf-8")
-        return parse_results(text, order, "flaketrace.JvmCrash", "")
+            try:
+                finished = subprocess.run(
+                    [self._java, "FtHarness", str(result_file)],
+                    input="".join(f"{test}\n" for test in order),
+                    env=_env_with_classpath([self._harness_dir] + self.classpath),
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    timeout=self._timeout_s,
+                )
+                missing = (
+                    "flaketrace.JvmCrash",
+                    f"JVM exited with code {finished.returncode} before this test reported",
+                )
+            except subprocess.TimeoutExpired:
+                missing = ("flaketrace.Timeout", f"JVM exceeded {self._timeout_s}s")
+            text = result_file.read_text(encoding="utf-8") if result_file.exists() else ""
+        return parse_results(text, order, *missing)
 
 
 def _env_with_classpath(classpath: Sequence[str]) -> Dict[str, str]:

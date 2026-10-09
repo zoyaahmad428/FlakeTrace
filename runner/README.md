@@ -1,7 +1,7 @@
 # runner/ — bounded search and verification (Member 2)
 
 **Owner:** Member 2 · **State:** W6 in progress — ordered single-JVM runner works on fixture F1
-(2026-10-09); crash/timeout handling and CI job next.
+and reports every test even on crash/timeout/skip (2026-10-09); CI job next.
 
 Implements the `OrderRunner` interface in [`eval/baseline.py`](../eval/baseline.py) and
 everything built on it. Contract: [docs/contracts/interfaces.md](../docs/contracts/interfaces.md).
@@ -60,12 +60,23 @@ Windows' command-line length limit. Windows Python + Windows Java (Git Bash, Pow
 Linux Python + Linux Java (WSL, CI) are supported; an MSYS/Cygwin Python driving a Windows JDK is
 not.
 
+### Every test is always reported
+
+| Situation | Result for the affected tests |
+| --- | --- |
+| JVM exceeds `timeout_s` (default 120 s) | FAIL, `flaketrace.Timeout` |
+| JVM exits before reporting a test (crash, `System.exit`) | FAIL, `flaketrace.JvmCrash` (exit code in the message) |
+| Class or method not found | FAIL with the JVM's/JUnit's exception (`ClassNotFoundException`, `java.lang.Exception: No tests found matching …`) |
+| `@Ignore` or failed `Assume` | FAIL, `flaketrace.NotExecuted` — a skip must never count as a pass |
+| Same test twice in one order | `ValueError` before any JVM starts |
+| Empty order | `{}`, no JVM started |
+
 ### Known limitations
 
 - Each method is its own JUnit `Request`: `@BeforeClass`/`@AfterClass` run once per method,
   not once per class as under Maven Surefire.
 - JUnit 4 only.
-- A JVM crash, timeout or skipped test is not yet handled (W6 hand-over 2).
+- Only the top-level exception is part of the signature; a wrapped cause is not compared.
 
 ## Planned components, in build order
 

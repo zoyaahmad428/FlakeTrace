@@ -53,3 +53,30 @@ JVM in exactly the given order; a fresh JVM per call. Design: [[03-Design/decisi
 - Limitations: each method runs as its own JUnit `Request`, so `@BeforeClass`/`@AfterClass` run
   once per method, not once per class; JUnit 4 only; a JVM crash, timeout or `@Ignore` is not yet
   handled (hand-over 2); JDK 8 not yet run (CI, hand-over 3).
+
+### 2026-10-09 — Hand-over 2: every test always reported
+
+**Requirement:** contract Interface 1 rule 3 — every test in `order` appears in the result; a
+crash is reported as a failure.
+
+- Files: `runner/order_runner.py` (`parse_results`, `OrderRunner.run_ordered`),
+  `runner/tests/test_order_runner.py` (9 new tests).
+- Command: `py -m unittest -v runner.tests.test_order_runner` (same environment as hand-over 1).
+- Before the change: `Ran 17 tests — FAILED (failures=3, errors=2)`:
+  - duplicate test → `AssertionError: ValueError not raised`
+  - timeout → `subprocess.TimeoutExpired` escaped the call
+  - skipped test → reported with exception type `''` instead of `flaketrace.NotExecuted`
+  - test with no result line → missing from the result
+  - half-written last line → `ValueError: not enough values to unpack (expected 6, got 2)`
+  - Already passing, because the hand-over 1 harness handles them: fresh JVM per call,
+    escaped tab/newline, empty order, unknown method (`java.lang.Exception: No tests found
+    matching Method …`) and unknown class (`java.lang.ClassNotFoundException`).
+- After the change: `Ran 17 tests in 11.343s — OK`.
+- Real-JVM checks on F1 inside that run: polluter-then-victim followed by a second call with
+  the victim alone → victim PASS (no state leaks between calls); `timeout_s=0.01` → both tests
+  reported `flaketrace.Timeout`.
+- Source integrity: `git status --short fixtures/` printed nothing.
+- Limitations: a real JVM crash (non-zero exit mid-run) is tested only through
+  `parse_results` with a hand-written result file — the fixture has no test that kills the JVM,
+  and the fixture is Member 3's to change. `@Ignore`/`Assume` → `SKIP` is tested the same way
+  (no ignored test in the fixture).

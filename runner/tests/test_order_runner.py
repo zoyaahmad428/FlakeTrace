@@ -72,6 +72,30 @@ class TestParseResults(unittest.TestCase):
         self.assertEqual(signature.message, "expected:<<N>> but was:<<N>>")
         self.assertTrue(signature.stack_trace.endswith("odfixture.ConfigVictimTest.expectsDefaultMode:10"))
 
+    def test_escaped_tab_and_newline_in_message_are_restored(self):
+        text = "0\tA#a\tFAIL\tjava.lang.Exception\tfirst\\tpart\\nsecond line\tA.a:1\n"
+        test = TestIdentifier("A", "a")
+        results = parse_results(text, [test], "flaketrace.JvmCrash", "")
+        self.assertEqual(results[test].failure_signature.message, "first\tpart")
+
+    def test_test_without_a_result_line_is_reported_with_the_missing_type(self):
+        text = "0\todfixture.ConfigPolluterTest#pollute\tPASS\t\t\t\n"
+        results = parse_results(text, [POLLUTER, VICTIM], "flaketrace.JvmCrash", "JVM exited with code 1")
+        self.assertEqual(set(results), {POLLUTER, VICTIM})
+        self.assertFalse(results[VICTIM].passed)
+        self.assertEqual(results[VICTIM].failure_signature.exception_type, "flaketrace.JvmCrash")
+
+    def test_truncated_last_line_is_treated_as_missing(self):
+        text = "0\todfixture.ConfigPolluterTest#pollute\tPASS\t\t\t\n1\todfixture.Config"
+        results = parse_results(text, [POLLUTER, VICTIM], "flaketrace.JvmCrash", "")
+        self.assertEqual(results[VICTIM].failure_signature.exception_type, "flaketrace.JvmCrash")
+
+    def test_skipped_test_is_a_failure_not_a_pass(self):
+        text = "0\todfixture.ConfigVictimTest#expectsDefaultMode\tSKIP\t\t\t\n"
+        results = parse_results(text, [VICTIM], "flaketrace.JvmCrash", "")
+        self.assertFalse(results[VICTIM].passed)
+        self.assertEqual(results[VICTIM].failure_signature.exception_type, "flaketrace.NotExecuted")
+
 
 class TestOrderRunnerOnF1(unittest.TestCase):
     """Runs real JVMs on fixtures/od-fixture. Needs java, javac and mvn on PATH."""
@@ -100,6 +124,32 @@ class TestOrderRunnerOnF1(unittest.TestCase):
         results = self.runner.run_ordered([VICTIM, POLLUTER])
         self.assertTrue(results[VICTIM].passed)
         self.assertTrue(results[POLLUTER].passed)
+
+    def test_each_call_gets_a_fresh_jvm(self):
+        self.runner.run_ordered([POLLUTER, VICTIM])
+        self.assertTrue(self.runner.run_ordered([VICTIM])[VICTIM].passed)
+
+    def test_unknown_method_and_class_are_reported_as_failures(self):
+        no_method = TestIdentifier("odfixture.ConfigVictimTest", "noSuchMethod")
+        no_class = TestIdentifier("odfixture.NoSuchClass", "x")
+        results = self.runner.run_ordered([no_method, no_class, VICTIM])
+        self.assertEqual(results[no_method].failure_signature.exception_type, "java.lang.Exception")
+        self.assertEqual(results[no_class].failure_signature.exception_type, "java.lang.ClassNotFoundException")
+        self.assertTrue(results[VICTIM].passed)
+
+    def test_duplicate_test_in_order_is_rejected(self):
+        with self.assertRaises(ValueError):
+            self.runner.run_ordered([VICTIM, VICTIM])
+
+    def test_empty_order_returns_empty_result(self):
+        self.assertEqual(self.runner.run_ordered([]), {})
+
+    def test_timeout_reports_every_test_as_failed(self):
+        runner = OrderRunner(self.runner.classpath, timeout_s=0.01)
+        results = runner.run_ordered([POLLUTER, VICTIM])
+        self.assertEqual(
+            {r.failure_signature.exception_type for r in results.values()}, {"flaketrace.Timeout"}
+        )
 
 
 if __name__ == "__main__":
