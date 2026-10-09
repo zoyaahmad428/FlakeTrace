@@ -269,3 +269,46 @@ agreement on ADR-001 to ADR-004.
   `FLAKETRACE_JAVAP` in `javap_command`); the example JSON parses; all anchors resolve. Result: passed.
 - Limitation: ADR status lines stay `PROPOSED` until Member 3 ticks. The contract is confirmed by all
   three only when Member 3 approves this PR.
+
+## Phase 5 (part 1): fixture validated against ground truth (2026-10-09)
+
+**Requirement:** check the extractor's edges against Member 3's
+`fixtures/od-fixture/ground_truth.json` automatically, not by eye. The file is read only and
+never edited.
+
+- Files: `evidence/tests/test_extract.py`, new class `GroundTruthTest` with 3 tests.
+  - Every fixture test named in the ground truth (the 5 cases plus the 4 noise tests, 13 tests)
+    is tried as polluter against every other one as victim, at the default depth (2). That makes
+    156 ordered pairs.
+  - The set of pairs with an edge must equal the ground-truth polluter→victim pairs exactly.
+  - Each edge must be on the ground-truth `shared_resource`.
+  - N1 and N2 (no polluters, `shared_resource: null`) must get no edge from any test.
+- Exploratory run first (scratch script, all 156 pairs at depths 1, 2 and 3, javap 21.0.12.1).
+  Real result:
+  - Depth 1: 3 edges. F1 (`Config#mode`), F3-A (`Toggles#flagA`), F3-B (`Toggles#flagB`). F2 has
+    none, because its read is one call down.
+  - Depths 2 and 3: 4 edges, the three above plus F2 (`sysprop:odfixture.turbo`).
+  - No other pair had an edge at any depth. N1, N2 and the four noise tests have no supported
+    accesses at all.
+- Commands (classes from `mvn -B -q test-compile` of the fixture and the self-test project, host
+  JDK 21 compiling to Java 8, both exit 0):
+  - `FLAKETRACE_REQUIRE_JVM=1 python3 -m unittest -v evidence.tests.test_extract.GroundTruthTest`
+    → `Ran 3 tests in 6.173s … OK` (javap 21.0.12.1).
+  - Full suite, same guard → `Ran 30 tests in 38.421s … OK`.
+  - With JDK 8 javap (`FLAKETRACE_JAVAP` pointing at the `ft-jdk8` Docker image):
+    `GroundTruthTest` + `FixturePairTest` → `Ran 8 tests in 31.881s … OK`.
+- Mutation check (scratch script, nothing in the repo changed). Real results:
+  - Depth forced to 1: `FAILED (failures=2)`. Both failures name the missing F2 pair.
+  - In-memory ground truth altered (F1 field renamed, a fake N1 polluter added):
+    `FAILED (failures=2, errors=1)`. The tests caught both.
+- Limitations discovered:
+  - F3's ground truth gives the field as free text (`"flagA and flagB (both required)"`). The test
+    matches kind and class exactly and only checks that the edge's field is one of the words in
+    that text. A machine-readable list would be firmer; that is Member 3's file, so it is noted, not
+    changed.
+  - This shows the extractor agrees with the ground truth on 5 hand-made cases. It does not show
+    accuracy on real projects; that is the fastjson step (Phase 5 part 2, not yet run).
+  - CI: Member 2's `evidence` job (PR #20) runs the whole `evidence.tests.test_extract` module,
+    so `GroundTruthTest` runs there with no CI change. Not yet run in CI.
+  - N1 and N2 being edge-free is expected, since neither touches a supported resource. The
+    extractor's "no supported evidence" never means "no dependency".

@@ -273,3 +273,27 @@ the repo root or set `PYTHONPATH`.
 
 **Rejections:** editing claims-ledger row E1 myself. It is a joint row raised by Member 2; I
 proposed wording in my reply instead.
+
+## 2026-10-09 — Phase 5 part 1: automatic ground-truth check on the fixture
+
+**Assistance level:** L3 (Substantial): the test class was generated; I chose to compare against
+Member 3's ground truth file directly rather than copying its values into the test.
+
+**What I asked:** start Phase 5. Compare F1, F2, F3, N1 and N2 against `ground_truth.json`
+automatically.
+
+**What was retained:** `GroundTruthTest` (3 tests): exact set of edge pairs over all 156 ordered
+pairs, resource per edge, no edge for N1/N2 from any test.
+
+**What I changed:** *fill after review.*
+
+**How it was verified:** see `docs/evidence-m1.md`. 30 tests OK on javap 21; fixture tests OK on
+JDK 8 javap; a mutation check showed the tests fail when depth is 1 or the ground truth is altered.
+
+**Errors found:** none in the extractor. F3's ground-truth field is free text, so the test can
+only check its words (noted as a limitation for Member 3).
+
+**Rejections:** editing `fixtures/od-fixture/ground_truth.json` to make F3 machine-readable. It is
+Member 3's file.
+
+Ownership checkpoint: you need to understand and verify this implementation before claiming it as your contribution.
