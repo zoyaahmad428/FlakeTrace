@@ -46,7 +46,6 @@ members.
   from the root. `--depth N` (default **2**, supported 1–3) reports accesses with `depth <= N`.
   *Why the default is 2:* fixture F2's victim reads its system property inside `FeatureFlags.isTurboEnabled()`, one call below the test method, so at depth 1 F2 has no edge. Depth 2 also equals the POC's frozen scope ("direct references plus one hop"). The cost is more analysis time and more over-approximation (statically reachable accesses that may never run). The depth sweep still reports depths 1–3. See ADR-002.
   *Numbering note:* the August POC numbers depth by **hops**: its `FT_HOPS=N` (and "depth N" in `POC/results/depth_sweep.csv`) is **depth N + 1** here, because `extract_static.py` loops `range(HOPS + 1)`. A POC or vault figure quoted at "depth 2" is depth 3 in this contract.
-  *Note:* the August POC's `FT_HOPS=1` corresponds to **depth 2** here.
 - **Project classes**: classes found in the input directories
   (`classes` + `test-classes`). Calls into anything else (JDK, JUnit,
   third-party jars) are never followed.
@@ -128,7 +127,8 @@ in Output 2).
 Bytecode is read by running `javap -c -p` (and `-v` for annotations) from a
 JDK 8 or newer found on `PATH`.
 
-```python3 -m evidence.extract --classes <dir> --test-classes <dir> \
+```
+python3 -m evidence.extract --classes <dir> --test-classes <dir> \
     --polluter <Class#method> --victim <Class#method> [--depth N]
 python3 -m evidence.extract --classes <dir> --test-classes <dir> \
     --test <Class#method> [--depth N]
