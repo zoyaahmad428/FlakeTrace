@@ -206,3 +206,18 @@ the plan, which was tested in the design spike).
 projects).
 
 **What I changed:** *fill after reading the diff.*
+
+## 2026-10-09 — W7 Task 2: execution record
+
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+
+**What I asked:** implement Task 2 — a wrapper that logs every JVM run to a JSON-lines file.
+
+**What was retained:** `runner/recording.py`, `runner/tests/test_recording.py`, the
+`.gitignore` entry.
+
+**How it was verified:** tests failed first (`ModuleNotFoundError`); then 2 tests OK.
+
+**Errors found:** none.
+
+**What I changed:** *fill after reading the diff.*

@@ -152,3 +152,19 @@ source unchanged, and show it (ADR-001, panel action on code modification).
 - Limitations: only the top-level `target/` is skipped — a multi-module project's
   `module/target/` would be hashed, so building it during a diagnosis would show as "changed".
   Not relevant for the single-module fixture; revisit for real projects.
+
+### 2026-10-09 — Task 2: execution record
+
+**Requirement:** report-schema `execution_record_reference` — a record of every run backing a
+diagnosis.
+
+- Files: `runner/recording.py` (`RecordingRunner`), `runner/tests/test_recording.py`;
+  `.gitignore` now ignores `flaketrace-records/`.
+- Command: `py -m unittest -v runner.tests.test_recording`
+- Before the code existed: `ModuleNotFoundError: No module named 'runner.recording'`.
+- Result: `Ran 2 tests in 0.028s — OK`: the header is line 1 (and the record's folder is
+  created if missing); each run is one line with its step label, order, every test's outcome
+  and failure signature, start time and duration; results pass through unchanged.
+- Uses M3's `FakeOrderRunner` from `eval/tests/fake_runner.py` (test code only).
+- Limitations: the record is not yet produced by a real diagnosis — that comes with
+  `diagnose.py` (Task 5).
