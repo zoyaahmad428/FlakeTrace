@@ -1,7 +1,7 @@
 # runner/ — bounded search and verification (Member 2)
 
-**Owner:** Member 2 · **State:** W6 complete (2026-10-09) — ordered single-JVM runner, tested on fixture F1
-locally (JDK 21) and in CI (JDK 8, job `runner`). W7 (victim-alone check, polluter search) next.
+**Owner:** Member 2 · **State:** W6 complete; W7 complete (2026-10-09) — `diagnose()` on all five fixture cases
+locally (JDK 21) and in CI (JDK 8, run `37971869749`). W9 (report assembly) next.
 
 Implements the `OrderRunner` interface in [`eval/baseline.py`](../eval/baseline.py) and
 everything built on it. Contract: [docs/contracts/interfaces.md](../docs/contracts/interfaces.md).
@@ -80,17 +80,48 @@ not.
 - JUnit 4 only.
 - Only the top-level exception is part of the signature; a wrapped cause is not compared.
 
+## Diagnosis runs (W7)
+
+Design: [ADR-004](../docs/03-Design/decisions/ADR-004-w7-diagnosis-runs.md). Modules land one by
+one; each has its own tests in `runner/tests/`.
+
+| Module | Job | State |
+| --- | --- | --- |
+| `integrity.py` | `snapshot(project)` hashes every file (SHA-256) except top-level `target/` and `.git/`; `compare(before, after)` → `SourceIntegrity(passed, details)` naming changed/added/removed files | done |
+| `recording.py` | `RecordingRunner(runner, path, header)` wraps any runner; set `.step` before a phase; every JVM run is appended as one JSON line (step, order, outcomes with signatures, start, seconds) — line 1 is the header. Records go to `flaketrace-records/` (git-ignored) | done |
+| `discovery.py` | `discover_order(runner, target/test-classes)`: classes matching Surefire's default includes (`Test*`, `*Test`, `*Tests`, `*TestCase`, no `$`), sorted by full name; methods from JUnit via `java FtHarness --list <file>` (stdin: class names; file: `Class#method` lines). Surefire's default `runOrder` is `filesystem` — pass an explicit order for such projects | done |
+| `search.py`, `verify.py` | `reproduce` — run the original order until the victim fails; that failure is the reference signature (a `flaketrace.*` crash/timeout/skip never is). `find_polluter` — `[candidate, victim]` once per earlier test, `priority` first; first match wins. `repeat` — n runs → (matching, any-signature) victim failures | done |
+| `diagnose.py` | `diagnose(project, victim, n=20)` → `DiagnosisRuns` (raw counts, no verdict); `run_steps(runner, order, victim, n)` is the same logic on any runner | done |
+
+```python
+from pathlib import Path
+from eval.baseline import TestIdentifier
+from runner.diagnose import diagnose
+
+runs = diagnose(Path("fixtures/od-fixture"),
+                TestIdentifier("odfixture.ConfigVictimTest", "expectsDefaultMode"), n=20)
+runs.status, runs.polluters, runs.sequence_successes, runs.alone_successes
+runs.source_integrity.passed, runs.execution_record   # flaketrace-records/<time>-<victim>.jsonl
+```
+
+| `status` | Meaning | `sequence` that was repeated |
+| --- | --- | --- |
+| `POLLUTER_FOUND` | one earlier test makes the victim fail with the reference signature | `[polluter, victim]` |
+| `VICTIM_FAILS_ALONE` | the victim reproduced its failure with nothing before it — no polluter is blamed | `[victim]` (counts = alone counts) |
+| `NO_SINGLE_POLLUTER` | the original order fails but no single earlier test does (e.g. F3) — for W10 | the original order |
+| `NOT_REPRODUCED` | the victim never failed with a real failure in `n` runs of the original order (crashes/timeouts are counted in `sequence_any_failures`); alone check not run (`alone_n = 0`) | the original order |
+
 ## Planned components, in build order
 
 | # | Component | Produces (report-schema fields) | Needed for Mid demo |
 | --- | --- | --- | --- |
 | 1 | Ordered single-JVM runner for JUnit 4 — **done (W6)** | per-test outcomes, `failure_signature` | Yes |
-| 2 | Victim-alone check, repeated `n` times | `victim_alone` raw counts | Yes |
-| 3 | Polluter search over preceding tests | `polluters`, `original_failing_order` | Yes |
+| 2 | Victim-alone check, repeated `n` times — **done (W7)** | `victim_alone` raw counts | Yes |
+| 3 | Polluter search over preceding tests — **done (W7, single polluters)** | `polluters`, `original_failing_order` | Yes |
 | 4 | Deletion minimisation (handles F3's two-polluter case) | `reduced_sequence` | Yes (F1/F2); F3 stretch |
-| 5 | Repeated-run verification of the reduced sequence | `reproduction` raw counts | Yes |
-| 6 | Source-integrity check (hash target source before/after) | `source_integrity` | Yes |
-| 7 | Execution record (JDK, order, seed, timestamps) | `execution_record_reference` | Yes |
+| 5 | Repeated-run verification of the reduced sequence — **done (W7)** | `reproduction` raw counts | Yes |
+| 6 | Source-integrity check (hash target source before/after) — **done (W7)** | `source_integrity` | Yes |
+| 7 | Execution record (JDK, order, timestamps) — **done (W7)** | `execution_record_reference` | Yes |
 | 8 | CLI entry point | — | Yes |
 
 Test against `fixtures/od-fixture` (F1, F2, F3, N1, N2) — the expected outcomes are in

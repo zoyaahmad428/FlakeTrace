@@ -164,3 +164,133 @@ asset; reworded docs for 4.
 **How it was verified:** 3 new tests failed before the fix, as predicted; 22 tests OK after.
 
 **What I changed:** *fill after reading the diff.*
+
+## 2026-10-09 — W7 design: ADR-004 and implementation plan
+
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+
+**What I asked:** design W7 (victim-alone check, polluter search, repeated-run counts, source
+hash, execution record) with options, then write the spec and plan.
+
+**What I decided:** the original order is discovered like Surefire with an explicit-order
+override; one-by-one polluter search with a priority hook (multi-polluter cases go to W10);
+default n = 20 (proposed answer to I3, needs M3); small single-purpose modules with a
+recording wrapper.
+
+**What was retained:** ADR-004, `docs/superpowers/plans/2026-10-09-w7-diagnosis-runs.md`.
+
+**How it was verified:** a throwaway spike (not committed) ran the full design on the
+fixture: F1 and F2 found the ground-truth polluter, F3 ended NO_SINGLE_POLLUTER after 12
+candidates, N1 and N2 ended VICTIM_FAILS_ALONE; 55 tests passed in the spike. Wilson bounds in
+the ADR computed with `eval.stats.wilson_interval`.
+
+**Errors found:** I first assumed N2 fails ~50% of the time; measured 18/60 on Windows
+(`System.nanoTime()` has 100-ns steps there). The N2 test uses n = 40 so it cannot flake.
+
+**What I changed:** *fill after reviewing the ADR.*
+
+## 2026-10-09 — W7 Task 1: source-integrity check
+
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+
+**What I asked:** implement Task 1 of the W7 plan — hash the project's files before and after
+a diagnosis and name any difference.
+
+**What was retained:** `runner/integrity.py`, `runner/tests/test_integrity.py` (code identical to
+the plan, which was tested in the design spike).
+
+**How it was verified:** tests run first and failed (`ModuleNotFoundError`); after the code,
+`py -m unittest -v runner.tests.test_integrity` → 4 tests OK.
+
+**Errors found:** none. Limitation noted: only the top-level `target/` is excluded (multi-module
+projects).
+
+**What I changed:** *fill after reading the diff.*
+
+## 2026-10-09 — W7 Task 2: execution record
+
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+
+**What I asked:** implement Task 2 — a wrapper that logs every JVM run to a JSON-lines file.
+
+**What was retained:** `runner/recording.py`, `runner/tests/test_recording.py`, the
+`.gitignore` entry.
+
+**How it was verified:** tests failed first (`ModuleNotFoundError`); then 2 tests OK.
+
+**Errors found:** none.
+
+**What I changed:** *fill after reading the diff.*
+
+## 2026-10-09 — W7 Task 3: discover the original order
+
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+
+**What I asked:** implement Task 3 — list test classes like Surefire and ask JUnit for each
+class's methods through a new `FtHarness --list` mode.
+
+**What was retained:** the `--list` mode, `OrderRunner.list_methods`, `java_version`,
+`runner/discovery.py`, `runner/tests/test_discovery.py`.
+
+**How it was verified:** tests failed first (`ModuleNotFoundError`); then 28 tests OK (6 new +
+22 W6 tests still passing). Printed the real fixture order (13 methods) into [[evidence-m2]].
+
+**Errors found:** none; noted that JUnit's method order inside a class is neither source nor
+alphabetical.
+
+**What I changed:** *fill after reading the diff.*
+
+## 2026-10-09 — W7 Task 4: reproduce, polluter search, repeat
+
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+
+**What I asked:** implement Task 4 — reproduce the original failure, search for one polluter,
+count repeated runs.
+
+**What was retained:** `runner/search.py`, `runner/verify.py`, `runner/tests/test_search.py`.
+
+**How it was verified:** tests failed first (`ModuleNotFoundError`); then 9 OK; mutation check
+on the "a crash is never the reference" rule made its test fail, restored → OK.
+
+**Errors found:** none.
+
+**What I changed:** *fill after reading the diff.*
+
+## 2026-10-09 — W7 Task 5: diagnose() end to end
+
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+
+**What I asked:** implement Task 5 — `diagnose()` and its tests on all five fixture cases.
+
+**What was retained:** `runner/diagnose.py`, `runner/tests/test_diagnose.py` (with the N2 test
+rewritten), `docs/04-Implementation/diagnosis-runs.md`, ADR-004 updates.
+
+**How it was verified:** tests failed first (`ModuleNotFoundError`); the first real run failed on
+N2; after investigation 12 tests OK and the full runner suite 55 OK; every case's real numbers
+recorded in [[evidence-m2]]; mutation check on the alone-stop.
+
+**Errors found:** the plan's N2 test assumed N2 fails on Windows at ~30% (from the spike). It
+then failed 0/80: `System.nanoTime()` was a multiple of 100 (10 MHz timer). The test assumption
+was wrong, not the code; the test now checks that no polluter is blamed. Also found and
+documented: a rarely-failing flaky victim can produce a spurious polluter (exposed by low
+verify counts).
+
+**What I changed:** *fill after reading the diff.*
+
+## 2026-10-09 — W7 final review and fixes
+
+**Tool:** Claude Opus 5.5 — separate reviewer agent on the whole branch; this session fixed
+the findings · **Level:** L2
+
+**What was found:** no critical issues; important: `NOT_REPRODUCED` counts disagreed with the
+ADR; a record folder inside the project broke the integrity check; docs said CI was pending
+after it had passed. Seven minor items deferred (listed in [[evidence-m2]]).
+
+**What was retained:** a `record_dir` guard in `diagnose()` with a test that failed first; a
+test pinning the crash-only `NOT_REPRODUCED` counts; ADR/README/note wording made to match the
+code; CI run `37971869749` recorded.
+
+**How it was verified:** the record-folder test failed before the guard and passed after; full
+runner suite 57 OK.
+
+**What I changed:** *fill after reading the diff.*

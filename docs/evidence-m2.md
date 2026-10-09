@@ -132,3 +132,153 @@ critical issues and four important ones; three needed code fixes, one a docs cor
 - JDK 8: GitHub Actions run `37959672072` on PR #10 (commit `3579e47`), 2026-10-09 — all three
   jobs succeeded; job `runner` (Temurin JDK 8): `Ran 22 tests in 17.2s — OK`.
   https://github.com/zoyaahmad428/FlakeTrace/actions/runs/37959672072
+
+## W7 — diagnosis runs
+
+Design: [[03-Design/decisions/ADR-004-w7-diagnosis-runs]].
+
+### 2026-10-09 — Task 1: source-integrity check
+
+**Requirement:** report-schema `source_integrity` — FlakeTrace must leave the analysed project's
+source unchanged, and show it (ADR-001, panel action on code modification).
+
+- Files: `runner/integrity.py` (`snapshot`, `compare`, `SourceIntegrity`),
+  `runner/tests/test_integrity.py`.
+- Command: `py -m unittest -v runner.tests.test_integrity` (Windows 11, Python 3.14).
+- Before the code existed: `ModuleNotFoundError: No module named 'runner.integrity'`.
+- Result: `Ran 4 tests in 0.054s — OK`: unchanged project passes; a changed, an added and a
+  removed file are each named (`changed: src/main/A.java; added: src/main/B.java; removed:
+  pom.xml`); `target/` and `.git/` are ignored; a nested folder named `target` is still hashed.
+- Limitations: only the top-level `target/` is skipped — a multi-module project's
+  `module/target/` would be hashed, so building it during a diagnosis would show as "changed".
+  Not relevant for the single-module fixture; revisit for real projects.
+
+### 2026-10-09 — Task 2: execution record
+
+**Requirement:** report-schema `execution_record_reference` — a record of every run backing a
+diagnosis.
+
+- Files: `runner/recording.py` (`RecordingRunner`), `runner/tests/test_recording.py`;
+  `.gitignore` now ignores `flaketrace-records/`.
+- Command: `py -m unittest -v runner.tests.test_recording`
+- Before the code existed: `ModuleNotFoundError: No module named 'runner.recording'`.
+- Result: `Ran 2 tests in 0.028s — OK`: the header is line 1 (and the record's folder is
+  created if missing); each run is one line with its step label, order, every test's outcome
+  and failure signature, start time and duration; results pass through unchanged.
+- Uses M3's `FakeOrderRunner` from `eval/tests/fake_runner.py` (test code only).
+- Limitations: the record is not yet produced by a real diagnosis — that comes with
+  `diagnose.py` (Task 5).
+
+### 2026-10-09 — Task 3: discover the original order
+
+**Requirement:** ADR-004 step 2 — when no order is given, use the order Maven Surefire would run
+(the fixture sets `runOrder=alphabetical`), with each class's methods in JUnit's own order.
+
+- Files: `runner/harness/FtHarness.java` (new `--list` mode), `runner/order_runner.py`
+  (`OrderRunner.list_methods`, `java_version`), `runner/discovery.py`,
+  `runner/tests/test_discovery.py`.
+- Command: `py -m unittest -v runner.tests.test_discovery runner.tests.test_order_runner`
+- Before the code existed: `ModuleNotFoundError: No module named 'runner.discovery'`.
+- Result: `Ran 28 tests in 43.807s — OK` (6 discovery tests + the 22 W6 tests, unchanged).
+- Real discovered order of `fixtures/od-fixture` (13 methods):
+  `ConfigPolluterTest#pollute, ConfigVictimTest#expectsDefaultMode, FeaturePolluterTest#enableTurbo,
+  FeatureVictimTest#expectsTurboDisabled, MathUtilTest#squaresANumber, MathUtilTest#addsTwoNumbers,
+  NegativeAloneFailTest#alwaysFails, NegativeFlakyTest#sometimesFails,
+  StringUtilTest#detectsPalindrome, StringUtilTest#reversesAString, ToggleAPolluterTest#setFlagA,
+  ToggleBPolluterTest#setFlagB, ToggleVictimTest#expectsNotBothFlagsSet` (package `odfixture.`).
+  Inside `MathUtilTest`, JUnit runs `squaresANumber` before `addsTwoNumbers` — neither source nor
+  alphabetical order (JUnit 4's default method sorter), which is why methods come from JUnit.
+- Classes JUnit cannot run are left out: `odfixture.Config` (no tests) and a missing class give
+  an empty list. A missing `target/test-classes` gives no classes.
+- `git status --short fixtures/` printed nothing.
+- Limitations: Surefire 2.22's default `runOrder` is `filesystem`; for a project that keeps the
+  default, pass `original_order` explicitly. Parameterised tests are not listed (ADR-003 scope).
+
+### 2026-10-09 — Task 4: reproduce, polluter search, repeat
+
+**Requirement:** ADR-004 steps 3–6 — a reference signature from the original order, one-by-one
+search for a single polluter (priority list first), and matching / any-signature counts over
+`n` runs.
+
+- Files: `runner/search.py` (`reproduce`, `candidate_order`, `find_polluter`,
+  `SYNTHETIC_PREFIX`), `runner/verify.py` (`repeat`), `runner/tests/test_search.py`.
+- Command: `py -m unittest -v runner.tests.test_search`
+- Before the code existed: `ModuleNotFoundError: No module named 'runner.search'`.
+- Result: `Ran 9 tests in 0.001s — OK` (M3's `FakeOrderRunner`, no JVM): first real failure
+  becomes the reference; a `flaketrace.JvmCrash` is never the reference; no failure in all
+  attempts → `None`; candidates in original order or priority-first (duplicates, unknown and
+  later tests ignored); the first matching candidate wins and runs are counted; a failure with a
+  different signature is not a polluter; `repeat` counts 2 matching / 4 any of 5 scripted runs.
+- Mutation check: replacing the crash rule with `if True:` → `test_crash_is_never_taken_as_the_reference`
+  FAILED; file restored (byte-identical) → OK.
+- Limitations: single polluters only — multi-polluter cases are W10's (ADR-004).
+
+### 2026-10-09 — Task 5: `diagnose()` end to end on the fixture
+
+**Requirement:** ADR-004 as a whole — raw evidence for each fixture case, checked against
+`fixtures/od-fixture/ground_truth.json` (written before any run).
+
+- Files: `runner/diagnose.py` (`DiagnosisRuns`, `run_steps`, `diagnose`),
+  `runner/tests/test_diagnose.py` (7 `run_steps` tests with M3's `FakeOrderRunner`, 5 real cases).
+- Before the code existed: `ModuleNotFoundError: No module named 'runner.diagnose'`.
+- First real run: `Ran 12 tests in 99.860s — FAILED (failures=1)`: N2 returned `NOT_REPRODUCED`
+  (never failed in 40 attempts of the original order). Investigation: N2 then failed 0/40 alone
+  and 0/40 in the full order; a probe printed `System.nanoTime() % 1000` as a multiple of 100 on
+  every call, and `[System.Diagnostics.Stopwatch]::Frequency` = `10000000` (10 MHz). So N2 could
+  not fail on this laptop at that time, although the design spike earlier the same day saw 18/60
+  failures alone — the cause of that drift was not established. The diagnosis code was right; the
+  test's assumption was wrong. The N2 test now checks that no polluter is ever blamed and accepts
+  `NOT_REPRODUCED` when N2 never fails (ADR-004 updated).
+- After: `py -m unittest -v runner.tests.test_diagnose` → `Ran 12 tests in 92.448s — OK`.
+- Real results, one `diagnose()` per case (Windows 11, JDK 21.0.9, Maven 3.10.0):
+
+| Case | n | Time | Status | Polluter | Sequence | Alone | Search runs | Integrity | Record lines |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| F1 | 20 | 23.3 s | `POLLUTER_FOUND` | `ConfigPolluterTest#pollute` | 20/20 (any 20) | 0/20 | 1 | passed | 43 |
+| F2 | 5 | 13.5 s | `POLLUTER_FOUND` | `FeaturePolluterTest#enableTurbo` | 5/5 | 0/5 | 3 | passed | 15 |
+| F3 | 5 | 16.7 s | `NO_SINGLE_POLLUTER` | — | 5/5 (original order) | 0/5 | 12 | passed | 24 |
+| N1 | 20 | 16.3 s | `VICTIM_FAILS_ALONE` | — | 20/20 | 20/20 | 0 | passed | 22 |
+| N2 | 20 | 15.9 s | `NOT_REPRODUCED` | — | 0/20 (any 0) | not run | 0 | passed | 21 |
+
+  F1 and F2 find the ground-truth polluter; F3 is the documented two-polluter case for W10; N1
+  matches; N2's ground truth (`VICTIM_FAILS_ALONE`) assumes it fails at all — on this machine it
+  did not (see above). Record lines = 1 header + one per JVM run.
+- Mutation check: changing `if alone_successes >= 1:` to `>= 100` →
+  `test_victim_failing_alone_stops_before_the_search` FAILED; restored (byte-identical) → OK.
+- Full runner suite: `Ran 55 tests in 128.412s — OK`. `git status --short fixtures/` empty.
+- Limitations: see [[04-Implementation/diagnosis-runs]] §3 — single polluters only, spurious
+  polluter possible for a rarely-failing victim, `NOT_REPRODUCED` has `alone_n = 0` (W9 must
+  handle), discovery assumes alphabetical order. JDK 8 (CI) not yet run.
+- **For Member 3:** N2's failure rate is platform-dependent (`System.nanoTime()` parity); its
+  ground-truth outcome assumes it fails. Raised as a note, not edited (fixtures are M3's).
+
+### 2026-10-09 — W7 CI result and final review fixes
+
+**CI:** GitHub Actions run `37971869749` on PR #11 (commit `1c1b329`) — all three jobs succeeded
+(`runner`, `fixture-build`, `python-eval`). The `runner` job's "Runner tests" step (JDK 8,
+Linux, 55 tests at that commit) took 60 s by the step timestamps. Its exact `Ran …` line:
+not recorded for that run. The next run, `37973949489` on commit `6dccd97` (with the final
+review fixes, 57 tests), passed all three jobs; job `runner` (JDK 8, Linux): `Ran 57 tests in
+66.894s — OK` (line copied from the job log by Member 2).
+https://github.com/zoyaahmad428/FlakeTrace/actions/runs/37973949489
+https://github.com/zoyaahmad428/FlakeTrace/actions/runs/37971869749
+
+**Final review** (separate reviewer agent, whole branch): no critical issues; three important:
+1. `NOT_REPRODUCED` stored crash/timeout attempts in `sequence_any_failures`, while ADR-004 said
+   0. The code is kept (a sequence that only crashed should read as `SIGNATURE_MISMATCH`); ADR-004,
+   `runner/README.md` and the four-point note now say so. New test
+   `test_crash_only_original_order_counts_as_failed_but_not_reproduced` pins it (passed on first
+   run — it documents existing behaviour).
+2. A `record_dir` inside the analysed project made the integrity check fail (the reviewer
+   reproduced `added: flaketrace-records/r.jsonl`). New test
+   `test_record_folder_inside_the_project_is_refused_before_maven_runs` failed first (Maven was
+   reached instead of a `ValueError`); `diagnose()` now refuses such a `record_dir` → passes.
+3. Docs still said "CI pending" — corrected by this entry.
+- Full runner suite after the fixes: `Ran 57 tests in 121.281s — OK`. `git status --short fixtures/`
+  empty.
+- Deferred (minor, not fixed): victim first in the order reports `NO_SINGLE_POLLUTER` although
+  there were no candidates; duplicate tests in a supplied order are rejected only after Maven
+  runs; a header-only record is left when a discovered order lacks the victim; a run that raises
+  leaves no record line; a broken symlink in the project crashes hashing; record file names are
+  not sanitised (`:` would write an NTFS stream) and are unique only to the second;
+  Parameterized/Enclosed classes are not discovered (not yet in ADR-004's Discovery section).
