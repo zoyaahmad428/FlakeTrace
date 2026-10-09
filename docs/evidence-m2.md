@@ -257,7 +257,10 @@ search for a single polluter (priority list first), and matching / any-signature
 **CI:** GitHub Actions run `37971869749` on PR #11 (commit `1c1b329`) — all three jobs succeeded
 (`runner`, `fixture-build`, `python-eval`). The `runner` job's "Runner tests" step (JDK 8,
 Linux, 55 tests at that commit) took 60 s by the step timestamps. Its exact `Ran …` line:
-*not yet recorded (job log needs sign-in).*
+not recorded for that run. The next run, `37973949489` on commit `6dccd97` (with the final
+review fixes, 57 tests), passed all three jobs; job `runner` (JDK 8, Linux): `Ran 57 tests in
+66.894s — OK` (line copied from the job log by Member 2).
+https://github.com/zoyaahmad428/FlakeTrace/actions/runs/37973949489
 https://github.com/zoyaahmad428/FlakeTrace/actions/runs/37971869749
 
 **Final review** (separate reviewer agent, whole branch): no critical issues; three important:
