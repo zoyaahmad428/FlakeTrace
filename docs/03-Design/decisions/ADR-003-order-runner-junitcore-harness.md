@@ -113,6 +113,6 @@ corrupt them.
 
 | Member | Agree? | Comment |
 | --- | --- | --- |
-| M1 | ☐ | |
+| M1 | ☑ | Agree; read and understood the Python runner + JUnitCore harness design |
 | M2 | ☑ | Chose option A on 2026-10-09 |
 | M3 | ☐ | |

@@ -1,6 +1,9 @@
 # Resource evidence — output contract (Member 1)
 
-**Status: DRAFT, not yet confirmed with Members 2 and 3.** No extraction code may be written against this contract until both have confirmed it. Both consume it: Member 2's CLI calls the extractor end-to-end (see [Invocation](#invocation)), and Member 3's report assembly uses its output. Changes after confirmation need agreement from all three members.
+**Status: CONFIRMED by Member 1 and Member 2 (2026-10-09); Member 3 confirms by approving the PR that sets this line.**
+Both other members consume it: Member 2's CLI calls the extractor end-to-end (see [Invocation](#invocation)),
+and Member 3's report assembly uses its output. The extractor (Phases 2–4, `evidence/extract.py`) was
+built against the draft of this contract. Any change from now on needs agreement from all three members.
 
 This file defines what the Resource Evidence component (Member 1) outputs, and
 how that output is projected into the shared diagnosis report
@@ -123,7 +126,7 @@ in Output 2).
 
 ## Invocation
 
-**Planned, not yet implemented.** Language: Python 3, standard library only.
+**Implemented** (Phases 2–4, `evidence/extract.py`). Language: Python 3, standard library only.
 Bytecode is read by running `javap -c -p` (and `-v` for annotations) from a
 JDK 8 or newer found on `PATH`.
 
@@ -155,6 +158,18 @@ parse it directly. Diagnostics go to stderr.
 
 **The extractor never runs tests and never writes into the class
 directories.** It only reads `.class` files.
+
+**Calling it from another component** (agreed with Member 2, 2026-10-09):
+
+- `python3 -m evidence.extract` imports the `evidence` package, so run it with the **repository root**
+  as the working directory, or put the root on `PYTHONPATH`. Pass **absolute** class directories.
+- Or call it in-process: `from evidence import extract`, then
+  `project = extract.Project([classes, test_classes])`,
+  `extract.analyse_test(project, test_id, depth)` for each test,
+  `pair = extract.find_edges(polluter_id, polluter_result, victim_id, victim_result)`, and
+  `extract.report_fields(pair)` for the report. Errors raise `extract.ExtractError`, whose
+  `.exit_code` is 1 or 2 as below.
+- `javap` comes from a JDK 8+ on `PATH`; the environment variable `FLAKETRACE_JAVAP` can name another one.
 
 ## Exit codes and errors
 
@@ -269,30 +284,35 @@ Example: F2 at depth 2 projects to `shared_resource = {kind: "system-property", 
 `polluter_write_location = {class: "odfixture.FeaturePolluterTest", method: "enableTurbo", bytecode_offset: 4}`,
 `victim_read_location = {class: "odfixture.FeatureFlags", method: "isTurboEnabled", bytecode_offset: 2}`.
 
-## Open questions for Member 3 (must be answered before Phase 2)
+## Open questions (status 2026-10-09)
 
-1. **Singular location fields.** The report holds one resource and one location
+1. **ANSWERED (Member 2, 2026-10-09): option (a).** The report takes `edges[0]` (shortest combined
+   depth, then `resource_id`) and the first write/read location; `limitations` names every
+   other edge and how many locations were dropped. Implemented as `extract.report_fields`.
+   Original question: **Singular location fields.** The report holds one resource and one location
    per side. Anything beyond `edges[0]` and its first locations is lost
    (e.g. F2 at depth 2 has one edge, but FJ cases may have several). Options:
    (a) accept it and list dropped edges in `limitations`; (b) add an optional
    pointer field, e.g. `resource_evidence_reference` (path to this component's
    JSON), like `execution_record_reference`. Option (b) is a schema change
    (the schema sets `additionalProperties: false`).
-2. **`victim_read_location` may name a non-test class** at depth > 1 (F2:
+2. **OPEN (Member 3).** **`victim_read_location` may name a non-test class** at depth > 1 (F2:
    `odfixture.FeatureFlags#isTurboEnabled@2`). Is that the intended meaning
    ("where exactly the victim reads"), or should it name the call site in the
    test method (the first `call_path` frame)?
-3. **F3 ground truth is not machine-comparable.** `ground_truth.json` F3 has
+3. **Partly answered by Phase 4:** the extractor reports F3 pairwise as `odfixture.Toggles#flagA`
+   (A → victim) and `#flagB` (B → victim). Still open for Member 3: the ground-truth format.
+   Original question: **F3 ground truth is not machine-comparable.** `ground_truth.json` F3 has
    `"field": "flagA and flagB (both required)"`. This component is pairwise:
    `ToggleAPolluterTest#setFlagA → ToggleVictimTest` should yield an edge on
    `odfixture.Toggles#flagA`, and the B pair one on `#flagB`. Could F3 list
    one `shared_resource` per polluter (e.g. a list), so the comparison can be
    automatic?
-4. **Ground truth has no expected locations**, so the automatic Phase 5 check
+4. **OPEN (Member 3).** **Ground truth has no expected locations**, so the automatic Phase 5 check
    can compare resources only. Offsets will be checked by hand against
    `javap`. Is that acceptable?
 5. **Illustrative offsets. RESOLVED 2026-10-09.** Member 3 verified the real JDK 8 offsets independently with `javap -c -p` (write 1, read 1) and updated `eval/examples/example_f1_verified.json` (commit `af70048`, PR #7). Earlier examples labelled illustrative are still not authoritative; this component does not produce them yet.
-6. **BRITTLE cases (POC FJ-01).** In the POC the "victim" fails alone and passes
+6. **OPEN (Member 3).** **BRITTLE cases (POC FJ-01).** In the POC the "victim" fails alone and passes
    after a *state-setter* (`DateFieldTest8`). The resource edge has the same
    write-then-read shape, but the decision table would yield
    `UNRESOLVED(VICTIM_FAILS_ALONE)`. Does Iteration 1 include brittle cases,

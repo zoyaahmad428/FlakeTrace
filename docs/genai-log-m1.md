@@ -249,3 +249,27 @@ tested.
 **Rejections:** none.
 
 Ownership checkpoint: you need to understand and verify this implementation before claiming it as your contribution.
+
+## 2026-10-09 — Answers to Member 2's integration questions
+
+**Assistance level:** L1 (Supportive): the wording was drafted by the assistant; the decisions
+(confirm the contract, first-edge projection, ADR agreement) are mine.
+
+**What I asked:** answer Member 2's seven questions. Confirm the contract, choose the edge for the
+report, confirm the CLI call and exit codes, give agreement on ADR-003 and ADR-004, and confirm the
+CI command.
+
+**What was retained:** the contract status and open-question answers; the "Calling it from another
+component" notes (run from the repo root or import in-process); ticks on ADR-001 to ADR-004.
+
+**What I changed:** *fill after review.*
+
+**How it was verified:** see `docs/evidence-m1.md` (API names checked against main, example and
+anchors validated).
+
+**Errors found:** Member 2's planned call (`python -m evidence.extract` with the target project as
+working directory) would fail with "No module named evidence". This is now documented: run it from
+the repo root or set `PYTHONPATH`.
+
+**Rejections:** editing claims-ledger row E1 myself. It is a joint row raised by Member 2; I
+proposed wording in my reply instead.
