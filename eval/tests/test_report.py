@@ -5,8 +5,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from eval.baseline import FailureSignature, TestIdentifier
-from eval.report import UnhandledStatus, assemble_report, find_resource_edge
+from eval.report import UnhandledStatus, assemble_report
 from eval.schema_validator import validate_report
+from evidence.extract import find_edges, report_fields
 from runner.diagnose import DiagnosisRuns, NOT_REPRODUCED, NO_SINGLE_POLLUTER, POLLUTER_FOUND, VICTIM_FAILS_ALONE
 from runner.integrity import SourceIntegrity
 
@@ -17,9 +18,11 @@ REF = FailureSignature("java.lang.AssertionError", "odfixture.ConfigVictimTest.e
 INTEGRITY_OK = SourceIntegrity(True, "19 files hashed; all identical")
 INTEGRITY_FAILED = SourceIntegrity(False, "changed: src/main/java/odfixture/Config.java")
 
-# Literal Output-1 shapes exactly as eval.report.find_resource_edge expects them (as produced
-# by evidence.extract.analyse_test) -- hand-written here to test my own correlation function
-# in isolation, not a fake of Member 1's extractor.
+# Literal Output-1 shapes exactly as evidence.extract.find_edges expects them (as produced by
+# evidence.extract.analyse_test) -- hand-written here to drive Member 1's real find_edges/
+# report_fields with known inputs, not a fake of Member 1's extractor.
+POLLUTER_ID = "odfixture.ConfigPolluterTest#pollute"
+VICTIM_ID = "odfixture.ConfigVictimTest#expectsDefaultMode"
 POLLUTER_ACCESS = {
     "test": {"class": "odfixture.ConfigPolluterTest", "method": "pollute"},
     "accesses": [{
@@ -28,6 +31,7 @@ POLLUTER_ACCESS = {
         "access": "WRITE", "class": "odfixture.ConfigPolluterTest", "method": "pollute",
         "bytecode_offset": 1, "depth": 1,
     }],
+    "unsupported_observations": [],
 }
 VICTIM_ACCESS = {
     "test": {"class": "odfixture.ConfigVictimTest", "method": "expectsDefaultMode"},
@@ -37,46 +41,38 @@ VICTIM_ACCESS = {
         "access": "READ", "class": "odfixture.ConfigVictimTest", "method": "expectsDefaultMode",
         "bytecode_offset": 1, "depth": 1,
     }],
+    "unsupported_observations": [],
 }
 NO_SHARED_RESOURCE_ACCESS = {
     "test": {"class": "odfixture.ConfigVictimTest", "method": "expectsDefaultMode"},
     "accesses": [],
+    "unsupported_observations": [],
 }
 
 
-class TestFindResourceEdge(unittest.TestCase):
+def resource_fields(polluter_access, victim_access):
+    """Drive the report fields through Member 1's real pair-mode functions, the way
+    eval/tools/run_w9_integration.py does -- not through a local correlation function."""
+    pair = find_edges(POLLUTER_ID, polluter_access, VICTIM_ID, victim_access)
+    return report_fields(pair)
+
+
+class TestResourceFieldsViaM1(unittest.TestCase):
+    """find_edges/report_fields are Member 1's; these tests only check this module calls
+    them correctly and reads their output the way assemble_report expects."""
+
     def test_finds_the_shared_resource(self):
-        edge = find_resource_edge(POLLUTER_ACCESS, VICTIM_ACCESS)
-        self.assertIsNotNone(edge)
-        self.assertEqual(edge["resource"], {"kind": "static-field", "class": "odfixture.Config", "field": "mode"})
-        self.assertEqual(edge["polluter_write_location"],
+        fields = resource_fields(POLLUTER_ACCESS, VICTIM_ACCESS)
+        self.assertEqual(fields["shared_resource"], {"kind": "static-field", "class": "odfixture.Config", "field": "mode"})
+        self.assertEqual(fields["polluter_write_location"],
                           {"class": "odfixture.ConfigPolluterTest", "method": "pollute", "bytecode_offset": 1})
-        self.assertEqual(edge["victim_read_location"],
+        self.assertEqual(fields["victim_read_location"],
                           {"class": "odfixture.ConfigVictimTest", "method": "expectsDefaultMode", "bytecode_offset": 1})
+        self.assertIn("Static analysis only; no runtime evidence (Iteration 2).", fields["limitations"])
 
-    def test_no_shared_resource_returns_none(self):
-        self.assertIsNone(find_resource_edge(POLLUTER_ACCESS, NO_SHARED_RESOURCE_ACCESS))
-
-    def test_picks_lowest_combined_depth_when_multiple_shared(self):
-        polluter_two_writes = {
-            "accesses": [
-                {"resource_id": "a", "access": "WRITE", "resource": {"kind": "static-field", "class": "X", "field": "a"},
-                 "class": "P", "method": "p", "bytecode_offset": 1, "depth": 2},
-                {"resource_id": "b", "access": "WRITE", "resource": {"kind": "static-field", "class": "X", "field": "b"},
-                 "class": "P", "method": "p", "bytecode_offset": 2, "depth": 1},
-            ]
-        }
-        victim_two_reads = {
-            "accesses": [
-                {"resource_id": "a", "access": "READ", "resource": {"kind": "static-field", "class": "X", "field": "a"},
-                 "class": "V", "method": "v", "bytecode_offset": 1, "depth": 1},
-                {"resource_id": "b", "access": "READ", "resource": {"kind": "static-field", "class": "X", "field": "b"},
-                 "class": "V", "method": "v", "bytecode_offset": 2, "depth": 1},
-            ]
-        }
-        # "a": write depth 2 + read depth 1 = 3. "b": write depth 1 + read depth 1 = 2 (lower, wins).
-        edge = find_resource_edge(polluter_two_writes, victim_two_reads)
-        self.assertEqual(edge["resource"]["field"], "b")
+    def test_no_shared_resource_gives_none_fields(self):
+        fields = resource_fields(POLLUTER_ACCESS, NO_SHARED_RESOURCE_ACCESS)
+        self.assertIsNone(fields["shared_resource"])
 
 
 def _diagnosis(status, **overrides):
@@ -93,16 +89,17 @@ def _diagnosis(status, **overrides):
 
 class TestAssembleReport(unittest.TestCase):
     def test_polluter_found_with_edge_gives_verified(self):
-        edge = find_resource_edge(POLLUTER_ACCESS, VICTIM_ACCESS)
-        report = assemble_report(_diagnosis(POLLUTER_FOUND), edge)
+        fields = resource_fields(POLLUTER_ACCESS, VICTIM_ACCESS)
+        report = assemble_report(_diagnosis(POLLUTER_FOUND), fields)
         self.assertEqual(report["outcome"], "VERIFIED")
         self.assertIsNone(report["unresolved_reason"])
-        self.assertEqual(report["shared_resource"], edge["resource"])
+        self.assertEqual(report["shared_resource"], fields["shared_resource"])
         self.assertEqual(report["polluters"], [POLLUTER.to_dict()])
+        self.assertIn("Static analysis only; no runtime evidence (Iteration 2).", report["limitations"])
         validate_report(report)  # must not raise
 
     def test_polluter_found_without_edge_gives_no_supported_resource_evidence(self):
-        report = assemble_report(_diagnosis(POLLUTER_FOUND), resource_edge=None)
+        report = assemble_report(_diagnosis(POLLUTER_FOUND), resource_fields=None)
         self.assertEqual(report["outcome"], "UNRESOLVED")
         self.assertEqual(report["unresolved_reason"], "NO_SUPPORTED_RESOURCE_EVIDENCE")
         self.assertIsNone(report["shared_resource"])
@@ -110,15 +107,15 @@ class TestAssembleReport(unittest.TestCase):
 
     def test_polluter_found_weak_reproduction_gives_candidate(self):
         diagnosis = _diagnosis(POLLUTER_FOUND, sequence_successes=12, sequence_any_failures=12)
-        edge = find_resource_edge(POLLUTER_ACCESS, VICTIM_ACCESS)
-        report = assemble_report(diagnosis, edge)
+        fields = resource_fields(POLLUTER_ACCESS, VICTIM_ACCESS)
+        report = assemble_report(diagnosis, fields)
         self.assertEqual(report["outcome"], "CANDIDATE")
         validate_report(report)
 
     def test_source_integrity_failed_overrides_everything(self):
         diagnosis = _diagnosis(POLLUTER_FOUND, source_integrity=INTEGRITY_FAILED)
-        edge = find_resource_edge(POLLUTER_ACCESS, VICTIM_ACCESS)
-        report = assemble_report(diagnosis, edge)
+        fields = resource_fields(POLLUTER_ACCESS, VICTIM_ACCESS)
+        report = assemble_report(diagnosis, fields)
         self.assertEqual(report["outcome"], "UNRESOLVED")
         self.assertEqual(report["unresolved_reason"], "SOURCE_INTEGRITY_FAILED")
         self.assertFalse(report["source_integrity"]["passed"])
@@ -130,7 +127,7 @@ class TestAssembleReport(unittest.TestCase):
             sequence_n=20, sequence_successes=20, sequence_any_failures=20,
             alone_n=20, alone_successes=20,
         )
-        report = assemble_report(diagnosis)  # no resource_edge argument -- not relevant here
+        report = assemble_report(diagnosis)  # no resource_fields argument -- not relevant here
         self.assertEqual(report["outcome"], "UNRESOLVED")
         self.assertEqual(report["unresolved_reason"], "VICTIM_FAILS_ALONE")
         self.assertEqual(report["polluters"], [])
@@ -138,14 +135,14 @@ class TestAssembleReport(unittest.TestCase):
         validate_report(report)
 
     def test_victim_fails_alone_ignores_a_passed_in_edge(self):
-        """Even if a caller mistakenly passes a resource_edge for a VICTIM_FAILS_ALONE
+        """Even if a caller mistakenly passes resource_fields for a VICTIM_FAILS_ALONE
         diagnosis, it must not be used -- the gate fires before resource evidence matters."""
         diagnosis = _diagnosis(
             VICTIM_FAILS_ALONE, polluters=[], sequence=[VICTIM],
             alone_n=20, alone_successes=5,
         )
-        edge = find_resource_edge(POLLUTER_ACCESS, VICTIM_ACCESS)
-        report = assemble_report(diagnosis, resource_edge=edge)
+        fields = resource_fields(POLLUTER_ACCESS, VICTIM_ACCESS)
+        report = assemble_report(diagnosis, resource_fields=fields)
         self.assertIsNone(report["shared_resource"])
         self.assertEqual(report["unresolved_reason"], "VICTIM_FAILS_ALONE")
 

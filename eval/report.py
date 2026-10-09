@@ -1,8 +1,16 @@
 """W9 report assembly (Interface 3, docs/contracts/interfaces.md).
 
-Turns Member 2's raw diagnosis counts (runner.diagnose.DiagnosisRuns) and Member 1's per-test
-resource-access data (evidence.extract.analyse_test, Output 1 of
+Turns Member 2's raw diagnosis counts (runner.diagnose.DiagnosisRuns) and Member 1's
+pair-mode resource-edge data (evidence.extract.find_edges + report_fields, Output 2 of
 docs/contracts/resource-evidence.md) into one schema-validated diagnosis report.
+
+Which shared resource goes in the report is decided once, by Member 1's find_edges/
+report_fields -- this module does not re-derive it. An earlier version of this file had its
+own correlation function (find_resource_edge); it duplicated that logic, dropped M1's
+FIXED_LIMITATIONS, and callers were passing --depth 1, which cannot find a resource accessed
+through a one-level helper call (e.g. F2's FeatureVictimTest reads the property inside
+FeatureFlags.isTurboEnabled(), not in the test method itself) -- flagged by Member 2, see
+docs/evidence-m3.md.
 
 Only two of runner.diagnose's four DiagnosisRuns.status values are wired end to end here:
 POLLUTER_FOUND and VICTIM_FAILS_ALONE. NOT_REPRODUCED and NO_SINGLE_POLLUTER are deliberately
@@ -26,51 +34,23 @@ class UnhandledStatus(Exception):
     """Raised for a DiagnosisRuns.status this module does not yet turn into a report."""
 
 
-def find_resource_edge(polluter_access: dict, victim_access: dict) -> Optional[dict]:
-    """Correlate two Output-1 analyses (evidence.extract.analyse_test) into one edge: a
-    resource the polluter WRITES and the victim READS.
-
-    Returns None if there is no such resource (-> NO_SUPPORTED_RESOURCE_EVIDENCE). If more
-    than one resource is shared, returns the one the contract's edge ordering would rank
-    first (min write depth + min read depth, then resource_id) -- matching
-    docs/contracts/resource-evidence.md's documented `edges[0]` projection.
-    """
-    writes = {a["resource_id"]: a for a in polluter_access["accesses"] if a["access"] == "WRITE"}
-    reads = {a["resource_id"]: a for a in victim_access["accesses"] if a["access"] == "READ"}
-    shared_ids = sorted(
-        writes.keys() & reads.keys(),
-        key=lambda rid: (writes[rid]["depth"] + reads[rid]["depth"], rid),
-    )
-    if not shared_ids:
-        return None
-    write, read = writes[shared_ids[0]], reads[shared_ids[0]]
-    return {
-        "resource": write["resource"],
-        "polluter_write_location": {
-            "class": write["class"], "method": write["method"],
-            "bytecode_offset": write["bytecode_offset"],
-        },
-        "victim_read_location": {
-            "class": read["class"], "method": read["method"],
-            "bytecode_offset": read["bytecode_offset"],
-        },
-    }
-
-
 def assemble_report(
     diagnosis: DiagnosisRuns,
-    resource_edge: Optional[dict] = None,
+    resource_fields: Optional[dict] = None,
     confidence: float = 0.95,
 ) -> dict:
     """Build and validate one diagnosis report from a DiagnosisRuns and (for POLLUTER_FOUND)
-    the resource edge from find_resource_edge. Raises UnhandledStatus for any status other
-    than POLLUTER_FOUND or VICTIM_FAILS_ALONE -- see module docstring."""
+    `resource_fields` -- the output of evidence.extract.report_fields(pair), itself built
+    from evidence.extract.find_edges(polluter_id, polluter_access, victim_id, victim_access).
+    Raises UnhandledStatus for any status other than POLLUTER_FOUND or VICTIM_FAILS_ALONE --
+    see module docstring."""
     if diagnosis.status not in (POLLUTER_FOUND, VICTIM_FAILS_ALONE):
         raise UnhandledStatus(
             f"assemble_report does not yet handle DiagnosisRuns.status={diagnosis.status!r}; "
             "see eval/report.py's module docstring"
         )
-    edge = resource_edge if diagnosis.status == POLLUTER_FOUND else None
+    fields = resource_fields if diagnosis.status == POLLUTER_FOUND else None
+    edge_found = bool(fields and fields["shared_resource"] is not None)
 
     decision_input = DecisionInput(
         source_integrity_passed=diagnosis.source_integrity.passed,
@@ -79,13 +59,22 @@ def assemble_report(
         sequence_successes=diagnosis.sequence_successes,
         sequence_n=diagnosis.sequence_n,
         sequence_failures_any=diagnosis.sequence_any_failures,
-        resource_edge_exists=edge is not None,
+        resource_edge_exists=edge_found,
         confidence=confidence,
     )
     decision = decide(decision_input)
 
     ref = diagnosis.reference_signature
     assert ref is not None, "POLLUTER_FOUND/VICTIM_FAILS_ALONE always carry a reference signature"
+
+    limitations = [
+        "instrumentation_level is static-only (Iteration 1); runtime instrumentation is Iteration 2.",
+    ]
+    if diagnosis.status == POLLUTER_FOUND:
+        if fields:
+            limitations += fields["limitations"]
+        if not edge_found:
+            limitations.append("No polluter-write/victim-read resource edge was found by static analysis.")
 
     report = {
         "victim": diagnosis.victim.to_dict(),
@@ -103,9 +92,9 @@ def assemble_report(
             "confidence": confidence,
             "lower": decision.isolation_interval[0], "upper": decision.isolation_interval[1],
         },
-        "shared_resource": edge["resource"] if edge else None,
-        "polluter_write_location": edge["polluter_write_location"] if edge else None,
-        "victim_read_location": edge["victim_read_location"] if edge else None,
+        "shared_resource": fields["shared_resource"] if fields else None,
+        "polluter_write_location": fields["polluter_write_location"] if fields else None,
+        "victim_read_location": fields["victim_read_location"] if fields else None,
         "failure_signature": {
             "exception_type": ref.exception_type,
             "message": ref.message,
@@ -119,12 +108,7 @@ def assemble_report(
         },
         "outcome": decision.outcome,
         "unresolved_reason": decision.unresolved_reason,
-        "limitations": [
-            "instrumentation_level is static-only (Iteration 1); runtime instrumentation is Iteration 2.",
-        ] + (
-            ["No polluter-write/victim-read resource edge was found by static analysis."]
-            if diagnosis.status == POLLUTER_FOUND and edge is None else []
-        ),
+        "limitations": limitations,
     }
     validate_report(report)
     return report

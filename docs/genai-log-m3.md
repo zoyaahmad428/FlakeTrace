@@ -454,3 +454,58 @@ no interface mismatch.
 
 Ownership checkpoint: you need to understand and verify this implementation
 before claiming it as your contribution.
+
+## 2026-10-10 — Fix two real bugs in merged W9 work, found by Member 2
+
+**What I asked:** Member 2 reviewed the merged W9 PR (#13) and relayed two problems: (1)
+`eval/reports/README.md` wrongly credits `runner.diagnose.diagnose()` with resolving the
+execution-record path to absolute, when it's actually this repo's own script doing that; (2)
+`eval/report.py` has its own resource-correlation function instead of using Member 1's real
+`find_edges`/`report_fields`, and the integration script calls the extractor at `--depth 1`,
+which cannot find F2's edge. Asked to verify both claims against the real code before acting
+on them, then fix.
+
+**What was retained:**
+- Both diagnoses, after independently re-deriving them by reading `runner/diagnose.py` lines
+  93/103 and `evidence/extract.py`'s `follow_call`/`walk_root` depth-limit logic myself, and
+  by reading `FeatureVictimTest.java` to see the `FeatureFlags.isTurboEnabled()` indirection
+  — not accepted on Member 2's word alone.
+- The fix approach I chose: swap `eval/report.py`'s `assemble_report` to take M1's real
+  `report_fields(pair)` output instead of its own `find_resource_edge`; delete the duplicate
+  function entirely rather than deprecate it; switch the integration script to M1's
+  `find_edges`/`report_fields` at `DEFAULT_DEPTH` (2); and since the fix provably unlocks F2
+  (checked directly before writing the script change), add a real `run_f2()` to
+  `eval/tools/run_w9_integration.py` rather than just fixing the two cases already there.
+
+**What I changed:** Rewrote `eval/tests/test_report.py`'s fixture-building tests to call
+Member 1's real `find_edges`/`report_fields` (via a small local `resource_fields()` helper
+that mirrors what the integration script does) instead of testing my own deleted correlation
+function — keeps the "never fake a component" rule: the test now exercises M1's real code,
+not a re-derivation of it.
+
+**How it was verified:**
+- Isolated check before touching the script: called `evidence.extract.find_edges`/
+  `report_fields` directly on F2's real compiled classes at `depth=1` (got `shared_resource:
+  None`, reproducing the bug) and `depth=2` (got the real edge), independent of any Maven run.
+- `py -m unittest discover -s eval/tests -v` → 68/68 passed after the rewrite.
+- `py eval/tools/run_w9_integration.py` (real Maven/JDK 24 run) → F1 `VERIFIED` (unchanged),
+  **F2 `VERIFIED` for the first time**, real edge `system-property:odfixture.turbo`, read
+  location correctly `FeatureFlags#isTurboEnabled` (not the test method — proves the helper
+  call was actually followed), N1 `UNRESOLVED(VICTIM_FAILS_ALONE)` (unchanged).
+
+**Errors found:** Both of Member 2's points were real, confirmed independently — not
+secondhand trust. A third, related wrong claim found while fixing the first: the same
+README's "What's NOT here yet" section said F2 "needs resource-evidence depth 2, not
+implemented by Member 1 yet," which was also wrong (depth 2 was already implemented; the bug
+was this script passing `depth=1`). Corrected in the same edit.
+
+**Rejections:** Member 2 also asked me to review/approve contract PR #17 on GitHub (already
+merged) "after the fact." Not done here — I have no `gh` CLI or write-scoped GitHub API
+access in this environment, so I cannot submit a PR review myself; flagging it back to the
+member to do directly rather than fabricating or skipping it silently.
+
+Ownership checkpoint: you need to understand and verify this implementation
+before claiming it as your contribution. In particular, be able to explain without AI: why
+`diagnose()`'s internal `.resolve()` call (line 93) is unrelated to the path it actually
+returns (line 103), and why `--depth` controls how many call-levels the extractor follows
+rather than something about the resource type.
