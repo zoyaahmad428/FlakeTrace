@@ -18,16 +18,44 @@ three areas do not drift apart.
 
 ## Commits
 
-```
-[M2] runner: run an explicit ordered list of tests in one JVM
-[M3] eval: add Wilson interval edge-case tests
-[ALL] docs: record panel action register
+**Every commit is made by a member, never by an AI agent.** Agents write code and docs, then
+stop and give you the exact commands (see `CLAUDE.md` §3). You read `git diff --staged`,
+then run the commit and push yourself.
+
+**Before your first commit on any machine**, make sure your commits are credited to you:
+
+```bash
+git config user.name  "Your Name"
+git config user.email "the-email-on-your-GitHub-account"
 ```
 
-- Prefix with the member who did the work (`[M1]`, `[M2]`, `[M3]`, or `[ALL]` for joint work).
-- One logical change per commit. A commit message says *what changed and why*.
-- If an AI assistant produced the change, keep its `Co-Authored-By` trailer — disclosure is
-  required, and it costs nothing.
+If GitHub shows your commits with a grey avatar, that email is not on your account: add it
+under GitHub → Settings → Emails.
+
+**When to commit:** after each logical unit of work that is finished and verified — a
+function plus its test, a fixed bug, one doc section. Not one giant commit per day, and not
+half-finished work.
+
+**Message format:**
+
+```
+[M2] runner: run an explicit ordered list of tests in one JVM      ← title, ≤72 chars
+
+Implements OrderRunner.run_ordered from eval/baseline.py: one fresh   ← what and why
+JVM per call, tests executed in exactly the given order.
+
+Verified: python3 -m unittest runner.tests.test_order_runner -> OK   ← real command + result
+Refs: W6                                                              ← work package / issue
+
+Co-Authored-By: Claude <noreply@anthropic.com>                        ← if AI helped materially
+```
+
+- Title prefix: the member who did the work (`[M1]`, `[M2]`, `[M3]`, or `[ALL]` for joint
+  work), then the area (`runner`, `evidence`, `eval`, `fixtures`, `ci`, `docs`, `contract`,
+  `report`), then an imperative summary.
+- Stage files by name; avoid `git add .` so unrelated files never sneak in.
+- The commit includes the docs it affects (evidence log, iteration plan, README …).
+- Bad: `update`, `wip`, `fixes`. Good: `[M3] eval: reject n=0 in wilson_interval with a clear error`.
 - Do not squash away history when merging: use **"Create a merge commit"** or
   **"Rebase and merge"** so each member's individual commits remain visible.
 

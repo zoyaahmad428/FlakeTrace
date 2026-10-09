@@ -29,6 +29,8 @@ result:
 - [ ] `docs/evidence-m<N>.md` updated with what was run
 - [ ] `docs/genai-log-m<N>.md` updated (assistance level L1–L4) if AI materially helped
 - [ ] Anything mocked or hardcoded is labelled as such
+- [ ] Affected docs updated (iteration plan, members, READMEs, demo plan — see CLAUDE.md §5)
+- [ ] Every commit was run by me, under my own GitHub email (no "Claude" authors)
 
 ## For the reviewer
 

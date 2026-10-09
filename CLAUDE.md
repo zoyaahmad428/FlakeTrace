@@ -37,10 +37,61 @@ member's internals.
 
 - Never commit to `main`. Work on a branch named `m<N>/<short-topic>` (e.g. `m2/order-runner`),
   `docs/<topic>` or `chore/<topic>`.
-- Small commits with the member prefix: `[M2] runner: add single-JVM ordered execution`.
 - Open a PR into `main`; CI must pass and **one other member** must approve.
 - Before the evaluation, the demonstrated version is tagged `mid-eval-v1`. Do not move tags.
 - Full rules: [CONTRIBUTING.md](CONTRIBUTING.md).
+
+### HARD RULE — the member commits, never the agent
+
+**You must not run `git commit`, `git push`, `git merge`, `git rebase`, `git tag`,
+`git reset`, `git stash` or `git checkout`/`git switch` that discards changes.** You may only
+read: `git status`, `git diff`, `git log`, `git show`, `git branch`. You may create the
+working branch only if the member asks you to.
+
+Why: the evaluation checks that each member understands and owns their history. A commit the
+member ran, after reading the diff, is evidence of that. A commit an agent made is not.
+
+### When to stop and hand over a commit
+
+Stop and hand over as soon as **one logical unit** of work is finished and verified — for
+example a function plus its test, a fixed bug, one doc section, a contract proposal. Do not
+let a session pile up unrelated changes, and do not hand over half-finished work as a commit.
+A long task is several commits, each handed over in turn.
+
+### What you give the member at each hand-over
+
+1. **Docs updated first** — see §5. The commit includes its docs.
+2. **What changed**, in two or three plain sentences, and the `git status --short` output.
+3. **How it was verified**: the exact command and its real result (or "not run").
+4. **The exact commands**, ready to paste, staging files by name (never `git add -A` or
+   `git add .`):
+
+```bash
+git config user.email            # must print the member's GitHub email — stop if not
+git add runner/order_runner.py runner/tests/test_order_runner.py docs/evidence-m2.md
+git commit -m "[M2] runner: run an explicit ordered list of tests in one JVM" \
+  -m "Implements OrderRunner.run_ordered from eval/baseline.py: one fresh JVM per call,
+tests executed in exactly the given order, failure signature per failed test.
+
+Verified: python3 -m unittest runner.tests.test_order_runner -> 6 tests OK.
+F1 victim fails after its polluter in one JVM; passes alone.
+Refs: W6 (docs/08-MidEval/iteration-plan.md)" \
+  -m "Co-Authored-By: Claude <noreply@anthropic.com>"
+git push -u origin m2/order-runner
+```
+
+**Message format:**
+- **Title:** `[M<N>] <area>: <what changed>` — imperative ("add", "fix", not "added"),
+  at most 72 characters, specific. Areas: `runner`, `evidence`, `eval`, `fixtures`, `ci`,
+  `docs`, `contract`, `report`.
+- **Body:** *what* and *why* (not a file list); `Verified:` with the real command and result;
+  `Refs:` the work package (W1–W13), issue or PR.
+- **Trailer:** `Co-Authored-By:` for the assisting AI whenever it materially contributed.
+- Bad: `update`, `fixes`, `wip`, `changes to runner`. Good: `[M2] runner: report a crash as
+  a failure instead of dropping the test`.
+
+5. Then tell the member to **read `git diff --staged` before running `git commit`.** If they
+   do not understand a change, explain it before they commit.
 
 ## 4. Honesty rules — these protect marks
 
@@ -56,7 +107,30 @@ member's internals.
 5. **Citations:** do not add a reference to the report or docs unless a member has opened
    the original source.
 
-## 5. Record your own assistance (required by the GenAI policy)
+## 5. Keep the docs current — every hand-over
+
+Before each commit hand-over, update every doc the work affects. Docs are part of the change,
+not a later chore. Check this list each time:
+
+| If the work… | Update |
+| --- | --- |
+| Ran anything (tests, a build, the tool on a fixture) | `docs/evidence-m<N>.md` — requirement, command, real result, limitation |
+| Was materially AI-assisted | `docs/genai-log-m<N>.md` and a row in `docs/08-MidEval/genai-register.md` |
+| Changed a component's behaviour, inputs or outputs | That folder's `README.md`, and its four-point note in `docs/04-Implementation/` |
+| Progressed or finished a work package | Its row in `docs/08-MidEval/iteration-plan.md`, and your row in `docs/09-Team/members.md` |
+| Changed what the live demo can show | `docs/08-MidEval/demo-plan.md` (including what is mocked) |
+| Closed or advanced a panel action | Its status and evidence link in `docs/08-MidEval/panel-action-register.md` |
+| Needed a design decision | A new file in `docs/03-Design/decisions/` (ADR) — proposed, for the team to agree |
+| Created a claim someone will say to the supervisor | A row in `docs/07-Defense/claims-ledger.md` with its backing |
+| Needs a contract change | **Do not edit the contract.** Write the proposal in the PR description or an issue |
+| Changed how to install, run or test | Root `README.md` and §8 below |
+
+Rules for docs: they live in `docs/` (the Obsidian vault) and use `[[wiki-links]]` between
+vault notes; never write a result that was not produced by a real run; keep a doc's `Status`
+line true. Plain `.md`/`.txt` files outside `docs/` (folder READMEs, evidence dumps) follow the
+same honesty rules.
+
+## 6. Record your own assistance (required by the GenAI policy)
 
 After each working session that materially changed code, tests, diagrams or report text:
 
@@ -73,7 +147,7 @@ End each session by telling the member, in plain words, what they now need to un
 defend this work themselves. The supervisor will ask each member to explain and modify their
 own code **without AI** during the evaluation.
 
-## 6. Where things live
+## 7. Where things live
 
 ```
 CLAUDE.md, CONTRIBUTING.md, README.md   rules and entry points
@@ -88,7 +162,7 @@ docs/                                   Obsidian vault — open this folder in O
   09-Team/                              working agreement, members, Claude guide
 ```
 
-## 7. Commands
+## 8. Commands
 
 ```bash
 pip install -r eval/requirements.txt
