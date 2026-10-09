@@ -91,3 +91,57 @@ extractor, default `--depth 2`) where the team can agree to them.
   depth 1 (W_R). Not resolved here; Phase 5 re-measures with this extractor.
 - Open question 5 (F1 offsets) resolved by Member 3 in PR #7 (`af70048`),
   verified independently with `javap -c -p`: offsets 1/1.
+
+## Phase 2 — Depth-1 extraction with lifecycle attribution (2026-10-09)
+
+**Requirement:** given compiled classes and one test method, report its static-field and
+constant-key system-property accesses, from the test method **and** its lifecycle code
+(JUnit 4 `@Before/@After/@BeforeClass/@AfterClass`, JUnit 3 `setUp/tearDown`, the test
+class's `<clinit>`, inherited lifecycle methods), with the lifecycle method each came from.
+
+- Files: `evidence/extract.py` (`parse_class`, `find_roots`, `scan_method`, `scan_call`,
+  `constant_key`, `analyse_test`, `main`); `evidence/tests/test_extract.py`; Member 1's own
+  test input `evidence/tests/resources/m1-selftest/` (not a project fixture).
+- Build (POC-frozen JDK 8 image `maven@sha256:15522857…`):
+  `mvn -B -q -f evidence/tests/resources/m1-selftest/pom.xml test-compile` → exit 0.
+- Manual cross-check, acceptance case `m1selftest.M1SelfTest#writesAndReads`
+  (JDK 8 `javap -c -p`, saved in `evidence/javap-dumps/phase2-m1selftest.txt`):
+
+  | javap -c -p (JDK 1.8.0_502) | extractor output (`--depth 1`, JDK 8 javap) |
+  | --- | --- |
+  | `1: putstatic … SelfTestState.counter:I` | `WRITE m1selftest.SelfTestState#counter @1 via=TEST_METHOD` |
+  | `4: getstatic … SelfTestState.counter:I` | `READ  m1selftest.SelfTestState#counter @4` |
+  | `8: ldc "m1.selftest.key"`, `12: invokestatic System.setProperty` | `WRITE sysprop:m1.selftest.key @12` |
+  | `16: ldc "m1.selftest.key"`, `18: invokestatic System.getProperty` | `READ  sysprop:m1.selftest.key @18` |
+
+  Exactly these 4 accesses, no unsupported observations.
+- Lifecycle (`M1LifecycleSelfTest#emptyBody`, empty test body): CLINIT `<clinit>@4`
+  (setProperty), BEFORE_CLASS `beforeAll@1`, BEFORE `M1LifecycleBase.baseBefore@1`
+  (inherited), AFTER `after@2` (clearProperty), AFTER_CLASS `afterAll@0`. All offsets match
+  the JDK 8 javap dump. JUnit 3 (`M1Junit3SelfTest#testNothing`): SETUP `setUp@1`,
+  TEARDOWN `tearDown@2` (`Boolean.getBoolean`).
+- Unsupported (`M1UnsupportedSelfTest#tricky`): `SYSPROP_NON_CONSTANT_KEY@23`,
+  `REFLECTION@37` (`Field.setInt`), `DEPTH_LIMIT@40` (`helper()` not followed); no accesses
+  reported. Offsets match the dump.
+- Command: `python3 -m unittest evidence.tests.test_extract -v` → `Ran 9 tests … OK` with
+  host javap 21.0.12.1, and `Ran 9 tests … OK` with JDK 8 javap
+  (`FLAKETRACE_JAVAP` pointing at the JDK 8 image's javap).
+- Fixture sanity run (`--depth 1`, JDK 8 javap, fixture compiled unmodified):
+  `ConfigPolluterTest#pollute` WRITE `odfixture.Config#mode @1`; `ConfigVictimTest#expectsDefaultMode`
+  READ `@1`; `FeaturePolluterTest#enableTurbo` WRITE `sysprop:odfixture.turbo @4`;
+  `FeatureVictimTest#expectsTurboDisabled` no access, `DEPTH_LIMIT @0`
+  (`FeatureFlags#isTurboEnabled`). Both F1 tests also get `IMPLICIT_CLINIT` (`Config.<clinit>`).
+  This matches the Phase 1 javap evidence. It is not the Phase 5 validation.
+- Error found and fixed: on JDK 8 javap, the lifecycle case first returned only the CLINIT
+  access. Cause: `RX_CONSTANT` captured javap's padding before the annotation descriptor
+  (`'              Lorg/junit/BeforeClass;'`), so no annotation matched. Fix: `\s?` → `\s*`.
+  Mutation check: restoring the old regex makes
+  `test_junit4_lifecycle_and_inherited_before_are_attributed` fail (1 failure).
+- Limitations discovered:
+  - Depth 1 only: F2's victim read is invisible until Phase 3.
+  - Running without `--depth 1` exits 2 ("not implemented yet") because the contract default is 2.
+  - The test class **constructor and instance-field initialisers** run for every JUnit test
+    but are not roots in the contract (`via` has no value for them), so they are not analysed.
+    This needs a contract decision.
+  - The unit tests are not in CI yet: `.github/` is Member 2's area. CI needs a step that
+    compiles the self-test project and runs `python3 -m unittest evidence.tests.test_extract`.
