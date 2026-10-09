@@ -1,0 +1,1 @@
+OR-04__probe	com.j256.ormlite.logger.LoggerFactoryTest#testSetLogFactory com.j256.ormlite.dao.RuntimeExceptionDaoTest#testAssignEmptyForeignCollectionThrow

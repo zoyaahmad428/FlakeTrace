@@ -1,0 +1,1 @@
+OR-03__probe	com.j256.ormlite.logger.LoggerFactoryTest#testSetLogFactory com.j256.ormlite.support.BaseConnectionSourceTest#testClearDifferentConnection

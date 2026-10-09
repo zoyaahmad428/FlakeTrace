@@ -1,0 +1,2 @@
+alone	com.alibaba.json.bvt.date.DateTest#test_date
+after_setter	com.alibaba.json.bvt.date.DateFieldTest8#test_0 com.alibaba.json.bvt.date.DateTest#test_date

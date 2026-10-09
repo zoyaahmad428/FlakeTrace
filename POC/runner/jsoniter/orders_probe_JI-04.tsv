@@ -1,0 +1,1 @@
+JI-04__probe	com.jsoniter.extra.TestNamingStrategy#test com.jsoniter.output.TestObject#test_transient_field_getter
