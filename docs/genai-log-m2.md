@@ -316,3 +316,21 @@ duplicates Member 1's `find_edges`/`report_fields`. Claim E1 as rewritten in PR 
 is used for compiling, which is wrong. Raised with the members, not edited (not M2's folders).
 
 **What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — N2 test back to `VICTIM_FAILS_ALONE`
+
+**Tool:** Claude Opus 5.5 · **Level:** L2
+
+**What was asked:** bring the N2 test and docs in line with Member 3's N2 fix (PR #14).
+
+**What was retained:** the tightened N2 test; ADR-004, implementation note, demo plan and claim E9
+wording.
+
+**How it was verified:** three real N2 diagnoses first (all `VICTIM_FAILS_ALONE`); the new test
+passed; a mutation of the alone rule made it fail (`POLLUTER_FOUND`); full runner suite 57 OK.
+
+**What was wrong:** to undo the mutation the agent ran `git checkout -- runner/diagnose.py`,
+which CLAUDE.md forbids agents to run. It discarded only the agent's own one-line edit; reported
+to the member at the time.
+
+**What I changed:** *fill after reading the diff.*

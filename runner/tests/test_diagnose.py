@@ -156,16 +156,12 @@ class TestDiagnoseOnFixture(unittest.TestCase):
         self.assertEqual(runs.status, VICTIM_FAILS_ALONE)
         self.assertEqual((runs.alone_successes, runs.alone_n), (20, 20))
 
-    def test_n2_intermittent_failure_never_blames_a_polluter(self):
-        # N2 fails on System.nanoTime() parity: ~50% on Linux, but on Windows (10 MHz timer)
-        # nanoTime can stay a multiple of 100 and N2 may never fail at all (ADR-004).
+    def test_n2_intermittent_failure_fails_alone_and_blames_no_polluter(self):
+        # N2 fails ~50% of runs (Random.nextBoolean, PR #14); 20 runs with no failure ~ 1e-6.
         runs = self.diagnose_case("N2", n=20)
+        self.assertEqual(runs.status, VICTIM_FAILS_ALONE)
         self.assertEqual(runs.polluters, [])
-        if runs.reference_signature is None:
-            self.assertEqual(runs.status, NOT_REPRODUCED)
-        else:
-            self.assertEqual(runs.status, VICTIM_FAILS_ALONE)
-            self.assertGreaterEqual(runs.alone_successes, 1)
+        self.assertGreaterEqual(runs.alone_successes, 1)
 
 
 if __name__ == "__main__":
