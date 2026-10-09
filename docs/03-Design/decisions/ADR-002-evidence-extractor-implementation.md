@@ -55,6 +55,6 @@ Two choices are left open:
 
 | Member | Agree? | Comment |
 | --- | --- | --- |
-| M1 | ☐ | |
+| M1 | ☑ | Chose (a1) fresh Python/javap extractor and default depth 2 on 2026-10-09 |
 | M2 | ☐ | |
 | M3 | ☐ | |

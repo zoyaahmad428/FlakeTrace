@@ -226,3 +226,50 @@ recorded, not hidden.
 three members; proposed in the PR instead).
 
 Ownership checkpoint: you need to understand and verify this implementation before claiming it as your contribution.
+
+## 2026-10-09 — CI guard for the evidence tests; in-process default depth
+
+**Assistance level:** L2 (Assisted): the guard helper and test were generated; the need came from
+Member 2's CI question.
+
+**What I asked:** make sure Member 2's CI job for `evidence/tests/` cannot pass by skipping.
+
+**What was retained:** `FLAKETRACE_REQUIRE_JVM=1` turns the "classes not compiled" and "javap not
+found" skips into failures (the same name Member 2's runner job uses); `analyse_test` now defaults
+to depth 2 like the CLI; 1 new test (27 total).
+
+**What I changed:** *fill after review.*
+
+**How it was verified:** skip, fail and pass behaviour each run for real; see `docs/evidence-m1.md`.
+
+**Errors found:** `analyse_test`'s in-process default was depth 1 while the CLI and the contract
+said 2. It was found while checking the contract's API notes against the code, and is fixed and
+tested.
+
+**Rejections:** none.
+
+Ownership checkpoint: you need to understand and verify this implementation before claiming it as your contribution.
+
+## 2026-10-09 — Answers to Member 2's integration questions
+
+**Assistance level:** L1 (Supportive): the wording was drafted by the assistant; the decisions
+(confirm the contract, first-edge projection, ADR agreement) are mine.
+
+**What I asked:** answer Member 2's seven questions. Confirm the contract, choose the edge for the
+report, confirm the CLI call and exit codes, give agreement on ADR-003 and ADR-004, and confirm the
+CI command.
+
+**What was retained:** the contract status and open-question answers; the "Calling it from another
+component" notes (run from the repo root or import in-process); ticks on ADR-001 to ADR-004.
+
+**What I changed:** *fill after review.*
+
+**How it was verified:** see `docs/evidence-m1.md` (API names checked against main, example and
+anchors validated).
+
+**Errors found:** Member 2's planned call (`python -m evidence.extract` with the target project as
+working directory) would fail with "No module named evidence". This is now documented: run it from
+the repo root or set `PYTHONPATH`.
+
+**Rejections:** editing claims-ledger row E1 myself. It is a joint row raised by Member 2; I
+proposed wording in my reply instead.

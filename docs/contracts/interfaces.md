@@ -75,7 +75,7 @@ Iteration 1 supports `static-field` and `system-property` kinds only. No edge fo
 `null` in all three fields, which `decide()` turns into `UNRESOLVED(NO_SUPPORTED_RESOURCE_EVIDENCE)` —
 it must never be reported as "no dependency exists".
 
-**Planned, not yet implemented:** Python 3 (standard library only), invoked as `python3 -m evidence.extract --classes <dir> --test-classes <dir> --polluter Class#method --victim Class#method [--depth N]`; JSON on stdout, exit codes 0/1/2 — full definition in [resource-evidence.md § Invocation](resource-evidence.md#invocation).
+**Implemented (M1, Phases 2–4):** Python 3 (standard library only), invoked as `python3 -m evidence.extract --classes <dir> --test-classes <dir> --polluter Class#method --victim Class#method [--depth N]`; JSON on stdout, exit codes 0/1/2 — full definition in [resource-evidence.md § Invocation](resource-evidence.md#invocation).
 
 ## Interface 3 — report assembly (M3)
 
