@@ -319,6 +319,9 @@ and the docs saying "N2 may end `NOT_REPRODUCED` on Windows" were out of date.
   FAILED with `'POLLUTER_FOUND' != 'VICTIM_FAILS_ALONE'`: without the alone check, the search
   blamed an earlier test for N2's random failure. Restored; `git diff runner/diagnose.py` empty.
 - Full runner suite: `Ran 57 tests in 127.173s — OK`.
-- **CI for PR #20 (`evidence` job):** `Ran …` line not recorded here yet.
+- **CI on this branch** (commit `b38479c`): job `runner` (JDK 8, Linux) → `Ran 57 tests in
+  63.940s — OK` (line copied from the job log by Member 2). The tightened N2 test therefore also
+  passes on Linux/JDK 8.
+- **CI for PR #20 (`evidence` job):** `Ran …` line not recorded yet.
 - Docs updated: ADR-004 (N2 row and an update note), [[04-Implementation/diagnosis-runs]],
   demo plan Runner row, claims E9.
