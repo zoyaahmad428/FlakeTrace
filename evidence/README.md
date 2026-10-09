@@ -1,6 +1,6 @@
 # evidence/ — resource evidence (Member 1)
 
-**Owner:** Member 1 · **State:** Phase 3 done: lifecycle attribution and call depth 1–3 (default 2), single-test mode (2026-10-09). Polluter→victim edges (Phase 4) not yet built.
+**Owner:** Member 1 · **State:** Phase 4 done: lifecycle attribution, call depth 1–3 (default 2), single-test mode and polluter→victim edges (2026-10-09). Phase 5 (fixture and real-case validation) next.
 
 Finds the shared resource a polluter writes and a victim reads, from **compiled bytecode
 only** — the target project's source is never modified and no application logs are needed.
@@ -36,19 +36,31 @@ written fresh ([ADR-002](../docs/03-Design/decisions/ADR-002-evidence-extractor-
 Needs Python 3 and a JDK 8+ (`javap` on `PATH`, or set `FLAKETRACE_JAVAP` to another javap).
 
 ```bash
+# polluter -> victim: resources the polluter writes and the victim reads
+python3 -m evidence.extract --classes fixtures/od-fixture/target/classes \
+    --test-classes fixtures/od-fixture/target/test-classes \
+    --polluter odfixture.FeaturePolluterTest#enableTurbo \
+    --victim odfixture.FeatureVictimTest#expectsTurboDisabled
+
 # one test method (default --depth 2; 1-3 accepted)
 python3 -m evidence.extract --classes fixtures/od-fixture/target/classes \
     --test-classes fixtures/od-fixture/target/test-classes \
     --test odfixture.FeatureVictimTest#expectsTurboDisabled
 
-# tests: compile the self-test classes once, then run
+# tests: compile the self-test classes and the fixture once, then run
 mvn -B -q -f evidence/tests/resources/m1-selftest/pom.xml test-compile
+mvn -B -q -f fixtures/od-fixture/pom.xml test-compile
 python3 -m unittest evidence.tests.test_extract -v
 
 # what each depth adds on a compiled project
 python3 -m evidence.tools.measure_depth --classes fixtures/od-fixture/target/classes \
     --test-classes fixtures/od-fixture/target/test-classes
 ```
+
+An empty edge list comes with `no_supported_resource_evidence: true`. That means no *supported*
+static evidence was found, not that the tests are independent. `extract.report_fields(pair)` gives
+the three fields of Member 3's report (`shared_resource`, `polluter_write_location`,
+`victim_read_location`) as the contract's projection defines.
 
 Depth follows calls into the project's own classes only (never the JDK or other jars),
 breadth-first, each method once per root. A virtual call follows only the method it names;

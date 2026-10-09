@@ -22,7 +22,7 @@ post-defence plan, §13.)*
 | W5 | Single repo, CI, team rules, Mid Eval docs | M2 | Oct 9 | **In review** (this PR) | `.github/`, `CLAUDE.md`, `docs/08-MidEval/` |
 | W6 | `OrderRunner`: ordered single-JVM JUnit 4 runner + failure signatures | M2 | S−2 | **Complete** (PR #10 in review): F1 victim passes alone, fails after polluter in one JVM; every test always reported; CI job green on JDK 8 (17 tests) | `runner/order_runner.py`, [[evidence-m2]], [[03-Design/decisions/ADR-003-order-runner-junitcore-harness]] |
 | W7 | Victim-alone check, polluter search, repeated-run counts, source hash, execution record | M2 | S−1 | **Complete** (PR #11 in review): F1/F2 polluter found, F3 → W10, N1 fails alone; 57 runner tests pass locally, CI green on JDK 8 | `runner/diagnose.py`, [[evidence-m2]], [[03-Design/decisions/ADR-004-w7-diagnosis-runs]] |
-| W8 | Static extraction: static fields + system properties, attributed to test methods | M1 | S−1 | **In progress**: lifecycle attribution (Phase 2) and call depth 1–3 (Phase 3) done; polluter→victim edges (Phase 4) not yet | `evidence/extract.py`, `docs/evidence-m1.md` |
+| W8 | Static extraction: static fields + system properties, attributed to test methods | M1 | S−1 | **In progress**: lifecycle attribution (Phase 2), call depth 1–3 (Phase 3) and polluter→victim edges (Phase 4) done; F1/F2/F3 edges found on the fixture; Phase 5 validation next | `evidence/extract.py`, `docs/evidence-m1.md` |
 | W9 | End-to-end CLI: F1 → validated JSON report | M2 + M3 | S−1 | Not started | — |
 | W10 | Deletion minimisation incl. F3 two-polluter case | M2 | S | Not started | — |
 | W11 | Mid report (template) | All, chapter owners in [[08-MidEval/README]] | S | Not started | — |
