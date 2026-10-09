@@ -193,3 +193,22 @@ diagnosis.
 - `git status --short fixtures/` printed nothing.
 - Limitations: Surefire 2.22's default `runOrder` is `filesystem`; for a project that keeps the
   default, pass `original_order` explicitly. Parameterised tests are not listed (ADR-003 scope).
+
+### 2026-10-09 — Task 4: reproduce, polluter search, repeat
+
+**Requirement:** ADR-004 steps 3–6 — a reference signature from the original order, one-by-one
+search for a single polluter (priority list first), and matching / any-signature counts over
+`n` runs.
+
+- Files: `runner/search.py` (`reproduce`, `candidate_order`, `find_polluter`,
+  `SYNTHETIC_PREFIX`), `runner/verify.py` (`repeat`), `runner/tests/test_search.py`.
+- Command: `py -m unittest -v runner.tests.test_search`
+- Before the code existed: `ModuleNotFoundError: No module named 'runner.search'`.
+- Result: `Ran 9 tests in 0.001s — OK` (M3's `FakeOrderRunner`, no JVM): first real failure
+  becomes the reference; a `flaketrace.JvmCrash` is never the reference; no failure in all
+  attempts → `None`; candidates in original order or priority-first (duplicates, unknown and
+  later tests ignored); the first matching candidate wins and runs are counted; a failure with a
+  different signature is not a polluter; `repeat` counts 2 matching / 4 any of 5 scripted runs.
+- Mutation check: replacing the crash rule with `if True:` → `test_crash_is_never_taken_as_the_reference`
+  FAILED; file restored (byte-identical) → OK.
+- Limitations: single polluters only — multi-polluter cases are W10's (ADR-004).

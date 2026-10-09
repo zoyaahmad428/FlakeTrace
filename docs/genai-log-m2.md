@@ -239,3 +239,19 @@ class's methods through a new `FtHarness --list` mode.
 alphabetical.
 
 **What I changed:** *fill after reading the diff.*
+
+## 2026-10-09 — W7 Task 4: reproduce, polluter search, repeat
+
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+
+**What I asked:** implement Task 4 — reproduce the original failure, search for one polluter,
+count repeated runs.
+
+**What was retained:** `runner/search.py`, `runner/verify.py`, `runner/tests/test_search.py`.
+
+**How it was verified:** tests failed first (`ModuleNotFoundError`); then 9 OK; mutation check
+on the "a crash is never the reference" rule made its test fail, restored → OK.
+
+**Errors found:** none.
+
+**What I changed:** *fill after reading the diff.*
