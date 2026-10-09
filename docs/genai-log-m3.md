@@ -390,11 +390,46 @@ generated, after the real runs described below.
 code defect). While exploring Member 2's evidence, found that N2 behaves completely
 differently in `diagnose()` on this machine (`NOT_REPRODUCED`, never fails) versus my own
 earlier Docker measurement (`VICTIM_FAILS_ALONE`, 12/20) — traced to `System.nanoTime()`
-timer-resolution differences across machines. Not fixed; recorded as an open item since it is
-my call to make as the fixture's owner, not something to quietly patch.
+timer-resolution differences across machines. Recorded as an open item at the time, resolved
+the same day — see the next section.
 
 **Rejections:** None this session — all design choices (scope limit, branch recovery,
 gitignore respect) were my own judgment calls, not user corrections.
+
+## 2026-10-10 — Resolve N2's ground-truth discrepancy
+
+**What I asked:** Explicitly told to resolve (not just document) the N2 cross-machine
+discrepancy flagged at the end of the W9 session: Member 2's real `diagnose()` run found N2
+never fails (0/40) on their machine, contradicting my own earlier Docker measurement (12/20)
+and `ground_truth.json`'s assumption.
+
+**What was retained:** The root-cause diagnosis (nanoTime()'s lowest bit being zeroed by
+coarse timer resolution on some hardware) and the fix (`java.util.Random().nextBoolean()`)
+as my own judgment call, not asked for word-for-word — I chose to fix the mechanism rather
+than just document the quirk, reasoning that a negative control whose entire purpose is
+"flakiness unrelated to the environment" shouldn't become fully deterministic on real
+hardware.
+
+**What I changed:** Nothing rejected this session — this was my own design decision through
+to completion, verified empirically before accepting it, not asserted from reasoning alone.
+
+**How it was verified:**
+- Ran the fixed test 20 times in isolation on native Windows (JDK 24.0.2, the same type of
+  environment where the bug originally manifested as 0/40) → **11/20 fail (45%)**.
+- Ran the same 20-repetition check independently and in parallel inside
+  `maven:3.9-eclipse-temurin-8` (JDK 8, Linux) → **10/20 fail (50%)**.
+- Ran the full fixture module (`mvn -B test`) → `Tests run: 13, Failures: 5`, matching Phase
+  1's original full-module result exactly (F1/F2/F3/N1 as designed; N2 failed this particular
+  run, one of its genuine ~50/50 outcomes).
+- Rewrote `ground_truth.json`'s N2 notes with both real numbers, explicitly dropping the old
+  6-run informal sample now that 20-run, two-platform data exists.
+
+**Errors found:** The underlying bug itself (N2 deterministically passing on some hardware) —
+found by Member 2's independent real run, not by me; my contribution was diagnosing the root
+cause (which specific bit, why coarse timers zero it) and fixing it, not discovering that
+something was wrong.
+
+**Rejections:** None.
 
 Ownership checkpoint: you need to understand and verify this implementation
 before claiming it as your contribution.

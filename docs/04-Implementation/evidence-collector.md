@@ -1,6 +1,6 @@
 # Evidence collector — `evidence/extract.py` (Member 1)
 
-*Status (2026-10-09): Phase 3 of Iteration 1: depth 1–3, single-test mode. Four-point ownership note per
+*Status (2026-10-09): Phase 4 of Iteration 1: depth 1–3, single-test and pair mode. Four-point ownership note per
 [[04-Implementation/README]]. Contract: [[contracts/resource-evidence]]. Decisions:
 [[03-Design/decisions/ADR-001-iteration1-evidence-without-instrumentation]],
 [[03-Design/decisions/ADR-002-evidence-extractor-implementation]].*
@@ -14,7 +14,9 @@ read/write (`getstatic`/`putstatic`) and every **system-property** read/write wi
 JUnit 4 `@Before/@After/@BeforeClass/@AfterClass`, JUnit 3 `setUp/tearDown`, the `<clinit>`
 of the test class, and lifecycle methods inherited from project superclasses. Each access
 records the class, method and bytecode offset, and which lifecycle method it came from (`via`).
-This is the *where exactly* part of the certificate: without it FlakeTrace can only say "this
+Given a polluter and a victim, `find_edges` keeps every resource the polluter WRITES
+(any root, including `@After`/`tearDown`) that the victim READS, with both sides' locations.
+`report_fields` projects the first edge into Member 3's report. This is the *where exactly* part of the certificate: without it FlakeTrace can only say "this
 order fails", which iDFlakies already does.
 
 ## 2. Why it is built this way
@@ -47,7 +49,12 @@ Rejected: ASM/Javassist (dependency, offset workaround); copying the POC code (t
   code, implicit `<clinit>` of other classes, and the test class constructor and instance-field
   initialisers. The first five are reported as unsupported observations; the constructor is a
   known gap (see the open points in [[evidence-m1]]).
-- **Input errors** (missing directory, unknown class/method, unimplemented depth): exit code 2
+- **An empty edge list is not proof of independence.** The pair output always says so
+  (`no_supported_resource_evidence`, fixed limitation 7). A polluter that restores the value
+  it wrote still produces an edge, because values are not modelled.
+- **Only one edge fits Member 3's report.** `report_fields` names the rest in `limitations`
+  (contract open question 1).
+- **Input errors** (missing directory, unknown class/method, bad depth, bad flag combination): exit code 2
   with `error: …` on stderr. javap missing or failing: exit code 1.
 
 ## 4. How to modify it

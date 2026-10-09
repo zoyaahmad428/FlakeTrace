@@ -20,7 +20,7 @@ post-defence action plan's two-student split is superseded by the three-member s
 
 | Member | Current task | Branch | State | Blocked by |
 | --- | --- | --- | --- | --- |
-| 1 | Static-field + system-property extraction for F1/F2 | `m1/call-depth` | Phases 2–3 done (lifecycle attribution, depth 1–3); Phase 4 (edges) next | — |
+| 1 | Static-field + system-property extraction for F1/F2 | `m1/resource-edges` | Phases 2–4 done (lifecycle attribution, depth 1–3, polluter→victim edges); Phase 5 (validation) next | — |
 | 2 | W7 diagnosis runs (victim-alone, polluter search, repeats, integrity, record) | `m2/w7-diagnosis-runs` | W7 complete (PR #11 in review; CI green on JDK 8); W9 (report assembly) next | — |
 | 3 | W9 report assembly done for F1/N1 (real end-to-end); report ch. 4 and 7–8 per `08-MidEval/README`'s Form 3 table next | `m3/w9-report-assembly` | Phases 0–5 done; `eval/report.py` wired to the real `runner.diagnose()` + `evidence.extract()`, real `VERIFIED`/`UNRESOLVED` reports produced for F1/N1 (see `docs/evidence-m3.md`) | F2/F3 need W8's polluter→victim edges (Phase 4, M1 — depth is done) and W10 (M2) |
 

@@ -8,12 +8,14 @@ It never runs tests and never writes to the class directories.
 Output format: docs/contracts/resource-evidence.md (Output 1).
 Design decisions: docs/03-Design/decisions/ADR-002-evidence-extractor-implementation.md.
 
-Status (Phase 3): depth 1-3 (the test method and its lifecycle methods, plus
-calls into the project's own classes up to --depth), single-test mode only.
-Pair mode (--polluter/--victim) comes in Phase 4.
+Status (Phase 4): depth 1-3 (the test method and its lifecycle methods, plus
+calls into the project's own classes up to --depth); single-test mode (Output 1)
+and pair mode (Output 2: resources the polluter writes and the victim reads).
 
 Usage (from the repository root):
     python3 -m evidence.extract --classes DIR --test-classes DIR --test Class#method [--depth N]
+    python3 -m evidence.extract --classes DIR --test-classes DIR \
+        --polluter Class#method --victim Class#method [--depth N]
 """
 import argparse
 import json
@@ -48,6 +50,19 @@ LIFECYCLE_ANNOTATIONS = {
 RULE_ANNOTATIONS = {"org/junit/Rule", "org/junit/ClassRule"}
 RUNWITH_ANNOTATION = "org/junit/runner/RunWith"
 JUNIT3_BASE = "junit.framework.TestCase"
+
+# Always emitted with a pair (contract: "Fixed limitations").
+FIXED_LIMITATIONS = [
+    "Static analysis only; no runtime evidence (Iteration 2).",
+    "Calls into JDK classes and third-party jars are not followed.",
+    "Virtual dispatch to subclasses and reflection are not resolved (see VIRTUAL_DISPATCH, REFLECTION).",
+    "Only static fields and constant-key system properties are modelled. Files, environment variables, "
+    "network, databases, singletons reached through instance fields, etc. are not.",
+    "Written values are not modelled: a polluter that writes and then restores the original value "
+    "still produces a WRITE.",
+    "Execution timing is not modelled (e.g. a victim <clinit> read that happens before the polluter runs).",
+    "Missing evidence is not proof of independence.",
+]
 
 # Execution order of the roots; used to sort output deterministically.
 VIA_ORDER = ["CLINIT", "BEFORE_CLASS", "SETUP", "BEFORE", "TEST_METHOD",
@@ -541,6 +556,78 @@ def analyse_test(project, test_id, depth=1):
     }
 
 
+# ---------------------------------------------------------------- pairs (Output 2)
+
+def find_edges(polluter_id, polluter, victim_id, victim):
+    """Output 2: every resource the polluter WRITES and the victim READS.
+
+    `polluter` and `victim` are analyse_test() results. An empty edge list sets
+    no_supported_resource_evidence; it never means the tests are independent.
+    """
+    writes, reads = {}, {}
+    for access in polluter["accesses"]:
+        if access["access"] == "WRITE":
+            writes.setdefault(access["resource_id"], []).append(access)
+    for access in victim["accesses"]:
+        if access["access"] == "READ":
+            reads.setdefault(access["resource_id"], []).append(access)
+
+    edges = []
+    for resource_id in writes.keys() & reads.keys():
+        write_locations, read_locations = writes[resource_id], reads[resource_id]
+        edges.append({"resource_id": resource_id,
+                      "resource": write_locations[0]["resource"],
+                      "polluter_write_locations": write_locations,     # already in contract order
+                      "victim_read_locations": read_locations})
+
+    def edge_order(edge):
+        return (min(a["depth"] for a in edge["polluter_write_locations"])
+                + min(a["depth"] for a in edge["victim_read_locations"]), edge["resource_id"])
+    edges.sort(key=edge_order)
+
+    unsupported = ([dict(o, side="polluter") for o in polluter["unsupported_observations"]]
+                   + [dict(o, side="victim") for o in victim["unsupported_observations"]])
+    return {"polluter": test_identifier(polluter_id), "victim": test_identifier(victim_id),
+            "edges": edges,
+            "no_supported_resource_evidence": not edges,
+            "unsupported_observations": unsupported,
+            "limitations": list(FIXED_LIMITATIONS)}
+
+
+def test_identifier(test_id):
+    test_class, test_method = test_id.split("#", 1)
+    return {"class": test_class, "method": test_method}
+
+
+def report_fields(pair):
+    """The contract's projection of a pair into Member 3's report fields.
+
+    The report holds one resource and one location per side, so only the first
+    edge and its first locations fit; everything else is named in `limitations`.
+    """
+    def location(access):
+        return {"class": access["class"], "method": access["method"],
+                "bytecode_offset": access["bytecode_offset"]}
+
+    fields = {"shared_resource": None, "polluter_write_location": None,
+              "victim_read_location": None, "instrumentation_level": "static-only",
+              "limitations": list(pair["limitations"])}
+    if not pair["edges"]:
+        return fields
+    first = pair["edges"][0]
+    fields["shared_resource"] = first["resource"]
+    fields["polluter_write_location"] = location(first["polluter_write_locations"][0])
+    fields["victim_read_location"] = location(first["victim_read_locations"][0])
+    for edge in pair["edges"][1:]:
+        fields["limitations"].append("Another shared resource is not shown in this report: "
+                                     + edge["resource_id"])
+    dropped = len(first["polluter_write_locations"]) - 1 + len(first["victim_read_locations"]) - 1
+    if dropped:
+        fields["limitations"].append("%d further write/read location(s) of %s are not shown in this report"
+                                     % (dropped, first["resource_id"]))
+    return fields
+
+
 # ---------------------------------------------------------------- command line
 
 def main(argv=None):
@@ -554,21 +641,31 @@ def main(argv=None):
     parser.add_argument("--depth", type=int, default=DEFAULT_DEPTH)
     args = parser.parse_args(argv)
     try:
-        if args.polluter or args.victim:
-            raise ExtractError("pair mode (--polluter/--victim) is not implemented yet (Phase 4)", 2)
-        if not args.test:
-            raise ExtractError("give --test Class#method", 2)
+        pair_mode = bool(args.polluter or args.victim)
+        if pair_mode and args.test:
+            raise ExtractError("give either --test, or --polluter and --victim, not both", 2)
+        if pair_mode and not (args.polluter and args.victim):
+            raise ExtractError("pair mode needs both --polluter and --victim", 2)
+        if not pair_mode and not args.test:
+            raise ExtractError("give --test Class#method, or --polluter and --victim", 2)
+        if pair_mode and args.polluter == args.victim:
+            raise ExtractError("--polluter and --victim must be different tests", 2)
         if args.depth not in IMPLEMENTED_DEPTHS:
             raise ExtractError("--depth must be 1, 2 or 3", 2)
         project = Project([args.classes, args.test_classes])
+        test_ids = [args.polluter, args.victim] if pair_mode else [args.test]
+        tests = {test_id: analyse_test(project, test_id, args.depth) for test_id in test_ids}
         output = {
             "contract": CONTRACT,
             "instrumentation_level": "static-only",
             "analysis": {"depth": args.depth,
                          "class_dirs": [args.classes, args.test_classes],
                          "javap_version": javap_version()},
-            "tests": {args.test: analyse_test(project, args.test, args.depth)},
+            "tests": tests,
         }
+        if pair_mode:
+            output["pair"] = find_edges(args.polluter, tests[args.polluter],
+                                        args.victim, tests[args.victim])
     except ExtractError as error:
         print("error: " + str(error), file=sys.stderr)
         return error.exit_code

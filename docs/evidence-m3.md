@@ -674,7 +674,54 @@ PR #11 `runner/diagnose.py`, PR #9 `evidence/extract.py`).
   currently assumes. Traced by Member 2 to `System.nanoTime()` having coarser resolution on
   some Windows/JVM combinations (always a multiple of 100ns, always even, so the parity check
   in `NegativeFlakyTest` can never fail there) — see `docs/evidence-m2.md`. This is a genuine,
-  environment-dependent behaviour of the fixture, not a bug in either component; it means
-  `ground_truth.json`'s N2 entry is not safely portable across machines as currently written,
-  which I have not yet resolved (my call to make, as the fixture's owner — recorded as an
-  open item, not silently patched over).
+  environment-dependent behaviour of the fixture, not a bug in either component; it meant
+  `ground_truth.json`'s N2 entry was not safely portable across machines as originally
+  written. Resolved the same day — see the next section.
+
+## 2026-10-10 — Fix N2's flakiness mechanism (ground truth resolution)
+
+**Requirement:** resolve a real discrepancy found while reviewing Member 2's W9 evidence:
+`runner.diagnose()` reported N2 (`NegativeFlakyTest#sometimesFails`) as `NOT_REPRODUCED` on a
+Windows/JDK 21 machine (0/40 failures, alone and in the full order), contradicting
+`ground_truth.json`'s assumption that it fails at least intermittently
+(`docs/evidence-m2.md`). My own earlier measurement (Docker/JDK 8) found 12/20 alone-failures.
+
+- Investigation: `NegativeFlakyTest` used `System.nanoTime() % 2L == 0L`. This inspects only
+  the **lowest bit** of the timer value. Some JVM/OS/hardware timer combinations have coarse
+  resolution (Member 2 found `System.nanoTime() % 1000` always a multiple of 100 on their
+  machine), so every value is even and the assertion is always true — the test can become
+  **fully deterministic** (never fails) on specific real hardware, which directly contradicts
+  its purpose ("non-order-dependent flakiness... unrelated to the environment").
+- Decision: fix the mechanism, not just document the quirk. This is entirely my own file
+  (`fixtures/od-fixture`), no contract or cross-member sign-off needed, and a genuine fix is
+  stronger than a documented limitation for a case whose entire point is demonstrating
+  environment-independent flaky behaviour.
+- File/function: `fixtures/od-fixture/src/test/java/odfixture/NegativeFlakyTest.java` —
+  replaced the nanoTime-parity check with `new java.util.Random().nextBoolean()`, which mixes
+  nanoTime() with a per-call atomic counter through a full LCG rather than exposing one raw
+  timer bit.
+- Command: `mvn -q -Dtest=odfixture.NegativeFlakyTest#sometimesFails test`, run 20 times in a
+  loop, **on native Windows (JDK 24.0.2, where the old mechanism gave 0/40)**.
+- Result: **11/20 failures (45%)** — genuinely balanced, real data.
+- Command: the same 20-repetition loop, independently, **inside
+  `maven:3.9-eclipse-temurin-8` (JDK 8, Linux, Docker)**, run in parallel with the Windows
+  check.
+- Result: **10/20 failures (50%)** — also genuinely balanced.
+- Command: full fixture module, `mvn -B test` (native Windows).
+- Result: `Tests run: 13, Failures: 5` — F1, F2, F3, N1 fail exactly as designed (alphabetical
+  declared order pollution); N2 failed this particular run (one of its genuine ~50/50
+  outcomes, not every run will match) — matches Phase 1's original full-module result exactly,
+  confirming the fix did not disturb anything else in the fixture.
+- File/function: `fixtures/od-fixture/ground_truth.json` — N2's `expected_outcome_notes`
+  rewritten to describe the bug, the fix, and both real verification numbers above, dropping
+  the old "~50%, confirmed in Phase 1: 2 pass / 4 fail across 6 isolated runs" claim (that
+  6-run sample is superseded by this 20-run, two-platform verification). Also added a short
+  confirming note to F3's entry: Member 2's real `diagnose()` run returned
+  `NO_SINGLE_POLLUTER` after 12 search runs, exactly as the fixture's design predicted (the
+  current one-by-one search cannot find a two-polluter case) — not evidence against F3's
+  `VERIFIED` ground truth, evidence that W10 (multi-polluter search) is still needed.
+- Limitation: could not literally re-test on Member 2's exact original machine (not available
+  to me); the fix's correctness rests on the reasoning that an LCG-mixed seed does not inherit
+  a single-bit fragility, backed by two independent real measurements (different OS, different
+  JDK major version) both landing close to 50%, not by reproducing the exact prior
+  environment.
