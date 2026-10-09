@@ -355,3 +355,38 @@ and the docs saying "N2 may end `NOT_REPRODUCED` on Windows" were out of date.
   (`1 != 0`, `1 != 3`); restored from a copy → 11 OK.
 - Full runner suite: `Ran 68 tests in 124.206s — OK`. `git status --short fixtures/` empty.
 - Limitation: real Maven/JVM/javap runs of the command are Task 2.
+
+### 2026-10-10 — W9 Task 2: the diagnose command end to end on the fixture
+
+**Requirement:** ADR-005 verification plan — real Maven/JVM/javap runs through the command.
+- File: `runner/tests/test_cli.py`, class `TestCliOnFixture` (5 tests).
+- Command: `py -m unittest -v runner.tests.test_cli.TestCliOnFixture` (local Windows, JDK 21.0.9)
+  → `Ran 5 tests in 87.535s — OK`:
+  - F1 as a separate process (`python -m runner diagnose …`, run from a temp folder with
+    `PYTHONPATH` = repo root, default `--records`) → exit 0, `VERIFIED`, resource
+    `static-field odfixture.Config mode`, 20/20 reproduced, 0/20 alone; the record path in the
+    report is relative, exists, and the report sits next to it;
+  - F2 (n = 20) → `VERIFIED`, `system-property odfixture.turbo`, read in
+    `odfixture.FeatureFlags#isTurboEnabled@2` (depth 2);
+  - F3 (n = 3) → exit 3, `No report: NO_SINGLE_POLLUTER`, no report file;
+  - N1 (n = 5) → exit 0, `UNRESOLVED(VICTIM_FAILS_ALONE)`, no polluter;
+  - `odfixture.ConfigVictimTest#noSuchTest` → exit 2 naming the victim, no report.
+- These tests passed on their first run because Task 1's code existed. Mutation check:
+  `fields = None` in place of the evidence step → `test_f2_depth_two_edge` FAILED
+  (`'UNRESOLVED' != 'VERIFIED'`); restored from a copy, `git diff runner/cli.py` empty.
+- By hand from the repo root:
+  `py -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode`
+  → exit 0:
+
+```
+VERIFIED  odfixture.ConfigVictimTest#expectsDefaultMode
+  polluter:   odfixture.ConfigPolluterTest#pollute
+  resource:   static-field odfixture.Config mode (write odfixture.ConfigPolluterTest#pollute@1 -> read odfixture.ConfigVictimTest#expectsDefaultMode@1)
+  reproduced: 20/20 (lower bound 0.839)   alone: 0/20
+  report:     flaketrace-records\20261009T213516Z-odfixture.ConfigVictimTest#expectsDefaultMode.report.json
+  record:     flaketrace-records\20261009T213516Z-odfixture.ConfigVictimTest#expectsDefaultMode.jsonl
+```
+
+- Full runner suite: `Ran 73 tests in 212.449s — OK`. `git status --short fixtures/` empty.
+- Limitations: the record path uses `\` on Windows (relative, not OS-neutral); must run from the
+  repo root or with it on `PYTHONPATH`. CI on JDK 8: not yet run (runs on the PR).

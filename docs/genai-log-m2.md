@@ -368,3 +368,21 @@ install step, as planned.
 condition made the report tests fail; full runner suite 68 OK.
 
 **What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — W9 Task 2: real runs and docs
+
+**Tool:** Claude Opus 5.5 · **Level:** L2
+
+**What was asked:** Task 2 of the W9 plan — real fixture tests for the command, docs.
+
+**What was retained:** 5 real-run tests; `runner/README.md` command section;
+[[04-Implementation/diagnose-cli]]; README/CLAUDE.md command line; demo plan, iteration plan,
+members, claim E10.
+
+**How it was verified:** 5 real runs OK; removing the evidence step made the F2 test fail; full
+suite 73 OK; F1 run by hand.
+
+**What was wrong:** a Python escape (`\2…` in a string) wrote a control character into the
+README's sample paths; found by reading the file back, fixed, and every edited file scanned.
+
+**What I changed:** *fill after reading the diff.*

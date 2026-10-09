@@ -1,6 +1,9 @@
 import io
 import json
+import os
+import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
@@ -134,6 +137,79 @@ class TestReports(unittest.TestCase):
         self.assertEqual(list(records.glob("*.report.json")), [])
         self.assertIn("No report: NO_SINGLE_POLLUTER", out)
         self.assertIn(str(record), out)
+
+
+class TestCliOnFixture(unittest.TestCase):
+    """Real Maven/JVM/javap runs on fixtures/od-fixture, checked against ground_truth.json."""
+
+    @classmethod
+    def setUpClass(cls):
+        missing = [tool for tool in ("java", "javac", "javap", "mvn") if shutil.which(tool) is None]
+        if missing:
+            if os.environ.get("FLAKETRACE_REQUIRE_JVM"):
+                raise RuntimeError(f"FLAKETRACE_REQUIRE_JVM is set but {missing} not on PATH")
+            raise unittest.SkipTest(f"{missing} not on PATH")
+        cls.records = tempfile.mkdtemp(prefix="flaketrace-cli-records-")
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.records, ignore_errors=True)
+
+    def diagnose(self, victim, n):
+        code, out, err = run_cli(["diagnose", "--project", str(FIXTURE), "--victim", victim,
+                                  "--n", str(n), "--records", self.records])
+        reports = sorted(Path(self.records).glob(f"*-{victim}.report.json"))
+        report = json.loads(reports[-1].read_text(encoding="utf-8")) if reports else None
+        return code, out, err, report
+
+    def test_f1_command_line_end_to_end(self):
+        work = Path(tempfile.mkdtemp(prefix="flaketrace-cli-cwd-"))
+        finished = subprocess.run(
+            [sys.executable, "-m", "runner", "diagnose", "--project", str(FIXTURE),
+             "--victim", "odfixture.ConfigVictimTest#expectsDefaultMode"],
+            cwd=work, env=dict(os.environ, PYTHONPATH=str(REPO)),
+            capture_output=True, text=True, timeout=900,
+        )
+        self.assertEqual(finished.returncode, 0, finished.stderr)
+        self.assertIn("VERIFIED", finished.stdout)
+        reports = list((work / "flaketrace-records").glob("*.report.json"))
+        self.assertEqual(len(reports), 1)
+        report = json.loads(reports[0].read_text(encoding="utf-8"))
+        self.assertEqual(report["outcome"], "VERIFIED")
+        self.assertEqual(report["shared_resource"],
+                         {"kind": "static-field", "class": "odfixture.Config", "field": "mode"})
+        self.assertEqual((report["reproduction"]["successes"], report["victim_alone"]["successes"]), (20, 0))
+        record = Path(report["execution_record_reference"])
+        self.assertFalse(record.is_absolute())
+        self.assertTrue((work / record).is_file())
+        self.assertEqual(reports[0], work / record.with_suffix(".report.json"))
+        shutil.rmtree(work, ignore_errors=True)
+
+    def test_f2_depth_two_edge(self):
+        code, _, err, report = self.diagnose("odfixture.FeatureVictimTest#expectsTurboDisabled", 20)
+        self.assertEqual(code, 0, err)
+        self.assertEqual(report["outcome"], "VERIFIED")
+        self.assertEqual(report["shared_resource"], {"kind": "system-property", "key": "odfixture.turbo"})
+        self.assertEqual(report["victim_read_location"],
+                         {"class": "odfixture.FeatureFlags", "method": "isTurboEnabled", "bytecode_offset": 2})
+
+    def test_f3_has_no_report_yet(self):
+        code, out, _, report = self.diagnose("odfixture.ToggleVictimTest#expectsNotBothFlagsSet", 3)
+        self.assertEqual(code, 3)
+        self.assertIn("No report: NO_SINGLE_POLLUTER", out)
+        self.assertIsNone(report)
+
+    def test_n1_fails_alone(self):
+        code, _, err, report = self.diagnose("odfixture.NegativeAloneFailTest#alwaysFails", 5)
+        self.assertEqual(code, 0, err)
+        self.assertEqual((report["outcome"], report["unresolved_reason"]), ("UNRESOLVED", "VICTIM_FAILS_ALONE"))
+        self.assertEqual(report["polluters"], [])
+
+    def test_unknown_victim_exits_2(self):
+        code, _, err, report = self.diagnose("odfixture.ConfigVictimTest#noSuchTest", 3)
+        self.assertEqual(code, 2)
+        self.assertIn("odfixture.ConfigVictimTest#noSuchTest", err)
+        self.assertIsNone(report)
 
 
 if __name__ == "__main__":
