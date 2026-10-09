@@ -255,3 +255,24 @@ on the "a crash is never the reference" rule made its test fail, restored → OK
 **Errors found:** none.
 
 **What I changed:** *fill after reading the diff.*
+
+## 2026-10-09 — W7 Task 5: diagnose() end to end
+
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+
+**What I asked:** implement Task 5 — `diagnose()` and its tests on all five fixture cases.
+
+**What was retained:** `runner/diagnose.py`, `runner/tests/test_diagnose.py` (with the N2 test
+rewritten), `docs/04-Implementation/diagnosis-runs.md`, ADR-004 updates.
+
+**How it was verified:** tests failed first (`ModuleNotFoundError`); the first real run failed on
+N2; after investigation 12 tests OK and the full runner suite 55 OK; every case's real numbers
+recorded in [[evidence-m2]]; mutation check on the alone-stop.
+
+**Errors found:** the plan's N2 test assumed N2 fails on Windows at ~30% (from the spike). It
+then failed 0/80: `System.nanoTime()` was a multiple of 100 (10 MHz timer). The test assumption
+was wrong, not the code; the test now checks that no polluter is blamed. Also found and
+documented: a rarely-failing flaky victim can produce a spurious polluter (exposed by low
+verify counts).
+
+**What I changed:** *fill after reading the diff.*

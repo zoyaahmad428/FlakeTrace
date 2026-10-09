@@ -125,6 +125,11 @@ duration, timestamp.
 - **`NOT_REPRODUCED` stops before the alone check**, so its `alone_n` is 0. `decide()` rejects
   `isolation_n = 0`; W9 must handle this status (e.g. by running the alone check without a
   reference) before calling `decide()`. Recorded here so it is not discovered late.
+- **A rarely-failing flaky victim can produce a spurious polluter.** If the victim fails in the
+  original order but happens to pass all `n` alone runs, the search may hit a candidate run
+  where it fails by chance. The repeated-run counts then expose it (few matches out of `n`), so
+  `decide()` gives at most `CANDIDATE` — never `VERIFIED` — but `polluters` is not empty.
+  Raising `n` lowers the risk; W10/W9 should treat a low verify rate as a warning.
 - Inherits ADR-003's limits (`@BeforeClass` per method; JUnit 4 only).
 
 ## Verification plan
@@ -140,12 +145,14 @@ duration, timestamp.
 | F2 | `POLLUTER_FOUND` | polluter `FeaturePolluterTest#enableTurbo` |
 | F3 | `NO_SINGLE_POLLUTER` | 12 earlier tests searched |
 | N1 | `VICTIM_FAILS_ALONE` | alone 20/20 |
-| N2 | `VICTIM_FAILS_ALONE` | alone ≥ 1/n; the test uses n = 40 (see below) |
+| N2 | `VICTIM_FAILS_ALONE`, or `NOT_REPRODUCED` where N2 never fails | never blames a polluter (see below) |
 
-N2 fails on `System.nanoTime() % 2`, so its rate depends on the clock's resolution: measured
-18/60 failures alone on Windows/JDK 21 (2026-10-09 spike), versus ~50% expected on Linux. At
-~30%, n = 20 gives roughly a 0.5% chance per run that the N2 test fails for no real reason, so
-the N2 test uses n = 40 (≈ 1e-5).
+N2 fails on `System.nanoTime() % 2`, so its rate depends on the platform's timer. On this
+Windows laptop (`Stopwatch.Frequency` = 10 MHz) `nanoTime` was later observed to be a multiple of
+100 on every call and N2 failed 0/80 times — although the design spike earlier the same day saw
+18/60 failures (cause of that drift not established). On Linux ~50% is expected. The N2 test
+therefore checks the property N2 exists for — no polluter is ever blamed — and accepts
+`NOT_REPRODUCED` when N2 never failed, `VICTIM_FAILS_ALONE` when it did.
 
 3. CI: the existing `runner` job picks up the new `runner/tests/test_*.py`; its real duration is
    recorded in [[evidence-m2]].

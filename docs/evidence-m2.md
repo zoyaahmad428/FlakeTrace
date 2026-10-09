@@ -212,3 +212,42 @@ search for a single polluter (priority list first), and matching / any-signature
 - Mutation check: replacing the crash rule with `if True:` → `test_crash_is_never_taken_as_the_reference`
   FAILED; file restored (byte-identical) → OK.
 - Limitations: single polluters only — multi-polluter cases are W10's (ADR-004).
+
+### 2026-10-09 — Task 5: `diagnose()` end to end on the fixture
+
+**Requirement:** ADR-004 as a whole — raw evidence for each fixture case, checked against
+`fixtures/od-fixture/ground_truth.json` (written before any run).
+
+- Files: `runner/diagnose.py` (`DiagnosisRuns`, `run_steps`, `diagnose`),
+  `runner/tests/test_diagnose.py` (7 `run_steps` tests with M3's `FakeOrderRunner`, 5 real cases).
+- Before the code existed: `ModuleNotFoundError: No module named 'runner.diagnose'`.
+- First real run: `Ran 12 tests in 99.860s — FAILED (failures=1)`: N2 returned `NOT_REPRODUCED`
+  (never failed in 40 attempts of the original order). Investigation: N2 then failed 0/40 alone
+  and 0/40 in the full order; a probe printed `System.nanoTime() % 1000` as a multiple of 100 on
+  every call, and `[System.Diagnostics.Stopwatch]::Frequency` = `10000000` (10 MHz). So N2 could
+  not fail on this laptop at that time, although the design spike earlier the same day saw 18/60
+  failures alone — the cause of that drift was not established. The diagnosis code was right; the
+  test's assumption was wrong. The N2 test now checks that no polluter is ever blamed and accepts
+  `NOT_REPRODUCED` when N2 never fails (ADR-004 updated).
+- After: `py -m unittest -v runner.tests.test_diagnose` → `Ran 12 tests in 92.448s — OK`.
+- Real results, one `diagnose()` per case (Windows 11, JDK 21.0.9, Maven 3.10.0):
+
+| Case | n | Time | Status | Polluter | Sequence | Alone | Search runs | Integrity | Record lines |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| F1 | 20 | 23.3 s | `POLLUTER_FOUND` | `ConfigPolluterTest#pollute` | 20/20 (any 20) | 0/20 | 1 | passed | 43 |
+| F2 | 5 | 13.5 s | `POLLUTER_FOUND` | `FeaturePolluterTest#enableTurbo` | 5/5 | 0/5 | 3 | passed | 15 |
+| F3 | 5 | 16.7 s | `NO_SINGLE_POLLUTER` | — | 5/5 (original order) | 0/5 | 12 | passed | 24 |
+| N1 | 20 | 16.3 s | `VICTIM_FAILS_ALONE` | — | 20/20 | 20/20 | 0 | passed | 22 |
+| N2 | 20 | 15.9 s | `NOT_REPRODUCED` | — | 0/20 (any 0) | not run | 0 | passed | 21 |
+
+  F1 and F2 find the ground-truth polluter; F3 is the documented two-polluter case for W10; N1
+  matches; N2's ground truth (`VICTIM_FAILS_ALONE`) assumes it fails at all — on this machine it
+  did not (see above). Record lines = 1 header + one per JVM run.
+- Mutation check: changing `if alone_successes >= 1:` to `>= 100` →
+  `test_victim_failing_alone_stops_before_the_search` FAILED; restored (byte-identical) → OK.
+- Full runner suite: `Ran 55 tests in 128.412s — OK`. `git status --short fixtures/` empty.
+- Limitations: see [[04-Implementation/diagnosis-runs]] §3 — single polluters only, spurious
+  polluter possible for a rarely-failing victim, `NOT_REPRODUCED` has `alone_n = 0` (W9 must
+  handle), discovery assumes alphabetical order. JDK 8 (CI) not yet run.
+- **For Member 3:** N2's failure rate is platform-dependent (`System.nanoTime()` parity); its
+  ground-truth outcome assumes it fails. Raised as a note, not edited (fixtures are M3's).

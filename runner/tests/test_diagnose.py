@@ -1,0 +1,160 @@
+import json
+import os
+import shutil
+import tempfile
+import unittest
+from pathlib import Path
+
+from eval.baseline import FailureSignature, RunOutcome, TestIdentifier
+from eval.tests.fake_runner import FakeOrderRunner
+from runner.diagnose import (
+    NO_SINGLE_POLLUTER,
+    NOT_REPRODUCED,
+    POLLUTER_FOUND,
+    VICTIM_FAILS_ALONE,
+    diagnose,
+    run_steps,
+)
+
+FIXTURE = Path(__file__).resolve().parents[2] / "fixtures" / "od-fixture"
+
+A = TestIdentifier("pkg.ATest", "a")
+B = TestIdentifier("pkg.BTest", "b")
+V = TestIdentifier("pkg.VictimTest", "v")
+LATER = TestIdentifier("pkg.ZTest", "z")
+REF = FailureSignature("java.lang.AssertionError", "pkg.VictimTest.v:5", "expected 0")
+PASS = RunOutcome(passed=True)
+FAIL = RunOutcome(passed=False, failure_signature=REF)
+
+
+def victim_fails_when(condition):
+    return FakeOrderRunner(lambda order, test: FAIL if test == V and condition(order) else PASS)
+
+
+class TestRunSteps(unittest.TestCase):
+    def test_single_polluter_found_and_verified(self):
+        runner = victim_fails_when(lambda order: B in order)
+        runs = run_steps(runner, [A, B, V, LATER], V, n=4)
+        self.assertEqual(runs.status, POLLUTER_FOUND)
+        self.assertEqual(runs.original_order, [A, B, V])
+        self.assertEqual(runs.reference_signature, REF)
+        self.assertEqual(runs.polluters, [B])
+        self.assertEqual(runs.sequence, [B, V])
+        self.assertEqual((runs.sequence_n, runs.sequence_successes, runs.sequence_any_failures), (4, 4, 4))
+        self.assertEqual((runs.alone_n, runs.alone_successes), (4, 0))
+        self.assertEqual(runs.search_runs, 2)
+        self.assertEqual(len(runner.calls), 1 + 4 + 2 + 4)
+
+    def test_victim_failing_alone_stops_before_the_search(self):
+        runner = victim_fails_when(lambda order: True)
+        runs = run_steps(runner, [A, V], V, n=3)
+        self.assertEqual(runs.status, VICTIM_FAILS_ALONE)
+        self.assertEqual((runs.polluters, runs.sequence), ([], [V]))
+        self.assertEqual((runs.sequence_n, runs.sequence_successes, runs.sequence_any_failures), (3, 3, 3))
+        self.assertEqual((runs.alone_n, runs.alone_successes, runs.search_runs), (3, 3, 0))
+        self.assertEqual(len(runner.calls), 1 + 3)
+
+    def test_two_polluters_needed_repeats_the_original_order(self):
+        runner = victim_fails_when(lambda order: A in order and B in order)
+        runs = run_steps(runner, [A, B, V], V, n=2)
+        self.assertEqual(runs.status, NO_SINGLE_POLLUTER)
+        self.assertEqual((runs.polluters, runs.sequence), ([], [A, B, V]))
+        self.assertEqual((runs.sequence_n, runs.sequence_successes), (2, 2))
+        self.assertEqual((runs.alone_n, runs.alone_successes, runs.search_runs), (2, 0, 2))
+
+    def test_never_failing_is_not_reproduced_and_runs_nothing_else(self):
+        runner = victim_fails_when(lambda order: False)
+        runs = run_steps(runner, [A, V], V, n=3)
+        self.assertEqual(runs.status, NOT_REPRODUCED)
+        self.assertIsNone(runs.reference_signature)
+        self.assertEqual((runs.sequence, runs.sequence_n, runs.sequence_successes), ([A, V], 3, 0))
+        self.assertEqual((runs.alone_n, runs.alone_successes, runs.search_runs), (0, 0, 0))
+        self.assertEqual(len(runner.calls), 3)
+
+    def test_bad_input_is_rejected_before_any_run(self):
+        runner = victim_fails_when(lambda order: True)
+        with self.assertRaises(ValueError):
+            run_steps(runner, [A, B], V, n=3)
+        with self.assertRaises(ValueError):
+            run_steps(runner, [A, V], V, n=0)
+        self.assertEqual(runner.calls, [])
+
+    def test_victim_first_in_order_has_no_candidates(self):
+        outcomes = [FAIL] + [PASS] * 10
+        runner = FakeOrderRunner(lambda order, test: outcomes.pop(0))
+        runs = run_steps(runner, [V, A], V, n=2)
+        self.assertEqual(runs.status, NO_SINGLE_POLLUTER)
+        self.assertEqual((runs.search_runs, runs.sequence), (0, [V]))
+
+    def test_explicit_order_without_the_victim_fails_before_maven_runs(self):
+        with self.assertRaises(ValueError):
+            diagnose(Path("does-not-exist"), V, original_order=[A, B])
+
+
+class TestDiagnoseOnFixture(unittest.TestCase):
+    """Real JVM runs on fixtures/od-fixture, checked against ground_truth.json."""
+
+    @classmethod
+    def setUpClass(cls):
+        missing = [tool for tool in ("java", "javac", "mvn") if shutil.which(tool) is None]
+        if missing:
+            if os.environ.get("FLAKETRACE_REQUIRE_JVM"):
+                raise RuntimeError(f"FLAKETRACE_REQUIRE_JVM is set but {missing} not on PATH")
+            raise unittest.SkipTest(f"{missing} not on PATH")
+        cls.records = tempfile.mkdtemp(prefix="flaketrace-records-")
+        cls.truth = {c["id"]: c for c in json.loads((FIXTURE / "ground_truth.json").read_text())["cases"]}
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.records, ignore_errors=True)
+
+    def diagnose_case(self, case_id, n):
+        victim = TestIdentifier.from_dict(self.truth[case_id]["victim"])
+        runs = diagnose(FIXTURE, victim, n=n, record_dir=self.records)
+        self.assertTrue(runs.source_integrity.passed, runs.source_integrity.details)
+        self.assertTrue(Path(runs.execution_record).exists())
+        return runs
+
+    def expected_polluters(self, case_id):
+        return [TestIdentifier.from_dict(p) for p in self.truth[case_id]["polluters"]]
+
+    def test_f1_single_static_field_polluter(self):
+        runs = self.diagnose_case("F1", n=20)
+        self.assertEqual(runs.status, POLLUTER_FOUND)
+        self.assertEqual(runs.polluters, self.expected_polluters("F1"))
+        self.assertEqual((runs.sequence_successes, runs.sequence_n), (20, 20))
+        self.assertEqual((runs.alone_successes, runs.alone_n), (0, 20))
+        record = Path(runs.execution_record).read_text(encoding="utf-8").splitlines()
+        self.assertEqual(len(record), 1 + 1 + 20 + runs.search_runs + 20)
+
+    def test_f2_single_system_property_polluter(self):
+        runs = self.diagnose_case("F2", n=5)
+        self.assertEqual(runs.status, POLLUTER_FOUND)
+        self.assertEqual(runs.polluters, self.expected_polluters("F2"))
+        self.assertEqual(runs.sequence_successes, 5)
+
+    def test_f3_two_polluters_needed(self):
+        runs = self.diagnose_case("F3", n=5)
+        self.assertEqual(runs.status, NO_SINGLE_POLLUTER)
+        self.assertEqual(runs.search_runs, 12)
+        self.assertEqual(runs.sequence_successes, 5)
+
+    def test_n1_fails_alone(self):
+        runs = self.diagnose_case("N1", n=20)
+        self.assertEqual(runs.status, VICTIM_FAILS_ALONE)
+        self.assertEqual((runs.alone_successes, runs.alone_n), (20, 20))
+
+    def test_n2_intermittent_failure_never_blames_a_polluter(self):
+        # N2 fails on System.nanoTime() parity: ~50% on Linux, but on Windows (10 MHz timer)
+        # nanoTime can stay a multiple of 100 and N2 may never fail at all (ADR-004).
+        runs = self.diagnose_case("N2", n=20)
+        self.assertEqual(runs.polluters, [])
+        if runs.reference_signature is None:
+            self.assertEqual(runs.status, NOT_REPRODUCED)
+        else:
+            self.assertEqual(runs.status, VICTIM_FAILS_ALONE)
+            self.assertGreaterEqual(runs.alone_successes, 1)
+
+
+if __name__ == "__main__":
+    unittest.main()
