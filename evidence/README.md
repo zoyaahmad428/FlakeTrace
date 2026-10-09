@@ -1,6 +1,6 @@
 # evidence/ — resource evidence (Member 1)
 
-**Owner:** Member 1 · **State:** Phase 2 done: depth-1 extraction with lifecycle attribution, single-test mode (2026-10-09). Depth 2/3 (Phase 3) and polluter→victim edges (Phase 4) not yet built.
+**Owner:** Member 1 · **State:** Phase 3 done: lifecycle attribution and call depth 1–3 (default 2), single-test mode (2026-10-09). Polluter→victim edges (Phase 4) not yet built.
 
 Finds the shared resource a polluter writes and a victim reads, from **compiled bytecode
 only** — the target project's source is never modified and no application logs are needed.
@@ -28,6 +28,7 @@ written fresh ([ADR-002](../docs/03-Design/decisions/ADR-002-evidence-extractor-
 | `extract.py` | The extractor: runs `javap -v -p -c`, parses classes, finds the test's lifecycle roots, scans them |
 | `tests/test_extract.py` | Unit tests (standard-library `unittest`) |
 | `tests/resources/m1-selftest/` | Member 1's own test input classes (a tiny Maven project), **not** a project fixture |
+| `tools/measure_depth.py` | Measures accesses, unsupported observations, javap calls and time per depth |
 | `javap-dumps/` | Saved `javap` output used as evidence in docs |
 
 ## Run it
@@ -35,16 +36,21 @@ written fresh ([ADR-002](../docs/03-Design/decisions/ADR-002-evidence-extractor-
 Needs Python 3 and a JDK 8+ (`javap` on `PATH`, or set `FLAKETRACE_JAVAP` to another javap).
 
 ```bash
-# one test method, depth 1 (the only depth implemented so far)
+# one test method (default --depth 2; 1-3 accepted)
 python3 -m evidence.extract --classes fixtures/od-fixture/target/classes \
     --test-classes fixtures/od-fixture/target/test-classes \
-    --test odfixture.ConfigPolluterTest#pollute --depth 1
+    --test odfixture.FeatureVictimTest#expectsTurboDisabled
 
 # tests: compile the self-test classes once, then run
 mvn -B -q -f evidence/tests/resources/m1-selftest/pom.xml test-compile
 python3 -m unittest evidence.tests.test_extract -v
+
+# what each depth adds on a compiled project
+python3 -m evidence.tools.measure_depth --classes fixtures/od-fixture/target/classes \
+    --test-classes fixtures/od-fixture/target/test-classes
 ```
 
-Without `--depth 1` the command currently exits with code 2: the contract default is 2,
-and depth 2 arrives in Phase 3.
+Depth follows calls into the project's own classes only (never the JDK or other jars),
+breadth-first, each method once per root. A virtual call follows only the method it names;
+an override in a subclass is reported as `VIRTUAL_DISPATCH`, not guessed.
 

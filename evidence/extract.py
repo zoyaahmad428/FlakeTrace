@@ -8,12 +8,12 @@ It never runs tests and never writes to the class directories.
 Output format: docs/contracts/resource-evidence.md (Output 1).
 Design decisions: docs/03-Design/decisions/ADR-002-evidence-extractor-implementation.md.
 
-Phase 2 status: depth 1 only (the test method and its lifecycle methods, no call
-following) and single-test mode only. --depth 2/3 and pair mode come in
-Phases 3 and 4.
+Status (Phase 3): depth 1-3 (the test method and its lifecycle methods, plus
+calls into the project's own classes up to --depth), single-test mode only.
+Pair mode (--polluter/--victim) comes in Phase 4.
 
 Usage (from the repository root):
-    python3 -m evidence.extract --classes DIR --test-classes DIR --test Class#method --depth 1
+    python3 -m evidence.extract --classes DIR --test-classes DIR --test Class#method [--depth N]
 """
 import argparse
 import json
@@ -25,7 +25,7 @@ from dataclasses import dataclass, field
 
 CONTRACT = "flaketrace.resource-evidence/v0-draft"
 DEFAULT_DEPTH = 2              # contract default (ADR-002)
-IMPLEMENTED_DEPTHS = {1}       # Phase 2; Phase 3 extends this to {1, 2, 3}
+IMPLEMENTED_DEPTHS = {1, 2, 3}
 
 # (owner, method) -> access, for the system-property calls we understand.
 SYSPROP_CALLS = {
@@ -65,7 +65,7 @@ RX_MEMBER = re.compile(r"^  (\S.*);$")
 RX_INSTRUCTION = re.compile(r"^\s+(\d+): (\w+)\b(.*)$")
 RX_SWITCH_BODY = re.compile(r"^\s+(\d+: \d+|default: \d+|})\s*$")
 RX_ANNOTATION = re.compile(r"^\s+\d+: #(\d+)\(")
-RX_REF = re.compile(r"//\s*(Field|Method|InterfaceMethod|String|InvokeDynamic)\s+(.*)$")
+RX_REF = re.compile(r"//\s*(Field|Method|InterfaceMethod|String|InvokeDynamic|class)\s+(.*)$")
 
 
 class ExtractError(Exception):
@@ -90,6 +90,7 @@ class Instruction:
 class Method:
     name: str
     descriptor: str = ""
+    flags: str = ""                                    # e.g. "ACC_PUBLIC, ACC_STATIC"
     annotations: list = field(default_factory=list)   # internal names, e.g. org/junit/Before
     instructions: list = field(default_factory=list)
 
@@ -98,6 +99,7 @@ class Method:
 class ClassInfo:
     name: str
     super_name: str = ""
+    flags: str = ""
     methods: list = field(default_factory=list)
     fields: dict = field(default_factory=dict)          # field name -> annotations
     annotations: list = field(default_factory=list)     # class-level annotations
@@ -145,6 +147,8 @@ def parse_ref(text):
         return kind, "", body, ""
     if kind == "InvokeDynamic":
         return kind, "", body, ""
+    if kind == "class":                     # `new` instruction: the class being instantiated
+        return kind, body.replace("/", "."), "", ""
     target, _, descriptor = body.partition(":")
     owner, dot, name = target.rpartition(".")
     if not dot:                       # same-class reference: javap omits the owner
@@ -213,6 +217,8 @@ def parse_class(text):
             in_annotations = False
 
         stripped = line.strip()
+        if not in_body and stripped.startswith("flags:") and not info.flags:
+            info.flags = stripped.split(":", 1)[1].strip()
         if stripped == "RuntimeVisibleAnnotations:":
             in_annotations = True
             continue
@@ -233,6 +239,8 @@ def parse_class(text):
             continue
         if stripped.startswith("descriptor:") and isinstance(member, Method):
             member.descriptor = stripped.split(":", 1)[1].strip()
+        elif stripped.startswith("flags:") and isinstance(member, Method):
+            member.flags = stripped.split(":", 1)[1].strip()
         elif stripped == "Code:":
             in_code = True
     if info is None:
@@ -296,6 +304,21 @@ class Project:
             name = info.super_name
         return owner
 
+    def resolve_method(self, owner, name, descriptor):
+        """(ClassInfo, Method) that a call to owner.name(descriptor) names, or None.
+
+        Looks in `owner` and then its project superclasses, the way the JVM resolves
+        the statically named target. It cannot know which subclass override runs.
+        """
+        class_name = owner
+        while class_name and self.contains(class_name):
+            info = self.load(class_name)
+            for method in info.methods:
+                if method.name == name and method.descriptor == descriptor:
+                    return info, method
+            class_name = info.super_name
+        return None
+
     def has_clinit(self, class_name):
         return (self.contains(class_name)
                 and any(m.name == "<clinit>" for m in self.load(class_name).methods))
@@ -356,7 +379,7 @@ def observation(kind, info, method, instruction, detail):
             "bytecode_offset": instruction.offset, "detail": detail}
 
 
-def make_access(category, resource, access, via, info, method, offset):
+def make_access(category, resource, access, via, info, method, offset, path):
     if category == "static-field":
         resource_id = "%s#%s" % (resource["class"], resource["field"])
     else:
@@ -364,31 +387,48 @@ def make_access(category, resource, access, via, info, method, offset):
     return {"category": category, "resource_id": resource_id, "resource": resource,
             "access": access, "class": info.name, "method": method.name,
             "descriptor": method.descriptor, "bytecode_offset": offset,
-            "via": via, "depth": 1,
-            "call_path": [{"class": info.name, "method": method.name,
-                           "bytecode_offset": offset}]}
+            "via": via, "depth": len(path) + 1,
+            "call_path": path + [{"class": info.name, "method": method.name,
+                                  "bytecode_offset": offset}]}
 
 
-def scan_method(project, chain_names, via, info, method, result):
-    """Record the supported accesses and unsupported observations in one root method (depth 1)."""
-    instructions = method.instructions
-    for index, ins in enumerate(instructions):
+def walk_root(project, chain_names, via, root_info, root_method, max_depth, result):
+    """Scan one root method and, breadth-first, the project methods it calls, up to max_depth.
+
+    Breadth-first means every access is reported at the shortest depth it can be
+    reached. Each method is scanned at most once per root, which also stops
+    recursion and call cycles.
+    """
+    queue = [(root_info, root_method, [])]          # (class, method, caller frames)
+    visited = {(root_info.name, root_method.name, root_method.descriptor)}
+    while queue:
+        info, method, path = queue.pop(0)
+        walk = {"via": via, "path": path, "max_depth": max_depth,
+                "queue": queue, "visited": visited}
+        scan_method(project, chain_names, info, method, walk, result)
+
+
+def scan_method(project, chain_names, info, method, walk, result):
+    """Record the accesses and unsupported observations in one method's bytecode."""
+    for index, ins in enumerate(method.instructions):
         owner = ins.owner or info.name
         if ins.opcode in ("getstatic", "putstatic"):
             declaring = project.declaring_class(owner, ins.name)
             resource = {"kind": "static-field", "class": declaring, "field": ins.name}
             access = "READ" if ins.opcode == "getstatic" else "WRITE"
-            result["accesses"].append(
-                make_access("static-field", resource, access, via, info, method, ins.offset))
+            result["accesses"].append(make_access("static-field", resource, access, walk["via"],
+                                                  info, method, ins.offset, walk["path"]))
             note_implicit_clinit(project, chain_names, declaring, info, method, ins, result)
+        elif ins.opcode == "new" and ins.ref_kind == "class":
+            note_implicit_clinit(project, chain_names, ins.owner, info, method, ins, result)
         elif ins.opcode == "invokedynamic":
             result["unsupported"].append(observation(
                 "INVOKEDYNAMIC", info, method, ins, "invokedynamic not followed: " + ins.name))
         elif ins.opcode.startswith("invoke"):
-            scan_call(project, chain_names, via, info, method, index, owner, result)
+            scan_call(project, chain_names, info, method, index, owner, walk, result)
 
 
-def scan_call(project, chain_names, via, info, method, index, owner, result):
+def scan_call(project, chain_names, info, method, index, owner, walk, result):
     ins = method.instructions[index]
     internal = owner.replace(".", "/")
     if (internal, ins.name) in SYSPROP_CALLS:
@@ -401,7 +441,7 @@ def scan_call(project, chain_names, via, info, method, index, owner, result):
             resource = {"kind": "system-property", "key": key}
             result["accesses"].append(make_access(
                 "system-property", resource, SYSPROP_CALLS[(internal, ins.name)],
-                via, info, method, ins.offset))
+                walk["via"], info, method, ins.offset, walk["path"]))
     elif (internal, ins.name) in SYSPROP_BULK:
         result["unsupported"].append(observation(
             "SYSPROP_BULK", info, method, ins, "%s.%s (whole Properties object)" % (owner, ins.name)))
@@ -409,13 +449,49 @@ def scan_call(project, chain_names, via, info, method, index, owner, result):
         result["unsupported"].append(observation(
             "REFLECTION", info, method, ins, "%s.%s target not resolved" % (owner, ins.name)))
     elif project.contains(owner):
-        result["unsupported"].append(observation(
-            "DEPTH_LIMIT", info, method, ins,
-            "%s#%s%s not followed at depth 1" % (owner, ins.name, ins.descriptor)))
         if ins.opcode == "invokestatic":
             note_implicit_clinit(project, chain_names, owner, info, method, ins, result)
+        follow_call(project, info, method, ins, owner, walk, result)
     else:
         result["external"].add(owner)
+
+
+def follow_call(project, info, method, ins, owner, walk, result):
+    """Queue the statically named project target of a call, if depth allows."""
+    target_name = "%s#%s%s" % (owner, ins.name, ins.descriptor)
+    resolved = project.resolve_method(owner, ins.name, ins.descriptor)
+    if resolved is None:
+        result["unsupported"].append(observation(
+            "UNRESOLVED_CALL", info, method, ins, target_name + " not found in project classes"))
+        return
+    target_info, target = resolved
+    if ins.opcode in ("invokevirtual", "invokeinterface") and may_be_overridden(target_info, target):
+        key = (target_info.name, target.name, target.descriptor)
+        if key not in result["dispatch_noted"]:
+            result["dispatch_noted"].add(key)
+            result["unsupported"].append(observation(
+                "VIRTUAL_DISPATCH", info, method, ins,
+                "%s: only %s.%s is followed; subclass overrides are not"
+                % (target_name, target_info.name, target.name)))
+    if not target.instructions:             # abstract or native: nothing to scan
+        return
+    key = (target_info.name, target.name, target.descriptor)
+    if key in walk["visited"]:
+        return
+    if len(walk["path"]) + 1 >= walk["max_depth"]:
+        result["unsupported"].append(observation(
+            "DEPTH_LIMIT", info, method, ins,
+            "%s not followed: --depth %d reached" % (target_name, walk["max_depth"])))
+        return
+    walk["visited"].add(key)
+    frame = {"class": info.name, "method": method.name, "bytecode_offset": ins.offset}
+    walk["queue"].append((target_info, target, walk["path"] + [frame]))
+
+
+def may_be_overridden(info, method):
+    """False when the JVM rules out an override (static, private, final method or final class)."""
+    flags = method.flags + ", " + info.flags
+    return not any(f in flags for f in ("ACC_STATIC", "ACC_PRIVATE", "ACC_FINAL"))
 
 
 def note_implicit_clinit(project, chain_names, class_name, info, method, ins, result):
@@ -449,9 +525,10 @@ def analyse_test(project, test_id, depth=1):
     test_class, test_method = test_id.split("#", 1)
     chain, roots = find_roots(project, test_class, test_method)
     chain_names = {info.name for info in chain}
-    result = {"accesses": [], "unsupported": [], "external": set(), "clinit_noted": set()}
+    result = {"accesses": [], "unsupported": [], "external": set(),
+              "clinit_noted": set(), "dispatch_noted": set()}
     for via, info, method in roots:
-        scan_method(project, chain_names, via, info, method, result)
+        walk_root(project, chain_names, via, info, method, depth, result)
     note_rules_and_runners(chain, result)
 
     def order(a):
@@ -481,11 +558,8 @@ def main(argv=None):
             raise ExtractError("pair mode (--polluter/--victim) is not implemented yet (Phase 4)", 2)
         if not args.test:
             raise ExtractError("give --test Class#method", 2)
-        if args.depth not in (1, 2, 3):
-            raise ExtractError("--depth must be 1, 2 or 3", 2)
         if args.depth not in IMPLEMENTED_DEPTHS:
-            raise ExtractError("--depth %d is not implemented yet (Phase 3); use --depth 1"
-                               % args.depth, 2)
+            raise ExtractError("--depth must be 1, 2 or 3", 2)
         project = Project([args.classes, args.test_classes])
         output = {
             "contract": CONTRACT,

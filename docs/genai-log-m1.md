@@ -170,3 +170,32 @@ mutation check showed the lifecycle test catches the bug below.
 **Rejections:** none this session.
 
 Ownership checkpoint: you need to understand and verify this implementation before claiming it as your contribution.
+
+## 2026-10-09 — Phase 3: configurable call depth
+
+**Assistance level:** L3 (Core-assist): the depth walk, tests and measurement script were
+generated.
+
+**What I asked:** add `--depth N` (default 2; 1–3) following project calls only, handle
+cycles, record `call_path`, report virtual dispatch and reflection as unsupported, and
+measure what each depth adds on the fixture (real numbers only).
+
+**What was retained:** breadth-first `walk_root` (shortest call path, each method once per
+root); `follow_call` with `VIRTUAL_DISPATCH`, `DEPTH_LIMIT` and `UNRESOLVED_CALL`;
+`IMPLICIT_CLINIT` also on `new`; 5 new tests; `evidence/tools/measure_depth.py`; doc updates.
+
+**What I changed:** *fill after review.*
+
+**How it was verified:** expected paths and offsets read by hand from JDK 8 javap
+(`evidence/javap-dumps/phase3-depth-selftest.txt`); 15 tests OK on JDK 8 and JDK 21 javap;
+fixture measurement with 5 (host) and 3 (Docker JDK 8) repeats per depth. See
+`docs/evidence-m1.md`.
+
+**Errors found:** the first JDK 8 measurement run failed (relative paths through the Docker
+javap wrapper). This was a tooling problem and was re-run with absolute paths.
+The honest result is that the fixture cannot show the time cost of depth.
+
+**Rejections:** following subclass overrides (would need every project class loaded;
+recorded as `VIRTUAL_DISPATCH` instead).
+
+Ownership checkpoint: you need to understand and verify this implementation before claiming it as your contribution.
