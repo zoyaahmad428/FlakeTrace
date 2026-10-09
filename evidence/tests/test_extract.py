@@ -1,4 +1,5 @@
-"""Tests for evidence/extract.py (Member 1): lifecycle attribution (Phase 2), call depth (Phase 3), pairs (Phase 4).
+"""Tests for evidence/extract.py (Member 1): lifecycle attribution (Phase 2), call depth (Phase 3), pairs (Phase 4),
+ground truth (Phase 5).
 
 Input: Member 1's own test classes in evidence/tests/resources/m1-selftest/ (not a
 project fixture). Compile them first, with JDK 8 like the rest of the project:
@@ -287,6 +288,70 @@ class FixturePairTest(unittest.TestCase):
             for key in ("polluter_write_location", "victim_read_location"):
                 jsonschema.validate(fields[key], {"$defs": defs, "$ref": "#/$defs/codeLocation"})
         self.assertIsNone(none["shared_resource"])
+
+
+@needs(os.path.isdir(FIXTURE_DIRS[1]),
+       "fixture not compiled: run mvn -B -q -f fixtures/od-fixture/pom.xml test-compile")
+@needs(HAS_JAVAP, NO_JAVAP)
+class GroundTruthTest(unittest.TestCase):
+    """Phase 5: compare edges with Member 3's fixtures/od-fixture/ground_truth.json (read, never edited).
+
+    Every fixture test is tried as polluter against every other test as victim, at the
+    default depth. Edges must appear for exactly the ground-truth polluter→victim pairs,
+    on the ground-truth resource, and nowhere else (N1, N2 and the noise tests included).
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        with open(os.path.join(REPO_ROOT, "fixtures", "od-fixture", "ground_truth.json")) as f:
+            truth = json.load(f)
+        cls.cases, noise = truth["cases"], truth["benign_noise_tests"]
+        name = lambda t: t["class"] + "#" + t["method"]
+        tests = set()
+        for case in cls.cases:
+            tests.add(name(case["victim"]))
+            tests.update(name(p) for p in case["polluters"])
+        for group in noise:
+            tests.update(group["class"] + "#" + m for m in group["methods"])
+        project = extract.Project(FIXTURE_DIRS)
+        cls.results = {t: extract.analyse_test(project, t) for t in sorted(tests)}
+        cls.name = staticmethod(name)
+
+    def edges(self, polluter, victim):
+        return extract.find_edges(polluter, self.results[polluter], victim, self.results[victim])
+
+    def test_edges_appear_for_exactly_the_ground_truth_pairs(self):
+        expected = {(self.name(p), self.name(c["victim"])) for c in self.cases for p in c["polluters"]}
+        found = {(p, v) for p in self.results for v in self.results
+                 if p != v and self.edges(p, v)["edges"]}
+        self.assertEqual(found, expected)
+
+    def test_each_edge_is_on_the_ground_truth_resource(self):
+        for case in self.cases:
+            truth = case["shared_resource"]
+            for polluter in case["polluters"]:
+                with self.subTest(case=case["id"], polluter=polluter["method"]):
+                    pair = self.edges(self.name(polluter), self.name(case["victim"]))
+                    got = extract.report_fields(pair)["shared_resource"]
+                    if case["polluter_combination"] == "single":
+                        self.assertEqual(got, truth)
+                    else:
+                        # F3: the ground truth names both fields in one free-text value
+                        # ("flagA and flagB (both required)"), so match kind and class
+                        # exactly and require this polluter's field to be one it names.
+                        self.assertEqual((got["kind"], got["class"]), (truth["kind"], truth["class"]))
+                        self.assertIn(got["field"], truth["field"].split())
+
+    def test_victims_without_polluters_get_no_edge_from_any_test(self):
+        for case in self.cases:
+            if case["shared_resource"] is None:
+                victim = self.name(case["victim"])
+                for polluter in self.results:
+                    if polluter != victim:
+                        with self.subTest(case=case["id"], polluter=polluter):
+                            pair = self.edges(polluter, victim)
+                            self.assertEqual(pair["edges"], [])
+                            self.assertTrue(pair["no_supported_resource_evidence"])
 
 
 @needs(os.path.isdir(TEST_CLASSES), NO_SELFTEST)
