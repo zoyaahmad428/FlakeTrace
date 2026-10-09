@@ -530,3 +530,32 @@ assumed).
   in every example — no real static-bytecode-evidence extractor (Member 1)
   or source-integrity checker (Member 2) exists yet. Only the
   reproduction/isolation statistics themselves are now real.
+
+## 2026-10-09 — Fix F1 example's illustrative bytecode offsets
+
+**Requirement:** Zoya's `docs/contracts/resource-evidence.md` (open question
+5, on branch `m1/resource-evidence-contract`) noted that
+`example_f1_verified.json` used illustrative offsets 3/5, while real JDK 8
+offsets are 1/1. Verify independently before trusting her claim and acting
+on it.
+
+- Command: `docker run ... maven:3.9-eclipse-temurin-8 bash -c "mvn -q
+  test-compile && javap -c -p target/test-classes/odfixture/
+  ConfigPolluterTest.class && javap -c -p target/test-classes/odfixture/
+  ConfigVictimTest.class"`.
+- Result: `putstatic #2 // Field odfixture/Config.mode:I` at **offset 1**
+  in `ConfigPolluterTest#pollute`; `getstatic #2 // Field
+  odfixture/Config.mode:I` at **offset 1** in
+  `ConfigVictimTest#expectsDefaultMode`. Matches Zoya's claimed values
+  (1/1) exactly — independently confirmed, not just trusted.
+- File/function: `eval/examples/example_f1_verified.json` —
+  `polluter_write_location.bytecode_offset` and
+  `victim_read_location.bytecode_offset` changed from the placeholder
+  3/5 to the real 1/1; `limitations` entry updated to say these are now
+  real, verified values, not placeholders.
+- Command: `python3 -m unittest discover -s eval/tests -v`.
+- Result: 58/58 passed — no test asserts an exact offset value, so this
+  change could not have silently broken anything; confirmed anyway rather
+  than assumed.
+- Limitation: none — this was purely my own example file, no contract
+  change, no other member's sign-off needed.

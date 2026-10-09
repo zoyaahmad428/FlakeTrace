@@ -23,8 +23,8 @@
     "lower": 0.0, "upper": 0.16112515827076002
   },
   "shared_resource": { "kind": "static-field", "class": "odfixture.Config", "field": "mode" },
-  "polluter_write_location": { "class": "odfixture.ConfigPolluterTest", "method": "pollute", "bytecode_offset": 3 },
-  "victim_read_location": { "class": "odfixture.ConfigVictimTest", "method": "expectsDefaultMode", "bytecode_offset": 5 },
+  "polluter_write_location": { "class": "odfixture.ConfigPolluterTest", "method": "pollute", "bytecode_offset": 1 },
+  "victim_read_location": { "class": "odfixture.ConfigVictimTest", "method": "expectsDefaultMode", "bytecode_offset": 1 },
   "failure_signature": {
     "exception_type": "java.lang.AssertionError",
     "message": "expected:<0> but was:<1>",
@@ -37,7 +37,7 @@
   "unresolved_reason": null,
   "limitations": [
     "reproduction and victim_alone are REAL measured counts: od-fixture's F1 case was actually run 20 times each way via plain Maven inside maven:3.9-eclipse-temurin-8 on 2026-10-09 (eval/tools/run_real_reps.sh) -- not hand-picked. See docs/evidence-m3.md and eval/benchmark/logs/F1.json for the raw run.",
-    "polluter_write_location/victim_read_location's bytecode_offset values (3, 5) are still placeholders -- no real static-bytecode-evidence extractor exists in this repo yet (Member 1's component). The resource identity itself (odfixture.Config#mode) is correct by construction, not invented.",
+    "polluter_write_location/victim_read_location's bytecode_offset values (1, 1) are real -- verified independently via `javap -c -p` on the compiled classes (putstatic at offset 1 in ConfigPolluterTest#pollute, getstatic at offset 1 in ConfigVictimTest#expectsDefaultMode; JDK 8, 2026-10-09). No real static-bytecode-evidence EXTRACTOR exists yet in this repo (Member 1's component is still being built) -- these offsets were read by hand from javap, not produced by that component.",
     "original_failing_order includes two benign noise tests to illustrate what the minimiser would reduce away; reduced_sequence is what was actually run."
   ]
 }
