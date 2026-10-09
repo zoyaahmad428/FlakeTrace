@@ -128,3 +128,39 @@ change: `py -m unittest -v runner.tests.test_order_runner` → 17 tests OK.
 are only tested through hand-written result lines, because the fixture has no such test.
 
 **What I changed:** *fill after reading the diff.*
+
+## 2026-10-09 — W6 hand-over 3: runner tests in CI
+
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+
+**What I asked:** add the runner's tests to CI on JDK 8 so they can never be skipped silently,
+then record the real CI result and close W6.
+
+**What was retained:** the `runner` job in `.github/workflows/ci.yml` with
+`FLAKETRACE_REQUIRE_JVM=1`; the test command in `README.md` and `CLAUDE.md` section 8.
+
+**How it was verified:** locally, with java/mvn hidden from PATH the tests skip without the
+switch and fail with it. On GitHub Actions run `37957537495` (PR #10) all three jobs passed;
+job `runner` on JDK 8: `Ran 17 tests in 16.911s — OK` (I copied this line from the job log,
+which needs a signed-in account; Claude read the job/step status from the public API).
+
+**Errors found:** none. Noted for Member 1: `evidence/tests/` is not yet run by CI.
+
+**What I changed:** *fill after reading the diff.*
+
+## 2026-10-09 — W6 final review and fixes
+
+**Tool:** Claude Opus 5.5 (Claude Code) — a separate reviewer agent read the whole branch;
+the session that wrote the code fixed the findings · **Level:** L2
+
+**What was found:** no critical issues; important: (1) form-feed in a message misreported as a
+JVM crash, (2) a cut-off result line could still be parsed, (3) tests ran in the caller's
+directory, (4) docs overclaimed JDK-independent signatures. Five minor items deferred (listed
+in [[evidence-m2]]).
+
+**What was retained:** fixes for 1–3 with a failing test first for each; `ProbeTest.java` test
+asset; reworded docs for 4.
+
+**How it was verified:** 3 new tests failed before the fix, as predicted; 22 tests OK after.
+
+**What I changed:** *fill after reading the diff.*

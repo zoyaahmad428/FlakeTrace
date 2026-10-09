@@ -20,7 +20,7 @@ post-defence plan, §13.)*
 | W3 | Report schema + outcome decision table | M3 | Oct 8 | **Complete** | `eval/outcome.py`, schema, 7 examples |
 | W4 | Random-order baseline (interface) + benchmark manifest + yield report | M3 | Oct 9 | **Complete (no real runs)** | `eval/baseline.py`, `eval/benchmark/` |
 | W5 | Single repo, CI, team rules, Mid Eval docs | M2 | Oct 9 | **In review** (this PR) | `.github/`, `CLAUDE.md`, `docs/08-MidEval/` |
-| W6 | `OrderRunner`: ordered single-JVM JUnit 4 runner + failure signatures | M2 | S−2 | **In progress**: harness + F1 proof done (victim passes alone, fails after polluter in one JVM); failure paths and CI next | `runner/order_runner.py`, [[evidence-m2]], [[03-Design/decisions/ADR-003-order-runner-junitcore-harness]] |
+| W6 | `OrderRunner`: ordered single-JVM JUnit 4 runner + failure signatures | M2 | S−2 | **Complete** (PR #10 in review): F1 victim passes alone, fails after polluter in one JVM; every test always reported; CI job green on JDK 8 (17 tests) | `runner/order_runner.py`, [[evidence-m2]], [[03-Design/decisions/ADR-003-order-runner-junitcore-harness]] |
 | W7 | Victim-alone check, polluter search, repeated-run counts, source hash, execution record | M2 | S−1 | Not started | — |
 | W8 | Static extraction: static fields + system properties, attributed to test methods | M1 | S−1 | **In progress**: depth-1 extraction with lifecycle attribution done (Phase 2); depth 2/3 and edges not yet | `evidence/extract.py`, `docs/evidence-m1.md` |
 | W9 | End-to-end CLI: F1 → validated JSON report | M2 + M3 | S−1 | Not started | — |

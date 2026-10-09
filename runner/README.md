@@ -1,7 +1,7 @@
 # runner/ — bounded search and verification (Member 2)
 
-**Owner:** Member 2 · **State:** W6 in progress — ordered single-JVM runner works on fixture F1
-and reports every test even on crash/timeout/skip (2026-10-09); CI job next.
+**Owner:** Member 2 · **State:** W6 complete (2026-10-09) — ordered single-JVM runner, tested on fixture F1
+locally (JDK 21) and in CI (JDK 8, job `runner`). W7 (victim-alone check, polluter search) next.
 
 Implements the `OrderRunner` interface in [`eval/baseline.py`](../eval/baseline.py) and
 everything built on it. Contract: [docs/contracts/interfaces.md](../docs/contracts/interfaces.md).
@@ -13,7 +13,7 @@ Design: [ADR-003](../docs/03-Design/decisions/ADR-003-order-runner-junitcore-har
 from runner.order_runner import OrderRunner, maven_test_classpath
 from eval.baseline import TestIdentifier
 
-runner = OrderRunner(maven_test_classpath("fixtures/od-fixture"))
+runner = OrderRunner(maven_test_classpath("fixtures/od-fixture"), working_dir="fixtures/od-fixture")
 results = runner.run_ordered([
     TestIdentifier("odfixture.ConfigPolluterTest", "pollute"),
     TestIdentifier("odfixture.ConfigVictimTest", "expectsDefaultMode"),
@@ -23,12 +23,14 @@ results = runner.run_ordered([
 - `maven_test_classpath(project)` runs `mvn test-compile dependency:build-classpath` on the
   target project and returns `target/test-classes`, `target/classes` and the project's own jars.
   No dependency is added; only the git-ignored `target/` is written.
-- `OrderRunner` compiles `harness/FtHarness.java` once into a temp directory. Each
+- `OrderRunner` compiles `harness/FtHarness.java` once into a temp directory. Pass the project
+  directory as `working_dir` so tests using relative paths behave as under Maven. Each
   `run_ordered` call starts **one fresh JVM** that runs the tests **in exactly the given order**
   with JUnit's `JUnitCore` + `Request.method`.
 - A failed test carries `FailureSignature(exception_type, stack_trace, message)`. `stack_trace`
   is the frames from the throw point down to the test, cut at the first JUnit-runner/reflection/
-  harness frame, so JDK 8 and JDK 21 give the same signature. `message` is the first line with
+  harness frame, so an assertion failure gets the same signature on JDK 8 and JDK 21 (a JDK-internal
+  frame *above* the cut keeps JDK-specific line numbers — compare signatures within one JDK). `message` is the first line with
   numbers, hex ids, paths and timestamps masked.
 
 ### Harness protocol
@@ -82,7 +84,7 @@ not.
 
 | # | Component | Produces (report-schema fields) | Needed for Mid demo |
 | --- | --- | --- | --- |
-| 1 | Ordered single-JVM runner for JUnit 4 — **in progress (W6)** | per-test outcomes, `failure_signature` | Yes |
+| 1 | Ordered single-JVM runner for JUnit 4 — **done (W6)** | per-test outcomes, `failure_signature` | Yes |
 | 2 | Victim-alone check, repeated `n` times | `victim_alone` raw counts | Yes |
 | 3 | Polluter search over preceding tests | `polluters`, `original_failing_order` | Yes |
 | 4 | Deletion minimisation (handles F3's two-polluter case) | `reduced_sequence` | Yes (F1/F2); F3 stretch |

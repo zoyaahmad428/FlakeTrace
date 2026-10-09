@@ -93,4 +93,40 @@ not be skipped silently in CI.
   without the switch → `OK (skipped=1)`; with `FLAKETRACE_REQUIRE_JVM=1` →
   `RuntimeError: FLAKETRACE_REQUIRE_JVM is set but ['java', 'javac', 'mvn'] not on PATH`,
   `FAILED (errors=1)`.
-- GitHub Actions result: *not yet run — recorded after the push.*
+- GitHub Actions result: run `37957537495` on PR #10 (commit `1a7527e`), 2026-10-09 — all three
+  jobs succeeded. Job `runner` (Temurin JDK 8): `Ran 17 tests in 16.911s — OK`.
+  https://github.com/zoyaahmad428/FlakeTrace/actions/runs/37957537495
+  First run of the runner on JDK 8: the F1 checks pass there too (victim fails with
+  `java.lang.AssertionError`, stack ending at `odfixture.ConfigVictimTest.expectsDefaultMode:10`).
+  This shows assertion failures normalise the same on JDK 8 and 21; the JDK 8 frame list in the
+  unit tests is hand-written, not captured from a run. With `FLAKETRACE_REQUIRE_JVM=1` a skip would have failed the job, so the real-JVM tests ran.
+
+### 2026-10-09 — Final review fixes (W6)
+
+**Requirement:** a fresh-context review of the whole branch (Claude, separate agent) found no
+critical issues and four important ones; three needed code fixes, one a docs correction.
+
+- New test asset: `runner/tests/resources/ProbeTest.java` (compiled by the tests into a temp
+  directory against the fixture's own JUnit jar; the fixture itself is not touched).
+- New tests, run **before** the fixes: `Ran 22 tests — FAILED (failures=2, errors=1)`:
+  - message containing a form feed → reported `flaketrace.JvmCrash` instead of
+    `java.lang.AssertionError` (`splitlines()` split the result line on ``);
+  - result line cut off without a newline → parsed as a real failure (`java.lang.Exception`)
+    instead of missing;
+  - `OrderRunner(..., working_dir=...)` → `TypeError` (tests ran in the caller's directory, so
+    `new File("pom.xml")` failed).
+  - Already passing (covering behaviour previously tested only with hand-written lines): a real
+    `System.exit(3)` mid-order → that test and the next reported `flaketrace.JvmCrash`
+    ("code 3" in the message); a real `@Ignore` → `flaketrace.NotExecuted`.
+- Fix: split results on `"
+"` only and drop the final piece; new `working_dir` argument passed
+  as `cwd`.
+- After: `py -m unittest -v runner.tests.test_order_runner` → `Ran 22 tests in 21.289s — OK`.
+  `git status --short fixtures/` printed nothing.
+- Docs correction: JDK-internal frames above the stack cut keep JDK-specific line numbers, so
+  "same signature on JDK 8 and 21" holds for assertion failures only. ADR-003, `runner/README.md`,
+  the four-point note and the CI entry above were reworded.
+- Deferred (minor, not fixed): harness temp directory is not deleted; unused stdout/stderr are
+  decoded as strict UTF-8; stdin is read while tests run; result index is not cross-checked
+  against the test name; `ClassNotFoundException` stacks contain JDK class-loader frames.
+- JDK 8: not yet run with these fixes — CI runs on the next push.

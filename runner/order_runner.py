@@ -78,7 +78,9 @@ def parse_results(
     """Turn the harness's result file into one RunOutcome per test in `order`. A test with no
     complete result line (the JVM crashed or timed out first) fails with `missing_type`."""
     results: Dict[TestIdentifier, RunOutcome] = {}
-    for line in text.splitlines():
+    # Split on "\n" only (the harness escapes it, but not every character splitlines() splits on),
+    # and drop the last piece: it is "" after a complete line, or a line cut off mid-write.
+    for line in text.split("\n")[:-1]:
         fields = line.split("\t")
         if len(fields) != 6:
             continue
@@ -137,8 +139,11 @@ def maven_test_classpath(project_dir) -> List[str]:
 class OrderRunner:
     """Satisfies eval.baseline.OrderRunner. One fresh JVM per run_ordered call."""
 
-    def __init__(self, classpath: Sequence[str], timeout_s: float = 120.0):
+    def __init__(self, classpath: Sequence[str], working_dir=None, timeout_s: float = 120.0):
+        """`working_dir` is where the tests run; pass the target project's directory, as Maven
+        would, so tests that use relative paths behave the same. None = the caller's directory."""
         self.classpath = list(classpath)
+        self._working_dir = working_dir
         self._timeout_s = timeout_s
         self._java = _tool("java")
         self._harness_dir = tempfile.mkdtemp(prefix="flaketrace-harness-")
@@ -165,6 +170,7 @@ class OrderRunner:
                     [self._java, "FtHarness", str(result_file)],
                     input="".join(f"{test}\n" for test in order),
                     env=_env_with_classpath([self._harness_dir] + self.classpath),
+                    cwd=self._working_dir,
                     capture_output=True,
                     text=True,
                     encoding="utf-8",

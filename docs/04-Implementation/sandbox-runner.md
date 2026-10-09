@@ -1,7 +1,7 @@
 # Order runner — `runner/order_runner.py` + `runner/harness/FtHarness.java` (Member 2)
 
-*Status (2026-10-09): W6 hand-over 2 — happy path proven on fixture F1; every test always
-reported (crash, timeout, skip, bad input). Four-point ownership
+*Status (2026-10-09): W6 complete — proven on fixture F1 on JDK 21 (local) and JDK 8 (CI);
+every test always reported (crash, timeout, skip, bad input). Four-point ownership
 note per [[04-Implementation/README]]. Contract: [[contracts/interfaces]] Interface 1. Design:
 [[03-Design/decisions/ADR-003-order-runner-junitcore-harness]]. Evidence: [[evidence-m2]].*
 
@@ -32,9 +32,12 @@ JUnit Platform launcher (needs the Vintage engine, a new dependency).
 - **`java`, `javac` or `mvn` missing from PATH** → `RuntimeError("'mvn' not found on PATH")`;
   the real-JVM tests skip (or fail in CI, where `FLAKETRACE_REQUIRE_JVM` is set).
 - **Different JDKs print different reflection frames** (`sun.reflect.*` on 8,
-  `jdk.internal.reflect.*` on 21). The stack is cut at the first such frame, so signatures
-  match across JDKs; a new JDK with a new internal package would need a new prefix in
+  `jdk.internal.reflect.*` on 21). The stack is cut at the first such frame, so assertion
+  failures match across JDKs. JDK-internal frames *above* the cut (e.g. `java.lang.Integer.parseInt` when a test passes bad input) keep their line numbers, which differ between JDKs, so such signatures match only within one JDK. Every run of one diagnosis uses the same JDK, so this does not affect a diagnosis; it does mean signatures from different machines are not always comparable. Also, a new JDK with a new internal package would need a new prefix in
   `_FRAMEWORK_PREFIXES`.
+- **Working directory:** tests run in `working_dir`; if the caller leaves it `None`, a test that
+  opens a relative path (e.g. `new File("pom.xml")`) looks in the caller's directory and fails
+  falsely or writes files there.
 - **Class-level setup:** each method is its own `Request`, so `@BeforeClass` runs once per
   method. A project whose tests rely on one shared `@BeforeClass` per class could behave
   differently than under Surefire.

@@ -37,7 +37,7 @@ Python parses the file → Dict[TestIdentifier, RunOutcome] (eval.baseline types
 | --- | --- | --- |
 | `FtHarness.java` | Runs the listed tests in order; writes raw results (status, exception class, message, stack frames) | JUnit 4 from the *target's* classpath |
 | `maven_test_classpath(project_dir)` | Returns the target's test classpath: `target/test-classes`, `target/classes`, then the jars from `mvn dependency:build-classpath` | Maven on PATH (found with `shutil.which`, so `mvn.cmd` works on Windows) |
-| `OrderRunner(classpath, timeout_s=120)` | Compiles the harness once into a temp dir (`javac -source 8 -target 8`, accepted by JDK 8 through 21); `run_ordered` launches it and builds the result | `java`, `javac`; `eval.baseline` types |
+| `OrderRunner(classpath, working_dir=None, timeout_s=120)` | Compiles the harness once into a temp dir (`javac -source 8 -target 8`, accepted by JDK 8 through 21); `run_ordered` launches it in `working_dir` (pass the target project's directory, as Maven would) and builds the result | `java`, `javac`; `eval.baseline` types |
 | `normalise_*` / `parse_results` functions | Turn raw harness output into `FailureSignature`s; fill in missing tests | nothing (pure, unit-tested without a JVM) |
 
 ### Harness result line
@@ -55,8 +55,8 @@ corrupt them.
   reflection** (`org.junit.runner.`, `org.junit.runners.`, `org.junit.internal.runners.`, `sun.reflect.`,
   `jdk.internal.reflect.`, `java.lang.reflect.`, the harness), joined with `\n`. Assertion
   frames such as `org.junit.Assert.assertEquals` stay — they sit above the cut. This removes
-  the frames that differ between JDK 8 (CI) and JDK 21 (local), so one failure gets one
-  signature on both.
+  the reflection frames that differ between JDK 8 (CI) and JDK 21 (local), so an assertion
+  failure gets one signature on both. Limit (found in the final review): JDK-internal frames *above* the cut (e.g. `java.lang.Integer.parseInt` when a test passes bad input) keep their line numbers, which differ between JDKs, so such signatures match only within one JDK. Every run of one diagnosis uses the same JDK, so this does not affect a diagnosis; it does mean signatures from different machines are not always comparable.
 - `message`: first line, digits/hex/paths/timestamps masked (same masks as the POC's frozen
   definition). Stored but not compared — `FailureSignature.matches()` ignores it by contract.
 

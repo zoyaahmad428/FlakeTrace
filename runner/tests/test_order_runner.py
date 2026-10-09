@@ -1,5 +1,7 @@
 import os
 import shutil
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -90,6 +92,12 @@ class TestParseResults(unittest.TestCase):
         results = parse_results(text, [POLLUTER, VICTIM], "flaketrace.JvmCrash", "")
         self.assertEqual(results[VICTIM].failure_signature.exception_type, "flaketrace.JvmCrash")
 
+    def test_unterminated_last_line_is_treated_as_missing(self):
+        text = "0\tA#a\tFAIL\tjava.lang.Exception\tmsg\tA.a:1|A.b:2|fra"
+        test = TestIdentifier("A", "a")
+        results = parse_results(text, [test], "flaketrace.Timeout", "")
+        self.assertEqual(results[test].failure_signature.exception_type, "flaketrace.Timeout")
+
     def test_skipped_test_is_a_failure_not_a_pass(self):
         text = "0\todfixture.ConfigVictimTest#expectsDefaultMode\tSKIP\t\t\t\n"
         results = parse_results(text, [VICTIM], "flaketrace.JvmCrash", "")
@@ -150,6 +158,52 @@ class TestOrderRunnerOnF1(unittest.TestCase):
         self.assertEqual(
             {r.failure_signature.exception_type for r in results.values()}, {"flaketrace.Timeout"}
         )
+
+
+class TestOrderRunnerOnProbes(unittest.TestCase):
+    """Real JVM runs of runner/tests/resources/ProbeTest.java, compiled against the fixture's JUnit."""
+
+    @classmethod
+    def setUpClass(cls):
+        missing = [tool for tool in ("java", "javac", "mvn") if shutil.which(tool) is None]
+        if missing:
+            if os.environ.get("FLAKETRACE_REQUIRE_JVM"):
+                raise RuntimeError(f"FLAKETRACE_REQUIRE_JVM is set but {missing} not on PATH")
+            raise unittest.SkipTest(f"{missing} not on PATH")
+        jars = maven_test_classpath(FIXTURE)[2:]
+        cls.probe_dir = tempfile.mkdtemp(prefix="flaketrace-probe-")
+        subprocess.run(
+            [shutil.which("javac"), "-d", cls.probe_dir, str(Path(__file__).parent / "resources" / "ProbeTest.java")],
+            env=dict(os.environ, CLASSPATH=os.pathsep.join(jars)),
+            check=True,
+        )
+        cls.classpath = [cls.probe_dir] + jars
+        cls.runner = OrderRunner(cls.classpath)
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.probe_dir, ignore_errors=True)
+
+    def test_message_with_form_feed_is_a_failure_not_a_crash(self):
+        probe = TestIdentifier("ProbeTest", "failsWithFormFeed")
+        signature = self.runner.run_ordered([probe])[probe].failure_signature
+        self.assertEqual(signature.exception_type, "java.lang.AssertionError")
+
+    def test_tests_run_in_the_given_working_directory(self):
+        probe = TestIdentifier("ProbeTest", "needsPomInWorkingDir")
+        runner = OrderRunner(self.classpath, working_dir=FIXTURE)
+        self.assertTrue(runner.run_ordered([probe])[probe].passed)
+
+    def test_jvm_exit_mid_order_reports_the_rest_as_crashed(self):
+        exits = TestIdentifier("ProbeTest", "exitsTheJvm")
+        results = self.runner.run_ordered([exits, VICTIM])
+        self.assertEqual(results[exits].failure_signature.exception_type, "flaketrace.JvmCrash")
+        self.assertIn("code 3", results[VICTIM].failure_signature.message)
+
+    def test_ignored_test_is_reported_not_executed(self):
+        probe = TestIdentifier("ProbeTest", "ignored")
+        signature = self.runner.run_ordered([probe])[probe].failure_signature
+        self.assertEqual(signature.exception_type, "flaketrace.NotExecuted")
 
 
 if __name__ == "__main__":
