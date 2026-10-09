@@ -164,3 +164,27 @@ asset; reworded docs for 4.
 **How it was verified:** 3 new tests failed before the fix, as predicted; 22 tests OK after.
 
 **What I changed:** *fill after reading the diff.*
+
+## 2026-10-09 — W7 design: ADR-004 and implementation plan
+
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+
+**What I asked:** design W7 (victim-alone check, polluter search, repeated-run counts, source
+hash, execution record) with options, then write the spec and plan.
+
+**What I decided:** the original order is discovered like Surefire with an explicit-order
+override; one-by-one polluter search with a priority hook (multi-polluter cases go to W10);
+default n = 20 (proposed answer to I3, needs M3); small single-purpose modules with a
+recording wrapper.
+
+**What was retained:** ADR-004, `docs/superpowers/plans/2026-10-09-w7-diagnosis-runs.md`.
+
+**How it was verified:** a throwaway spike (not committed) ran the full design on the
+fixture: F1 and F2 found the ground-truth polluter, F3 ended NO_SINGLE_POLLUTER after 12
+candidates, N1 and N2 ended VICTIM_FAILS_ALONE; 55 tests passed in the spike. Wilson bounds in
+the ADR computed with `eval.stats.wilson_interval`.
+
+**Errors found:** I first assumed N2 fails ~50% of the time; measured 18/60 on Windows
+(`System.nanoTime()` has 100-ns steps there). The N2 test uses n = 40 so it cannot flake.
+
+**What I changed:** *fill after reviewing the ADR.*
