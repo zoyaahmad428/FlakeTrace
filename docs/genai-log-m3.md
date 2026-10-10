@@ -620,3 +620,33 @@ at the first edge found, rather than always walking to depth 5 — the cost/over
 trade-off is the entire reason the ADR exists instead of just raising the default depth. Also
 be ready to explain why `eval.report.assemble_report` needed zero code changes to accept
 ADR-007's multi-polluter `POLLUTER_FOUND` case (the field was already a list).
+
+## 2026-10-10 — Switch to analyse_pair() once Member 1 landed it
+
+**What I asked:** Told to go ahead with the ADR-006 follow-up I'd flagged earlier: switching
+`eval/report.py`'s callers to Member 1's new `analyse_pair()`, now that PR #34 merged it for
+real the same day.
+
+**What was retained:** The scoping decision — checking first that `eval/report.py` itself
+needed no change (it was already caller-agnostic), so only `eval/tools/run_w9_integration.py`
+needed editing. This was my own read of the code before touching anything, not assumed from
+the ADR text alone.
+
+**What I changed:** Nothing rejected — straightforward substitution once the dependency
+existed for real.
+
+**How it was verified:** `py -m unittest discover -s eval/tests -v` → 68/68 passed. Real run
+of `eval/tools/run_w9_integration.py` → F1/F2 still `VERIFIED`, N1/N2 still
+`UNRESOLVED(VICTIM_FAILS_ALONE)`. Diffed the regenerated reports against the previously
+committed ones: F1/F2/N1 identical apart from the execution-record timestamp (direct proof
+the auto-deepening didn't change anything at depth 2); N2's alone-success count differs
+(9/20 vs 12/20) because N2 is genuinely intermittent by design, not because of this change.
+
+**Errors found:** None.
+
+**Rejections:** None.
+
+Ownership checkpoint: be able to explain why diffing the regenerated reports against the
+previously committed ones (not just checking the outcome string) is the real proof this change
+was safe — matching outcomes alone would not have caught a silently different resource or
+location.

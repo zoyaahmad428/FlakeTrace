@@ -3,8 +3,8 @@
 Unlike `eval/examples/` (hand-written illustrative examples, explicitly labelled as not
 results), everything in this folder was **genuinely produced by the real pipeline**:
 `runner.diagnose.diagnose()` (Member 2, real Maven/JVM runs) +
-`evidence.extract.analyse_test()` / `find_edges()` / `report_fields()` (Member 1, real `javap`
-bytecode reads and the real pair-mode correlation) +
+`evidence.extract.analyse_pair()` / `report_fields()` (Member 1, real `javap` bytecode reads
+and the real pair-mode correlation, auto-deepening 1→5 only when needed, ADR-006) +
 `eval.report.assemble_report()` (Member 3, Wilson intervals + the decision table) +
 `eval.schema_validator.validate_report()` (passed, not just asserted).
 
@@ -16,7 +16,7 @@ JDK on `PATH`, same requirements as `runner/`).
 | `f1.json` | `odfixture.ConfigVictimTest#expectsDefaultMode` | `VERIFIED` (20/20 reproduced, 0/20 alone, real resource edge) |
 | `f2.json` | `odfixture.FeatureVictimTest#expectsTurboDisabled` | `VERIFIED` (20/20 reproduced, 0/20 alone, real resource edge via a helper call, `FeatureFlags.isTurboEnabled`) |
 | `n1.json` | `odfixture.NegativeAloneFailTest#alwaysFails` | `UNRESOLVED(VICTIM_FAILS_ALONE)` (20/20 alone-failures) |
-| `n2.json` | `odfixture.NegativeFlakyTest#sometimesFails` | `UNRESOLVED(VICTIM_FAILS_ALONE)` (12/20 alone-successes, i.e. 8/20 alone-failures — intermittent, as designed) |
+| `n2.json` | `odfixture.NegativeFlakyTest#sometimesFails` | `UNRESOLVED(VICTIM_FAILS_ALONE)` (intermittent by design — 9/20 alone-successes in the committed run; the exact count varies run to run, as N2's whole point requires) |
 
 Each report's `execution_record_reference` points at a raw per-run JSONL execution record
 (`runner.recording.RecordingRunner`) under a local `flaketrace-records/` folder — one real JVM
@@ -55,3 +55,17 @@ F2 and N2 **are** here now, both added after being blocked:
   deterministically even on some hardware. After Member 3 fixed that mechanism and Member 2
   confirmed it now reliably reports `VICTIM_FAILS_ALONE` on every platform tested, N2 needed
   no new code here — `assemble_report` already handles that status.
+
+## Depth: `analyse_pair()`, not separate `analyse_test()`+`find_edges()` calls
+
+`eval/tools/run_w9_integration.py` now calls Member 1's `evidence.extract.analyse_pair()`
+(ADR-006, PR #34) instead of analysing the polluter and victim separately and combining them
+with `find_edges()`. `analyse_pair()` starts at the contract default (depth 2) and deepens one
+level at a time, but only when the walk actually hit `DEPTH_LIMIT` and found no edge — it stops
+at the shallowest depth that has one. F1 and F2 both still resolve at depth 2 (confirmed: the
+regenerated reports are byte-identical to before except for the execution-record timestamp),
+so this change costs nothing on the fixture; it is what makes a real project whose evidence
+sits deeper (fastjson's two cases, at depth 4 and 5 — `docs/evidence-m1.md`) explainable
+without every pair paying that cost. `eval/report.py` itself needed no change: it already took
+`report_fields(pair)`'s output as an opaque `resource_fields` argument, independent of how the
+caller produced `pair`.
