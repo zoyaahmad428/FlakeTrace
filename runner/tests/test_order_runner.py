@@ -18,6 +18,8 @@ FIXTURE = Path(__file__).resolve().parents[2] / "fixtures" / "od-fixture"
 
 POLLUTER = TestIdentifier("odfixture.ConfigPolluterTest", "pollute")
 VICTIM = TestIdentifier("odfixture.ConfigVictimTest", "expectsDefaultMode")
+JUNIT3_POLLUTER = TestIdentifier("LegacyJUnit3Test", "testPollute")
+JUNIT3_VICTIM = TestIdentifier("LegacyJUnit3Test", "testVictim")
 
 JDK21_FRAMES = [
     "org.junit.Assert.fail:89",
@@ -173,7 +175,8 @@ class TestOrderRunnerOnProbes(unittest.TestCase):
         jars = maven_test_classpath(FIXTURE)[2:]
         cls.probe_dir = tempfile.mkdtemp(prefix="flaketrace-probe-")
         subprocess.run(
-            [shutil.which("javac"), "-d", cls.probe_dir, str(Path(__file__).parent / "resources" / "ProbeTest.java")],
+            [shutil.which("javac"), "-d", cls.probe_dir, str(Path(__file__).parent / "resources" / "ProbeTest.java"),
+             str(Path(__file__).parent / "resources" / "LegacyJUnit3Test.java")],
             env=dict(os.environ, CLASSPATH=os.pathsep.join(jars)),
             check=True,
         )
@@ -204,6 +207,18 @@ class TestOrderRunnerOnProbes(unittest.TestCase):
         probe = TestIdentifier("ProbeTest", "ignored")
         signature = self.runner.run_ordered([probe])[probe].failure_signature
         self.assertEqual(signature.exception_type, "flaketrace.NotExecuted")
+
+    def test_junit3_methods_are_listed(self):
+        self.assertEqual(self.runner.list_methods(["LegacyJUnit3Test"]),
+                         [JUNIT3_POLLUTER, JUNIT3_VICTIM])
+
+    def test_junit3_victim_passes_alone_and_fails_after_its_polluter(self):
+        self.assertTrue(self.runner.run_ordered([JUNIT3_VICTIM])[JUNIT3_VICTIM].passed)
+        outcome = self.runner.run_ordered([JUNIT3_POLLUTER, JUNIT3_VICTIM])[JUNIT3_VICTIM]
+        self.assertFalse(outcome.passed)
+        self.assertEqual(outcome.failure_signature.exception_type, "junit.framework.AssertionFailedError")
+        self.assertTrue(outcome.failure_signature.stack_trace.endswith("LegacyJUnit3Test.testVictim:12"),
+                        outcome.failure_signature.stack_trace)
 
 
 if __name__ == "__main__":

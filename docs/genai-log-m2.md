@@ -419,4 +419,17 @@ the new check was removed); fast tests 25 OK; full runner suite 78 OK.
 fixed by editing the file directly. An old stray form-feed character in this log (W6 entry) was
 replaced with the text `\f`.
 
+## 2026-10-10 — Claim E1 and a JUnit 3 test
+
+**Tool:** Claude Opus 5.5 · **Level:** L2
+
+**What was asked:** fix claim E1's wording (Member 1's suggestion) and back its JUnit 3 part with a
+test through our own harness.
+
+**What was retained:** `LegacyJUnit3Test.java`, two tests in `TestOrderRunnerOnProbes`, the E1 and
+scope-boundary wording, the README limitation line.
+
+**How it was verified:** a scratchpad probe first; the tests passed (existing behaviour); a reversed
+order made the pollution test fail; full runner suite 59 OK.
+
 **What I changed:** *fill after reading the diff.*
