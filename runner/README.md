@@ -77,7 +77,8 @@ not.
 
 - Each method is its own JUnit `Request`: `@BeforeClass`/`@AfterClass` run once per method,
   not once per class as under Maven Surefire.
-- JUnit 4 only.
+- JUnit 4, and JUnit 3 `TestCase` classes through JUnit's own JUnit38 adapter (tested with
+  `resources/LegacyJUnit3Test.java`). JUnit 5 is not supported.
 - Only the top-level exception is part of the signature; a wrapped cause is not compared.
 
 ## Diagnosis runs (W7)

@@ -334,3 +334,18 @@ which CLAUDE.md forbids agents to run. It discarded only the agent's own one-lin
 to the member at the time.
 
 **What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — Claim E1 and a JUnit 3 test
+
+**Tool:** Claude Opus 5.5 · **Level:** L2
+
+**What was asked:** fix claim E1's wording (Member 1's suggestion) and back its JUnit 3 part with a
+test through our own harness.
+
+**What was retained:** `LegacyJUnit3Test.java`, two tests in `TestOrderRunnerOnProbes`, the E1 and
+scope-boundary wording, the README limitation line.
+
+**How it was verified:** a scratchpad probe first; the tests passed (existing behaviour); a reversed
+order made the pollution test fail; full runner suite 59 OK.
+
+**What I changed:** *fill after reading the diff.*

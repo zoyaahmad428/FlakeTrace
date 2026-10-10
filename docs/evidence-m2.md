@@ -325,3 +325,25 @@ and the docs saying "N2 may end `NOT_REPRODUCED` on Windows" were out of date.
 - **CI for PR #20 (`evidence` job):** `Ran …` line not recorded yet.
 - Docs updated: ADR-004 (N2 row and an update note), [[04-Implementation/diagnosis-runs]],
   demo plan Runner row, claims E9.
+
+### 2026-10-10 — Claim E1: JUnit 3 through our harness, and wording
+
+**Requirement:** claim E1 said JUnit 3 is supported "via the JUnit38 adapter" and that Surefire runs
+the tests. The only backing was the POC, which ran under Surefire, and FlakeTrace runs tests with its
+own JUnitCore harness (ADR-003). Member 1 suggested new wording.
+- Probe first (scratchpad, not committed): a JUnit 3 `TestCase` compiled against the fixture's JUnit
+  and run through `OrderRunner` → `list_methods` found `testPollute`, `testVictim`; the victim passed
+  alone; after the polluter it failed with `junit.framework.AssertionFailedError`, stack ending at the
+  test method.
+- File: `runner/tests/resources/LegacyJUnit3Test.java`, compiled in `TestOrderRunnerOnProbes` next to
+  `ProbeTest.java`. Tests `test_junit3_methods_are_listed`,
+  `test_junit3_victim_passes_alone_and_fails_after_its_polluter`.
+- Command: `py -m unittest -v runner.tests.test_order_runner.TestOrderRunnerOnProbes` (local
+  Windows, JDK 21.0.9) → `Ran 6 tests in 12.764s — OK`. Both JUnit 3 tests passed on first run:
+  they document existing behaviour.
+- Mutation check: `run_ordered` sent the order reversed → the pollution test FAILED
+  (`True is not false`, the victim passed); restored, `git diff runner/order_runner.py` empty.
+- Full runner suite on this branch (from `main`, without W9): `Ran 59 tests in 130.392s — OK`.
+- Docs: claim E1 and its source `docs/02-Requirements/scope-boundary.md` (Surefire removed, Maven
+  for build and classpath, JUnitCore), `runner/README.md` limitations.
+- Limitation: the "Linux container" part of E1 is a committed target; nothing runs in one yet.

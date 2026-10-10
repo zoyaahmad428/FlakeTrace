@@ -88,7 +88,7 @@ published finding — defend as a choice) · `FROZEN` (committed pre-registratio
 
 | # | Claim | Backing | Source | Owner | Status |
 | --- | --- | --- | --- | --- | --- |
-| E1 | Committed: Linux container, JUnit 4 (incl. JUnit 3 via JUnit38 adapter), executed via a custom JUnitCore-based harness for controlled ordering (ADR-003) — Maven Surefire is used only for plain build/compile, not for diagnosis runs | POC confirmed all 8 cases were JUnit 3 — adapter path is validated, not assumed | [[02-Requirements/scope-boundary]] | M2 | COMMITTED |
+| E1 | Committed: Linux container; Maven for build and classpath; JUnit 4 tests run in one JVM via JUnitCore (JUnit 3 `TestCase` via the JUnit38 adapter) (ADR-003) | POC: all 8 cases were JUnit 3 (run under Surefire). Our harness: `runner/tests/test_order_runner.py` runs a JUnit 3 `TestCase` (`runner/tests/resources/LegacyJUnit3Test.java`) — methods listed, victim passes alone, fails after its polluter in one JVM with `junit.framework.AssertionFailedError`. The Linux container is a committed target, not yet built | [[02-Requirements/scope-boundary]], [[evidence-m2]] | M2 | COMMITTED |
 | E2 | JUnit 5 is conditional | Becomes committed only after discovery + instrumentation attribute events to correct test boundaries under Jupiter | [[02-Requirements/scope-boundary]] | M2 | GATED |
 | E3 | Databases, network, threads, timing are unsupported — not silent | Produce *opaque events* contributing to the abstention decision and the coverage report | [[02-Requirements/scope-boundary]] | M1 | COMMITTED |
 | E4 | We never claim definitive causality | Explicit exclusion. Certificate language is "evidence-supported interference path" | [[03-Design/certificate-contract]] | Joint | COMMITTED |

@@ -13,8 +13,10 @@ failing order · a fixed budget in wall-clock time and test-method invocations.
 **Out:** a deletion-minimal replay order · a resource-event path · a repeated-run interval · a
 replay command · provenance · stated limitations — **or an explicit unresolved certificate**.
 
-**Committed environment:** Linux container · Maven Surefire · JUnit 4 (including JUnit 3
-`TestCase` classes via the JUnit38 adapter).
+**Committed environment:** Linux container · Maven for build and classpath · JUnit 4 tests run in
+one JVM via JUnitCore (including JUnit 3 `TestCase` classes via the JUnit38 adapter) — see
+[[03-Design/decisions/ADR-003-order-runner-junitcore-harness]]. Surefire is not used to run
+diagnosis runs.
 
 **Committed resource families:** JVM static fields · Java system properties · filesystem paths.
 
