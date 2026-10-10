@@ -75,10 +75,16 @@ def run_steps(
     _label(runner, "search")
     polluter, search_runs = find_polluter(runner, order, victim, reference, priority)
     polluters, minimise_runs = ([polluter], 0) if polluter is not None else ([], 0)
-    if polluter is None and len(order) > 1:
-        # No single test is enough: shrink everything before the victim (ADR-007).
+    if polluter is None and len(order) > 2:
+        # No single test is enough: shrink everything before the victim (ADR-007). The full order
+        # must fail once more first, so a flaky failure never blames every earlier test. (With one
+        # earlier test, the search already ran exactly [test, victim] and saw it pass.)
         _label(runner, "minimise")
-        polluters, minimise_runs = ddmin(runner, order[:-1], victim, reference)
+        again = runner.run_ordered(order)[victim]
+        minimise_runs = 1
+        if not again.passed and again.failure_signature.matches(reference):
+            polluters, ddmin_runs = ddmin(runner, order[:-1], victim, reference)
+            minimise_runs += ddmin_runs
     sequence = polluters + [victim] if polluters else order
     _label(runner, "verify")
     successes, any_failures = repeat(runner, sequence, victim, reference, n)

@@ -163,6 +163,15 @@ class TestCombineFields(unittest.TestCase):
         self.assertIn("Polluter pkg.PolluterTest#p: shared resource pkg.T#flagA was found, "
                       "but not every polluter has evidence", fields["limitations"])
 
+    def test_resource_written_by_both_polluters_is_not_called_hidden(self):
+        fields = combine_fields([pair(P, "pkg.T#flag"), pair(Q, "pkg.T#flag")])
+        self.assertEqual(fields["shared_resource"]["field"], "flag")
+        self.assertFalse(any("pkg.T#flag is not shown" in line for line in fields["limitations"]), fields["limitations"])
+
+    def test_extra_resource_of_a_later_polluter_is_named_once(self):
+        fields = combine_fields([pair(P, "pkg.T#a"), pair(Q, "pkg.T#b", "pkg.T#c")])
+        self.assertEqual(sum("pkg.T#c" in line for line in fields["limitations"]), 1, fields["limitations"])
+
     def test_first_polluter_without_edge_shows_no_resource(self):
         fields = combine_fields([pair(P), pair(Q, "pkg.T#flagB")])
         self.assertIsNone(fields["shared_resource"])

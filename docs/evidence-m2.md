@@ -527,3 +527,31 @@ VERIFIED  odfixture.ToggleVictimTest#expectsNotBothFlagsSet
   limitations, Runner row), iteration plan W10, members, claims E9/E12 updated and new E13, an update
   note in ADR-005. `fixtures/od-fixture/ground_truth.json`'s F3 note ("needs W10") is M3's — not edited.
 - CI on JDK 8: not yet run (runs on the PR).
+
+### 2026-10-10 — W10 final review and fixes
+
+**Review:** separate reviewer agent on the whole branch (`a7ced91..8a16388`) against ADR-007 and the
+plan: no critical; three important; six minor. All five review-focus items held (the reviewer probed them).
+- **Important 1 — fixed:** a victim that failed only once (in the reproduce run) made `ddmin` treat the
+  whole prefix as failing and blame **every earlier test** (reviewer's probe: 20 bystanders); with one
+  earlier test it blamed a test the search had just seen pass. Fix in `run_steps`: run the full order
+  once more before `ddmin` and minimise only if it fails again; skip `ddmin` for a one-test prefix.
+  Tests `test_flaky_failure_is_not_blamed_on_the_whole_prefix` and
+  `test_one_test_prefix_that_passed_in_the_search_blames_nothing` FAILED before
+  (`'POLLUTER_FOUND' != 'NO_SINGLE_POLLUTER'`) and pass after; the two-polluter test's counts now
+  include the re-check (`minimise_runs` 3, 10 calls).
+- **Important 3 — fixed:** two polluters writing the same resource got a line saying that resource is
+  not shown, although it was the one shown. `combine_fields` skips edges on the shown resource and takes
+  only M1's fixed lines from later polluters (which also fixes minor 4, a resource named twice). Tests
+  `test_resource_written_by_both_polluters_is_not_called_hidden` and
+  `test_extra_resource_of_a_later_polluter_is_named_once` FAILED before (`True is not false`, `2 != 1`).
+- **Important 2 — ruling, no code change:** with mixed evidence our lines name the found edges while
+  M3's generic line says no edge was found; that line is in `eval/` (M3). Recorded in ADR-007; M3 asked
+  to make it conditional.
+- Docs honesty (minors 5, 6): ADR-007's cost sentence corrected (the search still runs once per test);
+  claim E13 status SETTLED → OPEN until CI and M1/M3 agreement. The exit-3 message for
+  `NO_SINGLE_POLLUTER` now says the failure did not come back and is likely flaky (minor 9).
+- Real F3 after the fix (`diagnose(..., n=5)`): `POLLUTER_FOUND`, same polluters, search 12, minimise
+  **10** (1 re-check + 9 `ddmin`), verify 5/5.
+- Full runner suite: `Ran 101 tests in 236.259s — OK`. `git status --short fixtures/` empty.
+- Deferred minor: `minimise_runs` is not shown in the report or summary (noted in ADR-007).

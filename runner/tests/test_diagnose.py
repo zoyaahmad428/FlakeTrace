@@ -62,8 +62,24 @@ class TestRunSteps(unittest.TestCase):
         self.assertEqual(runs.status, POLLUTER_FOUND)
         self.assertEqual((runs.polluters, runs.sequence), ([A, B], [A, B, V]))
         self.assertEqual((runs.sequence_n, runs.sequence_successes), (2, 2))
-        self.assertEqual((runs.alone_n, runs.alone_successes, runs.search_runs, runs.minimise_runs), (2, 0, 2, 2))
-        self.assertEqual(len(runner.calls), 1 + 2 + 2 + 2 + 2)
+        self.assertEqual((runs.alone_n, runs.alone_successes, runs.search_runs, runs.minimise_runs), (2, 0, 2, 3))
+        self.assertEqual(len(runner.calls), 1 + 2 + 2 + (1 + 2) + 2)
+
+    def test_flaky_failure_is_not_blamed_on_the_whole_prefix(self):
+        # The victim fails only in the very first run (the reproduce step), never again.
+        calls = []
+        runner = FakeOrderRunner(lambda order, test: (calls.append(1) or FAIL) if test == V and not calls else PASS)
+        runs = run_steps(runner, [A, B, LATER, V], V, n=2)
+        self.assertEqual(runs.status, NO_SINGLE_POLLUTER)
+        self.assertEqual(runs.polluters, [])
+        self.assertEqual(runs.minimise_runs, 1)
+
+    def test_one_test_prefix_that_passed_in_the_search_blames_nothing(self):
+        calls = []
+        runner = FakeOrderRunner(lambda order, test: (calls.append(1) or FAIL) if test == V and not calls else PASS)
+        runs = run_steps(runner, [A, V], V, n=2)
+        self.assertEqual(runs.status, NO_SINGLE_POLLUTER)
+        self.assertEqual((runs.polluters, runs.minimise_runs), ([], 0))
 
     def test_minimise_runs_are_recorded_as_their_own_step(self):
         record = Path(tempfile.mkdtemp(prefix="flaketrace-rec-")) / "r.jsonl"

@@ -17,7 +17,8 @@ preserving multi-test candidates. `parameter-provenance.md` fixes the claim: **1
 "minimum"**: delta debugging returns a 1-minimal set and may miss other polluter combinations.
 
 Real projects have hundreds of tests before a victim and do have multi-polluter cases, so the
-product has to find and report them, at a cost that does not grow with one run per earlier test.
+product has to find and report them. (The one-by-one search before it already costs one run per
+earlier test; `ddmin` itself shrinks a long prefix in far fewer runs than that.)
 
 ## Decision
 
@@ -42,8 +43,12 @@ search finds nothing.** F1/F2 cost exactly what they cost today.
   command's exit 3 for F3 disappears. "Polluter found" now means "one or more polluters found".
 - New field `minimise_runs: int = 0`: the JVM runs `ddmin` made. The default keeps every existing
   `DiagnosisRuns(...)` call (M3's tests, our fakes) working.
-- `NO_SINGLE_POLLUTER` remains only for an empty prefix: the victim is first in the order, failed
-  there but not alone (flakiness). Nothing is minimised and no polluter is invented.
+- **The full order is run once more before `ddmin`** (counted in `minimise_runs`). Only if it fails
+  again with the reference signature is it minimised; otherwise the failure was flaky. With one
+  earlier test, `ddmin` is skipped: the search already ran exactly `[test, victim]` and saw it pass.
+  *(Added after the final review: without it, a failure seen only once blamed every earlier test.)*
+- `NO_SINGLE_POLLUTER` remains for: the victim first in the order; one earlier test that did not
+  reproduce; or a full order that did not fail again. No polluter is invented.
 - `ddmin` runs go through `RecordingRunner` with the step label `"minimise"`.
 
 ### `ddmin` (`runner/minimise.py`)
@@ -94,6 +99,11 @@ report — proposed for the schema change already under discussion with M3. If M
   last round's per-test removal is a single-run counterfactual check. **Repeated** counterfactual
   checks (each polluter removed ×n) are left for the next iteration: they cost n runs per polluter
   and need a report field.
+- **Mixed evidence wording.** When some polluter has no edge, our `limitations` name the edges that
+  were found, while M3's `assemble_report` adds its generic line that no polluter-write/victim-read
+  edge was found. Both are true per polluter but read as a contradiction; M3 is asked to make that
+  line conditional (eval/ is M3's code).
+- **`minimise_runs`** is in `DiagnosisRuns` and the execution record, not in the report or summary.
 - **No run budget.** `ddmin`'s worst case is many runs on a long prefix; FR-1's execution budget
   belongs with the planner. Each JVM run keeps its 120 s timeout.
 - **1-minimal, not minimum**; other polluter combinations may exist.

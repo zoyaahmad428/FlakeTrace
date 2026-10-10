@@ -21,7 +21,8 @@ from runner.order_runner import ToolError
 _VICTIM = re.compile(r"[\w.$]+#[\w$]+")
 
 _NO_REPORT_WHY = {
-    NO_SINGLE_POLLUTER: "the victim is first in the order, so there is no earlier test to blame",
+    NO_SINGLE_POLLUTER: "the victim failed in the original order but not again (alone, after any single "
+                        "earlier test, or in the full order once more), so no test is blamed; likely flaky",
     NOT_REPRODUCED: "the victim never failed with a real failure in n runs of the original order",
 }
 
@@ -94,12 +95,15 @@ def combine_fields(pairs: list) -> dict:
     fields = [report_fields(pair) for pair in pairs]
     if len(fields) == 1:
         return fields[0]
-    lines = []
-    for each in fields:
-        lines += [line for line in each["limitations"] if line not in lines]
+    # The first polluter's projected lines, plus only M1's fixed lines from the others: their own
+    # "not shown" lines would name a resource a second time.
+    lines = list(fields[0]["limitations"])
+    for pair in pairs[1:]:
+        lines += [line for line in pair["limitations"] if line not in lines]
     if all(pair["edges"] for pair in pairs):
+        shown = pairs[0]["edges"][0]["resource_id"]
         others = [f"Polluter {_test(pair['polluter'])}: shared resource {edge['resource_id']} is not shown in this report"
-                  for pair in pairs[1:] for edge in pair["edges"]]
+                  for pair in pairs[1:] for edge in pair["edges"] if edge["resource_id"] != shown]
         return dict(fields[0], limitations=lines + others)
     found = [f"Polluter {_test(pair['polluter'])}: shared resource {edge['resource_id']} was found, "
              "but not every polluter has evidence" for pair in pairs for edge in pair["edges"]]

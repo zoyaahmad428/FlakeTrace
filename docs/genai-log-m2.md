@@ -496,3 +496,22 @@ tests, the F3 report checks, docs and claim E13.
 `limitations`; evidence for the first polluter only made the F3 test fail; full suite 97 OK.
 
 **What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — W10 final review and fixes
+
+**Tool:** Claude Opus 5.5 (author session) + a separate reviewer agent · **Level:** L2
+
+**What was found:** important: a one-off flaky failure blamed every earlier test; a resource written
+by both polluters was called "not shown"; mixed-evidence wording conflicts with M3's generic line.
+Minors: a resource named twice, a cost claim stronger than measured, E13 marked SETTLED too early,
+a missing one-test-prefix test, `minimise_runs` not in the report, an incomplete exit-3 message.
+
+**What was retained:** re-check of the full order before `ddmin`; `combine_fields` de-duplication;
+four tests that failed first; ADR-007, E13 and the note corrected; the exit-3 message rewritten.
+
+**What was rejected:** changing M3's generic limitation line (eval/ is M3's) — raised with M3 instead.
+
+**What was wrong (session):** one long shell command with a quote in its text failed to parse; nothing
+was applied, checked with grep, redone from a script file.
+
+**What I changed:** *fill after reading the diff.*

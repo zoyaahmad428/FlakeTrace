@@ -40,9 +40,9 @@ verdict stays with M3's `decide()`, so the statistics and decision rules live in
 
 ## 3. What breaks
 
-- **More than one polluter needed** (F3) → `ddmin` finds a 1-minimal set (F3: `setFlagA`, `setFlagB`, 9 runs) →
-  `POLLUTER_FOUND` with several polluters. `NO_SINGLE_POLLUTER` is left only for a victim that is first in
-  the order. Each `ddmin` check is one run, so a flaky check can keep a bystander; verify ×n exposes it.
+- **More than one polluter needed** (F3) → `ddmin` finds a 1-minimal set (F3: `setFlagA`, `setFlagB`; 10 minimise runs = 1
+  re-check of the full order + 9 `ddmin`) → `POLLUTER_FOUND` with several polluters. The full order must
+  fail once more before `ddmin`, so a one-off flaky failure ends `NO_SINGLE_POLLUTER` with nobody blamed. Each `ddmin` check is one run, so a flaky check can keep a bystander; verify ×n exposes it.
 - **A rarely-failing flaky victim** can pass all `n` alone runs by chance and then fail during
   the search, giving a spurious polluter; the verify counts expose it (few matches of `n`), so
   `decide()` can at most say `CANDIDATE`.
