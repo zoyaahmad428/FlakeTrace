@@ -449,3 +449,19 @@ evidence for every polluter before `VERIFIED`.
 checks, no budget, 1-minimal only), verification plan.
 
 **What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — W10 Task 1: `ddmin`
+
+**Tool:** Claude Opus 5.5 · **Level:** L2
+
+**What was asked:** Task 1 of `docs/superpowers/plans/2026-10-10-w10-ddmin.md`.
+
+**What was retained:** `runner/minimise.py` and 11 fake-runner tests, as planned.
+
+**How it was verified:** tests failed first (module missing), then 11 OK; removing the complement
+step made 7 fail; full runner suite 91 OK.
+
+**What was wrong:** the brainstorming estimate of 10–15 runs for F3's shape was low; the real count
+on the fake is 25 (recorded, not the guess).
+
+**What I changed:** *fill after reading the diff.*

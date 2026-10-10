@@ -464,3 +464,17 @@ own JUnitCore harness (ADR-003). Member 1 suggested new wording.
   one or more polluters, a new `minimise_runs` field, and a strict evidence rule for several
   polluters (every polluter needs an edge for `VERIFIED`). Needs M1/M3 confirmation of the report rule.
 - Numbered ADR-007 because Member 1's PR #28 added ADR-006 (evidence depth 1–5, proposed) the same day.
+
+### 2026-10-10 — W10 Task 1: `ddmin`
+
+**Requirement:** ADR-007 — shrink the tests before the victim to a 1-minimal polluter set.
+- Files: `runner/minimise.py` (`ddmin(runner, prefix, victim, reference) -> (minimal, runs)`),
+  `runner/tests/test_minimise.py` (11 tests, `FakeOrderRunner`).
+- Tests written first: `py -m unittest runner.tests.test_minimise` → `ModuleNotFoundError: No module
+  named 'runner.minimise'`. After the code: `Ran 11 tests in 0.010s — OK`.
+- Run counts measured on the fakes: F3's shape (2 required tests in 12) → 25 runs; 2 required tests
+  in a 100-test prefix → 48 runs (one run per test would be 100).
+- Mutation check: complement step removed → 7 of 11 FAILED (incl. the F3-shaped test and
+  1-minimality); restored from a copy → 11 OK.
+- Full runner suite: `Ran 91 tests in 221.797s — OK`.
+- Limitation: not wired into `diagnose()` yet (Task 2).
