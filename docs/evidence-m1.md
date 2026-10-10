@@ -395,3 +395,37 @@ Member 3's recorded `eval/reports/f2.json` (`VERIFIED`) was compared with a live
 extractor on the F2 pair: `shared_resource`, `polluter_write_location` (`enableTurbo@4`) and
 `victim_read_location` (`FeatureFlags.isTurboEnabled@2`) are identical, and the report carries the
 7 fixed limitation lines. The end-to-end run itself is Member 3's ([[evidence-m3]]).
+
+## Depth decision data for ADR-006 (2026-10-10)
+
+**Requirement:** decide whether depth 1–3 is enough, using measurements rather than the two
+fastjson pairs alone. The yardstick is the POC's real runs: `od_relevant` in
+`POC/results/scan_FJ-01.csv` and `scan_FJ-02.csv`. It is `YES` when running that candidate before
+the victim changed the victim's result.
+
+**Exploration only.** A scratch script (`depth_yield.py`) lifts the depth cap in memory. For every
+POC candidate it runs `analyse_test` + `find_edges` against the victim and counts the candidates
+with at least one edge, split by `od_relevant`. Same fastjson build as Phase 5 part 2, javap
+21.0.12.1, one run.
+
+| Case | Depth | Real (`YES`) with edge | Not real (`NO`) with edge | Seconds (all candidates) |
+| --- | --- | --- | --- | --- |
+| FJ-01 | 1 / 2 / 3 | 0/42 · 0/42 · 0/42 | 0/30 · 0/30 · 0/30 | 22.4 · 25.9 · 30.2 |
+| FJ-01 | 4 | **42/42** | 1/30 | 34.8 |
+| FJ-01 | 5 | 42/42 | 1/30 | 45.8 |
+| FJ-02 | 1 / 2 / 3 | 0/24 · 0/24 · 0/24 | 0/698 · 0/698 · 0/698 | 143.3 · 148.3 · 156.1 |
+| FJ-02 | 4 | 1/24 | 0/698 | 163.2 |
+| FJ-02 | 5 | **24/24** | 0/698 | 180.7 |
+
+No candidate failed to analyse (errors 0 in every row).
+
+- **The one false edge** (FJ-01, depths 4 and 5) is `DateTest2#test_date`. It writes
+  `JSON.defaultTimeZone` at `DateTest2.test_date@5`, but sets America/Chicago (source line 22) and
+  restores the old value in `tearDown` (line 18). In the POC's run the victim still failed after
+  it. This is the contract limitation "written values are not modelled".
+- **Fixture at depths 2–5** (all 156 ordered pairs, same scratch matrix as Phase 5 part 1, main
+  `6b5e065`): exactly the 4 ground-truth edges at every depth, nothing else.
+- **Limitation:** two cases from one project. The data shows depth 4–5 is needed and cheap in
+  false edges here; it does not show the bound 5 is right elsewhere.
+- Decision proposed from this: [[03-Design/decisions/ADR-006-evidence-depth-auto-deepen]]. Not
+  implemented.
