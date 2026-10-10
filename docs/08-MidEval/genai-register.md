@@ -68,6 +68,7 @@ Policy context and the four-point ownership standard: [[00-Meta/ai-usage-log]].
 | 2026-10-10 | M2 | Claude Opus 5.5 | L2 | `runner/cli.py` summary minimisation line + 2 tests (W10 follow-up) | Summary line and tests | *add your edits after review* | Tests failed first; F3 by hand shows the line; suite 106 OK | Report field rejected (M3's schema) | [[genai-log-m2]], [[evidence-m2]] |
 | 2026-10-10 | M2 | Claude Opus 5.5 | L2 | `runner/diagnose.py` environment() in the record header + tests (panel action A7) | Code and tests | *add your edits after review* | Tests failed first; two mutations failed; real header checked; suite 106 OK | Dummy seed/container rejected | [[genai-log-m2]], [[evidence-m2]] |
 | 2026-10-10 | M2 | Claude Opus 5.5 | L2 | `docs/08-MidEval/panel-action-register.md` A1, A3, A4, A7 | Register wording and evidence links | *add your edits after review* | Each cited test/file/PR checked to exist | A5/A6 left open (other owners) | [[genai-log-m2]] |
+| 2026-10-10 | M2 | Claude Opus 5.5 | L2 | ADR-008 (NOT_REPRODUCED, given order, shuffled orders) | Design options and ADR text | Chose given order + 31 valid shuffles + one flow | Reference numbers and Wilson bounds checked by running them | 31-order figure labelled an assumption (Python study [12]) | [[genai-log-m2]], [[evidence-m2]] |
 
 ## Prompt journal — significant interactions only
 
