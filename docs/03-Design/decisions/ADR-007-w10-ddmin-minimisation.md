@@ -138,4 +138,4 @@ M3's `assemble_report` uses (PR #38) to leave out its generic "no edge" line.
 | --- | --- | --- |
 | M1 | ☐ | per-polluter pair mode; the combining rule for several polluters |
 | M2 | ☑ | Chose ddmin, reusing `POLLUTER_FOUND`, and the strict evidence rule on 2026-10-10 |
-| M3 | ☐ | `POLLUTER_FOUND` with several polluters into `assemble_report`; one-edge-per-polluter in the schema change |
+| M3 | ☑ | Agree 2026-10-10 — the per-polluter report rule (first polluter's resource shown, others named in `limitations`, `VERIFIED` only if every polluter has an edge) and `POLLUTER_FOUND` with several polluters flowing into `assemble_report` unchanged (`diagnosis.polluters` was already a list) |
