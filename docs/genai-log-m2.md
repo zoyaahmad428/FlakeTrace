@@ -531,6 +531,18 @@ polluters and would have let a deep edge on a second polluter go unmarked in the
 
 **What I changed:** *fill after reading the diff.*
 
+## 2026-10-10 — W10 follow-up: minimisation in the summary
+
+**Tool:** Claude Opus 5.5 · **Level:** L2
+
+**What was asked:** fix the deferred review minor (`minimise_runs` not shown), if it helps the product.
+
+**What was retained:** one summary line when `ddmin` found the polluters, stating the shrink and
+"1-minimal, not necessarily the minimum"; two tests that failed first; the F3 test checks it.
+
+**What was rejected:** a new report field — the schema is Member 3's contract and the number does not
+change the verdict.
+
 ## 2026-10-10 — Panel action A7: commit and OS in the execution record
 
 **Tool:** Claude Opus 5.5 · **Level:** L2

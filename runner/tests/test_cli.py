@@ -222,6 +222,30 @@ class TestReports(unittest.TestCase):
         self.assertIn(str(report_path), out)
         out.encode("ascii")  # the summary must print on any console
 
+    def test_summary_names_the_minimisation_when_ddmin_ran(self):
+        report = dict(self.report_with_resource(), polluters=[P.to_dict(), Q.to_dict()])
+        text = summary(report, Path("r.report.json"), minimised=(12, 10))
+        self.assertIn("  minimised:  12 earlier tests -> 2 polluters in 10 runs "
+                      "(1-minimal, not necessarily the minimum)", text.splitlines())
+        self.assertNotIn("minimised:", summary(report, Path("r.report.json")))
+
+    def test_command_shows_the_minimisation_only_when_ddmin_found_polluters(self):
+        records = Path(tempfile.mkdtemp(prefix="flaketrace-cli-records-"))
+        earlier = [TestIdentifier(f"pkg.T{i}Test", "t") for i in range(10)]
+        found = runs(POLLUTER_FOUND, records / "r.jsonl", original_order=earlier + [P, Q, V],
+                     polluters=[P, Q], sequence=[P, Q, V], alone_successes=0, search_runs=12, minimise_runs=10)
+        fields = combine_fields([pair(P, "pkg.T#a"), pair(Q, "pkg.T#b")])
+        with mock.patch("runner.cli.diagnose", return_value=found), \
+                mock.patch("runner.cli.resource_fields", return_value=fields):
+            code, out, _ = run_cli(["diagnose", "--project", str(project_with_pom()), "--victim", str(V)])
+        self.assertEqual(code, 0)
+        self.assertIn("minimised:  12 earlier tests -> 2 polluters in 10 runs", out)
+        single = runs(POLLUTER_FOUND, records / "s.jsonl", polluters=[P], sequence=[P, V], alone_successes=0)
+        with mock.patch("runner.cli.diagnose", return_value=single), \
+                mock.patch("runner.cli.resource_fields", return_value=combine_fields([pair(P, "pkg.T#a")])):
+            _, out, _ = run_cli(["diagnose", "--project", str(project_with_pom()), "--victim", str(V)])
+        self.assertNotIn("minimised:", out)
+
     def test_summary_shows_the_resource_and_both_locations(self):
         report = self.report_with_resource()
         line = [l for l in summary(report, Path("r.report.json")).splitlines() if "resource:" in l][0]
@@ -320,6 +344,7 @@ class TestCliOnFixture(unittest.TestCase):
         self.assertEqual(report["shared_resource"], {"kind": "static-field", "class": "odfixture.Toggles", "field": "flagA"})
         self.assertTrue(any("odfixture.Toggles#flagB" in line for line in report["limitations"]), report["limitations"])
         self.assertIn("polluter:   odfixture.ToggleAPolluterTest#setFlagA, odfixture.ToggleBPolluterTest#setFlagB", out)
+        self.assertIn("minimised:  12 earlier tests -> 2 polluters in", out)
 
     def test_n1_fails_alone(self):
         code, _, err, report = self.diagnose("odfixture.NegativeAloneFailTest#alwaysFails", 5)

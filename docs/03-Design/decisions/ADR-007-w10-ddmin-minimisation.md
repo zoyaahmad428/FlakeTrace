@@ -104,7 +104,9 @@ M3's `assemble_report` uses (PR #38) to leave out its generic "no edge" line.
   and need a report field.
 - **Mixed evidence wording** — resolved: M3's `assemble_report` (PR #38) leaves out its generic
   "no edge" line when the fields carry `any_edge_found`, which `combine_fields` sets.
-- **`minimise_runs`** is in `DiagnosisRuns` and the execution record, not in the report or summary.
+- **`minimise_runs`** is in `DiagnosisRuns` and the execution record, not in the report (no schema
+  field); the command's summary shows it when `ddmin` found the polluters, e.g. `minimised:  12
+  earlier tests -> 2 polluters in 10 runs (1-minimal, not necessarily the minimum)`.
 - **No run budget.** `ddmin`'s worst case is many runs on a long prefix; FR-1's execution budget
   belongs with the planner. Each JVM run keeps its 120 s timeout.
 - **1-minimal, not minimum**; other polluter combinations may exist.
