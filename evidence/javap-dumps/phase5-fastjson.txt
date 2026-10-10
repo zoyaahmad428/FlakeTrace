@@ -1,0 +1,232 @@
+# Phase 5 part 2 — JDK 8 javap excerpts for fastjson FJ-01 and FJ-02 (Member 1)
+# fastjson https://github.com/alibaba/fastjson @ e05e9c5e4be580691cc55a59f3256595393203a1 (Apache-2.0), unmodified,
+# compiled with 'mvn -B -DskipTests test-compile' in the ft-jdk8 image (openjdk 1.8.0_502).
+# Generated with: javap -c -p -cp <target dir> <class>   (javap 1.8.0_502). Only the methods on the edge paths are kept.
+
+## FJ-01 state-setter write: DateFieldFormatTest.setUp (putstatic defaultTimeZone @5, defaultLocale @11)
+  protected void setUp() throws java.lang.Exception;
+    Code:
+       0: ldc           #2                  // String Asia/Shanghai
+       2: invokestatic  #3                  // Method java/util/TimeZone.getTimeZone:(Ljava/lang/String;)Ljava/util/TimeZone;
+       5: putstatic     #4                  // Field com/alibaba/fastjson/JSON.defaultTimeZone:Ljava/util/TimeZone;
+       8: getstatic     #5                  // Field java/util/Locale.CHINA:Ljava/util/Locale;
+      11: putstatic     #6                  // Field com/alibaba/fastjson/JSON.defaultLocale:Ljava/util/Locale;
+      14: return
+
+## FJ-01 victim: DateTest.test_date (call at offset 69)
+  public void test_date() throws java.lang.Exception;
+    Code:
+       0: ldc2_w        #2                  // long 1324138987429l
+       3: lstore_1
+       4: new           #4                  // class java/util/Date
+       7: dup
+       8: lload_1
+       9: invokespecial #5                  // Method java/util/Date."<init>":(J)V
+      12: astore_3
+      13: ldc           #6                  // String 1324138987429
+      15: aload_3
+      16: invokestatic  #7                  // Method com/alibaba/fastjson/JSON.toJSONString:(Ljava/lang/Object;)Ljava/lang/String;
+      19: invokestatic  #8                  // Method org/junit/Assert.assertEquals:(Ljava/lang/Object;Ljava/lang/Object;)V
+      22: ldc           #9                  // String new Date(1324138987429)
+      24: aload_3
+      25: iconst_1
+      26: anewarray     #10                 // class com/alibaba/fastjson/serializer/SerializerFeature
+      29: dup
+      30: iconst_0
+      31: getstatic     #11                 // Field com/alibaba/fastjson/serializer/SerializerFeature.WriteClassName:Lcom/alibaba/fastjson/serializer/SerializerFeature;
+      34: aastore
+      35: invokestatic  #12                 // Method com/alibaba/fastjson/JSON.toJSONString:(Ljava/lang/Object;[Lcom/alibaba/fastjson/serializer/SerializerFeature;)Ljava/lang/String;
+      38: invokestatic  #8                  // Method org/junit/Assert.assertEquals:(Ljava/lang/Object;Ljava/lang/Object;)V
+      41: ldc           #13                 // String \"2011-12-18 00:23:07\"
+      43: aload_3
+      44: iconst_1
+      45: anewarray     #10                 // class com/alibaba/fastjson/serializer/SerializerFeature
+      48: dup
+      49: iconst_0
+      50: getstatic     #14                 // Field com/alibaba/fastjson/serializer/SerializerFeature.WriteDateUseDateFormat:Lcom/alibaba/fastjson/serializer/SerializerFeature;
+      53: aastore
+      54: invokestatic  #12                 // Method com/alibaba/fastjson/JSON.toJSONString:(Ljava/lang/Object;[Lcom/alibaba/fastjson/serializer/SerializerFeature;)Ljava/lang/String;
+      57: invokestatic  #8                  // Method org/junit/Assert.assertEquals:(Ljava/lang/Object;Ljava/lang/Object;)V
+      60: ldc           #15                 // String \"2011-12-18 00:23:07.429\"
+      62: aload_3
+      63: ldc           #16                 // String yyyy-MM-dd HH:mm:ss.SSS
+      65: iconst_0
+      66: anewarray     #10                 // class com/alibaba/fastjson/serializer/SerializerFeature
+      69: invokestatic  #17                 // Method com/alibaba/fastjson/JSON.toJSONStringWithDateFormat:(Ljava/lang/Object;Ljava/lang/String;[Lcom/alibaba/fastjson/serializer/SerializerFeature;)Ljava/lang/String;
+      72: invokestatic  #8                  // Method org/junit/Assert.assertEquals:(Ljava/lang/Object;Ljava/lang/Object;)V
+      75: ldc           #18                 // String '2011-12-18 00:23:07.429'
+      77: aload_3
+      78: ldc           #16                 // String yyyy-MM-dd HH:mm:ss.SSS
+      80: iconst_1
+      81: anewarray     #10                 // class com/alibaba/fastjson/serializer/SerializerFeature
+      84: dup
+      85: iconst_0
+      86: getstatic     #19                 // Field com/alibaba/fastjson/serializer/SerializerFeature.UseSingleQuotes:Lcom/alibaba/fastjson/serializer/SerializerFeature;
+      89: aastore
+      90: invokestatic  #17                 // Method com/alibaba/fastjson/JSON.toJSONStringWithDateFormat:(Ljava/lang/Object;Ljava/lang/String;[Lcom/alibaba/fastjson/serializer/SerializerFeature;)Ljava/lang/String;
+      93: invokestatic  #8                  // Method org/junit/Assert.assertEquals:(Ljava/lang/Object;Ljava/lang/Object;)V
+      96: return
+}
+## JSON.toJSONStringWithDateFormat(Object, String, SerializerFeature...) (call at offset 10)
+  public static java.lang.String toJSONStringWithDateFormat(java.lang.Object, java.lang.String, com.alibaba.fastjson.serializer.SerializerFeature...);
+    Code:
+       0: aload_0
+       1: getstatic     #90                 // Field com/alibaba/fastjson/serializer/SerializeConfig.globalInstance:Lcom/alibaba/fastjson/serializer/SerializeConfig;
+       4: aconst_null
+       5: aload_1
+       6: getstatic     #80                 // Field DEFAULT_GENERATE_FEATURE:I
+       9: aload_2
+      10: invokestatic  #91                 // Method toJSONString:(Ljava/lang/Object;Lcom/alibaba/fastjson/serializer/SerializeConfig;[Lcom/alibaba/fastjson/serializer/SerializeFilter;Ljava/lang/String;I[Lcom/alibaba/fastjson/serializer/SerializerFeature;)Ljava/lang/String;
+      13: areturn
+
+## JSON.toJSONString(Object, SerializeConfig, SerializeFilter[], String, int, SerializerFeature...) (new JSONSerializer at offset 21)
+  public static java.lang.String toJSONString(java.lang.Object, com.alibaba.fastjson.serializer.SerializeConfig, com.alibaba.fastjson.serializer.SerializeFilter[], java.lang.String, int, com.alibaba.fastjson.serializer.SerializerFeature...);
+    Code:
+       0: new           #82                 // class com/alibaba/fastjson/serializer/SerializeWriter
+       3: dup
+       4: aconst_null
+       5: iload         4
+       7: aload         5
+       9: invokespecial #84                 // Method com/alibaba/fastjson/serializer/SerializeWriter."<init>":(Ljava/io/Writer;I[Lcom/alibaba/fastjson/serializer/SerializerFeature;)V
+      12: astore        6
+      14: new           #85                 // class com/alibaba/fastjson/serializer/JSONSerializer
+      17: dup
+      18: aload         6
+      20: aload_1
+      21: invokespecial #97                 // Method com/alibaba/fastjson/serializer/JSONSerializer."<init>":(Lcom/alibaba/fastjson/serializer/SerializeWriter;Lcom/alibaba/fastjson/serializer/SerializeConfig;)V
+      24: astore        7
+      26: aload_3
+      27: ifnull        52
+      30: aload_3
+      31: invokevirtual #5                  // Method java/lang/String.length:()I
+      34: ifeq          52
+      37: aload         7
+      39: aload_3
+      40: invokevirtual #98                 // Method com/alibaba/fastjson/serializer/JSONSerializer.setDateFormat:(Ljava/lang/String;)V
+      43: aload         7
+      45: getstatic     #99                 // Field com/alibaba/fastjson/serializer/SerializerFeature.WriteDateUseDateFormat:Lcom/alibaba/fastjson/serializer/SerializerFeature;
+      48: iconst_1
+      49: invokevirtual #100                // Method com/alibaba/fastjson/serializer/JSONSerializer.config:(Lcom/alibaba/fastjson/serializer/SerializerFeature;Z)V
+      52: aload_2
+      53: ifnull        94
+      56: aload_2
+      57: astore        8
+      59: aload         8
+      61: arraylength
+      62: istore        9
+      64: iconst_0
+      65: istore        10
+      67: iload         10
+      69: iload         9
+      71: if_icmpge     94
+      74: aload         8
+      76: iload         10
+      78: aaload
+      79: astore        11
+      81: aload         7
+      83: aload         11
+      85: invokevirtual #101                // Method com/alibaba/fastjson/serializer/JSONSerializer.addFilter:(Lcom/alibaba/fastjson/serializer/SerializeFilter;)V
+      88: iinc          10, 1
+      91: goto          67
+      94: aload         7
+      96: aload_0
+      97: invokevirtual #87                 // Method com/alibaba/fastjson/serializer/JSONSerializer.write:(Ljava/lang/Object;)V
+     100: aload         6
+     102: invokevirtual #88                 // Method com/alibaba/fastjson/serializer/SerializeWriter.toString:()Ljava/lang/String;
+     105: astore        8
+     107: aload         6
+     109: invokevirtual #89                 // Method com/alibaba/fastjson/serializer/SerializeWriter.close:()V
+     112: aload         8
+     114: areturn
+     115: astore        12
+     117: aload         6
+     119: invokevirtual #89                 // Method com/alibaba/fastjson/serializer/SerializeWriter.close:()V
+     122: aload         12
+     124: athrow
+    Exception table:
+       from    to  target type
+          14   107   115   any
+         115   117   115   any
+
+## JSONSerializer(SerializeWriter, SerializeConfig): reads defaultTimeZone @21, defaultLocale @28
+  public com.alibaba.fastjson.serializer.JSONSerializer(com.alibaba.fastjson.serializer.SerializeWriter, com.alibaba.fastjson.serializer.SerializeConfig);
+    Code:
+       0: aload_0
+       1: invokespecial #5                  // Method com/alibaba/fastjson/serializer/SerializeFilterable."<init>":()V
+       4: aload_0
+       5: iconst_0
+       6: putfield      #6                  // Field indentCount:I
+       9: aload_0
+      10: ldc           #7                  // String \t
+      12: putfield      #8                  // Field indent:Ljava/lang/String;
+      15: aload_0
+      16: aconst_null
+      17: putfield      #9                  // Field references:Ljava/util/IdentityHashMap;
+      20: aload_0
+      21: getstatic     #10                 // Field com/alibaba/fastjson/JSON.defaultTimeZone:Ljava/util/TimeZone;
+      24: putfield      #11                 // Field timeZone:Ljava/util/TimeZone;
+      27: aload_0
+      28: getstatic     #12                 // Field com/alibaba/fastjson/JSON.defaultLocale:Ljava/util/Locale;
+      31: putfield      #13                 // Field locale:Ljava/util/Locale;
+      34: aload_0
+      35: aload_1
+      36: putfield      #14                 // Field out:Lcom/alibaba/fastjson/serializer/SerializeWriter;
+      39: aload_0
+      40: aload_2
+      41: putfield      #15                 // Field config:Lcom/alibaba/fastjson/serializer/SerializeConfig;
+      44: return
+
+## FJ-02 state-setter write: DateParserTest.setUp
+  protected void setUp() throws java.lang.Exception;
+    Code:
+       0: ldc           #2                  // String Asia/Shanghai
+       2: invokestatic  #3                  // Method java/util/TimeZone.getTimeZone:(Ljava/lang/String;)Ljava/util/TimeZone;
+       5: putstatic     #4                  // Field com/alibaba/fastjson/JSON.defaultTimeZone:Ljava/util/TimeZone;
+       8: getstatic     #5                  // Field java/util/Locale.CHINA:Ljava/util/Locale;
+      11: putstatic     #6                  // Field com/alibaba/fastjson/JSON.defaultLocale:Ljava/util/Locale;
+      14: return
+
+## JSONLexerBase(int): reads defaultTimeZone @10, defaultLocale @17
+  public com.alibaba.fastjson.parser.JSONLexerBase(int);
+    Code:
+       0: aload_0
+       1: invokespecial #5                  // Method java/lang/Object."<init>":()V
+       4: aload_0
+       5: aconst_null
+       6: putfield      #6                  // Field calendar:Ljava/util/Calendar;
+       9: aload_0
+      10: getstatic     #7                  // Field com/alibaba/fastjson/JSON.defaultTimeZone:Ljava/util/TimeZone;
+      13: putfield      #8                  // Field timeZone:Ljava/util/TimeZone;
+      16: aload_0
+      17: getstatic     #9                  // Field com/alibaba/fastjson/JSON.defaultLocale:Ljava/util/Locale;
+      20: putfield      #10                 // Field locale:Ljava/util/Locale;
+      23: aload_0
+      24: iconst_0
+      25: putfield      #12                 // Field matchStat:I
+      28: aload_0
+      29: aconst_null
+      30: putfield      #13                 // Field stringDefaultValue:Ljava/lang/String;
+      33: aload_0
+      34: iload_1
+      35: putfield      #14                 // Field features:I
+      38: iload_1
+      39: getstatic     #15                 // Field com/alibaba/fastjson/parser/Feature.InitStringFieldAsEmpty:Lcom/alibaba/fastjson/parser/Feature;
+      42: getfield      #16                 // Field com/alibaba/fastjson/parser/Feature.mask:I
+      45: iand
+      46: ifeq          55
+      49: aload_0
+      50: ldc           #17                 // String
+      52: putfield      #13                 // Field stringDefaultValue:Ljava/lang/String;
+      55: aload_0
+      56: getstatic     #18                 // Field SBUF_LOCAL:Ljava/lang/ThreadLocal;
+      59: invokevirtual #19                 // Method java/lang/ThreadLocal.get:()Ljava/lang/Object;
+      62: checkcast     #20                 // class "[C"
+      65: putfield      #21                 // Field sbuf:[C
+      68: aload_0
+      69: getfield      #21                 // Field sbuf:[C
+      72: ifnonnull     84
+      75: aload_0
+      76: sipush        512
+      79: newarray       char
+      81: putfield      #21                 // Field sbuf:[C
+      84: return
