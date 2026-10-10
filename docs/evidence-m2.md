@@ -607,3 +607,5 @@ commit and the OS were not.
 - Full runner suite (branch from main, without the summary PR): `Ran 106 tests in 230.811s — OK`.
 - Not applicable, stated rather than faked: **container** (nothing runs in one yet; the Linux container is
   a committed target, claim E1) and **seed** (the runner never shuffles; orders are discovered or given).
+- CI on the PR (`m2/panel-actions`, commit `03fe83a`): job `runner` (JDK 8, Linux) -> `Ran 106 tests in 97.388s — OK`
+  (line copied from the job log by Member 2), so the header fields are also written on Linux.
