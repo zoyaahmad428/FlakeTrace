@@ -39,6 +39,7 @@ pip install -r eval/requirements.txt
 python3 -m unittest -v $(ls eval/tests/test_*.py | sed 's#/#.#g; s#\.py$##')
 mvn -B -f fixtures/od-fixture/pom.xml test-compile
 python3 -m unittest -v runner.tests.test_order_runner   # needs JDK 8+ and Maven on PATH
+python3 -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode
 mvn -B -q -f evidence/tests/resources/m1-selftest/pom.xml test-compile
 python3 -m unittest -v evidence.tests.test_extract       # needs the two compiles above and javap
 ```

@@ -21,6 +21,10 @@ NO_SINGLE_POLLUTER = "NO_SINGLE_POLLUTER"
 NOT_REPRODUCED = "NOT_REPRODUCED"
 
 
+class DiagnoseInputError(ValueError):
+    """A wrong argument to diagnose() (n, victim, record folder) -- the caller's input, not a bug."""
+
+
 @dataclass(frozen=True)
 class DiagnosisRuns:
     status: str
@@ -48,9 +52,9 @@ def run_steps(
 ) -> DiagnosisRuns:
     """Steps 3-6 of ADR-004 on any OrderRunner. Stops early as the ADR's status table says."""
     if n < 1:
-        raise ValueError(f"n must be >= 1, got {n!r}")
+        raise DiagnoseInputError(f"n must be >= 1, got {n!r}")
     if victim not in original_order:
-        raise ValueError(f"victim {victim} is not in the original order")
+        raise DiagnoseInputError(f"victim {victim} is not in the original order")
     order = list(original_order[: list(original_order).index(victim) + 1])
 
     _label(runner, "reproduce")
@@ -86,18 +90,23 @@ def diagnose(
     timeout_s: float = 120.0,
 ) -> DiagnosisRuns:
     if n < 1:
-        raise ValueError(f"n must be >= 1, got {n!r}")
+        raise DiagnoseInputError(f"n must be >= 1, got {n!r}")
     if original_order is not None and victim not in original_order:
-        raise ValueError(f"victim {victim} is not in the original order")
+        raise DiagnoseInputError(f"victim {victim} is not in the original order")
     project = Path(project_dir).resolve()
     records = Path(record_dir).resolve()
     if records == project or project in records.parents:
         # A record written inside the project would itself make the integrity check fail.
-        raise ValueError(f"record_dir {records} is inside the analysed project {project}")
+        raise DiagnoseInputError(f"record_dir {records} is inside the analysed project {project}")
+    if records.exists() and not records.is_dir():
+        raise DiagnoseInputError(f"record_dir {records} is a file, not a folder")
     before = snapshot(project)
     runner = OrderRunner(maven_test_classpath(project), working_dir=project, timeout_s=timeout_s)
     order = list(original_order) if original_order is not None else discover_order(
         runner, project / "target" / "test-classes")
+    if victim not in order:
+        # Checked before the recorder exists, so no empty record is left behind.
+        raise DiagnoseInputError(f"victim {victim} is not among the project's tests")
 
     started = datetime.now(timezone.utc)
     record = Path(record_dir) / f"{started.strftime('%Y%m%dT%H%M%SZ')}-{victim}.jsonl"

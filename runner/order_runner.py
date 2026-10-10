@@ -42,6 +42,10 @@ _MESSAGE_MASKS = [
 _UNESCAPES = {"t": "\t", "n": "\n", "r": "\r", "\\": "\\"}
 
 
+class ToolError(RuntimeError):
+    """A required tool is missing or the harness cannot be compiled -- not a bug in FlakeTrace."""
+
+
 def normalise_stack(frames: List[str]) -> str:
     kept = []
     for frame in frames:
@@ -115,7 +119,7 @@ def _tool(name: str) -> str:
     # shutil.which finds mvn.cmd / java.exe on Windows; a bare "mvn" in an argument list does not.
     path = shutil.which(name)
     if path is None:
-        raise RuntimeError(f"'{name}' not found on PATH")
+        raise ToolError(f"'{name}' not found on PATH")
     return path
 
 
@@ -155,7 +159,7 @@ class OrderRunner:
             text=True,
         )
         if compiled.returncode != 0:
-            raise RuntimeError(f"could not compile FtHarness:\n{compiled.stderr}")
+            raise ToolError(f"could not compile FtHarness:\n{compiled.stderr}")
 
     def run_ordered(self, order: List[TestIdentifier]) -> Dict[TestIdentifier, RunOutcome]:
         order = list(order)

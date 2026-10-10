@@ -19,7 +19,7 @@ post-defence action plan's two-student split is superseded by the three-member s
 | Member | Current task | Branch | State | Blocked by |
 | --- | --- | --- | --- | --- |
 | 1 | Static-field + system-property extraction for F1/F2 | `m1/fastjson-validation` | Phases 2–4 done (lifecycle attribution, depth 1–3, polluter→victim edges); Phase 5: fixture matches ground truth; fastjson FJ-01/FJ-02 need depth 4/5 | Team decision on the depth range |
-| 2 | N2 test back to `VICTIM_FAILS_ALONE`; then the W9 CLI (report assembly is Member 3's `eval/report.py`, PR #13) | `m2/n2-random-fixture` | W6, W7 merged (PR #10, #11); `evidence` CI job merged (PR #20) | — |
+| 2 | W9 command `py -m runner diagnose` (ADR-005) | `m2/w9-cli` | Built and run on the fixture (F1/F2 `VERIFIED`, N1 `UNRESOLVED`, F3 exit 3); PR #26 in review, CI green on JDK 8; ADR-005/I4 need M1, M3 agreement; W10 next | — |
 | 3 | W9 report assembly done for F1/F2/N1/N2 (real end-to-end, `eval/report.py` wired to M1's real `find_edges`/`report_fields`); report ch. 4 and 7–8 per `08-MidEval/README`'s Form 3 table next | `m3/n2-integration` | Phases 0–5 done; real `VERIFIED`/`UNRESOLVED` reports produced for F1, F2, N1, N2 (see `docs/evidence-m3.md`) | Only F3 remains, needs W10 (M2, multi-polluter search/minimisation — not started) |
 
 ## Evidence files per member
