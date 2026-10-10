@@ -7,8 +7,15 @@ runner.diagnose and runner.OrderRunner, and takes a few minutes). Run manually:
     py eval/tools/run_w9_integration.py
 
 Writes eval/reports/{f1,f2,n1,n2}.json -- genuinely produced by calling
-runner.diagnose.diagnose() and evidence.extract's real find_edges/report_fields for real, then
-eval.report.assemble_report(), not hand-written. See eval/reports/README.md.
+runner.diagnose.diagnose() and evidence.extract's real analyse_pair()/report_fields for real,
+then eval.report.assemble_report(), not hand-written. See eval/reports/README.md.
+
+Uses evidence.extract.analyse_pair() (ADR-006, landed PR #34) rather than separate
+analyse_test()+find_edges() calls: it starts at DEFAULT_DEPTH and auto-deepens one level at a
+time, only when the walk actually hit a depth limit and found no edge, stopping at the
+shallowest depth with an edge. F1/F2 still resolve at depth 2 (unaffected); this is what makes
+deeper real-project cases (e.g. fastjson at depth 4/5, docs/evidence-m1.md) explainable without
+paying that cost on every pair.
 
 N2 (fixtures/od-fixture's NegativeFlakyTest) was blocked here until 2026-10-10: before Member 3
 replaced its nanoTime-parity mechanism with Random.nextBoolean() (docs/evidence-m3.md), it
@@ -26,7 +33,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from eval.baseline import TestIdentifier
 from eval.report import assemble_report
-from evidence.extract import DEFAULT_DEPTH, Project, analyse_test, find_edges, report_fields
+from evidence.extract import Project, analyse_pair, report_fields
 from runner.diagnose import diagnose
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -41,13 +48,11 @@ def run_f1():
     diagnosis = diagnose(FIXTURE, victim, n=20, record_dir=str(RECORD_DIR))
     print(diagnosis)
 
-    print("=== F1: running evidence.extract's real pair mode (find_edges/report_fields) ===")
+    print("=== F1: running evidence.extract's real pair mode (analyse_pair/report_fields) ===")
     project = Project([str(FIXTURE / "target" / "classes"), str(FIXTURE / "target" / "test-classes")])
     polluter_id = "odfixture.ConfigPolluterTest#pollute"
     victim_id = "odfixture.ConfigVictimTest#expectsDefaultMode"
-    polluter_access = analyse_test(project, polluter_id, depth=DEFAULT_DEPTH)
-    victim_access = analyse_test(project, victim_id, depth=DEFAULT_DEPTH)
-    pair = find_edges(polluter_id, polluter_access, victim_id, victim_access)
+    pair = analyse_pair(project, polluter_id, victim_id)
     fields = report_fields(pair)
     print("resource fields:", fields)
 
@@ -64,13 +69,11 @@ def run_f2():
     diagnosis = diagnose(FIXTURE, victim, n=20, record_dir=str(RECORD_DIR))
     print(diagnosis)
 
-    print("=== F2: running evidence.extract's real pair mode (find_edges/report_fields) ===")
+    print("=== F2: running evidence.extract's real pair mode (analyse_pair/report_fields) ===")
     project = Project([str(FIXTURE / "target" / "classes"), str(FIXTURE / "target" / "test-classes")])
     polluter_id = "odfixture.FeaturePolluterTest#enableTurbo"
     victim_id = "odfixture.FeatureVictimTest#expectsTurboDisabled"
-    polluter_access = analyse_test(project, polluter_id, depth=DEFAULT_DEPTH)
-    victim_access = analyse_test(project, victim_id, depth=DEFAULT_DEPTH)
-    pair = find_edges(polluter_id, polluter_access, victim_id, victim_access)
+    pair = analyse_pair(project, polluter_id, victim_id)
     fields = report_fields(pair)
     print("resource fields:", fields)
 

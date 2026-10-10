@@ -905,3 +905,33 @@ reusing `POLLUTER_FOUND` with a list of polluters).
   Will tick ADR-007's actual file once M2 opens a PR for W10.
 - Command: `py -m unittest discover -s eval/tests -v` (unaffected — doc-only session).
   Result: 68/68 passed.
+
+## 2026-10-10 — Switch to M1's real `analyse_pair()` (ADR-006 follow-up)
+
+**Requirement:** ADR-006's agreement text committed to switching `eval/report.py`'s callers to
+`evidence.extract.analyse_pair()` once it landed. Member 1 merged it for real (PR #34) the
+same day.
+
+- Checked first, before changing anything: `eval/report.py` itself needed no change — it
+  already takes `report_fields(pair)`'s output as an opaque `resource_fields` argument and has
+  never called `analyse_test`/`find_edges` directly. Only `eval/tools/run_w9_integration.py`
+  (the actual caller) needed the switch.
+- File/function: `eval/tools/run_w9_integration.py` — `run_f1()`/`run_f2()` now call
+  `evidence.extract.analyse_pair(project, polluter_id, victim_id)` (default depth 2,
+  auto-deepen) in place of separate `analyse_test(..., depth=DEFAULT_DEPTH)` calls for the
+  polluter and victim combined with `find_edges()`.
+- Command: `py -m unittest discover -s eval/tests -v`. Result: 68/68 passed (no test exercises
+  this script directly, as documented in its own module docstring).
+- Command: `py eval/tools/run_w9_integration.py` (real Maven/JDK run, native Windows JDK 24).
+- Result: **F1 → `VERIFIED`, F2 → `VERIFIED`, N1/N2 → `UNRESOLVED(VICTIM_FAILS_ALONE)`** — all
+  four unchanged. Diffed the regenerated `eval/reports/{f1,f2,n1}.json` against the previously
+  committed versions: identical except the execution-record timestamp (confirms F1 and F2 both
+  still resolve their real edge at depth 2, exactly as before — the auto-deepening adds no
+  cost here, only capability for deeper real cases). `n2.json` differs by its alone-success
+  count (9/20 this run vs 12/20 previously) and the timestamp only — expected, since N2 is
+  intermittent by design; the outcome itself (`VICTIM_FAILS_ALONE`) is unchanged.
+- File/function: `eval/reports/README.md` — documented the switch and why it changes nothing
+  observable on the fixture.
+- Limitation: none introduced. This only removes a dependency on the now-deleted separate
+  `analyse_test`+`find_edges` call pattern; fastjson still has not been run through the full
+  `diagnose()` pipeline (only through the extractor, as before).
