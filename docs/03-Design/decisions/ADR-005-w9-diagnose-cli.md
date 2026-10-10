@@ -140,4 +140,4 @@ A source change detected by the integrity check is a finding, not an error: the 
 | --- | --- | --- |
 | M1 | ☐ | in-process calls to `analyse_test`/`find_edges`/`report_fields` at depth 2 |
 | M2 | ☑ | Chose approach 1, exit-3 handling and the deferred `flaketrace` install on 2026-10-10 |
-| M3 | ☐ | catching `UnhandledStatus`; `assemble_report(runs, fields)` as the only report builder |
+| M3 | ☑ | Agreed 2026-10-10 — catching `UnhandledStatus`; `assemble_report(runs, fields)` as the only report builder |

@@ -841,3 +841,35 @@ new production code, only adding the case to the integration script.
   W10 (multi-polluter search/minimisation, M2, not started: confirmed by reading
   `runner/search.py`, which has only a one-by-one `find_polluter`, no deletion-minimisation
   module).
+
+## 2026-10-10 — Answered 3 open contract questions; agreed ADR-005
+
+**Requirement:** a full `docs/` read-through (same session as the N2 addition above) surfaced
+three questions in `docs/contracts/resource-evidence.md` marked `OPEN (Member 3)`, and ADR-005
+(`docs/03-Design/decisions/ADR-005-w9-diagnose-cli.md`, M2's real W9 CLI design) needing M3's
+agreement. Decided with the member, not unilaterally — each answer below was proposed, the
+member confirmed "go with your recommendations," then written.
+
+- **Q2 (`victim_read_location` naming a helper, not the test method):** answered **yes, that is
+  the intended meaning** — it names where the read instruction actually executes (F2:
+  `FeatureFlags#isTurboEnabled@2`), symmetric with `polluter_write_location`. No code or schema
+  change: confirms `eval/report.py`'s existing behaviour, which already takes `report_fields`'s
+  locations as-is.
+- **Q4 (ground truth has no expected bytecode offsets, Phase 5 checks resources only):**
+  answered **acceptable** — `GroundTruthTest` already catches the failure mode that matters
+  (wrong resource) automatically on every change; exact offsets were hand-verified for F1 and
+  spot-checked for F2 (independently, by Member 1, against `eval/reports/f2.json`). Encoding
+  exact offsets into `ground_truth.json` would be brittle for little extra protection.
+- **Q6 (BRITTLE cases, POC FJ-01's inverse-polluter shape):** answered **out of scope for
+  Iteration 1**, same boundary as filesystem evidence — no fixture case exercises it, so there
+  is no real case to drive a new outcome category under schedule pressure.
+  `UNRESOLVED(VICTIM_FAILS_ALONE)` is not wrong for a brittle case (the victim genuinely does
+  fail alone), just not the most informative category; a distinct reason is named as Iteration
+  2 work if a real brittle case (e.g. a fastjson pair) turns up in evaluation.
+- **ADR-005 agreement:** ticked M3's row — `assemble_report(runs, fields)` as the only report
+  builder and catching `UnhandledStatus` both match what Phase-W9 work (above) already built
+  and verified; nothing in the ADR asks `eval/` to change.
+- Command: `py -m unittest discover -s eval/tests -v` (unaffected — these are doc-only
+  decisions, no code touched). Result: 68/68 passed.
+- Limitation: M1's row in ADR-005 is still unticked, so the ADR is not yet fully agreed by all
+  three members — only M3's part of this entry is closed.

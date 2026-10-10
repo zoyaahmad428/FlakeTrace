@@ -551,3 +551,41 @@ before claiming it as your contribution. Be able to explain why N2's status chan
 `NOT_REPRODUCED` to `VICTIM_FAILS_ALONE` across the mechanism fix (it's about what the
 isolation check observes, not about `assemble_report`), and why that specific status was
 already handled while `NOT_REPRODUCED` and `NO_SINGLE_POLLUTER` still are not.
+
+## 2026-10-10 — Answer 3 open contract questions, agree ADR-005
+
+**What I asked:** Same session's docs survey also surfaced ADR-005 (M2's real W9 CLI,
+`py -m runner diagnose`) awaiting M3's agreement, and three `OPEN (Member 3)` questions in
+`docs/contracts/resource-evidence.md`. I proposed an answer to each with a one-line
+recommendation and reasoning, then asked the member to decide before writing anything — this
+is a contract document and a defense-facing design record, not ordinary code.
+
+**What was retained:** All three recommendations and the ADR-005 agreement, taken as given
+("go with your recommendations... tick ADR-005") rather than argued over — but each one had
+already been reasoned through and justified against real evidence before being offered, not
+asserted blind:
+- Q2: `victim_read_location` naming a helper method is correct as-is (matches existing
+  `eval/report.py` behaviour; no change needed).
+- Q4: resource-only automatic ground-truth checking plus hand-verified offsets is enough,
+  given `GroundTruthTest` already catches the failure mode that matters.
+- Q6: brittle cases are out of scope for Iteration 1, on the same basis as other explicitly
+  descoped resource families — no real case exists yet to justify inventing a new outcome
+  category under schedule pressure.
+- ADR-005: ticked, since it only ratifies what the already-verified W9 CLI work does.
+
+**What I changed:** Nothing code-side — this entire session was documentation/decision work,
+no production code touched.
+
+**How it was verified:** `py -m unittest discover -s eval/tests -v` → 68/68 passed (sanity
+check that nothing broke, though none of this touched `eval/`'s code).
+
+**Errors found:** None.
+
+**Rejections:** None — the member accepted all recommendations as given.
+
+Ownership checkpoint: you need to be able to explain and defend each of these three answers
+yourself, especially Q6 — a panel question about brittle/inverse-polluter cases should get
+"explicitly out of scope for Iteration 1, here's why, here's the Iteration 2 plan," not a
+blank look. Also be able to say what ADR-005 actually commits to (that `assemble_report` is
+the single report builder, called the same way regardless of caller) and why that matters for
+keeping one source of truth across M2's CLI and your own `eval/tools/run_w9_integration.py`.
