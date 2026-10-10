@@ -725,3 +725,57 @@ commits your own code to — ADR-003 and ADR-004 describe Member 2's harness and
 design, which your `eval/report.py` consumes as a `DiagnosisRuns` object without needing to
 know how it's produced; ADR-007 is the one that changes what your own `assemble_report`
 receives (a list of polluters instead of always one).
+
+## 2026-10-10 — ADR-008: implement M3's side (schema, decide(), fixtures F4/N3)
+
+**What I asked:** "Go ahead with ADR-008" — the full schema change, new `decide()` row, and
+two new fixture cases, after the earlier session's survey had flagged it as real, substantial
+work and asked whether to proceed.
+
+**What was retained:** My own proposed design throughout, checked against real code before
+being written: nullable `failure_signature` via the same `oneOf` pattern already used for
+`shared_resource`; a new `DecisionInput.infrastructure_failures` field defaulting to 0 (proven
+backward-compatible with a dedicated test); `getattr`/`hasattr` forward-compatibility in
+`assemble_report` for the `DiagnosisRuns` fields Member 2 hasn't added yet.
+
+**What was found and fixed, beyond the literal ADR text:** reading `runner/diagnose.py`'s real
+`run_steps` function (not just the ADR's prose) showed that `reference_signature=None` is set
+for the *entire* `NOT_REPRODUCED` status, which the new `INFRASTRUCTURE_FAILURE` reason is
+also decided from. The ADR's text scoped nullable `failure_signature` to "NOT_REPRODUCED"
+only — I widened it to cover `INFRASTRUCTURE_FAILURE` too, before a real future case could
+hit a schema rejection that the ADR's own author hadn't anticipated. Recorded in
+`docs/evidence-m3.md` with the reasoning, not silently fixed.
+
+**What I changed:** Also discovered, independent of the ADR, that this session's branch had
+been created from a stale local `main` (missing a commit I'd handed over and had committed
+several turns earlier, plus everything merged after it). This was not something the member
+asked me to find — I caught it myself by comparing `git log` on my branch against
+`origin/main` before handing over this work, rather than assuming my branch was current.
+Fixed by reading the true content of each affected file from `origin/main` and manually
+reconciling my own session's new edits on top, instead of using any of the forbidden git
+commands (`merge`/`stash`/`rebase`/`reset`) myself.
+
+**How it was verified:** `py -m unittest discover -s eval/tests -v` → 80/80 passed (68 + 12
+new). Two mutation checks, each confirmed failing before restoring the real code. Real Maven/
+JDK runs on F4 and N3 (discovery order, one-fresh-JVM explicit order, victim alone, real
+`diagnose()`) before writing any ground-truth claim about them. Real re-run of
+`eval/tools/run_w9_integration.py` confirming F1/F2/N1/N2 unchanged. Independent
+cross-check: Member 1's own `GroundTruthTest`, which I did not touch, passed with F4/N3 added
+to `ground_truth.json`, finding the same edge (F4) and no-edge (N3) result as my own
+verification, from a completely separate code path.
+
+**Errors found:** The `INFRASTRUCTURE_FAILURE`/`NOT_REPRODUCED` schema gap above (mine, caught
+before merging, not found by anyone else); the stale-branch issue (mine, process error, caught
+before it could cause real data loss or a confusing PR diff).
+
+**Rejections:** None from the member this session — the stale-branch fix and the schema-gap
+widening were my own corrections, surfaced with the reasoning rather than silently applied.
+
+Ownership checkpoint: be able to explain why `assemble_report` branches on
+`diagnosis.reference_signature is None` rather than on the decided `unresolved_reason` string
+for whether to null out `failure_signature` — the former is the actual real-world invariant
+(`runner.diagnose` guarantees it), the latter would have been coincidentally correct today but
+fragile if a future status ever paired a real reference with one of these two reasons. Also be
+ready to explain, without AI, why today's real `diagnose()` output for N3 still raises
+`ValueError` rather than producing a report — that gap closes only once Member 2's `diagnose()`
+always runs the alone check, not by anything in this module.
