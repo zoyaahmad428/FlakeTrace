@@ -515,3 +515,18 @@ four tests that failed first; ADR-007, E14 and the note corrected; the exit-3 me
 was applied, checked with grep, redone from a script file.
 
 **What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — W10: `analyse_pair` per polluter
+
+**Tool:** Claude Opus 5.5 · **Level:** L2
+
+**What was asked:** analyse Member 1's and Member 3's messages and new PRs (#29–#38) for what is best
+for the product, then switch the command to `analyse_pair` (ADR-006 follow-up).
+
+**What was retained:** `analyse_pair` once per polluter; the depth note on named edges; the
+`any_edge_found` flag for M3's PR #38; three tests that failed first; F3 offsets checked with `javap`.
+
+**What was rejected:** Member 1's suggested one-line swap as written: it predates W10's several
+polluters and would have let a deep edge on a second polluter go unmarked in the report.
+
+**What I changed:** *fill after reading the diff.*

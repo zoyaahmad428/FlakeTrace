@@ -555,3 +555,27 @@ plan: no critical; three important; six minor. All five review-focus items held 
   **10** (1 re-check + 9 `ddmin`), verify 5/5.
 - Full runner suite: `Ran 101 tests in 236.259s — OK`. `git status --short fixtures/` empty.
 - Deferred minor: `minimise_runs` is not shown in the report or summary (noted in ADR-007).
+
+### 2026-10-10 — W10: `analyse_pair` per polluter (ADR-006 follow-up), M3's flag, F3 offsets
+
+**Requirement:** ADR-006 (accepted, implemented by Member 1 in PR #34) — callers switch to
+`analyse_pair`, which deepens a pair only when nothing is found at depth 2; Member 2 promised this in
+the ADR. With several polluters each pair deepens on its own, and Member 1's depth warning covers only
+the shown edge. Member 3's PR #38 added an optional `any_edge_found` flag to `assemble_report`
+(review finding 2).
+- File: `runner/cli.py` — `resource_fields` calls `analyse_pair(classes, polluter, victim)` once per
+  polluter; `combine_fields` adds "(evidence at depth N, above the default 2)" to a named edge deeper than
+  2 (same measure as `report_fields`) and sets `any_edge_found` in the mixed case.
+- Tests first (`runner/tests/test_cli.py`): `test_deep_evidence_of_a_later_polluter_is_named_with_its_depth`,
+  `test_mixed_evidence_report_does_not_also_say_no_edge_was_found` (through M3's real `assemble_report`),
+  `test_resource_fields_asks_analyse_pair_once_per_polluter` → before the code: 1 failure, 2 errors
+  (`KeyError: 'any_edge_found'`, no `analyse_pair` in `runner.cli`, line not found). After → OK. The
+  existing "skips the extractor" test now patches `analyse_pair`.
+- Real CLI runs on the fixture (`TestCliOnFixture`, F1/F2/F3/N1/unknown victim): `Ran 5 tests in
+  129.780s — OK` — the fixture stays at depth 2 as Member 1 measured.
+- **F3 offsets by hand** (`javap -c -p`, JDK 21.0.9, `fixtures/od-fixture/target`): `ToggleAPolluterTest.setFlagA`
+  `1: putstatic Toggles.flagA`; `ToggleBPolluterTest.setFlagB` `1: putstatic Toggles.flagB`;
+  `ToggleVictimTest.expectsNotBothFlagsSet` `0: getstatic Toggles.flagA`, `6: getstatic Toggles.flagB`.
+  The F3 report shows write `setFlagA@1`, read `expectsNotBothFlagsSet@0` — match. (Promised in a
+  comment on PR #31, contract question 4.)
+- Full runner suite: `Ran 104 tests in 246.800s — OK`.

@@ -17,8 +17,8 @@ in-process and decides nothing itself:
 
 1. checks the options (`--victim` is `Class#method`, `--project` has `pom.xml`);
 2. `runner.diagnose.diagnose()` (M2) — every JVM run, recorded;
-3. only for `POLLUTER_FOUND`: `evidence.extract` (M1) — `analyse_test` for polluter and victim at
-   depth 2, `find_edges`, `report_fields`;
+3. only for `POLLUTER_FOUND`: `evidence.extract` (M1) — `analyse_pair` per polluter (starts at
+   depth 2 and deepens on its own when nothing is found, ADR-006), then `report_fields`;
 4. `eval.report.assemble_report()` (M3) — `decide()` and schema validation;
 5. writes `<record>.report.json` next to the execution record and prints a summary.
 

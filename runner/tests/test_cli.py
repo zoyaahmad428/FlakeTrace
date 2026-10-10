@@ -11,7 +11,8 @@ from pathlib import Path
 from unittest import mock
 
 from eval.baseline import FailureSignature, TestIdentifier
-from runner.cli import combine_fields, main, summary
+from eval.report import assemble_report
+from runner.cli import combine_fields, main, resource_fields, summary
 from runner.diagnose import (NO_SINGLE_POLLUTER, POLLUTER_FOUND, VICTIM_FAILS_ALONE, DiagnoseInputError,
                              DiagnosisRuns)
 from runner.integrity import SourceIntegrity
@@ -124,8 +125,8 @@ class TestToolErrors(unittest.TestCase):
         self.assertIn("error: resource evidence failed", err)
 
 
-def pair(polluter, *resource_ids):
-    location = {"class": polluter.class_name, "method": polluter.method, "bytecode_offset": 1, "depth": 1}
+def pair(polluter, *resource_ids, depth=1):
+    location = {"class": polluter.class_name, "method": polluter.method, "bytecode_offset": 1, "depth": depth}
     return {
         "polluter": polluter.to_dict(), "victim": V.to_dict(),
         "edges": [{"resource_id": rid, "resource": {"kind": "static-field", "class": rid.split("#")[0],
@@ -168,6 +169,30 @@ class TestCombineFields(unittest.TestCase):
         self.assertEqual(fields["shared_resource"]["field"], "flag")
         self.assertFalse(any("pkg.T#flag is not shown" in line for line in fields["limitations"]), fields["limitations"])
 
+    def test_deep_evidence_of_a_later_polluter_is_named_with_its_depth(self):
+        fields = combine_fields([pair(P, "pkg.T#a"), pair(Q, "pkg.T#b", depth=5)])
+        self.assertIn("Polluter pkg.SecondPolluterTest#q: shared resource pkg.T#b is not shown in this report "
+                      "(evidence at depth 5, above the default 2)", fields["limitations"])
+
+    def test_mixed_evidence_report_does_not_also_say_no_edge_was_found(self):
+        fields = combine_fields([pair(P, "pkg.T#a"), pair(Q)])
+        self.assertTrue(fields["any_edge_found"])
+        runs_ = runs(POLLUTER_FOUND, "r.jsonl", polluters=[P, Q], sequence=[P, Q, V], alone_successes=0)
+        report = assemble_report(runs_, fields)
+        self.assertEqual((report["outcome"], report["unresolved_reason"]), ("UNRESOLVED", "NO_SUPPORTED_RESOURCE_EVIDENCE"))
+        self.assertNotIn("No polluter-write/victim-read resource edge was found by static analysis.",
+                         report["limitations"])
+
+    def test_resource_fields_asks_analyse_pair_once_per_polluter(self):
+        project = project_with_pom()
+        for folder in ("classes", "test-classes"):
+            (project / "target" / folder).mkdir(parents=True)
+        found = runs(POLLUTER_FOUND, project / "r.jsonl", polluters=[P, Q], sequence=[P, Q, V])
+        with mock.patch("runner.cli.analyse_pair", side_effect=[pair(P, "pkg.T#a"), pair(Q, "pkg.T#b")]) as analyse:
+            fields = resource_fields(project, found)
+        self.assertEqual([c.args[1:] for c in analyse.call_args_list], [(str(P), str(V)), (str(Q), str(V))])
+        self.assertEqual(fields["shared_resource"]["field"], "a")
+
     def test_extra_resource_of_a_later_polluter_is_named_once(self):
         fields = combine_fields([pair(P, "pkg.T#a"), pair(Q, "pkg.T#b", "pkg.T#c")])
         self.assertEqual(sum("pkg.T#c" in line for line in fields["limitations"]), 1, fields["limitations"])
@@ -184,7 +209,7 @@ class TestReports(unittest.TestCase):
         records = Path(tempfile.mkdtemp(prefix="flaketrace-cli-records-"))
         record = records / "20261010T000000Z-pkg.VictimTest#v.jsonl"
         with mock.patch("runner.cli.diagnose", return_value=runs(VICTIM_FAILS_ALONE, record)), \
-                mock.patch("runner.cli.analyse_test") as analyse:
+                mock.patch("runner.cli.analyse_pair") as analyse:
             code, out, _ = run_cli(["diagnose", "--project", str(project_with_pom()), "--victim", str(V)])
         self.assertEqual(code, 0)
         analyse.assert_not_called()

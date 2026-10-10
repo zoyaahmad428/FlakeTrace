@@ -14,7 +14,7 @@ from pathlib import Path
 
 from eval.baseline import TestIdentifier
 from eval.report import UnhandledStatus, assemble_report
-from evidence.extract import DEFAULT_DEPTH, ExtractError, Project, analyse_test, find_edges, report_fields
+from evidence.extract import DEFAULT_DEPTH, ExtractError, Project, analyse_pair, report_fields
 from runner.diagnose import NO_SINGLE_POLLUTER, NOT_REPRODUCED, POLLUTER_FOUND, DiagnoseInputError, diagnose
 from runner.order_runner import ToolError
 
@@ -79,13 +79,11 @@ def run_diagnose(project: Path, victim_id: str, n: int, records: str) -> int:
 
 
 def resource_fields(project: Path, runs) -> dict:
-    """Member 1's pair-mode evidence for each polluter and the victim, combined (ADR-007)."""
+    """Member 1's pair-mode evidence for each polluter and the victim, combined (ADR-007).
+    analyse_pair deepens each pair on its own when nothing is found at the default depth (ADR-006)."""
     classes = Project([str(project / "target" / "classes"), str(project / "target" / "test-classes")])
     victim = str(runs.victim)
-    victim_access = analyse_test(classes, victim, DEFAULT_DEPTH)
-    pairs = [find_edges(str(p), analyse_test(classes, str(p), DEFAULT_DEPTH), victim, victim_access)
-             for p in runs.polluters]
-    return combine_fields(pairs)
+    return combine_fields([analyse_pair(classes, str(p), victim) for p in runs.polluters])
 
 
 def combine_fields(pairs: list) -> dict:
@@ -103,14 +101,21 @@ def combine_fields(pairs: list) -> dict:
     if all(pair["edges"] for pair in pairs):
         shown = pairs[0]["edges"][0]["resource_id"]
         others = [f"Polluter {_test(pair['polluter'])}: shared resource {edge['resource_id']} is not shown in this report"
-                  for pair in pairs[1:] for edge in pair["edges"] if edge["resource_id"] != shown]
+                  + _depth_note(edge) for pair in pairs[1:] for edge in pair["edges"] if edge["resource_id"] != shown]
         return dict(fields[0], limitations=lines + others)
     found = [f"Polluter {_test(pair['polluter'])}: shared resource {edge['resource_id']} was found, "
-             "but not every polluter has evidence" for pair in pairs for edge in pair["edges"]]
+             "but not every polluter has evidence" + _depth_note(edge) for pair in pairs for edge in pair["edges"]]
     missing = [f"No polluter-write/victim-read resource edge was found for polluter {_test(pair['polluter'])}"
                for pair in pairs if not pair["edges"]]
+    # any_edge_found tells M3's assemble_report not to add its generic "no edge was found" line.
     return dict(fields[0], shared_resource=None, polluter_write_location=None, victim_read_location=None,
-                limitations=lines + found + missing)
+                limitations=lines + found + missing, any_edge_found=bool(found))
+
+
+def _depth_note(edge: dict) -> str:
+    """The depth of an edge that is only named, measured like M1's report_fields does for the shown one."""
+    depth = max(edge["polluter_write_locations"][0]["depth"], edge["victim_read_locations"][0]["depth"])
+    return f" (evidence at depth {depth}, above the default {DEFAULT_DEPTH})" if depth > DEFAULT_DEPTH else ""
 
 
 def summary(report: dict, report_path: Path) -> str:

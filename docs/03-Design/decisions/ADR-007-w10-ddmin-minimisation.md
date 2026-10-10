@@ -80,8 +80,11 @@ depth 2), combined by a small pure function:
 `VERIFIED` must mean every blamed test has a found mechanism. This reuses two agreed rules ("first
 edge shown, the rest in `limitations`"; "no edge → `NO_SUPPORTED_RESOURCE_EVIDENCE`") on a new
 case, so M1 and M3 confirm it here. **Long-term shape:** one evidence edge per polluter in the
-report — proposed for the schema change already under discussion with M3. If M1's ADR-006 lands
-(`analyse_pair`), the per-polluter loop calls it once per polluter instead.
+report — proposed for the schema change already under discussion with M3. Since M1's ADR-006 landed
+(PR #34), the per-polluter loop calls `analyse_pair` once per polluter, so each pair deepens on its
+own; a named (not shown) edge above depth 2 carries its depth in its `limitations` line, measured like
+`report_fields` does for the shown edge. In the mixed case the fields carry `any_edge_found`, which
+M3's `assemble_report` uses (PR #38) to leave out its generic "no edge" line.
 
 ## Alternatives considered
 
@@ -99,10 +102,8 @@ report — proposed for the schema change already under discussion with M3. If M
   last round's per-test removal is a single-run counterfactual check. **Repeated** counterfactual
   checks (each polluter removed ×n) are left for the next iteration: they cost n runs per polluter
   and need a report field.
-- **Mixed evidence wording.** When some polluter has no edge, our `limitations` name the edges that
-  were found, while M3's `assemble_report` adds its generic line that no polluter-write/victim-read
-  edge was found. Both are true per polluter but read as a contradiction; M3 is asked to make that
-  line conditional (eval/ is M3's code).
+- **Mixed evidence wording** — resolved: M3's `assemble_report` (PR #38) leaves out its generic
+  "no edge" line when the fields carry `any_edge_found`, which `combine_fields` sets.
 - **`minimise_runs`** is in `DiagnosisRuns` and the execution record, not in the report or summary.
 - **No run budget.** `ddmin`'s worst case is many runs on a long prefix; FR-1's execution budget
   belongs with the planner. Each JVM run keeps its 120 s timeout.
