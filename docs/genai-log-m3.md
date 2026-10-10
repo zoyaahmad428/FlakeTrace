@@ -589,3 +589,34 @@ yourself, especially Q6 — a panel question about brittle/inverse-polluter case
 blank look. Also be able to say what ADR-005 actually commits to (that `assemble_report` is
 the single report builder, called the same way regardless of caller) and why that matters for
 keeping one source of truth across M2's CLI and your own `eval/tools/run_w9_integration.py`.
+
+## 2026-10-10 — Agree ADR-006; record ADR-007 agreement pending a PR
+
+**What I asked:** Re-checked repo state (unprompted follow-up to the earlier docs survey) and
+found two more ADRs awaiting M3's agreement, ADR-006 and ADR-007. Presented both with a
+recommendation and reasoning; member said "go with your recommendations on both."
+
+**What was retained:** Both recommendations (agree to ADR-006; agree to ADR-007 in principle).
+For ADR-006 I also noticed and flagged, unprompted, that it couldn't be ticked blindly —
+M2's own agreement comment on it carries two real requests (`report_fields` gets a new
+`limitations` line above depth 2; M2 switches `runner/cli.py` to `analyse_pair` once it
+exists), which I read before ticking rather than rubber-stamping the checkbox.
+
+**What I changed:** For ADR-007, changed the plan from "tick the file" to "record the decision
+in the evidence/genai logs now, tick the actual ADR file once a PR exists" — the ADR currently
+lives only on Member 2's own unfinished branch (`m2/w10-minimise`), not `main`, so there was
+nothing in my own checkout to safely commit a tick against without writing onto someone else's
+in-progress branch. This was my own judgment call, not something the member specified.
+
+**How it was verified:** `py -m unittest discover -s eval/tests -v` → 68/68 passed (doc-only
+session, sanity check only).
+
+**Errors found:** None.
+
+**Rejections:** None.
+
+Ownership checkpoint: be able to explain why ADR-006's auto-deepening starts shallow and stops
+at the first edge found, rather than always walking to depth 5 — the cost/over-approximation
+trade-off is the entire reason the ADR exists instead of just raising the default depth. Also
+be ready to explain why `eval.report.assemble_report` needed zero code changes to accept
+ADR-007's multi-polluter `POLLUTER_FOUND` case (the field was already a list).

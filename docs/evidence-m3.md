@@ -872,4 +872,36 @@ member confirmed "go with your recommendations," then written.
 - Command: `py -m unittest discover -s eval/tests -v` (unaffected — these are doc-only
   decisions, no code touched). Result: 68/68 passed.
 - Limitation: M1's row in ADR-005 is still unticked, so the ADR is not yet fully agreed by all
-  three members — only M3's part of this entry is closed.
+  three members — only M3's part of this entry is closed. (Later ticked by M1 in PR #30 —
+  ADR-005 is now fully agreed.)
+
+## 2026-10-10 — Agree ADR-006 (evidence depth 1–5); ADR-007 decided, not yet tickable
+
+**Requirement:** two more ADRs appeared needing M3's agreement, found while re-checking repo
+state for "what's left for M3": ADR-006 (M1, `docs/03-Design/decisions/ADR-006-evidence-depth-
+auto-deepen.md` — accept depths 1–5, pair mode auto-deepens one level at a time only when
+`DEPTH_LIMIT` was hit, stopping at the shallowest edge; new `analyse_pair()` helper) and ADR-007
+(M2, on branch `m2/w10-minimise`, not yet a PR — `ddmin` multi-polluter minimisation for F3,
+reusing `POLLUTER_FOUND` with a list of polluters).
+
+- **ADR-006: ticked M3's row, agree.** Reasoning: the shallowest-depth-wins rule means F1/F2/F3
+  keep paying exactly what they pay today (`depth_used` 2), while fastjson's real cases (depth
+  4 and 5) become explainable instead of permanently `NO_SUPPORTED_RESOURCE_EVIDENCE`. The
+  alternative of raising the *default* depth to 5 would make every pair pay the most expensive,
+  most over-approximated walk even when depth 2 already has the answer — worse for the common
+  case to fix the rare one. Noted the follow-up this creates: once M1's `analyse_pair()` lands,
+  `eval/report.py`'s callers (`eval/tools/run_w9_integration.py`, and M2's `runner/cli.py`)
+  switch their separate `analyse_test`+`find_edges` calls to the one helper — not done yet,
+  since `analyse_pair` doesn't exist in `main` yet.
+- **ADR-007: agree in principle, not yet ticked in the file.** The ADR only exists on M2's own
+  in-progress branch (`m2/w10-minimise`), not `main`, and there is no PR for it yet — nothing to
+  safely commit the tick against without writing onto another member's unfinished branch.
+  Recorded here instead: I agree with the proposed rule ("`POLLUTER_FOUND` reused for several
+  polluters; first polluter's resource shown, the rest named in `limitations`") because it
+  applies the exact same shape already agreed for Q1/Q4 (`edges[0]` plus a `limitations` note)
+  to a new case, rather than inventing a new rule under schedule pressure. `eval.report.
+  assemble_report` already accepts a multi-element `diagnosis.polluters` list with no code
+  change (`report["polluters"] = [p.to_dict() for p in diagnosis.polluters]` already loops).
+  Will tick ADR-007's actual file once M2 opens a PR for W10.
+- Command: `py -m unittest discover -s eval/tests -v` (unaffected — doc-only session).
+  Result: 68/68 passed.

@@ -105,4 +105,4 @@ In [docs/contracts/resource-evidence.md](../../contracts/resource-evidence.md):
 | --- | --- | --- |
 | M1 | ☑ | Chose auto-deepening with range 1–5 on 2026-10-10 |
 | M2 | ☑ | Agree 2026-10-10, with two requests: (1) the report has no field for `depth_used`, so `report_fields` should add a `limitations` line when evidence was found above depth 2 (deeper evidence over-approximates more, e.g. `DateTest2`); (2) M2 switches `runner/cli.py` to `analyse_pair` after this lands, confirming F1–F3 stay at `depth_used` 2 |
-| M3 | ☐ | |
+| M3 | ☑ | Agree 2026-10-10. Shallowest-edge-wins auto-deepening explains both real fastjson cases without moving the default or paying depth-5 cost on F1/F2/F3; will switch `eval/report.py`/`eval/tools/run_w9_integration.py` to `analyse_pair` once it lands |
