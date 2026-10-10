@@ -983,3 +983,130 @@ contradicts those specific lines.
   shown, others named in `limitations`, `VERIFIED` only if every polluter has an edge) as asked
   in PR #35's description — not yet tickable in the ADR file itself, same situation as
   ADR-006 before it merged: the file exists only on Member 2's unmerged branch, not `main`.
+
+## 2026-10-10 — Tick ADR-003, ADR-004, ADR-007; confirm F3's ground truth end to end
+
+**Requirement:** Member 2 relayed four items once ADR-007 (W10) merged to `main`: tick ADR-007
+there for real now that it's mergeable; tick ADR-003 and ADR-004 (both had an empty M3 row
+left over from earlier in the project); update `ground_truth.json`'s F3 note, which still said
+"needs W10"; and (separately, "when you have time") the NOT_REPRODUCED/schema-change ask
+already tracked as ADR-008.
+
+- Verified each claim against the real repo before acting on any of it: read ADR-007's
+  agreement table on `main` directly (M1 ☐, M2 ☑, M3 ☐, confirmed empty), ADR-003's and
+  ADR-004's M3 rows (both ☐, confirmed empty), commit `539b2dc` (`git show`, confirmed it adds
+  `any_edge_found=bool(found)` to `combine_fields`'s mixed-evidence branch exactly as
+  described), and `ground_truth.json`'s F3 entry (confirmed it still read "needs W10").
+- File/function: `docs/03-Design/decisions/ADR-007-w10-ddmin-minimisation.md`,
+  `ADR-003-order-runner-junitcore-harness.md`, `ADR-004-w7-diagnosis-runs.md` — ticked M3's row
+  on each, with a comment specific to what M3's own code actually does (not a bare checkmark):
+  ADR-007 confirms the per-polluter rule and that `assemble_report` needed no change for a
+  multi-polluter `POLLUTER_FOUND` (the field was already a list); ADR-003 notes `eval/`
+  consumes the harness's `DiagnosisRuns` output without needing its internals; ADR-004 confirms
+  `n=20` (already used throughout `eval/benchmark/`) and that the `DiagnosisRuns`→
+  `DecisionInput` mapping built in `eval/report.py` (W9) matches this ADR's fields.
+- File/function: `fixtures/od-fixture/ground_truth.json` — F3's `expected_outcome_notes`
+  appended (not replaced, so the original prediction stays legible) with the real W10
+  confirmation, citing `docs/evidence-m2.md`'s real W10 entries: `diagnose()` gives
+  `POLLUTER_FOUND` with both polluters (search 12 runs, minimisation shrinks the 12-test
+  prefix to the 2-test 1-minimal set); the real end-to-end command gives `VERIFIED`, 20/20
+  reproduced, 0/20 alone, resource `odfixture.Toggles#flagA` shown with `flagB` named in
+  `limitations`.
+- Command: `py -c "import json; json.load(open('fixtures/od-fixture/ground_truth.json'))"` —
+  confirmed the edit kept the file valid JSON (easy to break with an unescaped character inside
+  a long string value).
+- Command: `py -m unittest discover -s eval/tests -v`. Result: 70/70 passed (unaffected by a
+  documentation-only / ground-truth-notes-only change, as expected — no test asserts on the
+  exact text of `expected_outcome_notes`).
+- Limitation: none. The larger NOT_REPRODUCED/schema-change ask (ADR-008: nullable
+  `failure_signature`, optional `order_exploration`, new `INFRASTRUCTURE_FAILURE` reason, new
+  fixture cases F4/N3) is real, substantial new work, not done in this entry — tracked
+  separately, pending the member's decision on scope and timing.
+
+## 2026-10-10 — ADR-008: NOT_REPRODUCED handling, schema change, fixtures F4/N3
+
+**Requirement:** the member approved going ahead with ADR-008 (Member 2's proposal for
+failures that do not reproduce). Member 3's side (step 3 of the ADR's own order-of-work
+table): the schema change, `decide()` row, `assemble_report` wiring, and two new
+pre-registered fixture cases.
+
+**Fixtures F4 and N3, written before any run** (`fixtures/od-fixture/ground_truth.json`):
+- **F4** (`AlwaysEarlyVictimTest`/`ZzzLatePolluterTest`, new `LateFlag` static field): class
+  names chosen so the polluter sorts alphabetically after the victim, exploiting this
+  project's confirmed alphabetical discovery order (`docs/evidence-m2.md`'s W7 Task 3) so the
+  natural order can never reproduce the bug — exactly the shape ADR-008's order-shuffling step
+  is for.
+- **N3** (`EnvDependentNegativeTest`): models a failure whose real cause is an environment
+  variable FlakeTrace never sets. Deliberately does **not** check the literal `CI` variable
+  name — GitHub Actions sets `CI=true` on every real runner, so that would make this negative
+  control fail on our own CI job. Uses a fictitious name (`FLAKETRACE_N3_NEVER_SET`) instead.
+- Real verification before writing a single line of Python: compiled
+  (`mvn -B -q -f fixtures/od-fixture/pom.xml test-compile`), confirmed the real discovered
+  order places `AlwaysEarlyVictimTest` first and `ZzzLatePolluterTest` last of 16 methods
+  (`runner.discovery.discover_order`), ran the full module (`mvn -B test`, no new failures:
+  still exactly F1/F2/N1/F3's four, F4/N3 both pass), ran the real one-fresh-JVM order
+  `[ZzzLatePolluterTest#setLateFlag, AlwaysEarlyVictimTest#expectsLateFlagUnset]` via
+  `runner.order_runner.OrderRunner.run_ordered` (polluter passes, victim FAILS with
+  `java.lang.AssertionError` — exactly the predicted mechanism), and ran the real victim alone
+  (passes). Also ran real `diagnose()` on both F4 and N3 in the natural order: both give
+  `NOT_REPRODUCED`, `alone_n=0` — confirming the exact gap ADR-008 names, not a bug in the
+  fixture. **Independent cross-check**: Member 1's own `GroundTruthTest`
+  (`evidence.tests.test_extract`, untouched by me) also passed with these two new cases added
+  to `ground_truth.json` — it found the real `LateFlag#isSet` edge for F4's pair and no edge
+  for any N3 pair, matching my ground truth exactly, from a completely independent test.
+- Added F4/N3 to `eval/benchmark/manifest.json` (both `not_yet_run`, no log files) — required
+  by `test_real_manifest_matches_fixture_ground_truth`, which checks the two files' case IDs
+  match exactly.
+
+**Schema** (`eval/schema/report.schema.json`): `failure_signature` nullable via the same
+`oneOf`/null pattern already used (and already fixed once this session) for `shared_resource`;
+new optional `order_exploration` object; `INFRASTRUCTURE_FAILURE` added to the
+`unresolved_reason` enum. **Found and fixed a real gap beyond what the ADR literally asked
+for**, by reading `runner/diagnose.py`'s actual code rather than assuming: ADR-008's text says
+nullable `failure_signature` "only for NOT_REPRODUCED," but `run_steps` sets
+`reference_signature=None` for its *entire* `NOT_REPRODUCED` status, which `INFRASTRUCTURE_FAILURE`
+is decided from too (same status, same `None` reference) — so a schema tied strictly to the
+`NOT_REPRODUCED` string would reject a real future `INFRASTRUCTURE_FAILURE` report. Widened the
+conditional to cover both reasons before this became a real bug.
+
+**`eval/outcome.py`**: `REASON_INFRASTRUCTURE_FAILURE`; new `DecisionInput.infrastructure_failures`
+field (default 0 — a caller that never reports it gets exactly the pre-ADR-008
+`SIGNATURE_MISMATCH` behaviour, proven by a dedicated test); new `decide()` row between
+`NOT_REPRODUCED` and `SIGNATURE_MISMATCH`.
+
+**`eval/report.py`**: `assemble_report` now handles `NOT_REPRODUCED` (was `UnhandledStatus`);
+builds `failure_signature: null` whenever `diagnosis.reference_signature is None` (covers both
+`NOT_REPRODUCED` and `INFRASTRUCTURE_FAILURE`); reads `infrastructure_failures` via
+`getattr(diagnosis, ..., 0)` and the new optional `order_exploration` via a `hasattr` check on
+all five needed fields — both forward-compatible with Member 2's `DiagnosisRuns` not having
+them yet, omitted entirely (schema allows it) until that lands.
+
+- Command: `py -m unittest discover -s eval/tests -v`. Result: **80/80 passed** (68 existing +
+  12 new, across `test_schema_validator.py`, `test_outcome.py`, `test_report.py`,
+  `test_yield_report.py`).
+- Mutation checks, each confirmed failing before restoring: `decide()`'s new row condition
+  forced to `False` → `test_row3b_infrastructure_failure` failed exactly as expected;
+  `assemble_report`'s `failure_signature = None if ref is None` forced to always build a dict
+  → `test_not_reproduced_with_isolation_data_gives_unresolved` failed with the real
+  `AttributeError` that would occur in production.
+- Real run confirming no regression: `py eval/tools/run_w9_integration.py` — F1/F2 still
+  `VERIFIED`, N1/N2 still `UNRESOLVED(VICTIM_FAILS_ALONE)`, resource edges and locations
+  byte-identical to before (only the execution-record timestamp and N2's own designed
+  randomness differ); `original_failing_order` correctly grew to include the 3 new fixture
+  classes that sort before each victim alphabetically.
+- Real run confirming the exact documented limitation, not a bug: real `diagnose()` on N3 in
+  the natural order gives `NOT_REPRODUCED` with `alone_n=0`; calling `assemble_report` on that
+  real diagnosis raises `ValueError: isolation_n must be > 0` — exactly as designed, pending
+  Member 2's `diagnose()` change (ADR-008 step 4, not yet landed).
+- **Also discovered and fixed, independent of this ADR**: this session's branch had been
+  created from a stale local `main` ref (missing the just-merged ADR-003/004/007 ticks commit
+  and everything after it up to Member 1's ADR-007 agreement). Found it the moment I checked
+  `git log --oneline -1 HEAD` against `origin/main` and saw they disagreed by several commits.
+  Diagnosed the exact scope with `git diff --name-only <stale-base> origin/main` (8 files,
+  only 3 overlapping with this session's own edits), restored the 5 untouched files directly
+  from `origin/main`, and manually re-applied this session's own F4/N3 additions and new
+  entries on top of the other 3 files' correct (non-stale) content — rather than running
+  `git merge`/`git stash`/`git rebase` myself, which this project's rules reserve for the
+  member. Confirmed clean afterward: `git diff origin/main -- <each of the 8 files>` shows
+  zero difference on the 7 untouched files and only this session's genuine new content on
+  the 8th (`ground_truth.json`).
