@@ -473,3 +473,62 @@ mode, never as the polluter side of a pair edge.
 - Limitation: a test class's `<clinit>` runs once per JVM, on first use, but its writes are
   attributed to every test of that class. Whether it has already run is execution timing, which
   is not modelled (contract limitation 6).
+
+## ADR-006 implemented: depth 1–5 and pair-mode auto-deepening (2026-10-10)
+
+**Requirement:** ADR-006, accepted by all three members (PRs #28, #29, #33). Accept depths 1–5.
+Pair mode deepens one level at a time while there is no edge and a walk hit `DEPTH_LIMIT`, and
+records `depth_requested`/`depth_used`. Member 2's request: `report_fields` adds a `limitations`
+line when the reported evidence is deeper than depth 2.
+
+- **Code** (`evidence/extract.py`):
+  - `MAX_DEPTH = 5`.
+  - `analyse_pair(project, polluter_id, victim_id, depth=2, deepen=True)` (loop in `_analyse_pair`).
+  - The CLI's pair mode uses it, and `--no-deepen` is added.
+  - `report_fields` adds the depth line.
+  - `analyse_test`/`find_edges` are unchanged, so callers that have not switched keep today's
+    behaviour.
+- **Contract** (`docs/contracts/resource-evidence.md`): edited exactly as ADR-006's "Proposed
+  contract change" says. Depth range 1–5 and deepening in Terms; `--no-deepen`; `depth_requested`
+  and `depth_used` in Output 2; `analyse_pair` in "Calling it from another component"; the depth
+  line in the projection table.
+- **Tests** (`evidence/tests/test_extract.py`, 6 new):
+  - `DeepeningTest`: deepens 2 → 4 to the first edge; `deepen=False` stays at 2 with `DEPTH_LIMIT`;
+    a pair with nothing cut off does not deepen; the report names evidence deeper than 2.
+  - `GroundTruthTest.test_ground_truth_pairs_are_found_without_deepening`: all fixture pairs stay
+    at `depth_used` 2 with no depth line.
+  - `CommandLineTest.test_pair_mode_deepens_and_no_deepen_stops_it`.
+  - Changed: `test_unsupported_depth_is_an_input_error` now uses `--depth 6`.
+- **Expected values** read by hand from JDK 8 javap: `M1DepthSelfTest.level4` is
+  `0: getstatic … SelfTestState.counter`; `M1SelfTest.writesAndReads` is `1: putstatic …`.
+- **Commands and real results** (both projects compiled with `mvn -B -q test-compile`, exit 0):
+  - `FLAKETRACE_REQUIRE_JVM=1 python3 -m unittest -v evidence.tests.test_extract` →
+    `Ran 39 tests in 51.710s … OK` (javap 21.0.12.1).
+  - Same with JDK 8 javap → `Ran 39 tests in 96.183s … OK`.
+  - Member 3's tests: `python3 -m unittest discover -s eval/tests` → `Ran 68 tests … OK`.
+  - Member 2's CLI tests, which call this extractor end to end:
+    `FLAKETRACE_REQUIRE_JVM=1 python3 -m unittest runner.tests.test_cli` → `Ran 20 tests … OK`.
+- **Mutation check** (scratch script; extractor source mutated in memory only):
+  - Never deepen → the deepening and depth-line tests fail.
+  - Ignore the "cut off" condition → only the no-cut-off test fails.
+  - Drop the depth line → only the depth-line test fails.
+  - The CLI test runs the unmutated file in a subprocess, so it is not affected by design.
+- **fastjson through the real CLI**, default settings (start at 2, deepen), same build as Phase 5
+  part 2, javap 21, one run each:
+
+  | Case | `depth_requested` | `depth_used` | Edges | Wall time |
+  | --- | --- | --- | --- | --- |
+  | FJ-01 (`DateFieldFormatTest#test_format_` → `DateTest#test_date`) | 2 | 4 | `JSON#defaultLocale`, `JSON#defaultTimeZone` | 7.73 s |
+  | FJ-02 (`DateParserTest#test_date_0` → `DefaultExtJSONParser_parseArray#test_7`) | 2 | 5 | same two | 24.99 s |
+
+  The report fields for FJ-01 are: write `DateFieldFormatTest.setUp@11`, read
+  `JSONSerializer.<init>@28`, plus the lines "This evidence is 3 calls deep (depth 4, above the
+  default 2)…" and "Another shared resource is not shown in this report:
+  com.alibaba.fastjson.JSON#defaultTimeZone".
+- **Limitations:**
+  - **The report's single resource is not the causal one on FJ-01/FJ-02.** Both fields are equally
+    shallow, and the contract's tie-break (`resource_id`) puts `defaultLocale` first. The real
+    cause, `defaultTimeZone` (Phase 5 part 2), is named only in `limitations`. Static evidence
+    cannot rank causes; this is documented, not changed.
+  - FJ-01/FJ-02 are BRITTLE cases, out of scope for Iteration 1 outcomes (contract Q6, Member 3),
+    so this changes their evidence, not their outcome.

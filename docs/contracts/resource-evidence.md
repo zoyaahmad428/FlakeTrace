@@ -46,8 +46,11 @@ members.
 - **Depth**: the number of methods on the path from the root to the method
   that contains the access instruction. Depth 1 means the instruction is in
   the root itself. Depth 2 means it is in a project method called directly
-  from the root. `--depth N` (default **2**, supported 1–3) reports accesses with `depth <= N`.
-  *Why the default is 2:* fixture F2's victim reads its system property inside `FeatureFlags.isTurboEnabled()`, one call below the test method, so at depth 1 F2 has no edge. Depth 2 also equals the POC's frozen scope ("direct references plus one hop"). The cost is more analysis time and more over-approximation (statically reachable accesses that may never run). The depth sweep still reports depths 1–3. See ADR-002.
+  from the root. `--depth N` (default **2**, supported 1–5) reports accesses with `depth <= N`.
+  *Pair mode deepens (ADR-006):* if a pair has no edge and a walk on either side stopped at the
+  depth limit (`DEPTH_LIMIT`), the pair is analysed again one level deeper, up to 5. The
+  shallowest depth with an edge wins. `--no-deepen` turns this off. Single-test mode never deepens.
+  *Why the default is 2:* fixture F2's victim reads its system property inside `FeatureFlags.isTurboEnabled()`, one call below the test method, so at depth 1 F2 has no edge. Depth 2 also equals the POC's frozen scope ("direct references plus one hop"). The cost is more analysis time and more over-approximation (statically reachable accesses that may never run). The depth sweep still reports depths 1–3. See ADR-002; the range 1–5 and pair-mode deepening are ADR-006.
   *Numbering note:* the August POC numbers depth by **hops**: its `FT_HOPS=N` (and "depth N" in `POC/results/depth_sweep.csv`) is **depth N + 1** here, because `extract_static.py` loops `range(HOPS + 1)`. A POC or vault figure quoted at "depth 2" is depth 3 in this contract.
 - **Project classes**: classes found in the input directories
   (`classes` + `test-classes`). Calls into anything else (JDK, JUnit,
@@ -92,6 +95,8 @@ Given `--polluter` and `--victim`:
 | `no_supported_resource_evidence` | boolean | `true` iff `edges` is empty. It means *no supported static evidence was found*. It does **not** mean the tests are independent. |
 | `unsupported_observations` | list | Polluter's and victim's, each tagged with `side: "polluter" \| "victim"`. |
 | `limitations` | list of strings | The fixed list below, plus case-specific notes. |
+| `depth_requested` | integer | The `--depth` asked for (default 2). Set by `analyse_pair` and the command line. |
+| `depth_used` | integer | The depth the edges were found at, after any deepening; equals `depth_requested` when nothing was deepened. Set by `analyse_pair` and the command line. |
 
 **Ordering (deterministic):** edges are sorted by
 `(min write depth + min read depth, resource_id)`. Locations within an edge
@@ -126,13 +131,13 @@ in Output 2).
 
 ## Invocation
 
-**Implemented** (Phases 2–4, `evidence/extract.py`). Language: Python 3, standard library only.
+**Implemented** (Phases 2–4 and ADR-006, `evidence/extract.py`). Language: Python 3, standard library only.
 Bytecode is read by running `javap -c -p` (and `-v` for annotations) from a
 JDK 8 or newer found on `PATH`.
 
 ```
 python3 -m evidence.extract --classes <dir> --test-classes <dir> \
-    --polluter <Class#method> --victim <Class#method> [--depth N]
+    --polluter <Class#method> --victim <Class#method> [--depth N] [--no-deepen]
 python3 -m evidence.extract --classes <dir> --test-classes <dir> \
     --test <Class#method> [--depth N]
 ```
@@ -146,13 +151,15 @@ python3 -m evidence.extract --classes <dir> --test-classes <dir> \
 | `--polluter <Class#method>` | pair mode | The candidate polluter, e.g. `odfixture.FeaturePolluterTest#enableTurbo`. Must be given together with `--victim`. |
 | `--victim <Class#method>` | pair mode | The victim test. |
 | `--test <Class#method>` | single mode | One test method; produces Output 1 only. Cannot be combined with `--polluter`/`--victim`. |
-| `--depth N` | no | Call depth as defined under [Terms](#terms). Default 2; accepted values 1, 2, 3. |
+| `--depth N` | no | Call depth as defined under [Terms](#terms). Default 2; accepted values 1–5. In pair mode this is the starting depth (see deepening under [Terms](#terms)). |
+| `--no-deepen` | no | Pair mode: analyse at exactly `--depth`, without deepening. |
 
 Exactly one mode must be given: `--polluter` + `--victim`, or `--test`.
 
 **Output:** one JSON object on **stdout** (UTF-8), shaped like the
 [example](#example--fixture-f2-at---depth-2) below. In pair mode it contains
-`tests` (Output 1 for both tests) and `pair` (Output 2). In single mode it
+`tests` (Output 1 for both tests) and `pair` (Output 2). In pair mode `analysis.depth` is the
+requested depth, and `tests` holds the analyses at `pair.depth_used`. In single mode it
 contains `tests` only. Nothing else is printed to stdout, so the caller can
 parse it directly. Diagnostics go to stderr.
 
@@ -165,9 +172,11 @@ directories.** It only reads `.class` files.
   as the working directory, or put the root on `PYTHONPATH`. Pass **absolute** class directories.
 - Or call it in-process: `from evidence import extract`, then
   `project = extract.Project([classes, test_classes])`,
-  `extract.analyse_test(project, test_id, depth)` for each test,
-  `pair = extract.find_edges(polluter_id, polluter_result, victim_id, victim_result)`, and
-  `extract.report_fields(pair)` for the report. Errors raise `extract.ExtractError`, whose
+  `pair = extract.analyse_pair(project, polluter_id, victim_id, depth=2, deepen=True)` (ADR-006:
+  analyses both tests and deepens as above), and `extract.report_fields(pair)` for the report.
+  The older route, `extract.analyse_test(project, test_id, depth)` for each test then
+  `extract.find_edges(polluter_id, polluter_result, victim_id, victim_result)`, still works but
+  never deepens and sets no `depth_requested`/`depth_used`. Errors raise `extract.ExtractError`, whose
   `.exit_code` is 1 or 2 as below.
 - `javap` comes from a JDK 8+ on `PATH`; the environment variable `FLAKETRACE_JAVAP` can name another one.
 
@@ -278,7 +287,7 @@ observation:
 | `polluter_write_location` | `{class, method, bytecode_offset}` of `edges[0].polluter_write_locations[0]`, or `null` |
 | `victim_read_location` | `{class, method, bytecode_offset}` of `edges[0].victim_read_locations[0]`, or `null` |
 | `instrumentation_level` | `"static-only"` |
-| `limitations` | Member 1 contributes the fixed limitations above + one line per dropped edge/location (see open question 1) |
+| `limitations` | Member 1 contributes the fixed limitations above + one line per dropped edge/location (see open question 1) + one line when the reported write or read is deeper than the default depth 2 (ADR-006, requested by Member 2) |
 
 Example: F2 at depth 2 projects to `shared_resource = {kind: "system-property", key: "odfixture.turbo"}`,
 `polluter_write_location = {class: "odfixture.FeaturePolluterTest", method: "enableTurbo", bytecode_offset: 4}`,
