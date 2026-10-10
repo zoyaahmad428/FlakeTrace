@@ -429,3 +429,47 @@ No candidate failed to analyse (errors 0 in every row).
   false edges here; it does not show the bound 5 is right elsewhere.
 - Decision proposed from this: [[03-Design/decisions/ADR-006-evidence-depth-auto-deepen]]. Not
   implemented.
+
+## Phase 6: lifecycle writes as polluter edges, pair-mode input error (2026-10-10)
+
+**Requirement (Phase 6 list):**
+- F1 has exactly one edge.
+- A write in `setUp` or `<clinit>` is still attributed.
+- An access found only at depth 2.
+- No shared resource gives an empty edge list plus the flag.
+- A nonexistent test or a missing directory gives an error and a non-zero exit.
+
+Already covered before this phase: F1, depth-2-only, the empty list plus flag, the missing
+directory and unknown method. `setUp`/`<clinit>` attribution was tested only in single-test
+mode, never as the polluter side of a pair edge.
+
+- Files:
+  - `evidence/tests/test_extract.py`: `PairSelfTest.test_polluter_write_in_junit3_setup_is_an_edge`,
+    `PairSelfTest.test_polluter_write_in_test_class_clinit_is_an_edge`, and
+    `CommandLineTest.test_unknown_victim_in_pair_mode_is_an_input_error`.
+  - New self-test input `evidence/tests/resources/m1-selftest/src/test/java/m1selftest/M1ClinitReaderSelfTest.java`.
+    It reads `m1.selftest.clinit`, which `M1LifecycleSelfTest`'s static initialiser writes. Before
+    this, nothing read that property, so a `<clinit>` edge could not occur.
+- Expected offsets read by hand from JDK 8 javap (`javap -c -p`, 1.8.0_502):
+  - `M1Junit3SelfTest.setUp`: `1: putstatic … SelfTestState.counter`.
+  - `M1SelfTest.writesAndReads`: `4: getstatic … SelfTestState.counter`.
+  - `M1LifecycleSelfTest.<clinit>`: `4: invokestatic … System.setProperty` (key `m1.selftest.clinit`).
+  - `M1ClinitReaderSelfTest.readsClinitProperty`: `2: invokestatic … System.getProperty`.
+- FR-3 check: the contract already settles it. A test class's own `<clinit>` is a root
+  (`via CLINIT`); another class's `<clinit>` is reported as `IMPLICIT_CLINIT` and never
+  attributed to the next test. No design change was needed.
+- Commands and real results (`mvn -B -q test-compile` of both projects, exit 0):
+  - `FLAKETRACE_REQUIRE_JVM=1 python3 -m unittest -v evidence.tests.test_extract` → `Ran 33 tests … OK`
+    (javap 21.0.12.1).
+  - Same with JDK 8 javap (`FLAKETRACE_JAVAP` → `ft-jdk8` image) → `Ran 33 tests in 74.368s … OK`.
+  - The CLI with an unknown victim class prints `error: test class not found in project classes:
+    m1selftest.NoSuchTest` and exits 2.
+- Mutation check (scratch script, roots filtered in memory):
+  - `SETUP` roots dropped → only the `setUp` test fails.
+  - `CLINIT` roots dropped → only the `<clinit>` test fails.
+  - Nothing dropped → both pass.
+  - The first version of the script filtered the wrong value (`find_roots` returns
+    `(chain, roots)`) and so changed nothing. It was fixed before these results.
+- Limitation: a test class's `<clinit>` runs once per JVM, on first use, but its writes are
+  attributed to every test of that class. Whether it has already run is execution timing, which
+  is not modelled (contract limitation 6).

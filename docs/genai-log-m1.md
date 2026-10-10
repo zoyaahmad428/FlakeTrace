@@ -355,3 +355,25 @@ because Member 2's ADR-005 (W9 command) merged first.
 M3 to agree.
 
 Ownership checkpoint: you need to understand and verify this implementation before claiming it as your contribution.
+
+## 2026-10-10 — Phase 6: lifecycle writes as polluter edges
+
+**Assistance level:** L3 (Substantial): the tests and the self-test class were generated.
+
+**What I asked:** start Phase 6 (the required-test list from the brief).
+
+**What was retained:** two pair tests (a `setUp` write and a test-class `<clinit>` write as the
+polluter side of an edge), one CLI test (unknown victim in pair mode exits 2), and
+`M1ClinitReaderSelfTest.java`.
+
+**What I changed:** *fill after review.*
+
+**How it was verified:** 33 tests OK on javap 21 and JDK 8 javap; expected offsets read by hand
+from JDK 8 javap; mutation check. See `docs/evidence-m1.md`.
+
+**Errors found:** the first mutation script changed nothing (it filtered the wrong return value),
+which made the tests look unbreakable. It was fixed, and the tests then failed as expected.
+
+**Rejections:** changing how `<clinit>` is attributed. The contract already covers FR-3.
+
+Ownership checkpoint: you need to understand and verify this implementation before claiming it as your contribution.

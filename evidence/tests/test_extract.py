@@ -1,5 +1,5 @@
 """Tests for evidence/extract.py (Member 1): lifecycle attribution (Phase 2), call depth (Phase 3), pairs (Phase 4),
-ground truth (Phase 5).
+ground truth (Phase 5), setUp/<clinit> polluter edges and pair-mode input errors (Phase 6).
 
 Input: Member 1's own test classes in evidence/tests/resources/m1-selftest/ (not a
 project fixture). Compile them first, with JDK 8 like the rest of the project:
@@ -227,6 +227,22 @@ class PairSelfTest(unittest.TestCase):
                             "m1selftest.M1LifecycleSelfTest#emptyBody")
         self.assertNotIn("sysprop:m1.selftest.key", [e["resource_id"] for e in pair["edges"]])
 
+    def test_polluter_write_in_junit3_setup_is_an_edge(self):
+        pair = analyse_pair([CLASSES, TEST_CLASSES], "m1selftest.M1Junit3SelfTest#testNothing",
+                            "m1selftest.M1SelfTest#writesAndReads")
+        self.assertEqual(edge_summary(pair), [
+            ("m1selftest.SelfTestState#counter", ["M1Junit3SelfTest.setUp@1"],
+             ["M1SelfTest.writesAndReads@4"])])
+        self.assertEqual(pair["edges"][0]["polluter_write_locations"][0]["via"], "SETUP")
+
+    def test_polluter_write_in_test_class_clinit_is_an_edge(self):
+        pair = analyse_pair([CLASSES, TEST_CLASSES], "m1selftest.M1LifecycleSelfTest#emptyBody",
+                            "m1selftest.M1ClinitReaderSelfTest#readsClinitProperty")
+        self.assertEqual(edge_summary(pair), [
+            ("sysprop:m1.selftest.clinit", ["M1LifecycleSelfTest.<clinit>@4"],
+             ["M1ClinitReaderSelfTest.readsClinitProperty@2"])])
+        self.assertEqual(pair["edges"][0]["polluter_write_locations"][0]["via"], "CLINIT")
+
 
 @needs(os.path.isdir(FIXTURE_DIRS[1]),
        "fixture not compiled: run mvn -B -q -f fixtures/od-fixture/pom.xml test-compile")
@@ -407,6 +423,12 @@ class CommandLineTest(unittest.TestCase):
         done = self.run_cli("--classes", CLASSES, "--test-classes", TEST_CLASSES,
                             "--test", "m1selftest.M1SelfTest#noSuchMethod", "--depth", "1")
         self.assert_input_error(done, "test method not found")
+
+    def test_unknown_victim_in_pair_mode_is_an_input_error(self):
+        done = self.run_cli("--classes", CLASSES, "--test-classes", TEST_CLASSES,
+                            "--polluter", "m1selftest.M1SelfTest#writesAndReads",
+                            "--victim", "m1selftest.NoSuchTest#nothing")
+        self.assert_input_error(done, "test class not found")
 
     def test_default_depth_is_2(self):
         need_javap(self)
