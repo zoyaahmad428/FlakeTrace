@@ -494,3 +494,36 @@ own JUnitCore harness (ADR-003). Member 1 suggested new wording.
   expected exit 3 (`0 != 3`) — F3 now gets a report. Updated in this task (exit 0, `VERIFIED`, both
   polluters, `flagA`) → `Ran 1 test in 34.227s — OK`.
 - Full runner suite: `Ran 93 tests in 245.061s — OK`. `git status --short fixtures/` empty.
+
+### 2026-10-10 — W10 Task 3: report several polluters; F3 end to end
+
+**Requirement:** ADR-007 § Evidence and report — evidence per polluter; `VERIFIED` only if every
+polluter has an edge; the first shown, the others named in `limitations`, M1's fixed lines once.
+- File: `runner/cli.py` — `resource_fields` analyses the victim once and each polluter, then
+  `combine_fields(pairs)`; the exit-3 message for `NO_SINGLE_POLLUTER` now says the victim is first.
+- Real edges checked before writing tests: F3's pairs give `odfixture.Toggles#flagA` (A) and
+  `#flagB` (B); every pair carries the same 7 fixed limitation lines (hence the de-duplication).
+- Tests first: `py -m unittest runner.tests.test_cli.TestCombineFields` → `ImportError: cannot import
+  name 'combine_fields'`. After the code: fast CLI tests OK; real `test_f3_two_polluters_verified`
+  (n = 20, now also checking the `flagB` limitation and the summary line) → `Ran 1 test in 33.936s — OK`.
+- Mutation check: evidence for the first polluter only (`runs.polluters[:1]`) → the real F3 test
+  FAILED (no `flagB` line); restored from a copy.
+- Full runner suite: `Ran 97 tests in 238.770s — OK`. `git status --short fixtures/` empty.
+- By hand from the repo root, exit 0:
+
+```
+VERIFIED  odfixture.ToggleVictimTest#expectsNotBothFlagsSet
+  polluter:   odfixture.ToggleAPolluterTest#setFlagA, odfixture.ToggleBPolluterTest#setFlagB
+  resource:   static-field odfixture.Toggles flagA (write odfixture.ToggleAPolluterTest#setFlagA@1 -> read odfixture.ToggleVictimTest#expectsNotBothFlagsSet@0)
+  reproduced: 20/20 (lower bound 0.839)   alone: 0/20
+  report:     flaketrace-records\20261010T104124Z-odfixture.ToggleVictimTest#expectsNotBothFlagsSet.report.json
+  record:     flaketrace-records\20261010T104124Z-odfixture.ToggleVictimTest#expectsNotBothFlagsSet.jsonl
+```
+
+  The report's `limitations` (9 lines, none duplicated) include "Polluter
+  odfixture.ToggleBPolluterTest#setFlagB: shared resource odfixture.Toggles#flagB is not shown in this
+  report".
+- Docs: `runner/README.md`, [[04-Implementation/diagnose-cli]], demo plan (F3 row, known
+  limitations, Runner row), iteration plan W10, members, claims E9/E12 updated and new E13, an update
+  note in ADR-005. `fixtures/od-fixture/ground_truth.json`'s F3 note ("needs W10") is M3's — not edited.
+- CI on JDK 8: not yet run (runs on the PR).

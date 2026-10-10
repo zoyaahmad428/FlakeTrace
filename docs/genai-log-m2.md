@@ -482,3 +482,17 @@ polluters (9 minimise runs); full suite 93 OK.
 predicting the full-suite result, fixed in Task 2 (ruling in the ledger).
 
 **What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — W10 Task 3: several polluters in the report
+
+**Tool:** Claude Opus 5.5 · **Level:** L2
+
+**What was asked:** Task 3 of the W10 plan.
+
+**What was retained:** `combine_fields`, per-polluter evidence in `resource_fields`, four combining
+tests, the F3 report checks, docs and claim E13.
+
+**How it was verified:** tests failed first; the real F3 command is `VERIFIED` with `flagB` in
+`limitations`; evidence for the first polluter only made the F3 test fail; full suite 97 OK.
+
+**What I changed:** *fill after reading the diff.*

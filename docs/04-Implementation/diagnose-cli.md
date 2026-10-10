@@ -1,7 +1,8 @@
 # Diagnose command — `runner/cli.py` (Member 2, W9)
 
 *Status (2026-10-10): built and run on the fixture locally (JDK 21): F1 and F2 `VERIFIED`, N1
-`UNRESOLVED(VICTIM_FAILS_ALONE)`, F3 exit 3 (no report yet). CI on JDK 8: see [[evidence-m2]].
+`UNRESOLVED(VICTIM_FAILS_ALONE)`; since W10 (ADR-007) F3 `VERIFIED` with two polluters. CI on JDK 8: see
+[[evidence-m2]].
 Four-point ownership note per [[04-Implementation/README]]. Design:
 [[03-Design/decisions/ADR-005-w9-diagnose-cli]].*
 
@@ -36,7 +37,10 @@ in-process and decides nothing itself:
 - **In-process calls**, not M1's command line: one Python program, no JSON parsing or exit-code
   mapping between processes; the contract lists both as supported.
 - **Catches M3's `UnhandledStatus`** instead of listing supported statuses itself, so when M3
-  supports F3/`NOT_REPRODUCED` reports the command produces them unchanged.
+  supports `NOT_REPRODUCED` reports the command produces them unchanged.
+- **Several polluters** (W10): evidence per polluter, combined by `combine_fields`: the first
+  polluter's edge is shown, the others named in `limitations`, and only if **every** polluter has an
+  edge — otherwise no resource is shown (`UNRESOLVED(NO_SUPPORTED_RESOURCE_EVIDENCE)`).
 - **Report next to its record**: each report sits with the raw runs that back it, and the record
   path in it is relative when `--records` is (the default).
 
@@ -44,7 +48,8 @@ in-process and decides nothing itself:
 
 - Must run from the repository root, or with it on `PYTHONPATH` (`No module named runner` otherwise).
 - On Windows the record path in the report uses `\`; it is relative, but not OS-neutral.
-- One victim and one polluter per run; F3 needs W10.
+- One victim per run. With several polluters the report shows one resource; the others are only
+  named in `limitations` until the schema allows one edge per polluter.
 - Unexpected exceptions are deliberately not caught: Python prints the traceback (exit 1).
 - Inherits ADR-003/004 limits (JUnit 4, alphabetical discovered order, single polluters).
 

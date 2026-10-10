@@ -11,7 +11,7 @@ from pathlib import Path
 from unittest import mock
 
 from eval.baseline import FailureSignature, TestIdentifier
-from runner.cli import main, summary
+from runner.cli import combine_fields, main, summary
 from runner.diagnose import (NO_SINGLE_POLLUTER, POLLUTER_FOUND, VICTIM_FAILS_ALONE, DiagnoseInputError,
                              DiagnosisRuns)
 from runner.integrity import SourceIntegrity
@@ -122,6 +122,52 @@ class TestToolErrors(unittest.TestCase):
             code, _, err = run_cli(["diagnose", "--project", str(project), "--victim", str(V)])
         self.assertEqual(code, 1)
         self.assertIn("error: resource evidence failed", err)
+
+
+def pair(polluter, *resource_ids):
+    location = {"class": polluter.class_name, "method": polluter.method, "bytecode_offset": 1, "depth": 1}
+    return {
+        "polluter": polluter.to_dict(), "victim": V.to_dict(),
+        "edges": [{"resource_id": rid, "resource": {"kind": "static-field", "class": rid.split("#")[0],
+                                                     "field": rid.split("#")[1]},
+                   "polluter_write_locations": [location], "victim_read_locations": [dict(location, method="v")]}
+                  for rid in resource_ids],
+        "limitations": ["Static analysis only; no runtime evidence (Iteration 2)."],
+    }
+
+
+Q = TestIdentifier("pkg.SecondPolluterTest", "q")
+
+
+class TestCombineFields(unittest.TestCase):
+    def test_one_polluter_is_unchanged(self):
+        from evidence.extract import report_fields
+        single = pair(P, "pkg.T#flagA")
+        self.assertEqual(combine_fields([single]), report_fields(single))
+
+    def test_every_polluter_with_an_edge_shows_the_first_and_names_the_rest(self):
+        fields = combine_fields([pair(P, "pkg.T#flagA"), pair(Q, "pkg.T#flagB")])
+        self.assertEqual(fields["shared_resource"], {"kind": "static-field", "class": "pkg.T", "field": "flagA"})
+        self.assertEqual(fields["polluter_write_location"]["class"], "pkg.PolluterTest")
+        self.assertIn("Polluter pkg.SecondPolluterTest#q: shared resource pkg.T#flagB is not shown in this report",
+                      fields["limitations"])
+        self.assertEqual(fields["limitations"].count("Static analysis only; no runtime evidence (Iteration 2)."), 1)
+
+    def test_second_polluter_without_edge_shows_no_resource(self):
+        fields = combine_fields([pair(P, "pkg.T#flagA"), pair(Q)])
+        self.assertIsNone(fields["shared_resource"])
+        self.assertIsNone(fields["polluter_write_location"])
+        self.assertIsNone(fields["victim_read_location"])
+        self.assertIn("No polluter-write/victim-read resource edge was found for polluter pkg.SecondPolluterTest#q",
+                      fields["limitations"])
+        self.assertIn("Polluter pkg.PolluterTest#p: shared resource pkg.T#flagA was found, "
+                      "but not every polluter has evidence", fields["limitations"])
+
+    def test_first_polluter_without_edge_shows_no_resource(self):
+        fields = combine_fields([pair(P), pair(Q, "pkg.T#flagB")])
+        self.assertIsNone(fields["shared_resource"])
+        self.assertIn("No polluter-write/victim-read resource edge was found for polluter pkg.PolluterTest#p",
+                      fields["limitations"])
 
 
 class TestReports(unittest.TestCase):
@@ -238,6 +284,8 @@ class TestCliOnFixture(unittest.TestCase):
         self.assertEqual(report["polluters"], [{"class": "odfixture.ToggleAPolluterTest", "method": "setFlagA"},
                                                {"class": "odfixture.ToggleBPolluterTest", "method": "setFlagB"}])
         self.assertEqual(report["shared_resource"], {"kind": "static-field", "class": "odfixture.Toggles", "field": "flagA"})
+        self.assertTrue(any("odfixture.Toggles#flagB" in line for line in report["limitations"]), report["limitations"])
+        self.assertIn("polluter:   odfixture.ToggleAPolluterTest#setFlagA, odfixture.ToggleBPolluterTest#setFlagB", out)
 
     def test_n1_fails_alone(self):
         code, _, err, report = self.diagnose("odfixture.NegativeAloneFailTest#alwaysFails", 5)

@@ -57,6 +57,7 @@ Policy context and the four-point ownership standard: [[00-Meta/ai-usage-log]].
 | 2026-10-10 | M2 | Claude Opus 5.5 | L2 | ADR-007 (W10 ddmin design) | Design options and ADR text | Chose report-now rule, ddmin, reused status, strict evidence rule | Design only; facts from repo (F3: 12 search runs, ground truth) | — | [[genai-log-m2]], [[evidence-m2]] |
 | 2026-10-10 | M2 | Claude Opus 5.5 | L2 | `runner/minimise.py` + tests (W10 Task 1) | ddmin and tests from the W10 plan | *add your edits after review* | Tests failed first; 11 OK; mutation made 7 fail; suite 91 OK | Run-count estimate corrected to the measured 25 | [[genai-log-m2]], [[evidence-m2]] |
 | 2026-10-10 | M2 | Claude Opus 5.5 | L2 | `runner/diagnose.py` minimise step + tests (W10 Task 2) | Wiring from the W10 plan | *add your edits after review* | Tests failed first; real F3 = ground truth; suite 93 OK | Plan gap: CLI F3 test updated in Task 2 | [[genai-log-m2]], [[evidence-m2]] |
+| 2026-10-10 | M2 | Claude Opus 5.5 | L2 | `runner/cli.py` combine_fields + tests, W10 docs, claim E13 (W10 Task 3) | Report rule code, tests and docs from the W10 plan | *add your edits after review* | Tests failed first; real F3 VERIFIED; mutation made it fail; suite 97 OK | — | [[genai-log-m2]], [[evidence-m2]] |
 
 ## Prompt journal — significant interactions only
 

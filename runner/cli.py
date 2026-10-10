@@ -21,8 +21,7 @@ from runner.order_runner import ToolError
 _VICTIM = re.compile(r"[\w.$]+#[\w$]+")
 
 _NO_REPORT_WHY = {
-    NO_SINGLE_POLLUTER: "the original order fails, but no single earlier test makes the victim fail "
-                        "(needs multi-polluter minimisation, W10)",
+    NO_SINGLE_POLLUTER: "the victim is first in the order, so there is no earlier test to blame",
     NOT_REPRODUCED: "the victim never failed with a real failure in n runs of the original order",
 }
 
@@ -79,12 +78,35 @@ def run_diagnose(project: Path, victim_id: str, n: int, records: str) -> int:
 
 
 def resource_fields(project: Path, runs) -> dict:
-    """Member 1's pair-mode evidence for the found polluter and the victim (contract Output 2)."""
+    """Member 1's pair-mode evidence for each polluter and the victim, combined (ADR-007)."""
     classes = Project([str(project / "target" / "classes"), str(project / "target" / "test-classes")])
-    polluter, victim = str(runs.polluters[0]), str(runs.victim)
-    pair = find_edges(polluter, analyse_test(classes, polluter, DEFAULT_DEPTH),
-                      victim, analyse_test(classes, victim, DEFAULT_DEPTH))
-    return report_fields(pair)
+    victim = str(runs.victim)
+    victim_access = analyse_test(classes, victim, DEFAULT_DEPTH)
+    pairs = [find_edges(str(p), analyse_test(classes, str(p), DEFAULT_DEPTH), victim, victim_access)
+             for p in runs.polluters]
+    return combine_fields(pairs)
+
+
+def combine_fields(pairs: list) -> dict:
+    """Report fields from one pair per polluter. One polluter: M1's report_fields unchanged.
+    Several: the first polluter's edge is shown and the others named in limitations, but only if
+    every polluter has an edge -- VERIFIED must mean every blamed test has a found mechanism."""
+    fields = [report_fields(pair) for pair in pairs]
+    if len(fields) == 1:
+        return fields[0]
+    lines = []
+    for each in fields:
+        lines += [line for line in each["limitations"] if line not in lines]
+    if all(pair["edges"] for pair in pairs):
+        others = [f"Polluter {_test(pair['polluter'])}: shared resource {edge['resource_id']} is not shown in this report"
+                  for pair in pairs[1:] for edge in pair["edges"]]
+        return dict(fields[0], limitations=lines + others)
+    found = [f"Polluter {_test(pair['polluter'])}: shared resource {edge['resource_id']} was found, "
+             "but not every polluter has evidence" for pair in pairs for edge in pair["edges"]]
+    missing = [f"No polluter-write/victim-read resource edge was found for polluter {_test(pair['polluter'])}"
+               for pair in pairs if not pair["edges"]]
+    return dict(fields[0], shared_resource=None, polluter_write_location=None, victim_read_location=None,
+                limitations=lines + found + missing)
 
 
 def summary(report: dict, report_path: Path) -> str:

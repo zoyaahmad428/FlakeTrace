@@ -1,7 +1,7 @@
 # runner/ — bounded search and verification (Member 2)
 
 **Owner:** Member 2 · **State:** W6 complete; W7 complete (2026-10-09) — `diagnose()` on all five fixture cases
-locally (JDK 21) and in CI (JDK 8, run `37971869749`). W9 command `py -m runner diagnose` built (2026-10-10,
+locally (JDK 21) and in CI (JDK 8, run `37971869749`). W10 `ddmin` finds several polluters (F3, 2026-10-10, ADR-007). W9 command `py -m runner diagnose` built (2026-10-10,
 ADR-005); W10 (multi-polluter minimisation) next.
 
 Implements the `OrderRunner` interface in [`eval/baseline.py`](../eval/baseline.py) and
@@ -147,7 +147,7 @@ VERIFIED  odfixture.ConfigVictimTest#expectsDefaultMode
 | 0 | report written — any outcome, including `UNRESOLVED` |
 | 2 | input wrong (`--victim` not Java `Class#method`, no `pom.xml`, `--n` < 1, records inside the project or a file, unknown victim) |
 | 1 | a tool failed (Maven, `java`/`javac`/`mvn`, discovery timeout, the extractor/javap) |
-| 3 | no report can be built yet (`NO_SINGLE_POLLUTER` — e.g. F3, needs W10 — or `NOT_REPRODUCED`) |
+| 3 | no report can be built yet (`NOT_REPRODUCED`, or `NO_SINGLE_POLLUTER` — the victim is first in the order) |
 
 ## Planned components, in build order
 
@@ -156,7 +156,7 @@ VERIFIED  odfixture.ConfigVictimTest#expectsDefaultMode
 | 1 | Ordered single-JVM runner for JUnit 4 — **done (W6)** | per-test outcomes, `failure_signature` | Yes |
 | 2 | Victim-alone check, repeated `n` times — **done (W7)** | `victim_alone` raw counts | Yes |
 | 3 | Polluter search over preceding tests — **done (W7, single polluters)** | `polluters`, `original_failing_order` | Yes |
-| 4 | Deletion minimisation (handles F3's two-polluter case) | `reduced_sequence` | Yes (F1/F2); F3 stretch |
+| 4 | Deletion minimisation — **done (W10)**: `ddmin`, F3 found (`setFlagA`, `setFlagB`) | `polluters`, `reduced_sequence` | Yes |
 | 5 | Repeated-run verification of the reduced sequence — **done (W7)** | `reproduction` raw counts | Yes |
 | 6 | Source-integrity check (hash target source before/after) — **done (W7)** | `source_integrity` | Yes |
 | 7 | Execution record (JDK, order, timestamps) — **done (W7)** | `execution_record_reference` | Yes |
