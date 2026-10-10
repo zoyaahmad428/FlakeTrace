@@ -54,6 +54,7 @@ Policy context and the four-point ownership standard: [[00-Meta/ai-usage-log]].
 | 2026-10-10 | M2 | Claude Opus 5.5 (reviewer agent + author session) | L2 | W9 final review; `DiagnoseInputError`, `ToolError`, narrower CLI catches + test | Review findings, 1 fix | *add your edits after review* | New test failed first (`ValueError not raised`); suite 74 OK | 6 minors deferred | [[genai-log-m2]], [[evidence-m2]] |
 | 2026-10-10 | M2 | Claude Opus 5.5 | L2 | W9 review minors in `runner/cli.py`, `runner/diagnose.py` + 5 tests | Fixes for 5 of 6 minors | Member 2 asked for all future-risk minors fixed; kept schema errors loud | Each test failed first; 25 fast OK; suite 78 OK | — | [[genai-log-m2]], [[evidence-m2]] |
 | 2026-10-10 | M2 | Claude Opus 5.5 | L2 | Claim E1 wording, `scope-boundary.md`, JUnit 3 test in `runner/tests/` | Test and wording | *add your edits after review* | Probe first; tests OK; reversed order made the test fail; suite 59 OK | Surefire wording removed (not used for diagnosis runs) | [[genai-log-m2]], [[evidence-m2]] |
+| 2026-10-10 | M2 | Claude Opus 5.5 | L2 | ADR-007 (W10 ddmin design) | Design options and ADR text | Chose report-now rule, ddmin, reused status, strict evidence rule | Design only; facts from repo (F3: 12 search runs, ground truth) | — | [[genai-log-m2]], [[evidence-m2]] |
 
 ## Prompt journal — significant interactions only
 

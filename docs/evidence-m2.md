@@ -456,3 +456,11 @@ own JUnitCore harness (ADR-003). Member 1 suggested new wording.
 - Limitation: the "Linux container" part of E1 is a committed target; nothing runs in one yet.
 - CI on the E1 PR (`m2/e1-junit3`): job `runner` (JDK 8, Linux) → `Ran 59 tests in 64.239s — OK`
   (line copied from the job log by Member 2), so the JUnit 3 test also passes on Linux/JDK 8.
+
+### 2026-10-10 — W10 design (ADR-007)
+
+- Not a run: design only. [[03-Design/decisions/ADR-007-w10-ddmin-minimisation]] proposes `ddmin`
+  over the tests before the victim when W7's one-by-one search finds nothing, `POLLUTER_FOUND` with
+  one or more polluters, a new `minimise_runs` field, and a strict evidence rule for several
+  polluters (every polluter needs an edge for `VERIFIED`). Needs M1/M3 confirmation of the report rule.
+- Numbered ADR-007 because Member 1's PR #28 added ADR-006 (evidence depth 1–5, proposed) the same day.

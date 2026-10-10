@@ -433,3 +433,19 @@ scope-boundary wording, the README limitation line.
 order made the pollution test fail; full runner suite 59 OK.
 
 **What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — W10 design (ADR-007)
+
+**Tool:** Claude Opus 5.5 (brainstorming) · **Level:** L2
+
+**What was asked:** design W10 (deletion minimisation, F3's two polluters).
+
+**Decisions made by Member 2** (asking each time for what is best for the product as a whole):
+produce a real F3 report with the agreed "first edge shown, rest in limitations" rule (A); `ddmin`
+over bisection and one-at-a-time deletion; reuse `POLLUTER_FOUND` for several polluters; require
+evidence for every polluter before `VERIFIED`.
+
+**What was retained:** ADR-007 — flow, `ddmin` rules, evidence rule, limitations (single-run
+checks, no budget, 1-minimal only), verification plan.
+
+**What I changed:** *fill after reading the diff.*
