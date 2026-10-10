@@ -46,7 +46,7 @@ verdict stays with M3's `decide()`, so the statistics and decision rules live in
 - **The victim never fails for real** → `NOT_REPRODUCED` with `alone_n = 0`; M3's `decide()`
   rejects `isolation_n = 0`, so W9 must handle this status before calling it. If the original
   order only crashed or timed out, those runs are counted in `sequence_any_failures`.
-- **`record_dir` inside the analysed project** → refused with `ValueError`; a record written
+- **`record_dir` inside the analysed project** → refused with `DiagnoseInputError` (a `ValueError`); a record written
   there would itself make the integrity check fail.
 - **Flaky victims**: N2 (fails ~50%, `Random.nextBoolean` since PR #14) ends `VICTIM_FAILS_ALONE`.
   Without the alone check it would be blamed on a spurious polluter (seen in a mutation check,

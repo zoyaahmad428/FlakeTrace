@@ -334,3 +334,89 @@ which CLAUDE.md forbids agents to run. It discarded only the agent's own one-lin
 to the member at the time.
 
 **What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — W9 CLI design (ADR-005)
+
+**Tool:** Claude Opus 5.5 (brainstorming) · **Level:** L2
+
+**What was asked:** design the W9 end-to-end command after Member 3 built report assembly
+(PR #13, #21).
+
+**Decisions made by Member 2:** one victim per run, for the demo and real use (A); no report and
+exit 3 when `assemble_report` cannot build one (A); a Python module `py -m runner diagnose` now,
+the installable `flaketrace` command deferred to a later iteration (M2 wants it).
+
+**What was retained:** ADR-005 — flow, options, exit codes 0/1/2/3, tests, and the `runner` CI job
+needing `eval/requirements.txt`.
+
+**What was argued:** Member 2 questioned whether `py -m runner` is "production". Agreed that the
+launch method is not, but behaviour is; a proper install needs a team-wide package rename and the
+container decision, so it is recorded as deferred with its constraints.
+
+**What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — W9 Task 1: the diagnose command
+
+**Tool:** Claude Opus 5.5 · **Level:** L2
+
+**What was asked:** implement Task 1 of `docs/superpowers/plans/2026-10-10-w9-diagnose-cli.md`.
+
+**What was retained:** `runner/cli.py`, `runner/__main__.py`, 11 fast tests, the `runner` CI job's
+install step, as planned.
+
+**How it was verified:** tests failed first (module missing), then 11 OK; mutation of the evidence
+condition made the report tests fail; full runner suite 68 OK.
+
+**What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — W9 Task 2: real runs and docs
+
+**Tool:** Claude Opus 5.5 · **Level:** L2
+
+**What was asked:** Task 2 of the W9 plan — real fixture tests for the command, docs.
+
+**What was retained:** 5 real-run tests; `runner/README.md` command section;
+[[04-Implementation/diagnose-cli]]; README/CLAUDE.md command line; demo plan, iteration plan,
+members, claim E12 (numbered E10 until merging main, where M1 had added E10 and E11).
+
+**How it was verified:** 5 real runs OK; removing the evidence step made the F2 test fail; full
+suite 73 OK; F1 run by hand.
+
+**What was wrong:** a Python escape (`\2…` in a string) wrote a control character into the
+README's sample paths; found by reading the file back, fixed, and every edited file scanned.
+
+**What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — W9 final review and fix
+
+**Tool:** Claude Opus 5.5 (author session) + a separate reviewer agent · **Level:** L2
+
+**What was found:** one important issue — broad `ValueError`/`RuntimeError` catching could hide
+internal bugs as user errors; six minors deferred (listed in [[evidence-m2]]).
+
+**What was retained:** `DiagnoseInputError` and `ToolError`; the CLI catches only those; a test
+that failed first on behaviour; ADR-005 and notes updated.
+
+**What was wrong:** another string-escape slip wrote a non-ASCII byte into a test; caught by the
+import error and fixed with `bytes([0xFF])`.
+
+**What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — W9 review minors fixed
+
+**Tool:** Claude Opus 5.5 · **Level:** L2
+
+**What was asked:** Member 2 asked to fix every deferred review minor that could cause a problem later.
+
+**What was retained:** records-is-a-file refused before Maven; victim checked before any record is
+written; Java-name check on `--victim`; discovery timeout → exit 1; `summary()` guard; two summary
+tests. Schema `ValidationError` left as a traceback on purpose (a pipeline bug), recorded in ADR-005.
+
+**How it was verified:** each new test failed first (or, for the leftover-record check, failed when
+the new check was removed); fast tests 25 OK; full runner suite 78 OK.
+
+**What was wrong:** a `\n` escape in generated test code became a real line break (syntax error);
+fixed by editing the file directly. An old stray form-feed character in this log (W6 entry) was
+replaced with the text `\f`.
+
+**What I changed:** *fill after reading the diff.*

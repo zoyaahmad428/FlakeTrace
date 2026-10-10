@@ -1,7 +1,8 @@
 # runner/ — bounded search and verification (Member 2)
 
 **Owner:** Member 2 · **State:** W6 complete; W7 complete (2026-10-09) — `diagnose()` on all five fixture cases
-locally (JDK 21) and in CI (JDK 8, run `37971869749`). W9 (report assembly) next.
+locally (JDK 21) and in CI (JDK 8, run `37971869749`). W9 command `py -m runner diagnose` built (2026-10-10,
+ADR-005); W10 (multi-polluter minimisation) next.
 
 Implements the `OrderRunner` interface in [`eval/baseline.py`](../eval/baseline.py) and
 everything built on it. Contract: [docs/contracts/interfaces.md](../docs/contracts/interfaces.md).
@@ -111,6 +112,41 @@ runs.source_integrity.passed, runs.execution_record   # flaketrace-records/<time
 | `NO_SINGLE_POLLUTER` | the original order fails but no single earlier test does (e.g. F3) — for W10 | the original order |
 | `NOT_REPRODUCED` | the victim never failed with a real failure in `n` runs of the original order (crashes/timeouts are counted in `sequence_any_failures`); alone check not run (`alone_n = 0`) | the original order |
 
+## Command line (W9)
+
+Design: [ADR-005](../docs/03-Design/decisions/ADR-005-w9-diagnose-cli.md). From the repository root:
+
+```
+py -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode
+```
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `--project` | required | Maven project folder (contains `pom.xml`) |
+| `--victim` | required | failing test, `Class#method` |
+| `--n` | `20` | repeat count |
+| `--records` | `flaketrace-records` | folder for the execution record and the report (outside the project) |
+
+It runs `diagnose()`, Member 1's `find_edges`/`report_fields` at depth 2 when a polluter is found,
+and Member 3's `assemble_report()`, then writes `<record>.report.json` next to the record. Real
+output on F1 (local, JDK 21):
+
+```
+VERIFIED  odfixture.ConfigVictimTest#expectsDefaultMode
+  polluter:   odfixture.ConfigPolluterTest#pollute
+  resource:   static-field odfixture.Config mode (write odfixture.ConfigPolluterTest#pollute@1 -> read odfixture.ConfigVictimTest#expectsDefaultMode@1)
+  reproduced: 20/20 (lower bound 0.839)   alone: 0/20
+  report:     flaketrace-records\20261009T213516Z-odfixture.ConfigVictimTest#expectsDefaultMode.report.json
+  record:     flaketrace-records\20261009T213516Z-odfixture.ConfigVictimTest#expectsDefaultMode.jsonl
+```
+
+| Exit | Meaning |
+| --- | --- |
+| 0 | report written — any outcome, including `UNRESOLVED` |
+| 2 | input wrong (`--victim` not Java `Class#method`, no `pom.xml`, `--n` < 1, records inside the project or a file, unknown victim) |
+| 1 | a tool failed (Maven, `java`/`javac`/`mvn`, discovery timeout, the extractor/javap) |
+| 3 | no report can be built yet (`NO_SINGLE_POLLUTER` — e.g. F3, needs W10 — or `NOT_REPRODUCED`) |
+
 ## Planned components, in build order
 
 | # | Component | Produces (report-schema fields) | Needed for Mid demo |
@@ -122,7 +158,7 @@ runs.source_integrity.passed, runs.execution_record   # flaketrace-records/<time
 | 5 | Repeated-run verification of the reduced sequence — **done (W7)** | `reproduction` raw counts | Yes |
 | 6 | Source-integrity check (hash target source before/after) — **done (W7)** | `source_integrity` | Yes |
 | 7 | Execution record (JDK, order, timestamps) — **done (W7)** | `execution_record_reference` | Yes |
-| 8 | CLI entry point | — | Yes |
+| 8 | CLI entry point — **done (W9)**: `py -m runner diagnose` | the whole report | Yes |
 
 Test against `fixtures/od-fixture` (F1, F2, F3, N1, N2) — the expected outcomes are in
 `fixtures/od-fixture/ground_truth.json`, written before any run.

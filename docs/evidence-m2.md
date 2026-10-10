@@ -110,7 +110,7 @@ critical issues and four important ones; three needed code fixes, one a docs cor
   directory against the fixture's own JUnit jar; the fixture itself is not touched).
 - New tests, run **before** the fixes: `Ran 22 tests — FAILED (failures=2, errors=1)`:
   - message containing a form feed → reported `flaketrace.JvmCrash` instead of
-    `java.lang.AssertionError` (`splitlines()` split the result line on ``);
+    `java.lang.AssertionError` (`splitlines()` split the result line on `\f`);
   - result line cut off without a newline → parsed as a real failure (`java.lang.Exception`)
     instead of missing;
   - `OrderRunner(..., working_dir=...)` → `TypeError` (tests ran in the caller's directory, so
@@ -325,3 +325,110 @@ and the docs saying "N2 may end `NOT_REPRODUCED` on Windows" were out of date.
 - **CI for PR #20 (`evidence` job):** `Ran …` line not recorded yet.
 - Docs updated: ADR-004 (N2 row and an update note), [[04-Implementation/diagnosis-runs]],
   demo plan Runner row, claims E9.
+
+### 2026-10-10 — CI results for PR #20 and PR #22 (recorded late)
+
+- PR #22 (N2 test) after merging `main` into it (commit `cf8da48`): job `runner` (JDK 8, Linux) →
+  `Ran 57 tests in 66.969s — OK`; job `evidence` → `Ran 30 tests in 24.771s — OK` (30 = 27 +
+  Member 1's ground-truth test from PR #23, so the new test runs in CI). Lines copied from the job
+  logs by Member 2.
+
+### 2026-10-10 — W9 CLI design (ADR-005)
+
+- Not a run: design only. [[03-Design/decisions/ADR-005-w9-diagnose-cli]] proposes
+  `py -m runner diagnose --project … --victim …` and answers I4 (pending M1/M3).
+- Facts checked for the ADR: `eval.stats.wilson_interval(5, 5, 0.95)` → lower `0.5655` (< 0.70,
+  so `VERIFIED` tests need n = 20); `eval/schema_validator.py` imports `jsonschema` at load; the
+  `runner` CI job has no `pip install` step; `evidence.extract.DEFAULT_DEPTH` = 2.
+
+### 2026-10-10 — W9 Task 1: `py -m runner diagnose` (fast tests)
+
+**Requirement:** ADR-005 — one command from a failing test to a report file; exit codes 0/1/2/3.
+- Files: `runner/cli.py` (`main`, `run_diagnose`, `resource_fields`, `summary`), `runner/__main__.py`,
+  `runner/tests/test_cli.py`; `.github/workflows/ci.yml` (`runner` job installs `eval/requirements.txt`).
+- Probe first: `py -m` runs `__main__.py` of a namespace package (no `__init__.py`, like `runner/`)
+  both from its folder and via `PYTHONPATH` from another folder → `main ran`, exit 0 (Python 3.14).
+- Tests written first: `py -m unittest runner.tests.test_cli` → `ModuleNotFoundError: No module
+  named 'runner.cli'`. After the code: `Ran 11 tests in 0.108s — OK` (no JVM; `diagnose` replaced
+  with `unittest.mock.patch` in the tool-error and report tests only).
+- Mutation check: evidence step forced on (`if True else None`) → both report tests FAILED
+  (`1 != 0`, `1 != 3`); restored from a copy → 11 OK.
+- Full runner suite: `Ran 68 tests in 124.206s — OK`. `git status --short fixtures/` empty.
+- Limitation: real Maven/JVM/javap runs of the command are Task 2.
+
+### 2026-10-10 — W9 Task 2: the diagnose command end to end on the fixture
+
+**Requirement:** ADR-005 verification plan — real Maven/JVM/javap runs through the command.
+- File: `runner/tests/test_cli.py`, class `TestCliOnFixture` (5 tests).
+- Command: `py -m unittest -v runner.tests.test_cli.TestCliOnFixture` (local Windows, JDK 21.0.9)
+  → `Ran 5 tests in 87.535s — OK`:
+  - F1 as a separate process (`python -m runner diagnose …`, run from a temp folder with
+    `PYTHONPATH` = repo root, default `--records`) → exit 0, `VERIFIED`, resource
+    `static-field odfixture.Config mode`, 20/20 reproduced, 0/20 alone; the record path in the
+    report is relative, exists, and the report sits next to it;
+  - F2 (n = 20) → `VERIFIED`, `system-property odfixture.turbo`, read in
+    `odfixture.FeatureFlags#isTurboEnabled@2` (depth 2);
+  - F3 (n = 3) → exit 3, `No report: NO_SINGLE_POLLUTER`, no report file;
+  - N1 (n = 5) → exit 0, `UNRESOLVED(VICTIM_FAILS_ALONE)`, no polluter;
+  - `odfixture.ConfigVictimTest#noSuchTest` → exit 2 naming the victim, no report.
+- These tests passed on their first run because Task 1's code existed. Mutation check:
+  `fields = None` in place of the evidence step → `test_f2_depth_two_edge` FAILED
+  (`'UNRESOLVED' != 'VERIFIED'`); restored from a copy, `git diff runner/cli.py` empty.
+- By hand from the repo root:
+  `py -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode`
+  → exit 0:
+
+```
+VERIFIED  odfixture.ConfigVictimTest#expectsDefaultMode
+  polluter:   odfixture.ConfigPolluterTest#pollute
+  resource:   static-field odfixture.Config mode (write odfixture.ConfigPolluterTest#pollute@1 -> read odfixture.ConfigVictimTest#expectsDefaultMode@1)
+  reproduced: 20/20 (lower bound 0.839)   alone: 0/20
+  report:     flaketrace-records\20261009T213516Z-odfixture.ConfigVictimTest#expectsDefaultMode.report.json
+  record:     flaketrace-records\20261009T213516Z-odfixture.ConfigVictimTest#expectsDefaultMode.jsonl
+```
+
+- Full runner suite: `Ran 73 tests in 212.449s — OK`. `git status --short fixtures/` empty.
+- Limitations: the record path uses `\` on Windows (relative, not OS-neutral); must run from the
+  repo root or with it on `PYTHONPATH`. CI on JDK 8: not yet run (runs on the PR).
+
+### 2026-10-10 — W9 final review and fix
+
+**Review:** separate reviewer agent on the whole branch (`6693965..77b0e31`), against ADR-005 and
+the plan: no critical; one important; six minor (deferred, listed below). The five review-focus
+inputs all behaved as specified (the reviewer probed them).
+- **Important — fixed:** the CLI caught every `ValueError`/`RuntimeError` from `diagnose()`, so an
+  internal bug (e.g. `run_ordered`'s "same test more than once", a `UnicodeDecodeError`, a
+  `RecursionError`) would print as a one-line user/tool error and lose its traceback — against
+  ADR-005. Fix: `runner.diagnose.DiagnoseInputError(ValueError)` for the three input checks,
+  `runner.order_runner.ToolError(RuntimeError)` for a missing tool or harness compile failure; the
+  CLI catches only those.
+- New test `test_internal_errors_are_not_hidden_as_input_or_tool_errors`. With the classes added but
+  the CLI unchanged it FAILED: `AssertionError: ValueError not raised`. After narrowing the CLI → OK.
+  `test_diagnose` bad-input tests now expect `DiagnoseInputError`.
+- Full runner suite: `Ran 74 tests in 210.101s — OK`.
+- Six minors listed by the reviewer: fixed or decided in the next entry.
+
+### 2026-10-10 — W9 review minors fixed (Member 2 asked for every one that can cause trouble later)
+
+| # | Minor | Decision | Test (failed first) |
+| --- | --- | --- | --- |
+| 1 | `--records` names an existing file → traceback after Maven | `diagnose()` refuses it before Maven (`DiagnoseInputError`) | `test_record_folder_that_is_a_file_is_refused_before_maven_runs` — errored before the fix |
+| 2 | unknown victim leaves a header-only record | `diagnose()` checks the victim against the discovered order before creating the recorder | `test_unknown_victim_exits_2` now asserts no record file; with the new check removed it FAILED (a `.jsonl` was left) |
+| 3 | victim string not checked for file names | CLI accepts only `[\w.$]+#[\w$]+` (Java names, no spaces) → else exit 2 | `test_malformed_victims_exit_2` with `" pkg.VictimTest#v"`, `"…#v:x"`, `"…#a#b"`, `"pkg.Victim Test#v"`, `"…#<v>"` — FAILED (`3 != 2`) before |
+| 4 | `summary()` crashed on a resource with null locations | location part printed only when both exist | `test_summary_survives_a_resource_without_locations` — `TypeError` before |
+| 5a | discovery `TimeoutExpired` → traceback | CLI exit 1: `<tool> timed out after <s> s on <project>` | `test_discovery_timeout_exits_1` — errored before |
+| 5b | schema `ValidationError` → traceback | **kept on purpose**: only a pipeline bug causes it; ADR-005 keeps bugs loud | — |
+| 6 | no fast test of the summary resource line | added | `test_summary_shows_the_resource_and_both_locations` (passed at once: documents existing behaviour) |
+
+- Commands: `py -m unittest runner.tests.test_cli.TestInputErrors runner.tests.test_cli.TestToolErrors
+  runner.tests.test_cli.TestReports runner.tests.test_diagnose.TestRunSteps` → before the fixes
+  `FAILED (failures=1, errors=3)`; after `Ran 25 tests — OK`. Real `test_unknown_victim_exits_2` → OK.
+- Full runner suite: `Ran 78 tests in 233.104s — OK`. `git status --short fixtures/` empty.
+
+### 2026-10-10 — W9 CI result (PR #26)
+
+- PR #26 (`m2/w9-cli`) after merging `main` into it (commit `6caaaaf`): job `runner` (JDK 8, Linux)
+  → `Ran 78 tests in 82.588s — OK` (line copied from the job log by Member 2). Same count as locally,
+  so the 5 real CLI runs (F1 as a separate process, F2, F3, N1, unknown victim) pass on Linux/JDK 8 too.
+- Merge conflicts resolved in `claims-ledger.md` (our claim renumbered E10 → E12; M1 had added
+  E10/E11), `demo-plan.md`, `iteration-plan.md`, `members.md` — newer M1/M3 rows kept, M2 rows added.

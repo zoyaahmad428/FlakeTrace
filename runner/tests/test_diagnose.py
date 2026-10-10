@@ -12,6 +12,7 @@ from runner.diagnose import (
     NOT_REPRODUCED,
     POLLUTER_FOUND,
     VICTIM_FAILS_ALONE,
+    DiagnoseInputError,
     diagnose,
     run_steps,
 )
@@ -73,9 +74,9 @@ class TestRunSteps(unittest.TestCase):
 
     def test_bad_input_is_rejected_before_any_run(self):
         runner = victim_fails_when(lambda order: True)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(DiagnoseInputError):
             run_steps(runner, [A, B], V, n=3)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(DiagnoseInputError):
             run_steps(runner, [A, V], V, n=0)
         self.assertEqual(runner.calls, [])
 
@@ -87,13 +88,20 @@ class TestRunSteps(unittest.TestCase):
         self.assertEqual((runs.search_runs, runs.sequence), (0, [V]))
 
     def test_explicit_order_without_the_victim_fails_before_maven_runs(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(DiagnoseInputError):
             diagnose(Path("does-not-exist"), V, original_order=[A, B])
 
     def test_record_folder_inside_the_project_is_refused_before_maven_runs(self):
         project = Path(tempfile.mkdtemp(prefix="flaketrace-project-"))
-        with self.assertRaises(ValueError):
+        with self.assertRaises(DiagnoseInputError):
             diagnose(project, V, original_order=[V], record_dir=project / "records")
+
+    def test_record_folder_that_is_a_file_is_refused_before_maven_runs(self):
+        project = Path(tempfile.mkdtemp(prefix="flaketrace-project-"))
+        a_file = Path(tempfile.mkdtemp(prefix="flaketrace-records-")) / "records.txt"
+        a_file.write_text("not a folder", encoding="utf-8")
+        with self.assertRaises(DiagnoseInputError):
+            diagnose(project, V, original_order=[V], record_dir=a_file)
 
     def test_crash_only_original_order_counts_as_failed_but_not_reproduced(self):
         crash = RunOutcome(passed=False, failure_signature=FailureSignature("flaketrace.JvmCrash", "", "code 1"))
