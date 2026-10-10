@@ -11,9 +11,11 @@ from pathlib import Path
 from unittest import mock
 
 from eval.baseline import FailureSignature, TestIdentifier
-from runner.cli import main
-from runner.diagnose import NO_SINGLE_POLLUTER, POLLUTER_FOUND, VICTIM_FAILS_ALONE, DiagnosisRuns
+from runner.cli import main, summary
+from runner.diagnose import (NO_SINGLE_POLLUTER, POLLUTER_FOUND, VICTIM_FAILS_ALONE, DiagnoseInputError,
+                             DiagnosisRuns)
 from runner.integrity import SourceIntegrity
+from runner.order_runner import ToolError
 
 REPO = Path(__file__).resolve().parents[2]
 FIXTURE = REPO / "fixtures" / "od-fixture"
@@ -50,7 +52,8 @@ def runs(status, record, **overrides):
 
 class TestInputErrors(unittest.TestCase):
     def test_malformed_victims_exit_2(self):
-        for victim in ("pkg.VictimTest", "pkg.VictimTest#", "#v"):
+        for victim in ("pkg.VictimTest", "pkg.VictimTest#", "#v", " pkg.VictimTest#v", "pkg.VictimTest#v ",
+                       "pkg.VictimTest#v:x", "pkg.VictimTest#a#b", "pkg.Victim Test#v", "pkg.VictimTest#<v>"):
             with mock.patch("runner.cli.diagnose") as diagnose:
                 code, _, err = run_cli(["diagnose", "--project", str(FIXTURE), "--victim", victim])
             self.assertEqual(code, 2, victim)
@@ -91,13 +94,25 @@ class TestToolErrors(unittest.TestCase):
         self.assertNotIn("Traceback", err)
 
     def test_victim_not_among_the_tests_exits_2(self):
-        self.check(ValueError("victim a.B#c is not in the original order"), 2, "a.B#c")
+        self.check(DiagnoseInputError("victim a.B#c is not in the original order"), 2, "a.B#c")
 
     def test_maven_failure_exits_1(self):
         self.check(subprocess.CalledProcessError(1, ["C:/tools/mvn.cmd", "-B"]), 1, "mvn.cmd failed")
 
     def test_missing_tool_exits_1(self):
-        self.check(RuntimeError("'javac' not found on PATH"), 1, "'javac' not found on PATH")
+        self.check(ToolError("'javac' not found on PATH"), 1, "'javac' not found on PATH")
+
+    def test_discovery_timeout_exits_1(self):
+        self.check(subprocess.TimeoutExpired(["java", "FtHarness", "--list"], 120), 1, "timed out")
+
+    def test_internal_errors_are_not_hidden_as_input_or_tool_errors(self):
+        # ADR-005: unexpected exceptions keep their traceback. These are internal, not the user's input.
+        for internal in (ValueError("order contains the same test more than once"),
+                         UnicodeDecodeError("utf-8", bytes([0xFF]), 0, 1, "bad byte"),
+                         RecursionError("maximum recursion depth exceeded")):
+            with mock.patch("runner.cli.diagnose", side_effect=internal):
+                with self.assertRaises(type(internal)), redirect_stderr(io.StringIO()):
+                    main(["diagnose", "--project", str(project_with_pom()), "--victim", "a.B#c"])
 
     def test_extractor_failure_exits_1(self):
         project = project_with_pom()  # no target/ folders, so Project() raises ExtractError(..., 2)
@@ -126,6 +141,29 @@ class TestReports(unittest.TestCase):
         self.assertIn("alone: 20/20", out)
         self.assertIn(str(report_path), out)
         out.encode("ascii")  # the summary must print on any console
+
+    def test_summary_shows_the_resource_and_both_locations(self):
+        report = self.report_with_resource()
+        line = [l for l in summary(report, Path("r.report.json")).splitlines() if "resource:" in l][0]
+        self.assertEqual(line, "  resource:   static-field odfixture.Config mode "
+                               "(write pkg.PolluterTest#p@1 -> read pkg.VictimTest#v@4)")
+
+    def test_summary_survives_a_resource_without_locations(self):
+        report = self.report_with_resource()
+        report["polluter_write_location"] = report["victim_read_location"] = None
+        text = summary(report, Path("r.report.json"))
+        self.assertIn("  resource:   static-field odfixture.Config mode", text.splitlines())
+
+    @staticmethod
+    def report_with_resource():
+        return {
+            "victim": V.to_dict(), "polluters": [P.to_dict()], "outcome": "VERIFIED", "unresolved_reason": None,
+            "shared_resource": {"kind": "static-field", "class": "odfixture.Config", "field": "mode"},
+            "polluter_write_location": {"class": "pkg.PolluterTest", "method": "p", "bytecode_offset": 1},
+            "victim_read_location": {"class": "pkg.VictimTest", "method": "v", "bytecode_offset": 4},
+            "reproduction": {"successes": 20, "n": 20, "lower": 0.839},
+            "victim_alone": {"successes": 0, "n": 20}, "execution_record_reference": "r.jsonl",
+        }
 
     def test_no_single_polluter_exits_3_without_a_report(self):
         records = Path(tempfile.mkdtemp(prefix="flaketrace-cli-records-"))
@@ -210,6 +248,7 @@ class TestCliOnFixture(unittest.TestCase):
         self.assertEqual(code, 2)
         self.assertIn("odfixture.ConfigVictimTest#noSuchTest", err)
         self.assertIsNone(report)
+        self.assertEqual(list(Path(self.records).glob("*noSuchTest*")), [])  # no empty record left behind
 
 
 if __name__ == "__main__":

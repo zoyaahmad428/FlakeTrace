@@ -143,8 +143,8 @@ VERIFIED  odfixture.ConfigVictimTest#expectsDefaultMode
 | Exit | Meaning |
 | --- | --- |
 | 0 | report written — any outcome, including `UNRESOLVED` |
-| 2 | input wrong (`--victim` format, no `pom.xml`, `--n` < 1, records inside the project, unknown victim) |
-| 1 | a tool failed (Maven, `java`/`javac`/`mvn`, the extractor/javap) |
+| 2 | input wrong (`--victim` not Java `Class#method`, no `pom.xml`, `--n` < 1, records inside the project or a file, unknown victim) |
+| 1 | a tool failed (Maven, `java`/`javac`/`mvn`, discovery timeout, the extractor/javap) |
 | 3 | no report can be built yet (`NO_SINGLE_POLLUTER` — e.g. F3, needs W10 — or `NOT_REPRODUCED`) |
 
 ## Planned components, in build order

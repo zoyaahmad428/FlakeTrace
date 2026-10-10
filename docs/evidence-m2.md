@@ -110,7 +110,7 @@ critical issues and four important ones; three needed code fixes, one a docs cor
   directory against the fixture's own JUnit jar; the fixture itself is not touched).
 - New tests, run **before** the fixes: `Ran 22 tests — FAILED (failures=2, errors=1)`:
   - message containing a form feed → reported `flaketrace.JvmCrash` instead of
-    `java.lang.AssertionError` (`splitlines()` split the result line on ``);
+    `java.lang.AssertionError` (`splitlines()` split the result line on `\f`);
   - result line cut off without a newline → parsed as a real failure (`java.lang.Exception`)
     instead of missing;
   - `OrderRunner(..., working_dir=...)` → `TypeError` (tests ran in the caller's directory, so
@@ -390,3 +390,37 @@ VERIFIED  odfixture.ConfigVictimTest#expectsDefaultMode
 - Full runner suite: `Ran 73 tests in 212.449s — OK`. `git status --short fixtures/` empty.
 - Limitations: the record path uses `\` on Windows (relative, not OS-neutral); must run from the
   repo root or with it on `PYTHONPATH`. CI on JDK 8: not yet run (runs on the PR).
+
+### 2026-10-10 — W9 final review and fix
+
+**Review:** separate reviewer agent on the whole branch (`6693965..77b0e31`), against ADR-005 and
+the plan: no critical; one important; six minor (deferred, listed below). The five review-focus
+inputs all behaved as specified (the reviewer probed them).
+- **Important — fixed:** the CLI caught every `ValueError`/`RuntimeError` from `diagnose()`, so an
+  internal bug (e.g. `run_ordered`'s "same test more than once", a `UnicodeDecodeError`, a
+  `RecursionError`) would print as a one-line user/tool error and lose its traceback — against
+  ADR-005. Fix: `runner.diagnose.DiagnoseInputError(ValueError)` for the three input checks,
+  `runner.order_runner.ToolError(RuntimeError)` for a missing tool or harness compile failure; the
+  CLI catches only those.
+- New test `test_internal_errors_are_not_hidden_as_input_or_tool_errors`. With the classes added but
+  the CLI unchanged it FAILED: `AssertionError: ValueError not raised`. After narrowing the CLI → OK.
+  `test_diagnose` bad-input tests now expect `DiagnoseInputError`.
+- Full runner suite: `Ran 74 tests in 210.101s — OK`.
+- Six minors listed by the reviewer: fixed or decided in the next entry.
+
+### 2026-10-10 — W9 review minors fixed (Member 2 asked for every one that can cause trouble later)
+
+| # | Minor | Decision | Test (failed first) |
+| --- | --- | --- | --- |
+| 1 | `--records` names an existing file → traceback after Maven | `diagnose()` refuses it before Maven (`DiagnoseInputError`) | `test_record_folder_that_is_a_file_is_refused_before_maven_runs` — errored before the fix |
+| 2 | unknown victim leaves a header-only record | `diagnose()` checks the victim against the discovered order before creating the recorder | `test_unknown_victim_exits_2` now asserts no record file; with the new check removed it FAILED (a `.jsonl` was left) |
+| 3 | victim string not checked for file names | CLI accepts only `[\w.$]+#[\w$]+` (Java names, no spaces) → else exit 2 | `test_malformed_victims_exit_2` with `" pkg.VictimTest#v"`, `"…#v:x"`, `"…#a#b"`, `"pkg.Victim Test#v"`, `"…#<v>"` — FAILED (`3 != 2`) before |
+| 4 | `summary()` crashed on a resource with null locations | location part printed only when both exist | `test_summary_survives_a_resource_without_locations` — `TypeError` before |
+| 5a | discovery `TimeoutExpired` → traceback | CLI exit 1: `<tool> timed out after <s> s on <project>` | `test_discovery_timeout_exits_1` — errored before |
+| 5b | schema `ValidationError` → traceback | **kept on purpose**: only a pipeline bug causes it; ADR-005 keeps bugs loud | — |
+| 6 | no fast test of the summary resource line | added | `test_summary_shows_the_resource_and_both_locations` (passed at once: documents existing behaviour) |
+
+- Commands: `py -m unittest runner.tests.test_cli.TestInputErrors runner.tests.test_cli.TestToolErrors
+  runner.tests.test_cli.TestReports runner.tests.test_diagnose.TestRunSteps` → before the fixes
+  `FAILED (failures=1, errors=3)`; after `Ran 25 tests — OK`. Real `test_unknown_victim_exits_2` → OK.
+- Full runner suite: `Ran 78 tests in 233.104s — OK`. `git status --short fixtures/` empty.

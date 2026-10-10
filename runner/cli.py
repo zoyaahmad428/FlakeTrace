@@ -7,6 +7,7 @@ Exit codes: 0 report written, 2 input wrong, 1 tool failed, 3 no report can be b
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -14,7 +15,10 @@ from pathlib import Path
 from eval.baseline import TestIdentifier
 from eval.report import UnhandledStatus, assemble_report
 from evidence.extract import DEFAULT_DEPTH, ExtractError, Project, analyse_test, find_edges, report_fields
-from runner.diagnose import NO_SINGLE_POLLUTER, NOT_REPRODUCED, POLLUTER_FOUND, diagnose
+from runner.diagnose import NO_SINGLE_POLLUTER, NOT_REPRODUCED, POLLUTER_FOUND, DiagnoseInputError, diagnose
+from runner.order_runner import ToolError
+
+_VICTIM = re.compile(r"[\w.$]+#[\w$]+")
 
 _NO_REPORT_WHY = {
     NO_SINGLE_POLLUTER: "the original order fails, but no single earlier test makes the victim fail "
@@ -37,20 +41,23 @@ def main(argv=None) -> int:
 
 
 def run_diagnose(project: Path, victim_id: str, n: int, records: str) -> int:
+    # Java names only: the victim also becomes part of the record's file name.
+    if not _VICTIM.fullmatch(victim_id):
+        return _error(f"--victim must be Class#method (Java names, no spaces), got {victim_id!r}", 2)
     class_name, _, method = victim_id.partition("#")
-    if not class_name or not method:
-        return _error(f"--victim must be Class#method, got {victim_id!r}", 2)
     if not (project / "pom.xml").is_file():
         return _error(f"no pom.xml in {project}; --project must be a Maven project folder", 2)
 
     try:
         runs = diagnose(project, TestIdentifier(class_name, method), n=n, record_dir=records)
-    except ValueError as error:
+    except DiagnoseInputError as error:
         return _error(str(error), 2)
     except subprocess.CalledProcessError as error:
         tool = Path(str(error.cmd[0])).name
         return _error(f"{tool} failed with exit code {error.returncode} on {project}; run it there to see why", 1)
-    except RuntimeError as error:
+    except subprocess.TimeoutExpired as error:
+        return _error(f"{Path(str(error.cmd[0])).name} timed out after {error.timeout:g} s on {project}", 1)
+    except ToolError as error:
         return _error(str(error), 1)
 
     try:
@@ -88,8 +95,10 @@ def summary(report: dict, report_path: Path) -> str:
     if report["shared_resource"]:
         resource = " ".join(str(value) for value in report["shared_resource"].values())
         write, read = report["polluter_write_location"], report["victim_read_location"]
-        lines.append(f"  resource:   {resource} (write {_test(write)}@{write['bytecode_offset']}"
-                     f" -> read {_test(read)}@{read['bytecode_offset']})")
+        if write and read:
+            resource += (f" (write {_test(write)}@{write['bytecode_offset']}"
+                         f" -> read {_test(read)}@{read['bytecode_offset']})")
+        lines.append(f"  resource:   {resource}")
     reproduced, alone = report["reproduction"], report["victim_alone"]
     lines.append(f"  reproduced: {reproduced['successes']}/{reproduced['n']} (lower bound "
                  f"{reproduced['lower']:.3f})   alone: {alone['successes']}/{alone['n']}")

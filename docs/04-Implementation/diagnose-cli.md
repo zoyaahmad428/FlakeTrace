@@ -24,8 +24,8 @@ in-process and decides nothing itself:
 | Exit | Meaning |
 | --- | --- |
 | 0 | report written (any outcome, including `UNRESOLVED`) |
-| 2 | input wrong (bad `--victim`, no `pom.xml`, `--n` < 1, records folder inside the project, victim not a test of the project) |
-| 1 | a tool failed (Maven, `java`/`javac`/`mvn` missing, the extractor, javap) |
+| 2 | input wrong (`--victim` not Java `Class#method`, no `pom.xml`, `--n` < 1, records folder inside the project or a file, victim not a test of the project) |
+| 1 | a tool failed (Maven, `java`/`javac`/`mvn` missing, test discovery timed out, the extractor, javap) |
 | 3 | diagnosis ran but no report can be built yet (`NO_SINGLE_POLLUTER`, `NOT_REPRODUCED`) |
 
 ## 2. Why it is built this way
@@ -52,7 +52,8 @@ in-process and decides nothing itself:
 
 - New option: add it in `main()`, pass it through `run_diagnose`, add a fast test in
   `runner/tests/test_cli.py` (`TestInputErrors` style).
-- New known error: catch it **only** around the call that raises it, map it to 1 or 2, and add a
-  `TestToolErrors.check(...)` test.
-- Tests: `py -m unittest -v runner.tests.test_cli` — 11 fast tests (no JVM) and 5 real runs on the
+- New known error: give it its own exception class (like `DiagnoseInputError`, `ToolError`), catch
+  it **only** around the call that raises it, map it to 1 or 2, and add a `TestToolErrors.check(...)`
+  test. Never catch a broad `ValueError`/`RuntimeError`: internal bugs would look like user errors.
+- Tests: `py -m unittest -v runner.tests.test_cli` — 15 fast tests (no JVM) and 5 real runs on the
   fixture (skipped without JDK/Maven unless `FLAKETRACE_REQUIRE_JVM` is set).

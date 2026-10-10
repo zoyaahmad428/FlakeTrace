@@ -386,3 +386,37 @@ suite 73 OK; F1 run by hand.
 README's sample paths; found by reading the file back, fixed, and every edited file scanned.
 
 **What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — W9 final review and fix
+
+**Tool:** Claude Opus 5.5 (author session) + a separate reviewer agent · **Level:** L2
+
+**What was found:** one important issue — broad `ValueError`/`RuntimeError` catching could hide
+internal bugs as user errors; six minors deferred (listed in [[evidence-m2]]).
+
+**What was retained:** `DiagnoseInputError` and `ToolError`; the CLI catches only those; a test
+that failed first on behaviour; ADR-005 and notes updated.
+
+**What was wrong:** another string-escape slip wrote a non-ASCII byte into a test; caught by the
+import error and fixed with `bytes([0xFF])`.
+
+**What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — W9 review minors fixed
+
+**Tool:** Claude Opus 5.5 · **Level:** L2
+
+**What was asked:** Member 2 asked to fix every deferred review minor that could cause a problem later.
+
+**What was retained:** records-is-a-file refused before Maven; victim checked before any record is
+written; Java-name check on `--victim`; discovery timeout → exit 1; `summary()` guard; two summary
+tests. Schema `ValidationError` left as a traceback on purpose (a pipeline bug), recorded in ADR-005.
+
+**How it was verified:** each new test failed first (or, for the leftover-record check, failed when
+the new check was removed); fast tests 25 OK; full runner suite 78 OK.
+
+**What was wrong:** a `\n` escape in generated test code became a real line break (syntax error);
+fixed by editing the file directly. An old stray form-feed character in this log (W6 entry) was
+replaced with the text `\f`.
+
+**What I changed:** *fill after reading the diff.*

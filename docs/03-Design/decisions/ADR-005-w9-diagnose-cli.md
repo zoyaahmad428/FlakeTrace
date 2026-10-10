@@ -51,7 +51,9 @@ No code in `evidence/` or `eval/` changes; the CLI calls only their public funct
 
 ### Flow
 
-1. Parse options; `--victim` must contain `#`; `--project` must contain `pom.xml`.
+1. Parse options; `--victim` must be Java names `Class#method` (letters, digits, `_`, `$`, `.` in the
+   class; no spaces), because it also becomes part of the record's file name; `--project` must
+   contain `pom.xml`.
 2. `runs = diagnose(project, victim, n, record_dir=records)`.
 3. Only if `runs.status == POLLUTER_FOUND`: `Project([target/classes, target/test-classes])`
    (compiled by step 2), `analyse_test` for the polluter and the victim at
@@ -75,12 +77,16 @@ Codes 0/1/2 follow M1's extractor; 3 is new.
 | Code | Meaning | Raised by |
 | --- | --- | --- |
 | 0 | report written — **any** outcome, including `UNRESOLVED` | — |
-| 2 | input is wrong | option checks in step 1; a `ValueError` from `diagnose()` (`n < 1`, records folder inside the project, victim not among the project's tests) |
-| 1 | the tool could not do its job | Maven failing (`CalledProcessError`), a missing `java`/`javac`/`mvn` or harness compile failure (`RuntimeError` from `runner.order_runner`), any `ExtractError` (the runner already ran these tests, so the extractor failing on them is a tool problem, whatever its own code), a report failing schema validation |
+| 2 | input is wrong | option checks in step 1; a `DiagnoseInputError` from `diagnose()` (`n < 1`, records folder inside the project or a file, victim not among the project's tests, checked before any record is written) |
+| 1 | the tool could not do its job | Maven failing (`CalledProcessError`), test discovery hanging past the timeout (`TimeoutExpired`), a missing `java`/`javac`/`mvn` or harness compile failure (`ToolError` from `runner.order_runner`), any `ExtractError` (the runner already ran these tests, so the extractor failing on them is a tool problem, whatever its own code), a report failing schema validation |
 | 3 | diagnosis ran, no report can be built yet | `UnhandledStatus` |
 
 Known errors print one line, `error: <what and what to do>`, on stderr, with no traceback. The
-exceptions above are caught only around the call that raises them. **Unexpected exceptions are not
+exceptions above are caught only around the call that raises them. `DiagnoseInputError` (a
+`ValueError`) and `ToolError` (a `RuntimeError`) are dedicated classes, so an internal `ValueError`
+or `RuntimeError` (e.g. `run_ordered`'s duplicate-test check) is not mistaken for a user error
+(final-review finding, 2026-10-10). A report failing schema validation exits 1 with a traceback:
+that is a bug in the pipeline, not a known error. **Unexpected exceptions are not
 caught**: Python prints the traceback and exits 1, so an unforeseen bug stays visible.
 
 A source change detected by the integrity check is a finding, not an error: the report says
