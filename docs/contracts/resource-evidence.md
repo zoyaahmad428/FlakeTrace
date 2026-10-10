@@ -296,7 +296,15 @@ Example: F2 at depth 2 projects to `shared_resource = {kind: "system-property", 
    pointer field, e.g. `resource_evidence_reference` (path to this component's
    JSON), like `execution_record_reference`. Option (b) is a schema change
    (the schema sets `additionalProperties: false`).
-2. **OPEN (Member 3).** **`victim_read_location` may name a non-test class** at depth > 1 (F2:
+2. **ANSWERED (Member 3, 2026-10-10): yes, that is the intended meaning.** `victim_read_location`
+   names where the read bytecode instruction actually executes, even inside a helper (F2:
+   `odfixture.FeatureFlags#isTurboEnabled@2`), not the call site in the test method. This is
+   more useful to a developer fixing the bug — it is literally where the read happens — and
+   matches `polluter_write_location`'s own meaning symmetrically. The test method's call site
+   is still recoverable from the full `call_path` in Output 2, for anyone who wants it; the
+   singular report field just doesn't repeat it. No code or schema change needed — this
+   confirms `eval/report.py`'s existing behaviour (it takes `report_fields`'s locations as-is).
+   Original question: **`victim_read_location` may name a non-test class** at depth > 1 (F2:
    `odfixture.FeatureFlags#isTurboEnabled@2`). Is that the intended meaning
    ("where exactly the victim reads"), or should it name the call site in the
    test method (the first `call_path` frame)?
@@ -308,11 +316,31 @@ Example: F2 at depth 2 projects to `shared_resource = {kind: "system-property", 
    `odfixture.Toggles#flagA`, and the B pair one on `#flagB`. Could F3 list
    one `shared_resource` per polluter (e.g. a list), so the comparison can be
    automatic?
-4. **OPEN (Member 3).** **Ground truth has no expected locations**, so the automatic Phase 5 check
+4. **ANSWERED (Member 3, 2026-10-10): yes, acceptable.** Resources-only automatic comparison
+   plus hand-verified offsets is enough evidence for Iteration 1: `GroundTruthTest` already
+   catches a wrong or missing *resource* automatically on every change (156 pairs, exact
+   match), which is the failure mode that actually matters (wrong field = wrong diagnosis).
+   Exact bytecode offsets were hand-verified for F1 (`javap -c -p`, write 1, read 1,
+   `eval/examples/example_f1_verified.json`) and spot-checked for F2
+   (`FeatureFlags.isTurboEnabled@2`, confirmed independently by Member 1 against
+   `eval/reports/f2.json`). Encoding exact offsets into `ground_truth.json` for every case
+   would be brittle (any unrelated line-number shift in the fixture source breaks it) for
+   little extra protection beyond what the resource check and spot-checks already give.
+   Original question: **Ground truth has no expected locations**, so the automatic Phase 5 check
    can compare resources only. Offsets will be checked by hand against
    `javap`. Is that acceptable?
 5. **Illustrative offsets. RESOLVED 2026-10-09.** Member 3 verified the real JDK 8 offsets independently with `javap -c -p` (write 1, read 1) and updated `eval/examples/example_f1_verified.json` (commit `af70048`, PR #7). Earlier examples labelled illustrative are still not authoritative; this component does not produce them yet.
-6. **OPEN (Member 3).** **BRITTLE cases (POC FJ-01).** In the POC the "victim" fails alone and passes
+6. **ANSWERED (Member 3, 2026-10-10): out of scope for Iteration 1, same boundary as filesystem
+   evidence.** No fixture case exercises the brittle shape (victim fails alone, passes after a
+   state-setter), so there is no real case driving a new outcome category, and inventing one
+   under schedule pressure risks a category nobody has tested end to end. `eval/outcome.py`'s
+   decision table reporting a brittle case as `UNRESOLVED(VICTIM_FAILS_ALONE)` is not wrong for
+   Iteration 1 — it correctly reports that the victim fails alone, which is true — it is just
+   not the *most informative* category for that specific mechanism. If a real brittle case
+   turns up in evaluation (e.g. a fastjson pair), it is reported this way and the limitation is
+   named, not worked around. A distinct outcome/reason for brittle cases is a candidate for
+   Iteration 2, alongside the resource-family expansion already planned there.
+   Original question: **BRITTLE cases (POC FJ-01).** In the POC the "victim" fails alone and passes
    after a *state-setter* (`DateFieldTest8`). The resource edge has the same
    write-then-read shape, but the decision table would yield
    `UNRESOLVED(VICTIM_FAILS_ALONE)`. Does Iteration 1 include brittle cases,

@@ -140,4 +140,4 @@ A source change detected by the integrity check is a finding, not an error: the 
 | --- | --- | --- |
 | M1 | ☑ | Agreed 2026-10-10: in-process calls to `analyse_test`/`find_edges`/`report_fields` at `DEFAULT_DEPTH`, as in `runner/cli.py`. Note: the contract fixes the *default* depth (2) and accepts 1–3; it does not fix the depth. If ADR-006 is agreed, switch the three calls to `analyse_pair` |
 | M2 | ☑ | Chose approach 1, exit-3 handling and the deferred `flaketrace` install on 2026-10-10 |
-| M3 | ☐ | catching `UnhandledStatus`; `assemble_report(runs, fields)` as the only report builder |
+| M3 | ☑ | Agreed 2026-10-10 — catching `UnhandledStatus`; `assemble_report(runs, fields)` as the only report builder |
