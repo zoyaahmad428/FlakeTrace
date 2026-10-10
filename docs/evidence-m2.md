@@ -579,3 +579,10 @@ the shown edge. Member 3's PR #38 added an optional `any_edge_found` flag to `as
   The F3 report shows write `setFlagA@1`, read `expectsNotBothFlagsSet@0` — match. (Promised in a
   comment on PR #31, contract question 4.)
 - Full runner suite: `Ran 104 tests in 246.800s — OK`.
+
+### 2026-10-10 — W10 CI result
+
+- W10 PR (`m2/w10-minimise`, commit `539b2dc`): job `runner` (JDK 8, Linux) -> `Ran 104 tests in 114.111s — OK`
+  (line copied from the job log by Member 2). Same count as locally, so ddmin, the re-check, the
+  per-polluter `analyse_pair` and the real F3 report also pass on Linux/JDK 8. Claim E14 now cites it;
+  it stays OPEN until Member 1 and Member 3 confirm ADR-007.
