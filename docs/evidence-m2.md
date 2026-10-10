@@ -604,3 +604,5 @@ when `ddmin` found the polluters it says how far the order was shrunk and that t
   → exit 0, `VERIFIED`, new line `minimised:  12 earlier tests -> 2 polluters in 10 runs (1-minimal, not
   necessarily the minimum)`. F1/F2/N1 summaries unchanged (no `ddmin`).
 - Full runner suite: `Ran 106 tests in 230.261s — OK`.
+- CI on the PR (`m2/w10-summary`, commit `478d3ac`): job `runner` (JDK 8, Linux) -> `Ran 106 tests in 110.675s — OK`
+  (line copied from the job log by Member 2).
