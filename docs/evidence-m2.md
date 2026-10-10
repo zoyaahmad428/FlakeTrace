@@ -347,3 +347,5 @@ own JUnitCore harness (ADR-003). Member 1 suggested new wording.
 - Docs: claim E1 and its source `docs/02-Requirements/scope-boundary.md` (Surefire removed, Maven
   for build and classpath, JUnitCore), `runner/README.md` limitations.
 - Limitation: the "Linux container" part of E1 is a committed target; nothing runs in one yet.
+- CI on the E1 PR (`m2/e1-junit3`): job `runner` (JDK 8, Linux) → `Ran 59 tests in 64.239s — OK`
+  (line copied from the job log by Member 2), so the JUnit 3 test also passes on Linux/JDK 8.
