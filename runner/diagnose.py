@@ -3,6 +3,9 @@ polluter, repeat the sequence, check source integrity, record every run. When no
 enough, ddmin shrinks the tests before the victim to a 1-minimal set (W10, ADR-007). Returns raw
 counts; the verdict is M3's eval.outcome.decide() (W9 builds the report)."""
 
+import platform
+import shutil
+import subprocess
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
@@ -125,11 +128,26 @@ def diagnose(
     record = Path(record_dir) / f"{started.strftime('%Y%m%dT%H%M%SZ')}-{victim}.jsonl"
     recorder = RecordingRunner(runner, record, {
         "victim": str(victim), "n": n, "project": str(project),
-        "java_version": java_version(), "started": started.isoformat(),
+        "java_version": java_version(), "started": started.isoformat(), **environment(project),
     })
     result = run_steps(recorder, order, victim, n, priority)
     return replace(result, source_integrity=compare(before, snapshot(project)),
                    execution_record=str(record))
+
+
+def environment(project: Path) -> dict:
+    """Execution-record facts for panel action A7: the analysed project's git commit, whether it had
+    uncommitted changes, and the OS. Commit and dirty are None when the project is not in a git
+    repository or git is missing -- unknown provenance never stops a diagnosis."""
+    commit = dirty = None
+    git = shutil.which("git")
+    if git:
+        head = subprocess.run([git, "-C", str(project), "rev-parse", "HEAD"], capture_output=True, text=True)
+        status = subprocess.run([git, "-C", str(project), "status", "--porcelain", "--", "."],
+                                capture_output=True, text=True)
+        if head.returncode == 0 and status.returncode == 0:
+            commit, dirty = head.stdout.strip(), bool(status.stdout.strip())
+    return {"project_commit": commit, "project_dirty": dirty, "os": platform.platform()}
 
 
 def _label(runner, step: str) -> None:

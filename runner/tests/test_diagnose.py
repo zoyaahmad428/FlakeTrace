@@ -1,6 +1,8 @@
 import json
 import os
+import platform
 import shutil
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -15,6 +17,7 @@ from runner.diagnose import (
     VICTIM_FAILS_ALONE,
     DiagnoseInputError,
     diagnose,
+    environment,
     run_steps,
 )
 
@@ -141,6 +144,29 @@ class TestRunSteps(unittest.TestCase):
         self.assertEqual((runs.sequence_n, runs.sequence_successes, runs.sequence_any_failures), (3, 0, 3))
 
 
+class TestEnvironment(unittest.TestCase):
+    """Panel action A7: each execution record names the project's commit and the OS."""
+
+    def test_folder_without_git_records_unknown_commit_and_still_names_the_os(self):
+        folder = Path(tempfile.mkdtemp(prefix="flaketrace-nogit-"))
+        env = environment(folder)
+        self.assertEqual((env["project_commit"], env["project_dirty"]), (None, None))
+        self.assertEqual(env["os"], platform.platform())
+
+    @unittest.skipUnless(shutil.which("git"), "git not on PATH")
+    def test_git_project_records_its_commit_and_whether_it_has_uncommitted_changes(self):
+        repo = Path(tempfile.mkdtemp(prefix="flaketrace-git-"))
+        git = ["git", "-C", str(repo), "-c", "user.name=t", "-c", "user.email=t@t"]
+        subprocess.run(["git", "init", "-q", str(repo)], check=True)
+        (repo / "A.java").write_text("class A {}", encoding="utf-8")
+        subprocess.run(git + ["add", "A.java"], check=True)
+        subprocess.run(git + ["commit", "-q", "-m", "one"], check=True)
+        head = subprocess.run(git + ["rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
+        self.assertEqual((environment(repo)["project_commit"], environment(repo)["project_dirty"]), (head, False))
+        (repo / "A.java").write_text("class A { int x; }", encoding="utf-8")
+        self.assertTrue(environment(repo)["project_dirty"])
+
+
 class TestDiagnoseOnFixture(unittest.TestCase):
     """Real JVM runs on fixtures/od-fixture, checked against ground_truth.json."""
 
@@ -176,6 +202,10 @@ class TestDiagnoseOnFixture(unittest.TestCase):
         self.assertEqual((runs.alone_successes, runs.alone_n), (0, 20))
         record = Path(runs.execution_record).read_text(encoding="utf-8").splitlines()
         self.assertEqual(len(record), 1 + 1 + 20 + runs.search_runs + 20)
+        header = json.loads(record[0])
+        self.assertRegex(header["project_commit"], r"^[0-9a-f]{40}$")
+        self.assertIsInstance(header["project_dirty"], bool)
+        self.assertEqual(header["os"], platform.platform())
 
     def test_f2_single_system_property_polluter(self):
         runs = self.diagnose_case("F2", n=5)
