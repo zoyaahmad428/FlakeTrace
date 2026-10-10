@@ -105,4 +105,4 @@ In [docs/contracts/resource-evidence.md](../../contracts/resource-evidence.md):
 | --- | --- | --- |
 | M1 | ☑ | Chose auto-deepening with range 1–5 on 2026-10-10 |
 | M2 | ☐ | |
-| M3 | ☐ | |
+| M3 | ☑ | Agree 2026-10-10. Shallowest-edge-wins auto-deepening explains both real fastjson cases without moving the default or paying depth-5 cost on F1/F2/F3; will switch `eval/report.py`/`eval/tools/run_w9_integration.py` to `analyse_pair` once it lands |
