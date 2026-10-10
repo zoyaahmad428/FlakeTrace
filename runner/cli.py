@@ -11,6 +11,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+from typing import Optional, Tuple
 
 from eval.baseline import TestIdentifier
 from eval.report import UnhandledStatus, assemble_report
@@ -74,7 +75,8 @@ def run_diagnose(project: Path, victim_id: str, n: int, records: str) -> int:
 
     report_path = Path(runs.execution_record).with_suffix(".report.json")
     report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-    print(summary(report, report_path))
+    ddmin_ran = runs.minimise_runs and runs.polluters
+    print(summary(report, report_path, (len(runs.original_order) - 1, runs.minimise_runs) if ddmin_ran else None))
     return 0
 
 
@@ -118,11 +120,18 @@ def _depth_note(edge: dict) -> str:
     return f" (evidence at depth {depth}, above the default {DEFAULT_DEPTH})" if depth > DEFAULT_DEPTH else ""
 
 
-def summary(report: dict, report_path: Path) -> str:
+def summary(report: dict, report_path: Path, minimised: Optional[Tuple[int, int]] = None) -> str:
+    """`minimised` = (earlier tests, ddmin runs) when ddmin found the polluters (ADR-007); the report's
+    schema has no field for it, so only the summary says how far the order was shrunk."""
     reason = f" ({report['unresolved_reason']})" if report["unresolved_reason"] else ""
     lines = [f"{report['outcome']}{reason}  {_test(report['victim'])}"]
     if report["polluters"]:
         lines.append("  polluter:   " + ", ".join(_test(p) for p in report["polluters"]))
+    if minimised:
+        earlier, runs = minimised
+        count = len(report["polluters"])
+        lines.append(f"  minimised:  {earlier} earlier tests -> {count} polluter{'s' if count != 1 else ''} "
+                     f"in {runs} runs (1-minimal, not necessarily the minimum)")
     if report["shared_resource"]:
         resource = " ".join(str(value) for value in report["shared_resource"].values())
         write, read = report["polluter_write_location"], report["victim_read_location"]

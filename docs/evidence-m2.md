@@ -586,3 +586,23 @@ the shown edge. Member 3's PR #38 added an optional `any_edge_found` flag to `as
   (line copied from the job log by Member 2). Same count as locally, so ddmin, the re-check, the
   per-polluter `analyse_pair` and the real F3 report also pass on Linux/JDK 8. Claim E14 now cites it;
   it stays OPEN until Member 1 and Member 3 confirm ADR-007.
+
+### 2026-10-10 — W10 follow-up: minimisation shown in the command's summary
+
+**Requirement:** the deferred W10 review minor — `minimise_runs` reached neither the report nor the
+summary. The report has no field for it (schema, Member 3's contract), so only the summary changes:
+when `ddmin` found the polluters it says how far the order was shrunk and that the result is
+1-minimal, not necessarily the minimum (`parameter-provenance.md`).
+- File: `runner/cli.py` — `summary(report, report_path, minimised=None)`; `run_diagnose` passes
+  `(earlier tests, minimise_runs)` only when `minimise_runs > 0` and polluters were found.
+- Tests first: `test_summary_names_the_minimisation_when_ddmin_ran`,
+  `test_command_shows_the_minimisation_only_when_ddmin_found_polluters` → before the code
+  `TypeError: summary() got an unexpected keyword argument 'minimised'` and the line not found; after → OK.
+  The real F3 CLI test also checks the line.
+- By hand (local Windows, JDK 21.0.9):
+  `py -m runner diagnose --project fixtures/od-fixture --victim odfixture.ToggleVictimTest#expectsNotBothFlagsSet`
+  → exit 0, `VERIFIED`, new line `minimised:  12 earlier tests -> 2 polluters in 10 runs (1-minimal, not
+  necessarily the minimum)`. F1/F2/N1 summaries unchanged (no `ddmin`).
+- Full runner suite: `Ran 106 tests in 230.261s — OK`.
+- CI on the PR (`m2/w10-summary`, commit `478d3ac`): job `runner` (JDK 8, Linux) -> `Ran 106 tests in 110.675s — OK`
+  (line copied from the job log by Member 2).
