@@ -586,3 +586,24 @@ the shown edge. Member 3's PR #38 added an optional `any_edge_found` flag to `as
   (line copied from the job log by Member 2). Same count as locally, so ddmin, the re-check, the
   per-polluter `analyse_pair` and the real F3 report also pass on Linux/JDK 8. Claim E14 now cites it;
   it stays OPEN until Member 1 and Member 3 confirm ADR-007.
+
+### 2026-10-10 — Panel action A7: commit and OS in the execution record
+
+**Requirement:** panel action A7 — "each run records commit, test order, JDK, OS/container, seed,
+timestamps". Order (every run line), JDK and timestamps were already recorded; the analysed project's
+commit and the OS were not.
+- File: `runner/diagnose.py` — `environment(project)` returns `project_commit` (`git rev-parse HEAD` in
+  the project folder), `project_dirty` (`git status --porcelain -- .` not empty) and `os`
+  (`platform.platform()`); commit/dirty are `None` when the project is not in a git repository or git
+  is missing, and the diagnosis carries on. `diagnose()` adds them to the record header.
+- Tests first (`runner/tests/test_diagnose.py`): `TestEnvironment` (a folder without git → `None`,
+  `None`, the OS; a temp git repo → its commit and `dirty` false, then true after an edit) and the real
+  F1 test now checks the header → before the code `ImportError: cannot import name 'environment'`;
+  after → OK.
+- Mutation checks: header without the fields → F1 test `KeyError: 'project_commit'`; `dirty` always
+  false → the git test FAILED (`False is not true`); both restored.
+- Real header (F1 by hand, local Windows, JDK 21.0.9): `"project_commit": "15c8a3388f22d3e3a2cac1b3945b701187d45e93"`
+  (= `git rev-parse HEAD`), `"project_dirty": false`, `"os": "Windows-11-10.0.26200-SP0"`.
+- Full runner suite (branch from main, without the summary PR): `Ran 106 tests in 230.811s — OK`.
+- Not applicable, stated rather than faked: **container** (nothing runs in one yet; the Linux container is
+  a committed target, claim E1) and **seed** (the runner never shuffles; orders are discovered or given).

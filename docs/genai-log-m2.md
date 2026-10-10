@@ -530,3 +530,16 @@ for the product, then switch the command to `analyse_pair` (ADR-006 follow-up).
 polluters and would have let a deep edge on a second polluter go unmarked in the report.
 
 **What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — Panel action A7: commit and OS in the execution record
+
+**Tool:** Claude Opus 5.5 · **Level:** L2
+
+**What was asked:** make panel action A7 true before marking it complete.
+
+**What was retained:** `environment(project)` and its use in the record header; two tests plus the F1
+header check, all failing first; two mutation checks.
+
+**What was rejected:** recording a dummy seed or container — neither exists, so the docs say so.
+
+**What I changed:** *fill after reading the diff.*

@@ -16,7 +16,7 @@ verdict stays with M3's `decide()`, so the statistics and decision rules live in
 | Module | Job |
 | --- | --- |
 | `integrity.py` | SHA-256 of every project file except `target/`, `.git/`, before and after |
-| `recording.py` | `RecordingRunner` writes each run as one JSON line, immediately |
+| `recording.py` | `RecordingRunner` writes each run as one JSON line, immediately; the header also names the project's git commit, whether it had uncommitted changes, and the OS (`environment()`, panel action A7) |
 | `discovery.py` | Surefire-like class list; methods from JUnit (`FtHarness --list`) |
 | `search.py` | `reproduce` (reference signature), `find_polluter` (one-by-one) |
 | `minimise.py` | `ddmin` — when no single test is enough, shrinks the tests before the victim to a 1-minimal set (W10, ADR-007) |
