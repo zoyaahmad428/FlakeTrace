@@ -465,3 +465,20 @@ step made 7 fail; full runner suite 91 OK.
 on the fake is 25 (recorded, not the guess).
 
 **What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — W10 Task 2: minimise in `run_steps`
+
+**Tool:** Claude Opus 5.5 · **Level:** L2
+
+**What was asked:** Task 2 of the W10 plan.
+
+**What was retained:** step 4 in `run_steps`, `minimise_runs`, the `"minimise"` record step, three
+`run_steps` tests, the real F3 test, docs (README status table, diagnosis-runs note).
+
+**How it was verified:** tests failed first on behaviour; real F3 found exactly the ground-truth
+polluters (9 minimise runs); full suite 93 OK.
+
+**What was wrong:** the plan updated the CLI's F3 test only in Task 3, so Task 2 broke it; caught by
+predicting the full-suite result, fixed in Task 2 (ruling in the ledger).
+
+**What I changed:** *fill after reading the diff.*

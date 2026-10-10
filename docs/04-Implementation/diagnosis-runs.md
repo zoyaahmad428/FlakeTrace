@@ -19,6 +19,7 @@ verdict stays with M3's `decide()`, so the statistics and decision rules live in
 | `recording.py` | `RecordingRunner` writes each run as one JSON line, immediately |
 | `discovery.py` | Surefire-like class list; methods from JUnit (`FtHarness --list`) |
 | `search.py` | `reproduce` (reference signature), `find_polluter` (one-by-one) |
+| `minimise.py` | `ddmin` — when no single test is enough, shrinks the tests before the victim to a 1-minimal set (W10, ADR-007) |
 | `verify.py` | `repeat` ×n → matching and any-signature counts |
 | `diagnose.py` | `run_steps` (logic, testable with a fake runner) + `diagnose` (real wiring) |
 
@@ -39,7 +40,9 @@ verdict stays with M3's `decide()`, so the statistics and decision rules live in
 
 ## 3. What breaks
 
-- **More than one polluter needed** (F3) → `NO_SINGLE_POLLUTER`; nothing is guessed — W10 minimises.
+- **More than one polluter needed** (F3) → `ddmin` finds a 1-minimal set (F3: `setFlagA`, `setFlagB`, 9 runs) →
+  `POLLUTER_FOUND` with several polluters. `NO_SINGLE_POLLUTER` is left only for a victim that is first in
+  the order. Each `ddmin` check is one run, so a flaky check can keep a bystander; verify ×n exposes it.
 - **A rarely-failing flaky victim** can pass all `n` alone runs by chance and then fail during
   the search, giving a spurious polluter; the verify counts expose it (few matches of `n`), so
   `decide()` can at most say `CANDIDATE`.
@@ -57,9 +60,9 @@ verdict stays with M3's `decide()`, so the statistics and decision rules live in
 
 ## 4. How to modify it
 
-- **Add bisection for W10**: write it as a new function next to `find_polluter` and call it in
-  `run_steps` where `polluter is None`; `DiagnosisRuns` already carries `NO_SINGLE_POLLUTER` and
-  the original order, and `test_two_polluters_needed_repeats_the_original_order` shows the shape.
+- **Change the minimiser**: `ddmin` in `minimise.py` takes any runner, so try changes against
+  `runner/tests/test_minimise.py` (fake runner) first; `run_steps` calls it only when `find_polluter`
+  returns `None` and the prefix is not empty.
 - **Change the default `n`**: the `n=20` default of `diagnose`; also update ADR-004 and the
   report (it is open question I3, agreed with M3).
 - **Add a step**: set `_label(runner, "<step>")` before its runs so the execution record names

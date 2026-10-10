@@ -478,3 +478,19 @@ own JUnitCore harness (ADR-003). Member 1 suggested new wording.
   1-minimality); restored from a copy → 11 OK.
 - Full runner suite: `Ran 91 tests in 221.797s — OK`.
 - Limitation: not wired into `diagnose()` yet (Task 2).
+
+### 2026-10-10 — W10 Task 2: `run_steps` minimises when no single polluter is found
+
+- File: `runner/diagnose.py` — step 4 calls `ddmin` when `find_polluter` returns nothing and the
+  prefix is not empty; `POLLUTER_FOUND` with one or more polluters; new `minimise_runs`; record step
+  `"minimise"`.
+- Tests first (`runner/tests/test_diagnose.py`): `py -m unittest runner.tests.test_diagnose.TestRunSteps`
+  → `FAILED (failures=2, errors=1)`: `'NO_SINGLE_POLLUTER' != 'POLLUTER_FOUND'`, `'minimise' not found
+  in [...]`, `no attribute 'minimise_runs'`. After the code → 12 OK.
+- Real F3 (local Windows, JDK 21.0.9, `diagnose(..., n=5)`): `POLLUTER_FOUND`, polluters
+  `ToggleAPolluterTest#setFlagA`, `ToggleBPolluterTest#setFlagB` (= ground truth); search 12 runs,
+  **minimise 9 runs**, verify 5/5, alone 0/5, source integrity passed.
+- The full suite then showed one failure the plan had not foreseen: `test_cli`'s F3 test still
+  expected exit 3 (`0 != 3`) — F3 now gets a report. Updated in this task (exit 0, `VERIFIED`, both
+  polluters, `flagA`) → `Ran 1 test in 34.227s — OK`.
+- Full runner suite: `Ran 93 tests in 245.061s — OK`. `git status --short fixtures/` empty.

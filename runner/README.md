@@ -93,6 +93,7 @@ one; each has its own tests in `runner/tests/`.
 | `recording.py` | `RecordingRunner(runner, path, header)` wraps any runner; set `.step` before a phase; every JVM run is appended as one JSON line (step, order, outcomes with signatures, start, seconds) — line 1 is the header. Records go to `flaketrace-records/` (git-ignored) | done |
 | `discovery.py` | `discover_order(runner, target/test-classes)`: classes matching Surefire's default includes (`Test*`, `*Test`, `*Tests`, `*TestCase`, no `$`), sorted by full name; methods from JUnit via `java FtHarness --list <file>` (stdin: class names; file: `Class#method` lines). Surefire's default `runOrder` is `filesystem` — pass an explicit order for such projects | done |
 | `search.py`, `verify.py` | `reproduce` — run the original order until the victim fails; that failure is the reference signature (a `flaketrace.*` crash/timeout/skip never is). `find_polluter` — `[candidate, victim]` once per earlier test, `priority` first; first match wins. `repeat` — n runs → (matching, any-signature) victim failures | done |
+| `minimise.py` | `ddmin(runner, prefix, victim, reference)` → 1-minimal subset of the tests before the victim and the runs used; only the reference failure counts, each subset runs at most once (W10, ADR-007) | done |
 | `diagnose.py` | `diagnose(project, victim, n=20)` → `DiagnosisRuns` (raw counts, no verdict); `run_steps(runner, order, victim, n)` is the same logic on any runner | done |
 
 ```python
@@ -108,9 +109,9 @@ runs.source_integrity.passed, runs.execution_record   # flaketrace-records/<time
 
 | `status` | Meaning | `sequence` that was repeated |
 | --- | --- | --- |
-| `POLLUTER_FOUND` | one earlier test makes the victim fail with the reference signature | `[polluter, victim]` |
+| `POLLUTER_FOUND` | one earlier test makes the victim fail with the reference signature — or, when none does alone, `ddmin` found a 1-minimal set of earlier tests that does (F3) | `polluters + [victim]` |
 | `VICTIM_FAILS_ALONE` | the victim reproduced its failure with nothing before it — no polluter is blamed | `[victim]` (counts = alone counts) |
-| `NO_SINGLE_POLLUTER` | the original order fails but no single earlier test does (e.g. F3) — for W10 | the original order |
+| `NO_SINGLE_POLLUTER` | the victim is first in the order, so there is nothing before it to minimise (only with flakiness) | the original order |
 | `NOT_REPRODUCED` | the victim never failed with a real failure in `n` runs of the original order (crashes/timeouts are counted in `sequence_any_failures`); alone check not run (`alone_n = 0`) | the original order |
 
 ## Command line (W9)

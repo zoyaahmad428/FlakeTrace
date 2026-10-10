@@ -231,11 +231,13 @@ class TestCliOnFixture(unittest.TestCase):
         self.assertEqual(report["victim_read_location"],
                          {"class": "odfixture.FeatureFlags", "method": "isTurboEnabled", "bytecode_offset": 2})
 
-    def test_f3_has_no_report_yet(self):
-        code, out, _, report = self.diagnose("odfixture.ToggleVictimTest#expectsNotBothFlagsSet", 3)
-        self.assertEqual(code, 3)
-        self.assertIn("No report: NO_SINGLE_POLLUTER", out)
-        self.assertIsNone(report)
+    def test_f3_two_polluters_verified(self):
+        code, out, err, report = self.diagnose("odfixture.ToggleVictimTest#expectsNotBothFlagsSet", 20)
+        self.assertEqual(code, 0, err)
+        self.assertEqual(report["outcome"], "VERIFIED")
+        self.assertEqual(report["polluters"], [{"class": "odfixture.ToggleAPolluterTest", "method": "setFlagA"},
+                                               {"class": "odfixture.ToggleBPolluterTest", "method": "setFlagB"}])
+        self.assertEqual(report["shared_resource"], {"kind": "static-field", "class": "odfixture.Toggles", "field": "flagA"})
 
     def test_n1_fails_alone(self):
         code, _, err, report = self.diagnose("odfixture.NegativeAloneFailTest#alwaysFails", 5)
