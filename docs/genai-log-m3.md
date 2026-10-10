@@ -509,3 +509,45 @@ before claiming it as your contribution. In particular, be able to explain witho
 `diagnose()`'s internal `.resolve()` call (line 93) is unrelated to the path it actually
 returns (line 103), and why `--depth` controls how many call-levels the extractor follows
 rather than something about the resource type.
+
+## 2026-10-10 — Full docs review, then add N2 to the real pipeline
+
+**What I asked:** Asked to read through the whole `docs/` folder and the real code (not just
+trust the docs) to work out what M1 and M2 have actually finished, what's genuinely still
+open, and what I should pick up next against the iteration plan — then told to go ahead with
+the one concrete opportunity found: N2.
+
+**What was retained:** The finding itself, reached by cross-checking doc claims against real
+code and real PR/API state rather than accepting either alone: N2 no longer needs
+`NOT_REPRODUCED` handling (the real interface gap `assemble_report` deliberately doesn't
+cover) because Member 2's own evidence log already shows it reliably giving
+`VICTIM_FAILS_ALONE` on every platform tested, post mechanism-fix — a status my code already
+handles. Also retained: three stale doc claims found during the same read (`members.md`'s and
+`demo-plan.md`'s "not built yet"/"not wired in" lines for W9, both already done in an earlier
+session) and fixed them in the same pass rather than leaving them for later.
+
+**What I changed:** Nothing rejected — my own proposal (add N2), confirmed against real
+evidence before touching any code, then implemented exactly as scoped (no new production
+logic, just one more case in the integration script, matching `run_n1`'s shape).
+
+**How it was verified:**
+- Checked Member 2's real evidence first (`docs/evidence-m2.md`'s 2026-10-10 N2 entry: 3 real
+  `diagnose()` runs, all `VICTIM_FAILS_ALONE`) before assuming the status would match.
+- `py -m unittest discover -s eval/tests -v` → 68/68 passed (unaffected by this change, as
+  expected — pure-logic tests, no integration-script call).
+- `py eval/tools/run_w9_integration.py` (real Maven/JDK 24 run) → N2 → real
+  `UNRESOLVED(VICTIM_FAILS_ALONE)`, 12/20 alone-successes, matching the ~50% rate measured on
+  both platforms after the mechanism fix. F1/F2/N1 unchanged.
+
+**Errors found:** None in the code — this was a genuine, previously-unexploited unlock, not a
+bug fix. The three stale doc claims (found while updating docs for this change, not asked
+about) were real, though low-stakes — they described W9/the extractor wiring as not built
+when both had been done.
+
+**Rejections:** None.
+
+Ownership checkpoint: you need to understand and verify this implementation
+before claiming it as your contribution. Be able to explain why N2's status changed from
+`NOT_REPRODUCED` to `VICTIM_FAILS_ALONE` across the mechanism fix (it's about what the
+isolation check observes, not about `assemble_report`), and why that specific status was
+already handled while `NOT_REPRODUCED` and `NO_SINGLE_POLLUTER` still are not.
