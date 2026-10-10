@@ -935,3 +935,51 @@ same day.
 - Limitation: none introduced. This only removes a dependency on the now-deleted separate
   `analyse_test`+`find_edges` call pattern; fastjson still has not been run through the full
   `diagnose()` pipeline (only through the extractor, as before).
+
+## 2026-10-10 — Fix a real contradiction Member 2 found in W10's evidence wording (PR #35)
+
+**Requirement:** Member 2's W10 PR (#35, F3 now `VERIFIED` end to end via `ddmin` minimisation)
+flagged a real bug against `eval/report.py`: their new multi-polluter combining function
+(`runner/cli.py`'s `combine_fields`, on branch `m2/w10-minimise`) can set
+`shared_resource=None` (because not every polluter has an edge, so none is shown as the
+primary resource) while its own `limitations` already name which specific polluters *did*
+have an edge. `assemble_report`'s unconditional "No polluter-write/victim-read resource edge
+was found by static analysis" line, appended whenever `shared_resource is None`, directly
+contradicts those specific lines.
+
+- Read the real diff before fixing anything: `git diff origin/main...origin/m2/w10-minimise --
+  runner/cli.py` on `m2/w10-minimise` commit `8a16388`. Confirmed the exact shape:
+  `combine_fields`'s "not every polluter has evidence" branch returns
+  `dict(fields[0], shared_resource=None, ..., limitations=lines + found + missing)` where
+  `found`/`missing` already say, per polluter, whether its edge was found.
+- File/function: `eval/report.py` — `assemble_report` now reads an optional
+  `any_edge_found: bool` key from `resource_fields` (defaulting to the old
+  `shared_resource is not None` check when the key is absent, so M1's ordinary
+  single-polluter `report_fields()` output, which never sets this key, is completely
+  unaffected). The generic blanket line is now gated on `any_edge_found`, not `edge_found`.
+  `edge_found` itself is unchanged and still drives `DecisionInput.resource_edge_exists` (the
+  VERIFIED/NO_SUPPORTED_RESOURCE_EVIDENCE decision) — only the limitations *text* changes, not
+  the outcome logic, which already matches ADR-007's rule ("VERIFIED only if every polluter has
+  an edge") with no change needed.
+- File/function: `eval/tests/test_report.py` — two new tests:
+  `test_several_polluters_partial_evidence_suppresses_the_generic_no_edge_line` (some edge
+  found, `any_edge_found=True` → generic line absent, specific lines present) and
+  `test_several_polluters_zero_evidence_keeps_the_generic_no_edge_line` (`any_edge_found=False`
+  → generic line present, correctly). Strengthened the existing
+  `test_polluter_found_without_edge_gives_no_supported_resource_evidence` to assert the
+  generic line is still present for the plain single-polluter case (backward compatibility).
+- Mutation check: changed `if not any_edge_found:` back to `if not edge_found:` — the new
+  partial-evidence test failed exactly as expected, reproducing the contradiction verbatim
+  (`'...found by static analysis.' unexpectedly found in [...]`); restored
+  (`git diff eval/report.py` clean after).
+- Command: `py -m unittest discover -s eval/tests -v`. Result: **70/70 passed** (68 existing +
+  2 new).
+- Limitation: this only fixes the wording contradiction in `eval/report.py`. It does not land
+  M2's `combine_fields` change itself (`runner/cli.py`, their file, still on their own
+  unmerged branch) — their combining function needs one more line once this fix merges:
+  `any_edge_found=bool(found)` added to the returned dict in the "not every polluter has
+  evidence" branch. Flagged back to Member 2 rather than edited myself (not my folder).
+- Also recorded: agreement with ADR-007's per-polluter report rule (first polluter's resource
+  shown, others named in `limitations`, `VERIFIED` only if every polluter has an edge) as asked
+  in PR #35's description — not yet tickable in the ADR file itself, same situation as
+  ADR-006 before it merged: the file exists only on Member 2's unmerged branch, not `main`.

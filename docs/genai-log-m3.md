@@ -650,3 +650,43 @@ Ownership checkpoint: be able to explain why diffing the regenerated reports aga
 previously committed ones (not just checking the outcome string) is the real proof this change
 was safe — matching outcomes alone would not have caught a silently different resource or
 location.
+
+## 2026-10-10 — Fix the evidence-wording contradiction Member 2 found (W10, PR #35)
+
+**What I asked:** Member 2's W10 pull request (F3 now `VERIFIED` via real `ddmin`
+minimisation) named a concrete bug in my `eval/report.py` and asked for a fix: their new
+multi-polluter combining function can report specific per-polluter findings (some found, some
+not) while my code's generic catch-all statement contradicts them. Asked to read their actual
+diff before designing a fix, not to guess at the shape from the PR description alone.
+
+**What was retained:** My own design for the fix — an optional `any_edge_found` key on the
+`resource_fields` dict, defaulting to the old check when absent, so the ordinary
+single-polluter path (M1's `report_fields()`, which never sets this key) is provably
+unaffected. I chose this over alternatives (e.g.\ string-matching the limitations text, or
+adding a new parameter to `assemble_report`) because it keeps the API surface the same size
+and puts the new information where it naturally belongs — inside the dict that already carries
+per-call resource information.
+
+**What I changed:** Nothing rejected this session — this was my own proposed fix, verified
+before being presented as done.
+
+**How it was verified:**
+- Read Member 2's actual diff (`git diff origin/main...origin/m2/w10-minimise -- runner/cli.py`)
+  before writing anything, to see the exact shape of the contradiction rather than trust the PR
+  description's summary of it.
+- Two new tests plus a strengthened existing one; `py -m unittest discover -s eval/tests -v` →
+  70/70 passed.
+- Mutation check: reverted the fix's condition back to the old check — the new partial-evidence
+  test failed, reproducing the exact contradiction Member 2 described, verbatim in the
+  assertion output. Restored, confirmed `git diff eval/report.py` clean.
+
+**Errors found:** The contradiction itself — found and named by Member 2, not by me;
+confirmed by reading their real diff rather than assumed from the PR description.
+
+**Rejections:** None.
+
+Ownership checkpoint: be able to explain why `edge_found` (which drives the actual
+VERIFIED/NO_SUPPORTED_RESOURCE_EVIDENCE decision) and `any_edge_found` (which only decides
+whether one sentence of text is added) are deliberately two different values that can disagree
+— and why fixing wording, not outcome logic, was the correct scope here; the decision already
+matched ADR-007's rule with no change needed.
