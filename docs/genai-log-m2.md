@@ -543,3 +543,19 @@ header check, all failing first; two mutation checks.
 **What was rejected:** recording a dummy seed or container — neither exists, so the docs say so.
 
 **What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — Panel actions A1, A3, A4, A7 marked complete
+
+**Tool:** Claude Opus 5.5 · **Level:** L2
+
+**What was asked:** update the panel action register for Member 2's actions now that W7–W10 and the
+A7 record change are done.
+
+**What was retained:** A1, A3, A4 (M2's part; M1's was done) and A7 set to COMPLETE, each with evidence
+links to merged PRs and recorded runs in [[evidence-m2]]; the summary rows updated. A5 (Member 3) and
+A6 (Member 1) left open — not ours to close.
+
+**How it was verified:** every cited test, file and PR checked to exist; A7 marked complete only after
+the commit and OS were really recorded (previous commit).
+
+**What I changed:** *fill after reading the diff.*
