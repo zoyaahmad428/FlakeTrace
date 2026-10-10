@@ -105,6 +105,8 @@ A source change detected by the integrity check is a finding, not an error: the 
 - **Must be run from the repository root** (or with it on `PYTHONPATH`), like M1's extractor;
   removed by the later installable command.
 - One victim per run; one polluter's resource evidence (the one `diagnose()` found).
+- *(Update 2026-10-10: since W10/ADR-007, F3 gets a `VERIFIED` report; exit 3 remains for
+  `NOT_REPRODUCED` and a victim first in the order.)*
 - F3 (`NO_SINGLE_POLLUTER`) and `NOT_REPRODUCED` give exit 3 and no report until W10 and the
   agreed schema change (nullable `failure_signature`, a reason for no single polluter).
 - The `runner` CI job must install `eval/requirements.txt`: the CLI imports `eval.report`, which

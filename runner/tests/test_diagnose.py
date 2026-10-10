@@ -7,6 +7,7 @@ from pathlib import Path
 
 from eval.baseline import FailureSignature, RunOutcome, TestIdentifier
 from eval.tests.fake_runner import FakeOrderRunner
+from runner.recording import RecordingRunner
 from runner.diagnose import (
     NO_SINGLE_POLLUTER,
     NOT_REPRODUCED,
@@ -55,13 +56,42 @@ class TestRunSteps(unittest.TestCase):
         self.assertEqual((runs.alone_n, runs.alone_successes, runs.search_runs), (3, 3, 0))
         self.assertEqual(len(runner.calls), 1 + 3)
 
-    def test_two_polluters_needed_repeats_the_original_order(self):
+    def test_two_polluters_needed_are_minimised_and_verified(self):
         runner = victim_fails_when(lambda order: A in order and B in order)
         runs = run_steps(runner, [A, B, V], V, n=2)
-        self.assertEqual(runs.status, NO_SINGLE_POLLUTER)
-        self.assertEqual((runs.polluters, runs.sequence), ([], [A, B, V]))
+        self.assertEqual(runs.status, POLLUTER_FOUND)
+        self.assertEqual((runs.polluters, runs.sequence), ([A, B], [A, B, V]))
         self.assertEqual((runs.sequence_n, runs.sequence_successes), (2, 2))
-        self.assertEqual((runs.alone_n, runs.alone_successes, runs.search_runs), (2, 0, 2))
+        self.assertEqual((runs.alone_n, runs.alone_successes, runs.search_runs, runs.minimise_runs), (2, 0, 2, 3))
+        self.assertEqual(len(runner.calls), 1 + 2 + 2 + (1 + 2) + 2)
+
+    def test_flaky_failure_is_not_blamed_on_the_whole_prefix(self):
+        # The victim fails only in the very first run (the reproduce step), never again.
+        calls = []
+        runner = FakeOrderRunner(lambda order, test: (calls.append(1) or FAIL) if test == V and not calls else PASS)
+        runs = run_steps(runner, [A, B, LATER, V], V, n=2)
+        self.assertEqual(runs.status, NO_SINGLE_POLLUTER)
+        self.assertEqual(runs.polluters, [])
+        self.assertEqual(runs.minimise_runs, 1)
+
+    def test_one_test_prefix_that_passed_in_the_search_blames_nothing(self):
+        calls = []
+        runner = FakeOrderRunner(lambda order, test: (calls.append(1) or FAIL) if test == V and not calls else PASS)
+        runs = run_steps(runner, [A, V], V, n=2)
+        self.assertEqual(runs.status, NO_SINGLE_POLLUTER)
+        self.assertEqual((runs.polluters, runs.minimise_runs), ([], 0))
+
+    def test_minimise_runs_are_recorded_as_their_own_step(self):
+        record = Path(tempfile.mkdtemp(prefix="flaketrace-rec-")) / "r.jsonl"
+        runner = RecordingRunner(victim_fails_when(lambda order: A in order and B in order), record, {})
+        run_steps(runner, [A, LATER, B, V], V, n=1)
+        steps = [json.loads(line)["step"] for line in record.read_text(encoding="utf-8").splitlines()[1:]]
+        self.assertIn("minimise", steps)
+        self.assertEqual(steps.index("minimise"), steps.index("search") + steps.count("search"))
+
+    def test_single_polluter_does_not_minimise(self):
+        runs = run_steps(victim_fails_when(lambda order: B in order), [A, B, V], V, n=2)
+        self.assertEqual(runs.minimise_runs, 0)
 
     def test_never_failing_is_not_reproduced_and_runs_nothing_else(self):
         runner = victim_fails_when(lambda order: False)
@@ -153,10 +183,12 @@ class TestDiagnoseOnFixture(unittest.TestCase):
         self.assertEqual(runs.polluters, self.expected_polluters("F2"))
         self.assertEqual(runs.sequence_successes, 5)
 
-    def test_f3_two_polluters_needed(self):
+    def test_f3_two_polluters_are_found_by_minimisation(self):
         runs = self.diagnose_case("F3", n=5)
-        self.assertEqual(runs.status, NO_SINGLE_POLLUTER)
+        self.assertEqual(runs.status, POLLUTER_FOUND)
+        self.assertEqual(runs.polluters, self.expected_polluters("F3"))
         self.assertEqual(runs.search_runs, 12)
+        self.assertGreater(runs.minimise_runs, 0)
         self.assertEqual(runs.sequence_successes, 5)
 
     def test_n1_fails_alone(self):

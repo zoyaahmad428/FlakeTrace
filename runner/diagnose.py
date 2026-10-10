@@ -1,6 +1,7 @@
 """W7 entry point (ADR-004): reproduce the failure, check the victim alone, search for a single
-polluter, repeat the sequence, check source integrity, record every run. Returns raw counts;
-the verdict is M3's eval.outcome.decide() (W9 builds the report)."""
+polluter, repeat the sequence, check source integrity, record every run. When no single test is
+enough, ddmin shrinks the tests before the victim to a 1-minimal set (W10, ADR-007). Returns raw
+counts; the verdict is M3's eval.outcome.decide() (W9 builds the report)."""
 
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
@@ -10,6 +11,7 @@ from typing import List, Optional, Sequence
 from eval.baseline import FailureSignature, TestIdentifier
 from runner.discovery import discover_order
 from runner.integrity import SourceIntegrity, compare, snapshot
+from runner.minimise import ddmin
 from runner.order_runner import OrderRunner, java_version, maven_test_classpath
 from runner.recording import RecordingRunner
 from runner.search import find_polluter, reproduce
@@ -41,6 +43,7 @@ class DiagnosisRuns:
     search_runs: int
     source_integrity: Optional[SourceIntegrity] = None
     execution_record: Optional[str] = None
+    minimise_runs: int = 0
 
 
 def run_steps(
@@ -71,13 +74,23 @@ def run_steps(
 
     _label(runner, "search")
     polluter, search_runs = find_polluter(runner, order, victim, reference, priority)
-    sequence = order if polluter is None else [polluter, victim]
+    polluters, minimise_runs = ([polluter], 0) if polluter is not None else ([], 0)
+    if polluter is None and len(order) > 2:
+        # No single test is enough: shrink everything before the victim (ADR-007). The full order
+        # must fail once more first, so a flaky failure never blames every earlier test. (With one
+        # earlier test, the search already ran exactly [test, victim] and saw it pass.)
+        _label(runner, "minimise")
+        again = runner.run_ordered(order)[victim]
+        minimise_runs = 1
+        if not again.passed and again.failure_signature.matches(reference):
+            polluters, ddmin_runs = ddmin(runner, order[:-1], victim, reference)
+            minimise_runs += ddmin_runs
+    sequence = polluters + [victim] if polluters else order
     _label(runner, "verify")
     successes, any_failures = repeat(runner, sequence, victim, reference, n)
-    status = NO_SINGLE_POLLUTER if polluter is None else POLLUTER_FOUND
-    polluters = [] if polluter is None else [polluter]
+    status = POLLUTER_FOUND if polluters else NO_SINGLE_POLLUTER
     return DiagnosisRuns(status, victim, order, reference, polluters, sequence,
-                         n, successes, any_failures, n, 0, search_runs)
+                         n, successes, any_failures, n, 0, search_runs, minimise_runs=minimise_runs)
 
 
 def diagnose(

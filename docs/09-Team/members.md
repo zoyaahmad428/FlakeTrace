@@ -19,7 +19,7 @@ post-defence action plan's two-student split is superseded by the three-member s
 | Member | Current task | Branch | State | Blocked by |
 | --- | --- | --- | --- | --- |
 | 1 | Static-field + system-property extraction for F1/F2 | `m1/adr006-deepen` | W8 complete: Phases 2–6 and ADR-006 (depth 1–5, pair-mode auto-deepening; fastjson FJ-01/FJ-02 at `depth_used` 4/5); report chapters next | M2 and M3 switch their calls to `analyse_pair` |
-| 2 | W9 command `py -m runner diagnose` (ADR-005) | `m2/w9-cli` | Built and run on the fixture (F1/F2 `VERIFIED`, N1 `UNRESOLVED`, F3 exit 3); PR #26 in review, CI green on JDK 8; ADR-005/I4 need M1, M3 agreement; W10 next | — |
+| 2 | W10 multi-polluter minimisation (ddmin, ADR-007) | `m2/w10-minimise` | Built: F3 `VERIFIED` end to end; final review then PR; ADR-007 needs M1, M3 on the report rule | — |
 | 3 | W9 report assembly done for F1/F2/N1/N2 (real end-to-end, `eval/report.py` wired to M1's real `find_edges`/`report_fields`); report ch. 4 and 7–8 per `08-MidEval/README`'s Form 3 table next | `m3/n2-integration` | Phases 0–5 done; real `VERIFIED`/`UNRESOLVED` reports produced for F1, F2, N1, N2 (see `docs/evidence-m3.md`) | Only F3 remains, needs W10 (M2, multi-polluter search/minimisation — not started) |
 
 ## Evidence files per member

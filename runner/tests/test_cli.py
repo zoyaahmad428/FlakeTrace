@@ -11,7 +11,8 @@ from pathlib import Path
 from unittest import mock
 
 from eval.baseline import FailureSignature, TestIdentifier
-from runner.cli import main, summary
+from eval.report import assemble_report
+from runner.cli import combine_fields, main, resource_fields, summary
 from runner.diagnose import (NO_SINGLE_POLLUTER, POLLUTER_FOUND, VICTIM_FAILS_ALONE, DiagnoseInputError,
                              DiagnosisRuns)
 from runner.integrity import SourceIntegrity
@@ -124,12 +125,91 @@ class TestToolErrors(unittest.TestCase):
         self.assertIn("error: resource evidence failed", err)
 
 
+def pair(polluter, *resource_ids, depth=1):
+    location = {"class": polluter.class_name, "method": polluter.method, "bytecode_offset": 1, "depth": depth}
+    return {
+        "polluter": polluter.to_dict(), "victim": V.to_dict(),
+        "edges": [{"resource_id": rid, "resource": {"kind": "static-field", "class": rid.split("#")[0],
+                                                     "field": rid.split("#")[1]},
+                   "polluter_write_locations": [location], "victim_read_locations": [dict(location, method="v")]}
+                  for rid in resource_ids],
+        "limitations": ["Static analysis only; no runtime evidence (Iteration 2)."],
+    }
+
+
+Q = TestIdentifier("pkg.SecondPolluterTest", "q")
+
+
+class TestCombineFields(unittest.TestCase):
+    def test_one_polluter_is_unchanged(self):
+        from evidence.extract import report_fields
+        single = pair(P, "pkg.T#flagA")
+        self.assertEqual(combine_fields([single]), report_fields(single))
+
+    def test_every_polluter_with_an_edge_shows_the_first_and_names_the_rest(self):
+        fields = combine_fields([pair(P, "pkg.T#flagA"), pair(Q, "pkg.T#flagB")])
+        self.assertEqual(fields["shared_resource"], {"kind": "static-field", "class": "pkg.T", "field": "flagA"})
+        self.assertEqual(fields["polluter_write_location"]["class"], "pkg.PolluterTest")
+        self.assertIn("Polluter pkg.SecondPolluterTest#q: shared resource pkg.T#flagB is not shown in this report",
+                      fields["limitations"])
+        self.assertEqual(fields["limitations"].count("Static analysis only; no runtime evidence (Iteration 2)."), 1)
+
+    def test_second_polluter_without_edge_shows_no_resource(self):
+        fields = combine_fields([pair(P, "pkg.T#flagA"), pair(Q)])
+        self.assertIsNone(fields["shared_resource"])
+        self.assertIsNone(fields["polluter_write_location"])
+        self.assertIsNone(fields["victim_read_location"])
+        self.assertIn("No polluter-write/victim-read resource edge was found for polluter pkg.SecondPolluterTest#q",
+                      fields["limitations"])
+        self.assertIn("Polluter pkg.PolluterTest#p: shared resource pkg.T#flagA was found, "
+                      "but not every polluter has evidence", fields["limitations"])
+
+    def test_resource_written_by_both_polluters_is_not_called_hidden(self):
+        fields = combine_fields([pair(P, "pkg.T#flag"), pair(Q, "pkg.T#flag")])
+        self.assertEqual(fields["shared_resource"]["field"], "flag")
+        self.assertFalse(any("pkg.T#flag is not shown" in line for line in fields["limitations"]), fields["limitations"])
+
+    def test_deep_evidence_of_a_later_polluter_is_named_with_its_depth(self):
+        fields = combine_fields([pair(P, "pkg.T#a"), pair(Q, "pkg.T#b", depth=5)])
+        self.assertIn("Polluter pkg.SecondPolluterTest#q: shared resource pkg.T#b is not shown in this report "
+                      "(evidence at depth 5, above the default 2)", fields["limitations"])
+
+    def test_mixed_evidence_report_does_not_also_say_no_edge_was_found(self):
+        fields = combine_fields([pair(P, "pkg.T#a"), pair(Q)])
+        self.assertTrue(fields["any_edge_found"])
+        runs_ = runs(POLLUTER_FOUND, "r.jsonl", polluters=[P, Q], sequence=[P, Q, V], alone_successes=0)
+        report = assemble_report(runs_, fields)
+        self.assertEqual((report["outcome"], report["unresolved_reason"]), ("UNRESOLVED", "NO_SUPPORTED_RESOURCE_EVIDENCE"))
+        self.assertNotIn("No polluter-write/victim-read resource edge was found by static analysis.",
+                         report["limitations"])
+
+    def test_resource_fields_asks_analyse_pair_once_per_polluter(self):
+        project = project_with_pom()
+        for folder in ("classes", "test-classes"):
+            (project / "target" / folder).mkdir(parents=True)
+        found = runs(POLLUTER_FOUND, project / "r.jsonl", polluters=[P, Q], sequence=[P, Q, V])
+        with mock.patch("runner.cli.analyse_pair", side_effect=[pair(P, "pkg.T#a"), pair(Q, "pkg.T#b")]) as analyse:
+            fields = resource_fields(project, found)
+        self.assertEqual([c.args[1:] for c in analyse.call_args_list], [(str(P), str(V)), (str(Q), str(V))])
+        self.assertEqual(fields["shared_resource"]["field"], "a")
+
+    def test_extra_resource_of_a_later_polluter_is_named_once(self):
+        fields = combine_fields([pair(P, "pkg.T#a"), pair(Q, "pkg.T#b", "pkg.T#c")])
+        self.assertEqual(sum("pkg.T#c" in line for line in fields["limitations"]), 1, fields["limitations"])
+
+    def test_first_polluter_without_edge_shows_no_resource(self):
+        fields = combine_fields([pair(P), pair(Q, "pkg.T#flagB")])
+        self.assertIsNone(fields["shared_resource"])
+        self.assertIn("No polluter-write/victim-read resource edge was found for polluter pkg.PolluterTest#p",
+                      fields["limitations"])
+
+
 class TestReports(unittest.TestCase):
     def test_victim_fails_alone_writes_a_report_and_skips_the_extractor(self):
         records = Path(tempfile.mkdtemp(prefix="flaketrace-cli-records-"))
         record = records / "20261010T000000Z-pkg.VictimTest#v.jsonl"
         with mock.patch("runner.cli.diagnose", return_value=runs(VICTIM_FAILS_ALONE, record)), \
-                mock.patch("runner.cli.analyse_test") as analyse:
+                mock.patch("runner.cli.analyse_pair") as analyse:
             code, out, _ = run_cli(["diagnose", "--project", str(project_with_pom()), "--victim", str(V)])
         self.assertEqual(code, 0)
         analyse.assert_not_called()
@@ -231,11 +311,15 @@ class TestCliOnFixture(unittest.TestCase):
         self.assertEqual(report["victim_read_location"],
                          {"class": "odfixture.FeatureFlags", "method": "isTurboEnabled", "bytecode_offset": 2})
 
-    def test_f3_has_no_report_yet(self):
-        code, out, _, report = self.diagnose("odfixture.ToggleVictimTest#expectsNotBothFlagsSet", 3)
-        self.assertEqual(code, 3)
-        self.assertIn("No report: NO_SINGLE_POLLUTER", out)
-        self.assertIsNone(report)
+    def test_f3_two_polluters_verified(self):
+        code, out, err, report = self.diagnose("odfixture.ToggleVictimTest#expectsNotBothFlagsSet", 20)
+        self.assertEqual(code, 0, err)
+        self.assertEqual(report["outcome"], "VERIFIED")
+        self.assertEqual(report["polluters"], [{"class": "odfixture.ToggleAPolluterTest", "method": "setFlagA"},
+                                               {"class": "odfixture.ToggleBPolluterTest", "method": "setFlagB"}])
+        self.assertEqual(report["shared_resource"], {"kind": "static-field", "class": "odfixture.Toggles", "field": "flagA"})
+        self.assertTrue(any("odfixture.Toggles#flagB" in line for line in report["limitations"]), report["limitations"])
+        self.assertIn("polluter:   odfixture.ToggleAPolluterTest#setFlagA, odfixture.ToggleBPolluterTest#setFlagB", out)
 
     def test_n1_fails_alone(self):
         code, _, err, report = self.diagnose("odfixture.NegativeAloneFailTest#alwaysFails", 5)

@@ -456,3 +456,133 @@ own JUnitCore harness (ADR-003). Member 1 suggested new wording.
 - Limitation: the "Linux container" part of E1 is a committed target; nothing runs in one yet.
 - CI on the E1 PR (`m2/e1-junit3`): job `runner` (JDK 8, Linux) → `Ran 59 tests in 64.239s — OK`
   (line copied from the job log by Member 2), so the JUnit 3 test also passes on Linux/JDK 8.
+
+### 2026-10-10 — W10 design (ADR-007)
+
+- Not a run: design only. [[03-Design/decisions/ADR-007-w10-ddmin-minimisation]] proposes `ddmin`
+  over the tests before the victim when W7's one-by-one search finds nothing, `POLLUTER_FOUND` with
+  one or more polluters, a new `minimise_runs` field, and a strict evidence rule for several
+  polluters (every polluter needs an edge for `VERIFIED`). Needs M1/M3 confirmation of the report rule.
+- Numbered ADR-007 because Member 1's PR #28 added ADR-006 (evidence depth 1–5, proposed) the same day.
+
+### 2026-10-10 — W10 Task 1: `ddmin`
+
+**Requirement:** ADR-007 — shrink the tests before the victim to a 1-minimal polluter set.
+- Files: `runner/minimise.py` (`ddmin(runner, prefix, victim, reference) -> (minimal, runs)`),
+  `runner/tests/test_minimise.py` (11 tests, `FakeOrderRunner`).
+- Tests written first: `py -m unittest runner.tests.test_minimise` → `ModuleNotFoundError: No module
+  named 'runner.minimise'`. After the code: `Ran 11 tests in 0.010s — OK`.
+- Run counts measured on the fakes: F3's shape (2 required tests in 12) → 25 runs; 2 required tests
+  in a 100-test prefix → 48 runs (one run per test would be 100).
+- Mutation check: complement step removed → 7 of 11 FAILED (incl. the F3-shaped test and
+  1-minimality); restored from a copy → 11 OK.
+- Full runner suite: `Ran 91 tests in 221.797s — OK`.
+- Limitation: not wired into `diagnose()` yet (Task 2).
+
+### 2026-10-10 — W10 Task 2: `run_steps` minimises when no single polluter is found
+
+- File: `runner/diagnose.py` — step 4 calls `ddmin` when `find_polluter` returns nothing and the
+  prefix is not empty; `POLLUTER_FOUND` with one or more polluters; new `minimise_runs`; record step
+  `"minimise"`.
+- Tests first (`runner/tests/test_diagnose.py`): `py -m unittest runner.tests.test_diagnose.TestRunSteps`
+  → `FAILED (failures=2, errors=1)`: `'NO_SINGLE_POLLUTER' != 'POLLUTER_FOUND'`, `'minimise' not found
+  in [...]`, `no attribute 'minimise_runs'`. After the code → 12 OK.
+- Real F3 (local Windows, JDK 21.0.9, `diagnose(..., n=5)`): `POLLUTER_FOUND`, polluters
+  `ToggleAPolluterTest#setFlagA`, `ToggleBPolluterTest#setFlagB` (= ground truth); search 12 runs,
+  **minimise 9 runs**, verify 5/5, alone 0/5, source integrity passed.
+- The full suite then showed one failure the plan had not foreseen: `test_cli`'s F3 test still
+  expected exit 3 (`0 != 3`) — F3 now gets a report. Updated in this task (exit 0, `VERIFIED`, both
+  polluters, `flagA`) → `Ran 1 test in 34.227s — OK`.
+- Full runner suite: `Ran 93 tests in 245.061s — OK`. `git status --short fixtures/` empty.
+
+### 2026-10-10 — W10 Task 3: report several polluters; F3 end to end
+
+**Requirement:** ADR-007 § Evidence and report — evidence per polluter; `VERIFIED` only if every
+polluter has an edge; the first shown, the others named in `limitations`, M1's fixed lines once.
+- File: `runner/cli.py` — `resource_fields` analyses the victim once and each polluter, then
+  `combine_fields(pairs)`; the exit-3 message for `NO_SINGLE_POLLUTER` now says the victim is first.
+- Real edges checked before writing tests: F3's pairs give `odfixture.Toggles#flagA` (A) and
+  `#flagB` (B); every pair carries the same 7 fixed limitation lines (hence the de-duplication).
+- Tests first: `py -m unittest runner.tests.test_cli.TestCombineFields` → `ImportError: cannot import
+  name 'combine_fields'`. After the code: fast CLI tests OK; real `test_f3_two_polluters_verified`
+  (n = 20, now also checking the `flagB` limitation and the summary line) → `Ran 1 test in 33.936s — OK`.
+- Mutation check: evidence for the first polluter only (`runs.polluters[:1]`) → the real F3 test
+  FAILED (no `flagB` line); restored from a copy.
+- Full runner suite: `Ran 97 tests in 238.770s — OK`. `git status --short fixtures/` empty.
+- By hand from the repo root, exit 0:
+
+```
+VERIFIED  odfixture.ToggleVictimTest#expectsNotBothFlagsSet
+  polluter:   odfixture.ToggleAPolluterTest#setFlagA, odfixture.ToggleBPolluterTest#setFlagB
+  resource:   static-field odfixture.Toggles flagA (write odfixture.ToggleAPolluterTest#setFlagA@1 -> read odfixture.ToggleVictimTest#expectsNotBothFlagsSet@0)
+  reproduced: 20/20 (lower bound 0.839)   alone: 0/20
+  report:     flaketrace-records\20261010T104124Z-odfixture.ToggleVictimTest#expectsNotBothFlagsSet.report.json
+  record:     flaketrace-records\20261010T104124Z-odfixture.ToggleVictimTest#expectsNotBothFlagsSet.jsonl
+```
+
+  The report's `limitations` (9 lines, none duplicated) include "Polluter
+  odfixture.ToggleBPolluterTest#setFlagB: shared resource odfixture.Toggles#flagB is not shown in this
+  report".
+- Docs: `runner/README.md`, [[04-Implementation/diagnose-cli]], demo plan (F3 row, known
+  limitations, Runner row), iteration plan W10, members, claims E9/E12 updated and new E14 (numbered E13 until merging main, where M1 added E13), an update
+  note in ADR-005. `fixtures/od-fixture/ground_truth.json`'s F3 note ("needs W10") is M3's — not edited.
+- CI on JDK 8: not yet run (runs on the PR).
+
+### 2026-10-10 — W10 final review and fixes
+
+**Review:** separate reviewer agent on the whole branch (`a7ced91..8a16388`) against ADR-007 and the
+plan: no critical; three important; six minor. All five review-focus items held (the reviewer probed them).
+- **Important 1 — fixed:** a victim that failed only once (in the reproduce run) made `ddmin` treat the
+  whole prefix as failing and blame **every earlier test** (reviewer's probe: 20 bystanders); with one
+  earlier test it blamed a test the search had just seen pass. Fix in `run_steps`: run the full order
+  once more before `ddmin` and minimise only if it fails again; skip `ddmin` for a one-test prefix.
+  Tests `test_flaky_failure_is_not_blamed_on_the_whole_prefix` and
+  `test_one_test_prefix_that_passed_in_the_search_blames_nothing` FAILED before
+  (`'POLLUTER_FOUND' != 'NO_SINGLE_POLLUTER'`) and pass after; the two-polluter test's counts now
+  include the re-check (`minimise_runs` 3, 10 calls).
+- **Important 3 — fixed:** two polluters writing the same resource got a line saying that resource is
+  not shown, although it was the one shown. `combine_fields` skips edges on the shown resource and takes
+  only M1's fixed lines from later polluters (which also fixes minor 4, a resource named twice). Tests
+  `test_resource_written_by_both_polluters_is_not_called_hidden` and
+  `test_extra_resource_of_a_later_polluter_is_named_once` FAILED before (`True is not false`, `2 != 1`).
+- **Important 2 — ruling, no code change:** with mixed evidence our lines name the found edges while
+  M3's generic line says no edge was found; that line is in `eval/` (M3). Recorded in ADR-007; M3 asked
+  to make it conditional.
+- Docs honesty (minors 5, 6): ADR-007's cost sentence corrected (the search still runs once per test);
+  claim E14 (then E13) status SETTLED → OPEN until CI and M1/M3 agreement. The exit-3 message for
+  `NO_SINGLE_POLLUTER` now says the failure did not come back and is likely flaky (minor 9).
+- Real F3 after the fix (`diagnose(..., n=5)`): `POLLUTER_FOUND`, same polluters, search 12, minimise
+  **10** (1 re-check + 9 `ddmin`), verify 5/5.
+- Full runner suite: `Ran 101 tests in 236.259s — OK`. `git status --short fixtures/` empty.
+- Deferred minor: `minimise_runs` is not shown in the report or summary (noted in ADR-007).
+
+### 2026-10-10 — W10: `analyse_pair` per polluter (ADR-006 follow-up), M3's flag, F3 offsets
+
+**Requirement:** ADR-006 (accepted, implemented by Member 1 in PR #34) — callers switch to
+`analyse_pair`, which deepens a pair only when nothing is found at depth 2; Member 2 promised this in
+the ADR. With several polluters each pair deepens on its own, and Member 1's depth warning covers only
+the shown edge. Member 3's PR #38 added an optional `any_edge_found` flag to `assemble_report`
+(review finding 2).
+- File: `runner/cli.py` — `resource_fields` calls `analyse_pair(classes, polluter, victim)` once per
+  polluter; `combine_fields` adds "(evidence at depth N, above the default 2)" to a named edge deeper than
+  2 (same measure as `report_fields`) and sets `any_edge_found` in the mixed case.
+- Tests first (`runner/tests/test_cli.py`): `test_deep_evidence_of_a_later_polluter_is_named_with_its_depth`,
+  `test_mixed_evidence_report_does_not_also_say_no_edge_was_found` (through M3's real `assemble_report`),
+  `test_resource_fields_asks_analyse_pair_once_per_polluter` → before the code: 1 failure, 2 errors
+  (`KeyError: 'any_edge_found'`, no `analyse_pair` in `runner.cli`, line not found). After → OK. The
+  existing "skips the extractor" test now patches `analyse_pair`.
+- Real CLI runs on the fixture (`TestCliOnFixture`, F1/F2/F3/N1/unknown victim): `Ran 5 tests in
+  129.780s — OK` — the fixture stays at depth 2 as Member 1 measured.
+- **F3 offsets by hand** (`javap -c -p`, JDK 21.0.9, `fixtures/od-fixture/target`): `ToggleAPolluterTest.setFlagA`
+  `1: putstatic Toggles.flagA`; `ToggleBPolluterTest.setFlagB` `1: putstatic Toggles.flagB`;
+  `ToggleVictimTest.expectsNotBothFlagsSet` `0: getstatic Toggles.flagA`, `6: getstatic Toggles.flagB`.
+  The F3 report shows write `setFlagA@1`, read `expectsNotBothFlagsSet@0` — match. (Promised in a
+  comment on PR #31, contract question 4.)
+- Full runner suite: `Ran 104 tests in 246.800s — OK`.
+
+### 2026-10-10 — W10 CI result
+
+- W10 PR (`m2/w10-minimise`, commit `539b2dc`): job `runner` (JDK 8, Linux) -> `Ran 104 tests in 114.111s — OK`
+  (line copied from the job log by Member 2). Same count as locally, so ddmin, the re-check, the
+  per-polluter `analyse_pair` and the real F3 report also pass on Linux/JDK 8. Claim E14 now cites it;
+  it stays OPEN until Member 1 and Member 3 confirm ADR-007.

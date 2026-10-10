@@ -13,7 +13,7 @@ minimisation, static resource evidence, repeated-run verification.
 | Processing | Fresh-JVM ordered runs → victim-alone check → polluter search → minimisation → javap evidence → `wilson_interval` → `decide()` |
 | Output | A JSON report validated against `eval/schema/report.schema.json`, printed as a readable summary |
 | Dependencies | JDK 8+, Maven, Python 3.11, `jsonschema` |
-| Known limitations | Static evidence only; two resource kinds; F3 minimisation may be partial at Mid |
+| Known limitations | Static evidence only; two resource kinds; F3's report shows one resource (`flagA`) and names the second (`flagB`) in `limitations` |
 
 ## Running order (8 minutes)
 
@@ -25,7 +25,7 @@ minimisation, static resource evidence, repeated-run verification.
 | 3 | Show the resource evidence behind step 2 | `putstatic` / `getstatic` with bytecode offsets | Extractor output | M1 | — |
 | 4 | Show source unchanged | Hash match, `git status` clean | `source_integrity.passed = true` | M2 | — |
 | 5 | Diagnose N1 (failure case) | `UNRESOLVED(VICTIM_FAILS_ALONE)` — refuses to blame a polluter | Report JSON | M3 | — |
-| 6 | Diagnose F3 (edge case) | Both polluters required; or stated limitation if minimisation is partial | Report JSON | M2 | — |
+| 6 | Diagnose F3 (edge case) | `VERIFIED`: both polluters (`setFlagA`, `setFlagB`) found by `ddmin`, 20/20; `flagB` named in `limitations` | Report JSON | M2 | — |
 | 7 | Show CI run and tests on the PR | Green checks | GitHub Actions | M3 | — |
 | 8 | State boundaries | What is implemented vs not yet | Slide 6 | M2 | — |
 
@@ -36,7 +36,7 @@ run and go into `docs/evidence-m2.md`.
 
 | Component | Implemented | Mocked/substituted | Plan to remove |
 | --- | --- | --- | --- |
-| Runner | Ordered single-JVM runner (W6) and `diagnose()` (W7): reproduce, victim-alone ×n, one-by-one polluter search, repeat ×n, source hash, execution record — real JVM runs on the fixture | None mocked. Report assembly (`eval/report.py`, W9) is done and wired to this for real, for F1/F2/N1/N2. The W9 command `py -m runner diagnose` runs the whole pipeline (real runs): F1, F2 `VERIFIED`, N1 `UNRESOLVED(VICTIM_FAILS_ALONE)`; F3 exits 3 (no report). Not built yet: multi-polluter minimisation (W10), needed for F3 only | W10 |
+| Runner | Ordered single-JVM runner (W6) and `diagnose()` (W7): reproduce, victim-alone ×n, one-by-one polluter search, repeat ×n, source hash, execution record — real JVM runs on the fixture | None mocked. Report assembly (`eval/report.py`, W9) is done and wired to this for real, for F1/F2/N1/N2. The W9 command `py -m runner diagnose` runs the whole pipeline (real runs): F1, F2 `VERIFIED`, N1 `UNRESOLVED(VICTIM_FAILS_ALONE)`; F3 `VERIFIED` with two polluters found by `ddmin` (W10). Nothing mocked or missing for the fixture | — |
 | Evidence extractor | Pair mode (`--polluter`/`--victim`) and single test, depth 1–5 (default 2, pair mode deepens only when needed, ADR-006); real javap on real classes; F1 edge `Config#mode` 1→1, F2 edge `odfixture.turbo` 4→`FeatureFlags.isTurboEnabled@2` | None mocked. Wired into Member 3's report assembly for real (`eval/report.py` calls `find_edges`/`report_fields` directly) | — |
 | Outcome + statistics | Yes (M3, tested) | None | — |
 | UI | Not part of Mid demo | POC UI uses recorded data | FYP-1 Final or later |

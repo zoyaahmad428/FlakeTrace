@@ -433,3 +433,100 @@ scope-boundary wording, the README limitation line.
 order made the pollution test fail; full runner suite 59 OK.
 
 **What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — W10 design (ADR-007)
+
+**Tool:** Claude Opus 5.5 (brainstorming) · **Level:** L2
+
+**What was asked:** design W10 (deletion minimisation, F3's two polluters).
+
+**Decisions made by Member 2** (asking each time for what is best for the product as a whole):
+produce a real F3 report with the agreed "first edge shown, rest in limitations" rule (A); `ddmin`
+over bisection and one-at-a-time deletion; reuse `POLLUTER_FOUND` for several polluters; require
+evidence for every polluter before `VERIFIED`.
+
+**What was retained:** ADR-007 — flow, `ddmin` rules, evidence rule, limitations (single-run
+checks, no budget, 1-minimal only), verification plan.
+
+**What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — W10 Task 1: `ddmin`
+
+**Tool:** Claude Opus 5.5 · **Level:** L2
+
+**What was asked:** Task 1 of `docs/superpowers/plans/2026-10-10-w10-ddmin.md`.
+
+**What was retained:** `runner/minimise.py` and 11 fake-runner tests, as planned.
+
+**How it was verified:** tests failed first (module missing), then 11 OK; removing the complement
+step made 7 fail; full runner suite 91 OK.
+
+**What was wrong:** the brainstorming estimate of 10–15 runs for F3's shape was low; the real count
+on the fake is 25 (recorded, not the guess).
+
+**What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — W10 Task 2: minimise in `run_steps`
+
+**Tool:** Claude Opus 5.5 · **Level:** L2
+
+**What was asked:** Task 2 of the W10 plan.
+
+**What was retained:** step 4 in `run_steps`, `minimise_runs`, the `"minimise"` record step, three
+`run_steps` tests, the real F3 test, docs (README status table, diagnosis-runs note).
+
+**How it was verified:** tests failed first on behaviour; real F3 found exactly the ground-truth
+polluters (9 minimise runs); full suite 93 OK.
+
+**What was wrong:** the plan updated the CLI's F3 test only in Task 3, so Task 2 broke it; caught by
+predicting the full-suite result, fixed in Task 2 (ruling in the ledger).
+
+**What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — W10 Task 3: several polluters in the report
+
+**Tool:** Claude Opus 5.5 · **Level:** L2
+
+**What was asked:** Task 3 of the W10 plan.
+
+**What was retained:** `combine_fields`, per-polluter evidence in `resource_fields`, four combining
+tests, the F3 report checks, docs and claim E14 (first numbered E13).
+
+**How it was verified:** tests failed first; the real F3 command is `VERIFIED` with `flagB` in
+`limitations`; evidence for the first polluter only made the F3 test fail; full suite 97 OK.
+
+**What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — W10 final review and fixes
+
+**Tool:** Claude Opus 5.5 (author session) + a separate reviewer agent · **Level:** L2
+
+**What was found:** important: a one-off flaky failure blamed every earlier test; a resource written
+by both polluters was called "not shown"; mixed-evidence wording conflicts with M3's generic line.
+Minors: a resource named twice, a cost claim stronger than measured, E14 (then E13) marked SETTLED too early,
+a missing one-test-prefix test, `minimise_runs` not in the report, an incomplete exit-3 message.
+
+**What was retained:** re-check of the full order before `ddmin`; `combine_fields` de-duplication;
+four tests that failed first; ADR-007, E14 and the note corrected; the exit-3 message rewritten.
+
+**What was rejected:** changing M3's generic limitation line (eval/ is M3's) — raised with M3 instead.
+
+**What was wrong (session):** one long shell command with a quote in its text failed to parse; nothing
+was applied, checked with grep, redone from a script file.
+
+**What I changed:** *fill after reading the diff.*
+
+## 2026-10-10 — W10: `analyse_pair` per polluter
+
+**Tool:** Claude Opus 5.5 · **Level:** L2
+
+**What was asked:** analyse Member 1's and Member 3's messages and new PRs (#29–#38) for what is best
+for the product, then switch the command to `analyse_pair` (ADR-006 follow-up).
+
+**What was retained:** `analyse_pair` once per polluter; the depth note on named edges; the
+`any_edge_found` flag for M3's PR #38; three tests that failed first; F3 offsets checked with `javap`.
+
+**What was rejected:** Member 1's suggested one-line swap as written: it predates W10's several
+polluters and would have let a deep edge on a second polluter go unmarked in the report.
+
+**What I changed:** *fill after reading the diff.*
