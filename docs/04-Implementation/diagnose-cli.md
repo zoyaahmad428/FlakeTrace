@@ -38,6 +38,9 @@ in-process and decides nothing itself:
   mapping between processes; the contract lists both as supported.
 - **Catches M3's `UnhandledStatus`** instead of listing supported statuses itself, so when M3
   supports `NOT_REPRODUCED` reports the command produces them unchanged.
+- **Minimisation in the summary** (W10): when `ddmin` found the polluters, one line says how many
+  earlier tests were shrunk to how many polluters in how many runs, and that the set is 1-minimal,
+  not necessarily the minimum. The report has no field for it.
 - **Several polluters** (W10): evidence per polluter, combined by `combine_fields`: the first
   polluter's edge is shown, the others named in `limitations`, and only if **every** polluter has an
   edge — otherwise no resource is shown (`UNRESOLVED(NO_SUPPORTED_RESOURCE_EVIDENCE)`).
