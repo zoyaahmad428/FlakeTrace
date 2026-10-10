@@ -1,14 +1,21 @@
-"""W9 end-to-end integration: produce real, pipeline-assembled diagnosis reports for F1, F2
-and N1.
+"""W9 end-to-end integration: produce real, pipeline-assembled diagnosis reports for F1, F2,
+N1 and N2.
 
 One-off script, not part of the unit test suite (it shells out to real Maven/JDK via
 runner.diagnose and runner.OrderRunner, and takes a few minutes). Run manually:
 
     py eval/tools/run_w9_integration.py
 
-Writes eval/reports/{f1,f2,n1}.json -- genuinely produced by calling runner.diagnose.diagnose()
-and evidence.extract's real find_edges/report_fields for real, then
+Writes eval/reports/{f1,f2,n1,n2}.json -- genuinely produced by calling
+runner.diagnose.diagnose() and evidence.extract's real find_edges/report_fields for real, then
 eval.report.assemble_report(), not hand-written. See eval/reports/README.md.
+
+N2 (fixtures/od-fixture's NegativeFlakyTest) was blocked here until 2026-10-10: before Member 3
+replaced its nanoTime-parity mechanism with Random.nextBoolean() (docs/evidence-m3.md), it
+reported NOT_REPRODUCED on some machines -- a DiagnosisRuns.status assemble_report deliberately
+does not handle (see eval/report.py). Member 2 confirmed it now reliably reports
+VICTIM_FAILS_ALONE on every platform (docs/evidence-m2.md), a status assemble_report already
+handles, so no new code was needed here -- just adding the case.
 """
 
 import json
@@ -87,12 +94,27 @@ def run_n1():
     return report
 
 
+def run_n2():
+    victim = TestIdentifier("odfixture.NegativeFlakyTest", "sometimesFails")
+    print("=== N2: running diagnose() for real (n=20) ===")
+    diagnosis = diagnose(FIXTURE, victim, n=20, record_dir=str(RECORD_DIR))
+    print(diagnosis)
+
+    report = assemble_report(diagnosis)  # no resource edge: N2 needs none
+    print("=== N2 report ===")
+    print(json.dumps(report, indent=2))
+    (REPORTS_DIR / "n2.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    return report
+
+
 if __name__ == "__main__":
     REPORTS_DIR.mkdir(exist_ok=True)
     f1 = run_f1()
     f2 = run_f2()
     n1 = run_n1()
+    n2 = run_n2()
     print("\n=== SUMMARY ===")
     print("F1 outcome:", f1["outcome"], f1["unresolved_reason"])
     print("F2 outcome:", f2["outcome"], f2["unresolved_reason"])
     print("N1 outcome:", n1["outcome"], n1["unresolved_reason"])
+    print("N2 outcome:", n2["outcome"], n2["unresolved_reason"])

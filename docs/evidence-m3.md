@@ -806,4 +806,38 @@ F2's edge.
 - Still open, not actioned here: Member 2 also asked me to review/approve contract PR #17
   (`m1/confirm-contract`, already merged) after the fact — a GitHub review action I cannot
   perform myself (no `gh` CLI, no write-scoped API token in this environment); flagged to the
-  member to do directly.
+  member to do directly. (Checked at the time: already approved by both M3 and M2 on
+  2026-10-09, before PR #17 merged — nothing to do.)
+
+## 2026-10-10 — W9: add N2, now that its mechanism fix is confirmed cross-platform
+
+**Requirement:** a full read-through of `docs/` found that N2 (`NegativeFlakyTest`) was the
+only remaining fixture case blocked by a real interface gap rather than by missing
+functionality. Confirmed before acting: `docs/evidence-m2.md`'s 2026-10-10 entry records
+Member 2 running `diagnose()` on N2 three times for real (native Windows, JDK 21.0.9) after
+the `Random.nextBoolean()` mechanism fix landed, getting `VICTIM_FAILS_ALONE` every time
+(16/20, 9/20, 11/20 alone-failures) — not the `NOT_REPRODUCED` it used to give on some
+machines. `eval/report.py`'s `assemble_report` already handles `VICTIM_FAILS_ALONE` (it was
+only `NOT_REPRODUCED` and `NO_SINGLE_POLLUTER` that were real gaps), so landing N2 needed no
+new production code, only adding the case to the integration script.
+
+- File/function: `eval/tools/run_w9_integration.py` — added `run_n2()`, identical in shape to
+  `run_n1()` (no resource edge: `assemble_report(diagnosis)` with `resource_fields` omitted).
+- Command: `py -m unittest discover -s eval/tests -v` (unaffected by this change — pure-logic
+  tests don't call the integration script).
+- Result: 68/68 passed.
+- Command: `py eval/tools/run_w9_integration.py` (real Maven/JDK run, native Windows JDK 24).
+- Result: **N2 → `UNRESOLVED(VICTIM_FAILS_ALONE)`** for the first time through the real
+  pipeline — 12/20 alone-successes (i.e. 8/20 alone-failures, consistent with the ~50% rate
+  both platforms measured after the mechanism fix). F1/F2/N1 unchanged
+  (`VERIFIED`/`VERIFIED`/`UNRESOLVED(VICTIM_FAILS_ALONE)`). Saved: `eval/reports/n2.json`.
+- Updated `eval/reports/README.md` (added N2 to the results table and to "What's NOT here
+  yet" — now only F3 remains, pending W10), `docs/08-MidEval/iteration-plan.md`'s W9 row,
+  `docs/09-Team/members.md`'s M3 row, and `docs/08-MidEval/demo-plan.md`'s "Mocked or
+  hardcoded components" table (both rows there were stale — still said W9/the evidence
+  extractor wiring was "not built yet"/"not wired in yet", though both had been done in the
+  previous session).
+- Limitation: F3 remains the only fixture case not in `eval/reports/` — genuinely blocked on
+  W10 (multi-polluter search/minimisation, M2, not started: confirmed by reading
+  `runner/search.py`, which has only a one-by-one `find_polluter`, no deletion-minimisation
+  module).

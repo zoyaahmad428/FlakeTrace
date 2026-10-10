@@ -1,7 +1,7 @@
 {
   "victim": {
-    "class": "odfixture.NegativeAloneFailTest",
-    "method": "alwaysFails"
+    "class": "odfixture.NegativeFlakyTest",
+    "method": "sometimesFails"
   },
   "polluters": [],
   "original_failing_order": [
@@ -32,39 +32,43 @@
     {
       "class": "odfixture.NegativeAloneFailTest",
       "method": "alwaysFails"
+    },
+    {
+      "class": "odfixture.NegativeFlakyTest",
+      "method": "sometimesFails"
     }
   ],
   "reduced_sequence": [
     {
-      "class": "odfixture.NegativeAloneFailTest",
-      "method": "alwaysFails"
+      "class": "odfixture.NegativeFlakyTest",
+      "method": "sometimesFails"
     }
   ],
   "reproduction": {
-    "successes": 20,
+    "successes": 12,
     "n": 20,
     "confidence": 0.95,
-    "lower": 0.83887484172924,
-    "upper": 1.0
+    "lower": 0.3865815006061295,
+    "upper": 0.7811934677397184
   },
-  "sequence_any_signature_failures": 20,
+  "sequence_any_signature_failures": 12,
   "victim_alone": {
-    "successes": 20,
+    "successes": 12,
     "n": 20,
     "confidence": 0.95,
-    "lower": 0.83887484172924,
-    "upper": 1.0
+    "lower": 0.3865815006061295,
+    "upper": 0.7811934677397184
   },
   "shared_resource": null,
   "polluter_write_location": null,
   "victim_read_location": null,
   "failure_signature": {
     "exception_type": "java.lang.AssertionError",
-    "message": "expected:<<N>> but was:<<N>>",
-    "stack_trace": "org.junit.Assert.fail:89\norg.junit.Assert.failNotEquals:835\norg.junit.Assert.assertEquals:647\norg.junit.Assert.assertEquals:633\nodfixture.NegativeAloneFailTest.alwaysFails:10"
+    "message": "",
+    "stack_trace": "org.junit.Assert.fail:87\norg.junit.Assert.assertTrue:42\norg.junit.Assert.assertTrue:53\nodfixture.NegativeFlakyTest.sometimesFails:24"
   },
   "instrumentation_level": "static-only",
-  "execution_record_reference": "C:\\Users\\zarpa\\OneDrive\\Documents\\GitHub\\FlakeTracee\\eval\\reports\\flaketrace-records\\20261009T211644Z-odfixture.NegativeAloneFailTest#alwaysFails.jsonl",
+  "execution_record_reference": "C:\\Users\\zarpa\\OneDrive\\Documents\\GitHub\\FlakeTracee\\eval\\reports\\flaketrace-records\\20261009T211704Z-odfixture.NegativeFlakyTest#sometimesFails.jsonl",
   "source_integrity": {
     "passed": true,
     "details": "19 files hashed (SHA-256) before and after; all identical"

@@ -377,7 +377,7 @@ condition made the report tests fail; full runner suite 68 OK.
 
 **What was retained:** 5 real-run tests; `runner/README.md` command section;
 [[04-Implementation/diagnose-cli]]; README/CLAUDE.md command line; demo plan, iteration plan,
-members, claim E10.
+members, claim E12 (numbered E10 until merging main, where M1 had added E10 and E11).
 
 **How it was verified:** 5 real runs OK; removing the evidence step made the F2 test fail; full
 suite 73 OK; F1 run by hand.

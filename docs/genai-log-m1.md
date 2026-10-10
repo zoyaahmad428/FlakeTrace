@@ -297,3 +297,35 @@ only check its words (noted as a limitation for Member 3).
 Member 3's file.
 
 Ownership checkpoint: you need to understand and verify this implementation before claiming it as your contribution.
+
+## 2026-10-09 — Phase 5 part 2: fastjson FJ-01 and FJ-02
+
+**Assistance level:** L2 (Moderate): the assistant built fastjson and ran my extractor on it; no
+extractor code changed. The evidence write-up and javap excerpt were drafted by the assistant.
+
+**What I asked:** run the extractor on real fastjson (FJ-01 at depths 1 and 2) and settle
+`defaultTimeZone` vs `defaultLocale`.
+
+**What was retained:** the run results, the javap excerpt
+(`evidence/javap-dumps/phase5-fastjson.txt`), the evidence entry and claims-ledger rows E10/E11.
+
+**What I changed:** *fill after review.*
+
+**How it was verified:** real runs only, see `docs/evidence-m1.md`. CLI and in-process API agree.
+JDK 8 and JDK 21 javap agree. Every offset on the depth-4 path was checked against the JDK 8 javap
+excerpt.
+
+**Errors found:**
+- My original brief named `DateFieldTest8` as FJ-01's polluter and `defaultTimeZone` as its
+  resource; the POC records name `DateFieldFormatTest` and `defaultLocale`. Both state-setters were
+  run; the time-zone question was settled by arithmetic on the test's constants.
+- POC claim C6 (FJ-02 read at `TypeUtils.cast@536`, two hops): the location was reproduced, but
+  at depth 5, not depth 3. The first draft of this entry wrongly said `TypeUtils.cast` was not
+  reached; a check run before hand-over showed it is, and the text was corrected.
+- Two scratch-script slips (wrong output key, a missing `time` binary, a javap filter that skipped
+  `throws` methods) were caught and rerun. None touched the repository.
+
+**Rejections:** raising the depth cap in the code. It changes the contract's accepted values, so
+it is a team decision. The depth-4/5 results are labelled exploration.
+
+Ownership checkpoint: you need to understand and verify this implementation before claiming it as your contribution.
