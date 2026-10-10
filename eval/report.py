@@ -12,6 +12,16 @@ through a one-level helper call (e.g. F2's FeatureVictimTest reads the property 
 FeatureFlags.isTurboEnabled(), not in the test method itself) -- flagged by Member 2, see
 docs/evidence-m3.md.
 
+With several polluters (W10, ADR-007), a caller's `resource_fields` can have
+`shared_resource=None` (because not every polluter has an edge, so none is shown as the primary
+resource) while still naming, in `limitations`, which polluters DID have an edge. Appending this
+module's own generic "No polluter-write/victim-read resource edge was found by static analysis"
+on top of that would contradict it. `resource_fields` may therefore carry an optional
+`any_edge_found: bool` key (absent for the ordinary single-polluter case, e.g. M1's
+`report_fields()` output): when present, it -- not `shared_resource is not None` -- decides
+whether the generic line is added. Flagged by Member 2 against PR #35 (W10); see
+docs/evidence-m3.md.
+
 Only two of runner.diagnose's four DiagnosisRuns.status values are wired end to end here:
 POLLUTER_FOUND and VICTIM_FAILS_ALONE. NOT_REPRODUCED and NO_SINGLE_POLLUTER are deliberately
 NOT handled -- see UnhandledStatus and docs/evidence-m3.md for why: runner.diagnose short-
@@ -40,8 +50,9 @@ def assemble_report(
     confidence: float = 0.95,
 ) -> dict:
     """Build and validate one diagnosis report from a DiagnosisRuns and (for POLLUTER_FOUND)
-    `resource_fields` -- the output of evidence.extract.report_fields(pair), itself built
-    from evidence.extract.find_edges(polluter_id, polluter_access, victim_id, victim_access).
+    `resource_fields` -- the output of evidence.extract.report_fields(pair) (one polluter) or a
+    caller's own combination of several such results (W10, several polluters; see module
+    docstring for the optional `any_edge_found` key that case can set).
     Raises UnhandledStatus for any status other than POLLUTER_FOUND or VICTIM_FAILS_ALONE --
     see module docstring."""
     if diagnosis.status not in (POLLUTER_FOUND, VICTIM_FAILS_ALONE):
@@ -51,6 +62,7 @@ def assemble_report(
         )
     fields = resource_fields if diagnosis.status == POLLUTER_FOUND else None
     edge_found = bool(fields and fields["shared_resource"] is not None)
+    any_edge_found = fields.get("any_edge_found", edge_found) if fields else False
 
     decision_input = DecisionInput(
         source_integrity_passed=diagnosis.source_integrity.passed,
@@ -73,7 +85,7 @@ def assemble_report(
     if diagnosis.status == POLLUTER_FOUND:
         if fields:
             limitations += fields["limitations"]
-        if not edge_found:
+        if not any_edge_found:
             limitations.append("No polluter-write/victim-read resource edge was found by static analysis.")
 
     report = {

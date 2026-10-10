@@ -103,6 +103,56 @@ class TestAssembleReport(unittest.TestCase):
         self.assertEqual(report["outcome"], "UNRESOLVED")
         self.assertEqual(report["unresolved_reason"], "NO_SUPPORTED_RESOURCE_EVIDENCE")
         self.assertIsNone(report["shared_resource"])
+        self.assertIn(
+            "No polluter-write/victim-read resource edge was found by static analysis.",
+            report["limitations"],
+        )
+        validate_report(report)
+
+    def test_several_polluters_partial_evidence_suppresses_the_generic_no_edge_line(self):
+        """W10 (ADR-007): a caller combining several polluters' pair-mode results can set
+        shared_resource=None (not every polluter has an edge, so none is shown as the primary
+        resource) while any_edge_found=True (some polluter did have one) and name the specifics
+        in limitations. The generic blanket line would contradict that and must not appear."""
+        fields = {
+            "shared_resource": None, "polluter_write_location": None, "victim_read_location": None,
+            "instrumentation_level": "static-only", "any_edge_found": True,
+            "limitations": [
+                "Polluter odfixture.ToggleAPolluterTest#setFlagA: shared resource "
+                "odfixture.Toggles#flagA was found, but not every polluter has evidence",
+                "No polluter-write/victim-read resource edge was found for polluter "
+                "odfixture.ToggleBPolluterTest#setFlagB",
+            ],
+        }
+        diagnosis = _diagnosis(POLLUTER_FOUND, polluters=[POLLUTER, TestIdentifier("x", "y")])
+        report = assemble_report(diagnosis, fields)
+        self.assertEqual(report["unresolved_reason"], "NO_SUPPORTED_RESOURCE_EVIDENCE")
+        self.assertIsNone(report["shared_resource"])
+        self.assertNotIn(
+            "No polluter-write/victim-read resource edge was found by static analysis.",
+            report["limitations"],
+        )
+        self.assertIn(
+            "Polluter odfixture.ToggleAPolluterTest#setFlagA: shared resource "
+            "odfixture.Toggles#flagA was found, but not every polluter has evidence",
+            report["limitations"],
+        )
+        validate_report(report)
+
+    def test_several_polluters_zero_evidence_keeps_the_generic_no_edge_line(self):
+        """Same shape as above, but no polluter had any edge at all (any_edge_found=False) --
+        the generic line is the correct, non-contradictory thing to say here."""
+        fields = {
+            "shared_resource": None, "polluter_write_location": None, "victim_read_location": None,
+            "instrumentation_level": "static-only", "any_edge_found": False,
+            "limitations": ["No polluter-write/victim-read resource edge was found for polluter x#y"],
+        }
+        diagnosis = _diagnosis(POLLUTER_FOUND, polluters=[POLLUTER, TestIdentifier("x", "y")])
+        report = assemble_report(diagnosis, fields)
+        self.assertIn(
+            "No polluter-write/victim-read resource edge was found by static analysis.",
+            report["limitations"],
+        )
         validate_report(report)
 
     def test_polluter_found_weak_reproduction_gives_candidate(self):
