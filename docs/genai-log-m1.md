@@ -329,3 +329,51 @@ excerpt.
 it is a team decision. The depth-4/5 results are labelled exploration.
 
 Ownership checkpoint: you need to understand and verify this implementation before claiming it as your contribution.
+
+## 2026-10-10 — Depth measurements and ADR-006 (proposed)
+
+**Assistance level:** L2 (Moderate): the assistant ran the measurements and drafted the ADR; I
+chose the option.
+
+**What I asked:** draft a note for the team on the depth range before Phase 6.
+
+**What was retained:** the per-depth yield tables (`docs/evidence-m1.md`) and ADR-006. I chose
+"auto-deepen": accept 1–5, keep default 2, and have pair mode go deeper only when there is no
+edge and the walk was cut off.
+
+**What I changed:** *fill after review.*
+
+**How it was verified:** real exploration runs over every POC candidate for FJ-01 (72) and
+FJ-02 (722) at depths 1–5, and the fixture matrix at depths 2–5. See `docs/evidence-m1.md`.
+
+**Errors found:** the first ADR draft said "nothing changes for callers". That is wrong:
+`find_edges` receives tests that are already analysed, so deepening needs a new helper that Member
+2 and Member 3 would switch to. Corrected before hand-over. The ADR number moved from 005 to 006
+because Member 2's ADR-005 (W9 command) merged first.
+
+**Rejections:** editing the contract. The change is written as a proposal in ADR-006 for M2 and
+M3 to agree.
+
+Ownership checkpoint: you need to understand and verify this implementation before claiming it as your contribution.
+
+## 2026-10-10 — Phase 6: lifecycle writes as polluter edges
+
+**Assistance level:** L3 (Substantial): the tests and the self-test class were generated.
+
+**What I asked:** start Phase 6 (the required-test list from the brief).
+
+**What was retained:** two pair tests (a `setUp` write and a test-class `<clinit>` write as the
+polluter side of an edge), one CLI test (unknown victim in pair mode exits 2), and
+`M1ClinitReaderSelfTest.java`.
+
+**What I changed:** *fill after review.*
+
+**How it was verified:** 33 tests OK on javap 21 and JDK 8 javap; expected offsets read by hand
+from JDK 8 javap; mutation check. See `docs/evidence-m1.md`.
+
+**Errors found:** the first mutation script changed nothing (it filtered the wrong return value),
+which made the tests look unbreakable. It was fixed, and the tests then failed as expected.
+
+**Rejections:** changing how `<clinit>` is attributed. The contract already covers FR-3.
+
+Ownership checkpoint: you need to understand and verify this implementation before claiming it as your contribution.

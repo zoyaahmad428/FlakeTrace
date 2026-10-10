@@ -395,3 +395,81 @@ Member 3's recorded `eval/reports/f2.json` (`VERIFIED`) was compared with a live
 extractor on the F2 pair: `shared_resource`, `polluter_write_location` (`enableTurbo@4`) and
 `victim_read_location` (`FeatureFlags.isTurboEnabled@2`) are identical, and the report carries the
 7 fixed limitation lines. The end-to-end run itself is Member 3's ([[evidence-m3]]).
+
+## Depth decision data for ADR-006 (2026-10-10)
+
+**Requirement:** decide whether depth 1–3 is enough, using measurements rather than the two
+fastjson pairs alone. The yardstick is the POC's real runs: `od_relevant` in
+`POC/results/scan_FJ-01.csv` and `scan_FJ-02.csv`. It is `YES` when running that candidate before
+the victim changed the victim's result.
+
+**Exploration only.** A scratch script (`depth_yield.py`) lifts the depth cap in memory. For every
+POC candidate it runs `analyse_test` + `find_edges` against the victim and counts the candidates
+with at least one edge, split by `od_relevant`. Same fastjson build as Phase 5 part 2, javap
+21.0.12.1, one run.
+
+| Case | Depth | Real (`YES`) with edge | Not real (`NO`) with edge | Seconds (all candidates) |
+| --- | --- | --- | --- | --- |
+| FJ-01 | 1 / 2 / 3 | 0/42 · 0/42 · 0/42 | 0/30 · 0/30 · 0/30 | 22.4 · 25.9 · 30.2 |
+| FJ-01 | 4 | **42/42** | 1/30 | 34.8 |
+| FJ-01 | 5 | 42/42 | 1/30 | 45.8 |
+| FJ-02 | 1 / 2 / 3 | 0/24 · 0/24 · 0/24 | 0/698 · 0/698 · 0/698 | 143.3 · 148.3 · 156.1 |
+| FJ-02 | 4 | 1/24 | 0/698 | 163.2 |
+| FJ-02 | 5 | **24/24** | 0/698 | 180.7 |
+
+No candidate failed to analyse (errors 0 in every row).
+
+- **The one false edge** (FJ-01, depths 4 and 5) is `DateTest2#test_date`. It writes
+  `JSON.defaultTimeZone` at `DateTest2.test_date@5`, but sets America/Chicago (source line 22) and
+  restores the old value in `tearDown` (line 18). In the POC's run the victim still failed after
+  it. This is the contract limitation "written values are not modelled".
+- **Fixture at depths 2–5** (all 156 ordered pairs, same scratch matrix as Phase 5 part 1, main
+  `6b5e065`): exactly the 4 ground-truth edges at every depth, nothing else.
+- **Limitation:** two cases from one project. The data shows depth 4–5 is needed and cheap in
+  false edges here; it does not show the bound 5 is right elsewhere.
+- Decision proposed from this: [[03-Design/decisions/ADR-006-evidence-depth-auto-deepen]]. Not
+  implemented.
+
+## Phase 6: lifecycle writes as polluter edges, pair-mode input error (2026-10-10)
+
+**Requirement (Phase 6 list):**
+- F1 has exactly one edge.
+- A write in `setUp` or `<clinit>` is still attributed.
+- An access found only at depth 2.
+- No shared resource gives an empty edge list plus the flag.
+- A nonexistent test or a missing directory gives an error and a non-zero exit.
+
+Already covered before this phase: F1, depth-2-only, the empty list plus flag, the missing
+directory and unknown method. `setUp`/`<clinit>` attribution was tested only in single-test
+mode, never as the polluter side of a pair edge.
+
+- Files:
+  - `evidence/tests/test_extract.py`: `PairSelfTest.test_polluter_write_in_junit3_setup_is_an_edge`,
+    `PairSelfTest.test_polluter_write_in_test_class_clinit_is_an_edge`, and
+    `CommandLineTest.test_unknown_victim_in_pair_mode_is_an_input_error`.
+  - New self-test input `evidence/tests/resources/m1-selftest/src/test/java/m1selftest/M1ClinitReaderSelfTest.java`.
+    It reads `m1.selftest.clinit`, which `M1LifecycleSelfTest`'s static initialiser writes. Before
+    this, nothing read that property, so a `<clinit>` edge could not occur.
+- Expected offsets read by hand from JDK 8 javap (`javap -c -p`, 1.8.0_502):
+  - `M1Junit3SelfTest.setUp`: `1: putstatic … SelfTestState.counter`.
+  - `M1SelfTest.writesAndReads`: `4: getstatic … SelfTestState.counter`.
+  - `M1LifecycleSelfTest.<clinit>`: `4: invokestatic … System.setProperty` (key `m1.selftest.clinit`).
+  - `M1ClinitReaderSelfTest.readsClinitProperty`: `2: invokestatic … System.getProperty`.
+- FR-3 check: the contract already settles it. A test class's own `<clinit>` is a root
+  (`via CLINIT`); another class's `<clinit>` is reported as `IMPLICIT_CLINIT` and never
+  attributed to the next test. No design change was needed.
+- Commands and real results (`mvn -B -q test-compile` of both projects, exit 0):
+  - `FLAKETRACE_REQUIRE_JVM=1 python3 -m unittest -v evidence.tests.test_extract` → `Ran 33 tests … OK`
+    (javap 21.0.12.1).
+  - Same with JDK 8 javap (`FLAKETRACE_JAVAP` → `ft-jdk8` image) → `Ran 33 tests in 74.368s … OK`.
+  - The CLI with an unknown victim class prints `error: test class not found in project classes:
+    m1selftest.NoSuchTest` and exits 2.
+- Mutation check (scratch script, roots filtered in memory):
+  - `SETUP` roots dropped → only the `setUp` test fails.
+  - `CLINIT` roots dropped → only the `<clinit>` test fails.
+  - Nothing dropped → both pass.
+  - The first version of the script filtered the wrong value (`find_roots` returns
+    `(chain, roots)`) and so changed nothing. It was fixed before these results.
+- Limitation: a test class's `<clinit>` runs once per JVM, on first use, but its writes are
+  attributed to every test of that class. Whether it has already run is execution timing, which
+  is not modelled (contract limitation 6).
