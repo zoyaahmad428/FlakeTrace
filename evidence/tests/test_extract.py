@@ -1,5 +1,5 @@
 """Tests for evidence/extract.py (Member 1): lifecycle attribution (Phase 2), call depth (Phase 3), pairs (Phase 4),
-ground truth (Phase 5), setUp/<clinit> polluter edges and pair-mode input errors (Phase 6).
+ground truth (Phase 5), setUp/<clinit> polluter edges and pair-mode input errors (Phase 6), auto-deepening (ADR-006).
 
 Input: Member 1's own test classes in evidence/tests/resources/m1-selftest/ (not a
 project fixture). Compile them first, with JDK 8 like the rest of the project:
@@ -244,6 +244,44 @@ class PairSelfTest(unittest.TestCase):
         self.assertEqual(pair["edges"][0]["polluter_write_locations"][0]["via"], "CLINIT")
 
 
+@needs(os.path.isdir(TEST_CLASSES), NO_SELFTEST)
+@needs(HAS_JAVAP, NO_JAVAP)
+class DeepeningTest(unittest.TestCase):
+    """ADR-006: pair mode goes one level deeper only while there is no edge and a walk was cut off.
+
+    M1DepthSelfTest.callsDown reads SelfTestState.counter only in level4 (depth 4); M1SelfTest
+    writes it at depth 1. Offsets read by hand from JDK 8 javap (docs/evidence-m1.md).
+    """
+
+    def pair(self, polluter, victim, **options):
+        return extract.analyse_pair(extract.Project([CLASSES, TEST_CLASSES]),
+                                    "m1selftest." + polluter, "m1selftest." + victim, **options)
+
+    def test_deepens_to_the_first_depth_with_an_edge(self):
+        pair = self.pair("M1SelfTest#writesAndReads", "M1DepthSelfTest#callsDown")
+        self.assertEqual((pair["depth_requested"], pair["depth_used"]), (2, 4))
+        self.assertEqual(edge_summary(pair), [
+            ("m1selftest.SelfTestState#counter", ["M1SelfTest.writesAndReads@1"],
+             ["M1DepthSelfTest.level4@0"])])
+
+    def test_no_deepen_analyses_at_exactly_the_requested_depth(self):
+        pair = self.pair("M1SelfTest#writesAndReads", "M1DepthSelfTest#callsDown", deepen=False)
+        self.assertEqual((pair["depth_requested"], pair["depth_used"]), (2, 2))
+        self.assertEqual(pair["edges"], [])
+        self.assertIn("DEPTH_LIMIT", [o["kind"] for o in pair["unsupported_observations"]])
+
+    def test_nothing_cut_off_means_no_deepening(self):
+        pair = self.pair("M1Junit3SelfTest#testNothing", "M1UnsupportedSelfTest#tricky")
+        self.assertEqual((pair["depth_requested"], pair["depth_used"]), (2, 2))
+        self.assertEqual(pair["edges"], [])
+        self.assertNotIn("DEPTH_LIMIT", [o["kind"] for o in pair["unsupported_observations"]])
+
+    def test_report_names_evidence_deeper_than_the_default(self):
+        fields = extract.report_fields(self.pair("M1SelfTest#writesAndReads", "M1DepthSelfTest#callsDown"))
+        self.assertIn("This evidence is 3 calls deep (depth 4, above the default 2); deeper evidence is "
+                      "more likely to be code that is reachable but never runs.", fields["limitations"])
+
+
 @needs(os.path.isdir(FIXTURE_DIRS[1]),
        "fixture not compiled: run mvn -B -q -f fixtures/od-fixture/pom.xml test-compile")
 @needs(HAS_JAVAP, NO_JAVAP)
@@ -369,6 +407,15 @@ class GroundTruthTest(unittest.TestCase):
                             self.assertEqual(pair["edges"], [])
                             self.assertTrue(pair["no_supported_resource_evidence"])
 
+    def test_ground_truth_pairs_are_found_without_deepening(self):
+        project = extract.Project(FIXTURE_DIRS)
+        for case in self.cases:
+            for polluter in case["polluters"]:
+                with self.subTest(case=case["id"], polluter=polluter["method"]):
+                    pair = extract.analyse_pair(project, self.name(polluter), self.name(case["victim"]))
+                    self.assertEqual(pair["depth_used"], 2)
+                    self.assertNotIn("calls deep", " ".join(extract.report_fields(pair)["limitations"]))
+
 
 @needs(os.path.isdir(TEST_CLASSES), NO_SELFTEST)
 class CommandLineTest(unittest.TestCase):
@@ -439,8 +486,19 @@ class CommandLineTest(unittest.TestCase):
 
     def test_unsupported_depth_is_an_input_error(self):
         done = self.run_cli("--classes", CLASSES, "--test-classes", TEST_CLASSES,
-                            "--test", "m1selftest.M1SelfTest#writesAndReads", "--depth", "4")
-        self.assert_input_error(done, "--depth must be 1, 2 or 3")
+                            "--test", "m1selftest.M1SelfTest#writesAndReads", "--depth", "6")
+        self.assert_input_error(done, "--depth must be between 1 and 5")
+
+    def test_pair_mode_deepens_and_no_deepen_stops_it(self):
+        args = ("--classes", CLASSES, "--test-classes", TEST_CLASSES,
+                "--polluter", "m1selftest.M1SelfTest#writesAndReads",
+                "--victim", "m1selftest.M1DepthSelfTest#callsDown")
+        deep = json.loads(self.run_cli(*args).stdout)["pair"]
+        self.assertEqual((deep["depth_requested"], deep["depth_used"]), (2, 4))
+        self.assertEqual([e["resource_id"] for e in deep["edges"]], ["m1selftest.SelfTestState#counter"])
+        flat = json.loads(self.run_cli(*args, "--no-deepen").stdout)["pair"]
+        self.assertEqual((flat["depth_requested"], flat["depth_used"]), (2, 2))
+        self.assertEqual(flat["edges"], [])
 
 
 if __name__ == "__main__":

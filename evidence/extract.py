@@ -8,14 +8,15 @@ It never runs tests and never writes to the class directories.
 Output format: docs/contracts/resource-evidence.md (Output 1).
 Design decisions: docs/03-Design/decisions/ADR-002-evidence-extractor-implementation.md.
 
-Status (Phase 4): depth 1-3 (the test method and its lifecycle methods, plus
-calls into the project's own classes up to --depth); single-test mode (Output 1)
-and pair mode (Output 2: resources the polluter writes and the victim reads).
+Status: depth 1-5 (the test method and its lifecycle methods, plus calls into
+the project's own classes up to --depth); single-test mode (Output 1) and pair
+mode (Output 2: resources the polluter writes and the victim reads). Pair mode
+goes one level deeper while it finds no edge and the walk was cut off (ADR-006).
 
 Usage (from the repository root):
     python3 -m evidence.extract --classes DIR --test-classes DIR --test Class#method [--depth N]
     python3 -m evidence.extract --classes DIR --test-classes DIR \
-        --polluter Class#method --victim Class#method [--depth N]
+        --polluter Class#method --victim Class#method [--depth N] [--no-deepen]
 """
 import argparse
 import json
@@ -27,7 +28,8 @@ from dataclasses import dataclass, field
 
 CONTRACT = "flaketrace.resource-evidence/v0-draft"
 DEFAULT_DEPTH = 2              # contract default (ADR-002)
-IMPLEMENTED_DEPTHS = {1, 2, 3}
+MAX_DEPTH = 5                  # ADR-006: FJ-01 needs 4, FJ-02 needs 5
+IMPLEMENTED_DEPTHS = set(range(1, MAX_DEPTH + 1))
 
 # (owner, method) -> access, for the system-property calls we understand.
 SYSPROP_CALLS = {
@@ -594,6 +596,32 @@ def find_edges(polluter_id, polluter, victim_id, victim):
             "limitations": list(FIXED_LIMITATIONS)}
 
 
+def analyse_pair(project, polluter_id, victim_id, depth=DEFAULT_DEPTH, deepen=True):
+    """Output 2 for one pair, deepening only when needed (ADR-006).
+
+    Starts at `depth`. While there is no edge and some walk stopped at the depth
+    limit, it repeats the pair one level deeper, up to MAX_DEPTH. The shallowest
+    depth with an edge wins. `deepen=False` analyses at exactly `depth`.
+    """
+    return _analyse_pair(project, polluter_id, victim_id, depth, deepen)[0]
+
+
+def _analyse_pair(project, polluter_id, victim_id, depth, deepen):
+    """analyse_pair, also returning the two Output 1 analyses at the depth used."""
+    used = depth
+    while True:
+        polluter = analyse_test(project, polluter_id, used)
+        victim = analyse_test(project, victim_id, used)
+        pair = find_edges(polluter_id, polluter, victim_id, victim)
+        cut_off = any(o["kind"] == "DEPTH_LIMIT" for o in pair["unsupported_observations"])
+        if pair["edges"] or not deepen or not cut_off or used >= MAX_DEPTH:
+            break
+        used += 1
+    pair["depth_requested"] = depth
+    pair["depth_used"] = used
+    return pair, polluter, victim
+
+
 def test_identifier(test_id):
     test_class, test_method = test_id.split("#", 1)
     return {"class": test_class, "method": test_method}
@@ -618,6 +646,11 @@ def report_fields(pair):
     fields["shared_resource"] = first["resource"]
     fields["polluter_write_location"] = location(first["polluter_write_locations"][0])
     fields["victim_read_location"] = location(first["victim_read_locations"][0])
+    deepest = max(first["polluter_write_locations"][0]["depth"], first["victim_read_locations"][0]["depth"])
+    if deepest > DEFAULT_DEPTH:
+        fields["limitations"].append(
+            "This evidence is %d calls deep (depth %d, above the default %d); deeper evidence is more "
+            "likely to be code that is reachable but never runs." % (deepest - 1, deepest, DEFAULT_DEPTH))
     for edge in pair["edges"][1:]:
         fields["limitations"].append("Another shared resource is not shown in this report: "
                                      + edge["resource_id"])
@@ -639,6 +672,8 @@ def main(argv=None):
     parser.add_argument("--polluter")
     parser.add_argument("--victim")
     parser.add_argument("--depth", type=int, default=DEFAULT_DEPTH)
+    parser.add_argument("--no-deepen", action="store_true",
+                        help="pair mode: analyse at exactly --depth (no auto-deepening)")
     args = parser.parse_args(argv)
     try:
         pair_mode = bool(args.polluter or args.victim)
@@ -651,10 +686,14 @@ def main(argv=None):
         if pair_mode and args.polluter == args.victim:
             raise ExtractError("--polluter and --victim must be different tests", 2)
         if args.depth not in IMPLEMENTED_DEPTHS:
-            raise ExtractError("--depth must be 1, 2 or 3", 2)
+            raise ExtractError("--depth must be between 1 and %d" % MAX_DEPTH, 2)
         project = Project([args.classes, args.test_classes])
-        test_ids = [args.polluter, args.victim] if pair_mode else [args.test]
-        tests = {test_id: analyse_test(project, test_id, args.depth) for test_id in test_ids}
+        if pair_mode:
+            pair, polluter, victim = _analyse_pair(project, args.polluter, args.victim,
+                                                   args.depth, not args.no_deepen)
+            tests = {args.polluter: polluter, args.victim: victim}
+        else:
+            tests = {args.test: analyse_test(project, args.test, args.depth)}
         output = {
             "contract": CONTRACT,
             "instrumentation_level": "static-only",
@@ -664,8 +703,7 @@ def main(argv=None):
             "tests": tests,
         }
         if pair_mode:
-            output["pair"] = find_edges(args.polluter, tests[args.polluter],
-                                        args.victim, tests[args.victim])
+            output["pair"] = pair
     except ExtractError as error:
         print("error: " + str(error), file=sys.stderr)
         return error.exit_code
