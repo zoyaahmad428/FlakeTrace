@@ -424,3 +424,11 @@ inputs all behaved as specified (the reviewer probed them).
   runner.tests.test_cli.TestReports runner.tests.test_diagnose.TestRunSteps` → before the fixes
   `FAILED (failures=1, errors=3)`; after `Ran 25 tests — OK`. Real `test_unknown_victim_exits_2` → OK.
 - Full runner suite: `Ran 78 tests in 233.104s — OK`. `git status --short fixtures/` empty.
+
+### 2026-10-10 — W9 CI result (PR #26)
+
+- PR #26 (`m2/w9-cli`) after merging `main` into it (commit `6caaaaf`): job `runner` (JDK 8, Linux)
+  → `Ran 78 tests in 82.588s — OK` (line copied from the job log by Member 2). Same count as locally,
+  so the 5 real CLI runs (F1 as a separate process, F2, F3, N1, unknown victim) pass on Linux/JDK 8 too.
+- Merge conflicts resolved in `claims-ledger.md` (our claim renumbered E10 → E12; M1 had added
+  E10/E11), `demo-plan.md`, `iteration-plan.md`, `members.md` — newer M1/M3 rows kept, M2 rows added.
