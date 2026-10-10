@@ -524,7 +524,7 @@ VERIFIED  odfixture.ToggleVictimTest#expectsNotBothFlagsSet
   odfixture.ToggleBPolluterTest#setFlagB: shared resource odfixture.Toggles#flagB is not shown in this
   report".
 - Docs: `runner/README.md`, [[04-Implementation/diagnose-cli]], demo plan (F3 row, known
-  limitations, Runner row), iteration plan W10, members, claims E9/E12 updated and new E13, an update
+  limitations, Runner row), iteration plan W10, members, claims E9/E12 updated and new E14 (numbered E13 until merging main, where M1 added E13), an update
   note in ADR-005. `fixtures/od-fixture/ground_truth.json`'s F3 note ("needs W10") is M3's — not edited.
 - CI on JDK 8: not yet run (runs on the PR).
 
@@ -549,7 +549,7 @@ plan: no critical; three important; six minor. All five review-focus items held 
   M3's generic line says no edge was found; that line is in `eval/` (M3). Recorded in ADR-007; M3 asked
   to make it conditional.
 - Docs honesty (minors 5, 6): ADR-007's cost sentence corrected (the search still runs once per test);
-  claim E13 status SETTLED → OPEN until CI and M1/M3 agreement. The exit-3 message for
+  claim E14 (then E13) status SETTLED → OPEN until CI and M1/M3 agreement. The exit-3 message for
   `NO_SINGLE_POLLUTER` now says the failure did not come back and is likely flaky (minor 9).
 - Real F3 after the fix (`diagnose(..., n=5)`): `POLLUTER_FOUND`, same polluters, search 12, minimise
   **10** (1 re-check + 9 `ddmin`), verify 5/5.

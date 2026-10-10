@@ -377,3 +377,33 @@ which made the tests look unbreakable. It was fixed, and the tests then failed a
 **Rejections:** changing how `<clinit>` is attributed. The contract already covers FR-3.
 
 Ownership checkpoint: you need to understand and verify this implementation before claiming it as your contribution.
+
+## 2026-10-10 — ADR-006 implementation: depth 1–5 and pair-mode auto-deepening
+
+**Assistance level:** L3 (Substantial): the code, tests and contract text were generated from the
+agreed ADR.
+
+**What I asked:** implement ADR-006 now that M2 and M3 agreed.
+
+**What was retained:**
+- `MAX_DEPTH`, `analyse_pair` / `_analyse_pair`, `--no-deepen` and the depth `limitations` line
+  (Member 2's request).
+- 6 new tests.
+- The contract edit exactly as the ADR proposed; README, implementation note, demo plan and ADR
+  status updated.
+
+**What I changed:** *fill after review.*
+
+**How it was verified:**
+- 39 tests OK on JDK 21 and JDK 8 javap.
+- Member 3's 68 eval tests and Member 2's 20 CLI tests OK.
+- Mutation check.
+- fastjson FJ-01/FJ-02 through the real CLI. See `docs/evidence-m1.md`.
+
+**Errors found:** none in the code. A finding was recorded instead: on FJ-01 the report's single
+resource is `defaultLocale` (tie-break by name), not the causal `defaultTimeZone`.
+
+**Rejections:** changing the edge ordering to favour the "right" field. Static evidence cannot
+know which field is causal, and the ordering is part of the agreed contract.
+
+Ownership checkpoint: you need to understand and verify this implementation before claiming it as your contribution.

@@ -841,3 +841,145 @@ new production code, only adding the case to the integration script.
   W10 (multi-polluter search/minimisation, M2, not started: confirmed by reading
   `runner/search.py`, which has only a one-by-one `find_polluter`, no deletion-minimisation
   module).
+
+## 2026-10-10 — Answered 3 open contract questions; agreed ADR-005
+
+**Requirement:** a full `docs/` read-through (same session as the N2 addition above) surfaced
+three questions in `docs/contracts/resource-evidence.md` marked `OPEN (Member 3)`, and ADR-005
+(`docs/03-Design/decisions/ADR-005-w9-diagnose-cli.md`, M2's real W9 CLI design) needing M3's
+agreement. Decided with the member, not unilaterally — each answer below was proposed, the
+member confirmed "go with your recommendations," then written.
+
+- **Q2 (`victim_read_location` naming a helper, not the test method):** answered **yes, that is
+  the intended meaning** — it names where the read instruction actually executes (F2:
+  `FeatureFlags#isTurboEnabled@2`), symmetric with `polluter_write_location`. No code or schema
+  change: confirms `eval/report.py`'s existing behaviour, which already takes `report_fields`'s
+  locations as-is.
+- **Q4 (ground truth has no expected bytecode offsets, Phase 5 checks resources only):**
+  answered **acceptable** — `GroundTruthTest` already catches the failure mode that matters
+  (wrong resource) automatically on every change; exact offsets were hand-verified for F1 and
+  spot-checked for F2 (independently, by Member 1, against `eval/reports/f2.json`). Encoding
+  exact offsets into `ground_truth.json` would be brittle for little extra protection.
+- **Q6 (BRITTLE cases, POC FJ-01's inverse-polluter shape):** answered **out of scope for
+  Iteration 1**, same boundary as filesystem evidence — no fixture case exercises it, so there
+  is no real case to drive a new outcome category under schedule pressure.
+  `UNRESOLVED(VICTIM_FAILS_ALONE)` is not wrong for a brittle case (the victim genuinely does
+  fail alone), just not the most informative category; a distinct reason is named as Iteration
+  2 work if a real brittle case (e.g. a fastjson pair) turns up in evaluation.
+- **ADR-005 agreement:** ticked M3's row — `assemble_report(runs, fields)` as the only report
+  builder and catching `UnhandledStatus` both match what Phase-W9 work (above) already built
+  and verified; nothing in the ADR asks `eval/` to change.
+- Command: `py -m unittest discover -s eval/tests -v` (unaffected — these are doc-only
+  decisions, no code touched). Result: 68/68 passed.
+- Limitation: M1's row in ADR-005 is still unticked, so the ADR is not yet fully agreed by all
+  three members — only M3's part of this entry is closed. (Later ticked by M1 in PR #30 —
+  ADR-005 is now fully agreed.)
+
+## 2026-10-10 — Agree ADR-006 (evidence depth 1–5); ADR-007 decided, not yet tickable
+
+**Requirement:** two more ADRs appeared needing M3's agreement, found while re-checking repo
+state for "what's left for M3": ADR-006 (M1, `docs/03-Design/decisions/ADR-006-evidence-depth-
+auto-deepen.md` — accept depths 1–5, pair mode auto-deepens one level at a time only when
+`DEPTH_LIMIT` was hit, stopping at the shallowest edge; new `analyse_pair()` helper) and ADR-007
+(M2, on branch `m2/w10-minimise`, not yet a PR — `ddmin` multi-polluter minimisation for F3,
+reusing `POLLUTER_FOUND` with a list of polluters).
+
+- **ADR-006: ticked M3's row, agree.** Reasoning: the shallowest-depth-wins rule means F1/F2/F3
+  keep paying exactly what they pay today (`depth_used` 2), while fastjson's real cases (depth
+  4 and 5) become explainable instead of permanently `NO_SUPPORTED_RESOURCE_EVIDENCE`. The
+  alternative of raising the *default* depth to 5 would make every pair pay the most expensive,
+  most over-approximated walk even when depth 2 already has the answer — worse for the common
+  case to fix the rare one. Noted the follow-up this creates: once M1's `analyse_pair()` lands,
+  `eval/report.py`'s callers (`eval/tools/run_w9_integration.py`, and M2's `runner/cli.py`)
+  switch their separate `analyse_test`+`find_edges` calls to the one helper — not done yet,
+  since `analyse_pair` doesn't exist in `main` yet.
+- **ADR-007: agree in principle, not yet ticked in the file.** The ADR only exists on M2's own
+  in-progress branch (`m2/w10-minimise`), not `main`, and there is no PR for it yet — nothing to
+  safely commit the tick against without writing onto another member's unfinished branch.
+  Recorded here instead: I agree with the proposed rule ("`POLLUTER_FOUND` reused for several
+  polluters; first polluter's resource shown, the rest named in `limitations`") because it
+  applies the exact same shape already agreed for Q1/Q4 (`edges[0]` plus a `limitations` note)
+  to a new case, rather than inventing a new rule under schedule pressure. `eval.report.
+  assemble_report` already accepts a multi-element `diagnosis.polluters` list with no code
+  change (`report["polluters"] = [p.to_dict() for p in diagnosis.polluters]` already loops).
+  Will tick ADR-007's actual file once M2 opens a PR for W10.
+- Command: `py -m unittest discover -s eval/tests -v` (unaffected — doc-only session).
+  Result: 68/68 passed.
+
+## 2026-10-10 — Switch to M1's real `analyse_pair()` (ADR-006 follow-up)
+
+**Requirement:** ADR-006's agreement text committed to switching `eval/report.py`'s callers to
+`evidence.extract.analyse_pair()` once it landed. Member 1 merged it for real (PR #34) the
+same day.
+
+- Checked first, before changing anything: `eval/report.py` itself needed no change — it
+  already takes `report_fields(pair)`'s output as an opaque `resource_fields` argument and has
+  never called `analyse_test`/`find_edges` directly. Only `eval/tools/run_w9_integration.py`
+  (the actual caller) needed the switch.
+- File/function: `eval/tools/run_w9_integration.py` — `run_f1()`/`run_f2()` now call
+  `evidence.extract.analyse_pair(project, polluter_id, victim_id)` (default depth 2,
+  auto-deepen) in place of separate `analyse_test(..., depth=DEFAULT_DEPTH)` calls for the
+  polluter and victim combined with `find_edges()`.
+- Command: `py -m unittest discover -s eval/tests -v`. Result: 68/68 passed (no test exercises
+  this script directly, as documented in its own module docstring).
+- Command: `py eval/tools/run_w9_integration.py` (real Maven/JDK run, native Windows JDK 24).
+- Result: **F1 → `VERIFIED`, F2 → `VERIFIED`, N1/N2 → `UNRESOLVED(VICTIM_FAILS_ALONE)`** — all
+  four unchanged. Diffed the regenerated `eval/reports/{f1,f2,n1}.json` against the previously
+  committed versions: identical except the execution-record timestamp (confirms F1 and F2 both
+  still resolve their real edge at depth 2, exactly as before — the auto-deepening adds no
+  cost here, only capability for deeper real cases). `n2.json` differs by its alone-success
+  count (9/20 this run vs 12/20 previously) and the timestamp only — expected, since N2 is
+  intermittent by design; the outcome itself (`VICTIM_FAILS_ALONE`) is unchanged.
+- File/function: `eval/reports/README.md` — documented the switch and why it changes nothing
+  observable on the fixture.
+- Limitation: none introduced. This only removes a dependency on the now-deleted separate
+  `analyse_test`+`find_edges` call pattern; fastjson still has not been run through the full
+  `diagnose()` pipeline (only through the extractor, as before).
+
+## 2026-10-10 — Fix a real contradiction Member 2 found in W10's evidence wording (PR #35)
+
+**Requirement:** Member 2's W10 PR (#35, F3 now `VERIFIED` end to end via `ddmin` minimisation)
+flagged a real bug against `eval/report.py`: their new multi-polluter combining function
+(`runner/cli.py`'s `combine_fields`, on branch `m2/w10-minimise`) can set
+`shared_resource=None` (because not every polluter has an edge, so none is shown as the
+primary resource) while its own `limitations` already name which specific polluters *did*
+have an edge. `assemble_report`'s unconditional "No polluter-write/victim-read resource edge
+was found by static analysis" line, appended whenever `shared_resource is None`, directly
+contradicts those specific lines.
+
+- Read the real diff before fixing anything: `git diff origin/main...origin/m2/w10-minimise --
+  runner/cli.py` on `m2/w10-minimise` commit `8a16388`. Confirmed the exact shape:
+  `combine_fields`'s "not every polluter has evidence" branch returns
+  `dict(fields[0], shared_resource=None, ..., limitations=lines + found + missing)` where
+  `found`/`missing` already say, per polluter, whether its edge was found.
+- File/function: `eval/report.py` — `assemble_report` now reads an optional
+  `any_edge_found: bool` key from `resource_fields` (defaulting to the old
+  `shared_resource is not None` check when the key is absent, so M1's ordinary
+  single-polluter `report_fields()` output, which never sets this key, is completely
+  unaffected). The generic blanket line is now gated on `any_edge_found`, not `edge_found`.
+  `edge_found` itself is unchanged and still drives `DecisionInput.resource_edge_exists` (the
+  VERIFIED/NO_SUPPORTED_RESOURCE_EVIDENCE decision) — only the limitations *text* changes, not
+  the outcome logic, which already matches ADR-007's rule ("VERIFIED only if every polluter has
+  an edge") with no change needed.
+- File/function: `eval/tests/test_report.py` — two new tests:
+  `test_several_polluters_partial_evidence_suppresses_the_generic_no_edge_line` (some edge
+  found, `any_edge_found=True` → generic line absent, specific lines present) and
+  `test_several_polluters_zero_evidence_keeps_the_generic_no_edge_line` (`any_edge_found=False`
+  → generic line present, correctly). Strengthened the existing
+  `test_polluter_found_without_edge_gives_no_supported_resource_evidence` to assert the
+  generic line is still present for the plain single-polluter case (backward compatibility).
+- Mutation check: changed `if not any_edge_found:` back to `if not edge_found:` — the new
+  partial-evidence test failed exactly as expected, reproducing the contradiction verbatim
+  (`'...found by static analysis.' unexpectedly found in [...]`); restored
+  (`git diff eval/report.py` clean after).
+- Command: `py -m unittest discover -s eval/tests -v`. Result: **70/70 passed** (68 existing +
+  2 new).
+- Limitation: this only fixes the wording contradiction in `eval/report.py`. It does not land
+  M2's `combine_fields` change itself (`runner/cli.py`, their file, still on their own
+  unmerged branch) — their combining function needs one more line once this fix merges:
+  `any_edge_found=bool(found)` added to the returned dict in the "not every polluter has
+  evidence" branch. Flagged back to Member 2 rather than edited myself (not my folder).
+- Also recorded: agreement with ADR-007's per-polluter report rule (first polluter's resource
+  shown, others named in `limitations`, `VERIFIED` only if every polluter has an edge) as asked
+  in PR #35's description — not yet tickable in the ADR file itself, same situation as
+  ADR-006 before it merged: the file exists only on Member 2's unmerged branch, not `main`.

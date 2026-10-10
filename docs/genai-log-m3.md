@@ -551,3 +551,142 @@ before claiming it as your contribution. Be able to explain why N2's status chan
 `NOT_REPRODUCED` to `VICTIM_FAILS_ALONE` across the mechanism fix (it's about what the
 isolation check observes, not about `assemble_report`), and why that specific status was
 already handled while `NOT_REPRODUCED` and `NO_SINGLE_POLLUTER` still are not.
+
+## 2026-10-10 — Answer 3 open contract questions, agree ADR-005
+
+**What I asked:** Same session's docs survey also surfaced ADR-005 (M2's real W9 CLI,
+`py -m runner diagnose`) awaiting M3's agreement, and three `OPEN (Member 3)` questions in
+`docs/contracts/resource-evidence.md`. I proposed an answer to each with a one-line
+recommendation and reasoning, then asked the member to decide before writing anything — this
+is a contract document and a defense-facing design record, not ordinary code.
+
+**What was retained:** All three recommendations and the ADR-005 agreement, taken as given
+("go with your recommendations... tick ADR-005") rather than argued over — but each one had
+already been reasoned through and justified against real evidence before being offered, not
+asserted blind:
+- Q2: `victim_read_location` naming a helper method is correct as-is (matches existing
+  `eval/report.py` behaviour; no change needed).
+- Q4: resource-only automatic ground-truth checking plus hand-verified offsets is enough,
+  given `GroundTruthTest` already catches the failure mode that matters.
+- Q6: brittle cases are out of scope for Iteration 1, on the same basis as other explicitly
+  descoped resource families — no real case exists yet to justify inventing a new outcome
+  category under schedule pressure.
+- ADR-005: ticked, since it only ratifies what the already-verified W9 CLI work does.
+
+**What I changed:** Nothing code-side — this entire session was documentation/decision work,
+no production code touched.
+
+**How it was verified:** `py -m unittest discover -s eval/tests -v` → 68/68 passed (sanity
+check that nothing broke, though none of this touched `eval/`'s code).
+
+**Errors found:** None.
+
+**Rejections:** None — the member accepted all recommendations as given.
+
+Ownership checkpoint: you need to be able to explain and defend each of these three answers
+yourself, especially Q6 — a panel question about brittle/inverse-polluter cases should get
+"explicitly out of scope for Iteration 1, here's why, here's the Iteration 2 plan," not a
+blank look. Also be able to say what ADR-005 actually commits to (that `assemble_report` is
+the single report builder, called the same way regardless of caller) and why that matters for
+keeping one source of truth across M2's CLI and your own `eval/tools/run_w9_integration.py`.
+
+## 2026-10-10 — Agree ADR-006; record ADR-007 agreement pending a PR
+
+**What I asked:** Re-checked repo state (unprompted follow-up to the earlier docs survey) and
+found two more ADRs awaiting M3's agreement, ADR-006 and ADR-007. Presented both with a
+recommendation and reasoning; member said "go with your recommendations on both."
+
+**What was retained:** Both recommendations (agree to ADR-006; agree to ADR-007 in principle).
+For ADR-006 I also noticed and flagged, unprompted, that it couldn't be ticked blindly —
+M2's own agreement comment on it carries two real requests (`report_fields` gets a new
+`limitations` line above depth 2; M2 switches `runner/cli.py` to `analyse_pair` once it
+exists), which I read before ticking rather than rubber-stamping the checkbox.
+
+**What I changed:** For ADR-007, changed the plan from "tick the file" to "record the decision
+in the evidence/genai logs now, tick the actual ADR file once a PR exists" — the ADR currently
+lives only on Member 2's own unfinished branch (`m2/w10-minimise`), not `main`, so there was
+nothing in my own checkout to safely commit a tick against without writing onto someone else's
+in-progress branch. This was my own judgment call, not something the member specified.
+
+**How it was verified:** `py -m unittest discover -s eval/tests -v` → 68/68 passed (doc-only
+session, sanity check only).
+
+**Errors found:** None.
+
+**Rejections:** None.
+
+Ownership checkpoint: be able to explain why ADR-006's auto-deepening starts shallow and stops
+at the first edge found, rather than always walking to depth 5 — the cost/over-approximation
+trade-off is the entire reason the ADR exists instead of just raising the default depth. Also
+be ready to explain why `eval.report.assemble_report` needed zero code changes to accept
+ADR-007's multi-polluter `POLLUTER_FOUND` case (the field was already a list).
+
+## 2026-10-10 — Switch to analyse_pair() once Member 1 landed it
+
+**What I asked:** Told to go ahead with the ADR-006 follow-up I'd flagged earlier: switching
+`eval/report.py`'s callers to Member 1's new `analyse_pair()`, now that PR #34 merged it for
+real the same day.
+
+**What was retained:** The scoping decision — checking first that `eval/report.py` itself
+needed no change (it was already caller-agnostic), so only `eval/tools/run_w9_integration.py`
+needed editing. This was my own read of the code before touching anything, not assumed from
+the ADR text alone.
+
+**What I changed:** Nothing rejected — straightforward substitution once the dependency
+existed for real.
+
+**How it was verified:** `py -m unittest discover -s eval/tests -v` → 68/68 passed. Real run
+of `eval/tools/run_w9_integration.py` → F1/F2 still `VERIFIED`, N1/N2 still
+`UNRESOLVED(VICTIM_FAILS_ALONE)`. Diffed the regenerated reports against the previously
+committed ones: F1/F2/N1 identical apart from the execution-record timestamp (direct proof
+the auto-deepening didn't change anything at depth 2); N2's alone-success count differs
+(9/20 vs 12/20) because N2 is genuinely intermittent by design, not because of this change.
+
+**Errors found:** None.
+
+**Rejections:** None.
+
+Ownership checkpoint: be able to explain why diffing the regenerated reports against the
+previously committed ones (not just checking the outcome string) is the real proof this change
+was safe — matching outcomes alone would not have caught a silently different resource or
+location.
+
+## 2026-10-10 — Fix the evidence-wording contradiction Member 2 found (W10, PR #35)
+
+**What I asked:** Member 2's W10 pull request (F3 now `VERIFIED` via real `ddmin`
+minimisation) named a concrete bug in my `eval/report.py` and asked for a fix: their new
+multi-polluter combining function can report specific per-polluter findings (some found, some
+not) while my code's generic catch-all statement contradicts them. Asked to read their actual
+diff before designing a fix, not to guess at the shape from the PR description alone.
+
+**What was retained:** My own design for the fix — an optional `any_edge_found` key on the
+`resource_fields` dict, defaulting to the old check when absent, so the ordinary
+single-polluter path (M1's `report_fields()`, which never sets this key) is provably
+unaffected. I chose this over alternatives (e.g.\ string-matching the limitations text, or
+adding a new parameter to `assemble_report`) because it keeps the API surface the same size
+and puts the new information where it naturally belongs — inside the dict that already carries
+per-call resource information.
+
+**What I changed:** Nothing rejected this session — this was my own proposed fix, verified
+before being presented as done.
+
+**How it was verified:**
+- Read Member 2's actual diff (`git diff origin/main...origin/m2/w10-minimise -- runner/cli.py`)
+  before writing anything, to see the exact shape of the contradiction rather than trust the PR
+  description's summary of it.
+- Two new tests plus a strengthened existing one; `py -m unittest discover -s eval/tests -v` →
+  70/70 passed.
+- Mutation check: reverted the fix's condition back to the old check — the new partial-evidence
+  test failed, reproducing the exact contradiction Member 2 described, verbatim in the
+  assertion output. Restored, confirmed `git diff eval/report.py` clean.
+
+**Errors found:** The contradiction itself — found and named by Member 2, not by me;
+confirmed by reading their real diff rather than assumed from the PR description.
+
+**Rejections:** None.
+
+Ownership checkpoint: be able to explain why `edge_found` (which drives the actual
+VERIFIED/NO_SUPPORTED_RESOURCE_EVIDENCE decision) and `any_edge_found` (which only decides
+whether one sentence of text is added) are deliberately two different values that can disagree
+— and why fixing wording, not outcome logic, was the correct scope here; the decision already
+matched ADR-007's rule with no change needed.

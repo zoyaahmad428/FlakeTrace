@@ -1,8 +1,8 @@
 # ADR-006 — Resource evidence depth: accept 1–5 and deepen pair mode only when needed
 
-**Date:** 2026-10-10 · **Status:** `PROPOSED`, chosen by M1. It changes
-[docs/contracts/resource-evidence.md](../../contracts/resource-evidence.md), so it needs M2's
-and M3's agreement before any code changes · **Owner:** M1 (evidence) · **Work package:** W8 ·
+**Date:** 2026-10-10 · **Status:** `ACCEPTED` by M1, M2 and M3 (PRs #28, #29, #33) and
+implemented, together with the change to
+[docs/contracts/resource-evidence.md](../../contracts/resource-evidence.md), in M1's `m1/adr006-deepen` PR · **Owner:** M1 (evidence) · **Work package:** W8 ·
 **Builds on:** [[03-Design/decisions/ADR-002-evidence-extractor-implementation]],
 [[03-Design/decisions/ADR-005-w9-diagnose-cli]]
 
@@ -82,8 +82,9 @@ In [docs/contracts/resource-evidence.md](../../contracts/resource-evidence.md):
 
 ## Consequences
 
-- A pair with no edge can cost up to four walks (depths 2–5). The total for FJ-02 is not yet
-  measured; it will be measured before the PR that implements this.
+- A pair with no edge can cost up to four walks (depths 2–5). Measured after implementation
+  (real CLI, default settings, javap 21, one run each): FJ-01 7.73 s (`depth_used` 4), FJ-02
+  24.99 s (`depth_used` 5), whole command including the deepening.
 - `depth_used` makes the over-approximation visible: a reader can see how far the evidence is
   from the test method.
 - Claims C6/C7 (FJ-02 "two hops", rank 39 → 1 at "depth 2") use the POC's hop numbering. They
@@ -104,5 +105,5 @@ In [docs/contracts/resource-evidence.md](../../contracts/resource-evidence.md):
 | Member | Agree? | Comment |
 | --- | --- | --- |
 | M1 | ☑ | Chose auto-deepening with range 1–5 on 2026-10-10 |
-| M2 | ☐ | |
-| M3 | ☐ | |
+| M2 | ☑ | Agree 2026-10-10, with two requests: (1) the report has no field for `depth_used`, so `report_fields` should add a `limitations` line when evidence was found above depth 2 (deeper evidence over-approximates more, e.g. `DateTest2`); (2) M2 switches `runner/cli.py` to `analyse_pair` after this lands, confirming F1–F3 stay at `depth_used` 2 |
+| M3 | ☑ | Agree 2026-10-10. Shallowest-edge-wins auto-deepening explains both real fastjson cases without moving the default or paying depth-5 cost on F1/F2/F3; will switch `eval/report.py`/`eval/tools/run_w9_integration.py` to `analyse_pair` once it lands |

@@ -1,6 +1,6 @@
 # evidence/ — resource evidence (Member 1)
 
-**Owner:** Member 1 · **State:** Phase 4 done: lifecycle attribution, call depth 1–3 (default 2), single-test mode and polluter→victim edges (2026-10-09). Phase 5 (fixture and real-case validation) next.
+**Owner:** Member 1 · **State:** Phases 2–6 done and ADR-006 implemented (2026-10-10): lifecycle attribution, call depth 1–5 (default 2), single-test mode, polluter→victim edges with pair-mode auto-deepening, validated against the fixture's ground truth and real fastjson.
 
 Finds the shared resource a polluter writes and a victim reads, from **compiled bytecode
 only** — the target project's source is never modified and no application logs are needed.
@@ -41,8 +41,11 @@ python3 -m evidence.extract --classes fixtures/od-fixture/target/classes \
     --test-classes fixtures/od-fixture/target/test-classes \
     --polluter odfixture.FeaturePolluterTest#enableTurbo \
     --victim odfixture.FeatureVictimTest#expectsTurboDisabled
+# pair mode starts at --depth (default 2) and goes one level deeper, up to 5, only while it finds
+# no edge and a walk was cut off; the pair records depth_requested and depth_used (ADR-006).
+# --no-deepen analyses at exactly --depth.
 
-# one test method (default --depth 2; 1-3 accepted)
+# one test method (default --depth 2; 1-5 accepted; never deepens)
 python3 -m evidence.extract --classes fixtures/od-fixture/target/classes \
     --test-classes fixtures/od-fixture/target/test-classes \
     --test odfixture.FeatureVictimTest#expectsTurboDisabled
@@ -62,7 +65,8 @@ python3 -m evidence.tools.measure_depth --classes fixtures/od-fixture/target/cla
 An empty edge list comes with `no_supported_resource_evidence: true`. That means no *supported*
 static evidence was found, not that the tests are independent. `extract.report_fields(pair)` gives
 the three fields of Member 3's report (`shared_resource`, `polluter_write_location`,
-`victim_read_location`) as the contract's projection defines.
+`victim_read_location`) as the contract's projection defines. In-process callers use
+`extract.analyse_pair(project, polluter_id, victim_id)` to get the pair with deepening.
 
 Depth follows calls into the project's own classes only (never the JDK or other jars),
 breadth-first, each method once per root. A virtual call follows only the method it names;

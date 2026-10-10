@@ -490,7 +490,7 @@ predicting the full-suite result, fixed in Task 2 (ruling in the ledger).
 **What was asked:** Task 3 of the W10 plan.
 
 **What was retained:** `combine_fields`, per-polluter evidence in `resource_fields`, four combining
-tests, the F3 report checks, docs and claim E13.
+tests, the F3 report checks, docs and claim E14 (first numbered E13).
 
 **How it was verified:** tests failed first; the real F3 command is `VERIFIED` with `flagB` in
 `limitations`; evidence for the first polluter only made the F3 test fail; full suite 97 OK.
@@ -503,11 +503,11 @@ tests, the F3 report checks, docs and claim E13.
 
 **What was found:** important: a one-off flaky failure blamed every earlier test; a resource written
 by both polluters was called "not shown"; mixed-evidence wording conflicts with M3's generic line.
-Minors: a resource named twice, a cost claim stronger than measured, E13 marked SETTLED too early,
+Minors: a resource named twice, a cost claim stronger than measured, E14 (then E13) marked SETTLED too early,
 a missing one-test-prefix test, `minimise_runs` not in the report, an incomplete exit-3 message.
 
 **What was retained:** re-check of the full order before `ddmin`; `combine_fields` de-duplication;
-four tests that failed first; ADR-007, E13 and the note corrected; the exit-3 message rewritten.
+four tests that failed first; ADR-007, E14 and the note corrected; the exit-3 message rewritten.
 
 **What was rejected:** changing M3's generic limitation line (eval/ is M3's) — raised with M3 instead.
 
