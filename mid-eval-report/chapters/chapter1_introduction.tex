@@ -6,8 +6,36 @@
 % Rules: mid-eval-report/CLAUDE.md. Do not edit a file you do not own.
 % ===========================================================================
 \chapter{Introduction and Project Vision}
-\section{Project Overview}
-Describe the product/application/system and its intended purpose.
+\section{Project Overview}\label{ch1:sec:overview}
+FlakeTrace is a self-hosted command-line tool that diagnoses \emph{order-dependent} test failures
+in Java projects built with Maven and tested with JUnit~4 (including JUnit~3 test classes). An
+order-dependent failure happens when a test passes on its own but fails after certain other tests
+have run, because those tests left shared state behind.
+
+The developer gives FlakeTrace the project folder and the name of the failing test. In
+Iteration~1 this is one command:
+\begin{center}
+\texttt{py -m runner diagnose -{}-project <folder> -{}-victim <Class\#method>}
+\end{center}
+FlakeTrace then runs controlled test orders, each in a fresh JVM, and writes two files: an
+execution record of every run, and a JSON report that follows the team's report schema
+(Figure~\ref{ch5:fig:datamodel}). The report gives one of three outcomes:
+\begin{itemize}
+\item \texttt{VERIFIED}: the tests responsible (the \emph{polluters}), a reduced order that
+  reproduces the failure, how often it reproduced with a 95\% Wilson interval, and the shared
+  resource with the exact code locations where it is written and read;
+\item \texttt{CANDIDATE}: a reproducing order with a supporting resource, but a reproduction rate
+  below the confidence threshold;
+\item \texttt{UNRESOLVED}: no conclusion, with a typed reason such as \texttt{VICTIM\_FAILS\_ALONE}
+  or \texttt{NOT\_REPRODUCED}.
+\end{itemize}
+FlakeTrace never changes the project it analyses: it reads the compiled classes, runs the tests
+as they are, and hashes the project's files before and after every diagnosis to show this.
+
+Its purpose is to replace the manual search developers do today, rerunning subsets of the suite
+until the culprit appears, with a bounded diagnosis whose result anyone can check. It does not
+detect flaky tests in general and does not repair them. Section~\ref{ch1:sec:scope} separates
+what Iteration~1 has built from what is planned for FYP-2.
 \section{Problem Statement}
 Clearly formulate the problem being addressed.
 \section{Problem Context and Motivation}
@@ -16,7 +44,7 @@ Explain the context, stakeholders, motivation, and significance.
 State what the project intends to achieve.
 \section{Project Objectives}
 List measurable project objectives.
-\section{Project Scope}
+\section{Project Scope}\label{ch1:sec:scope}
 Define included and excluded functionality.
 \section{Project Modules}
 Describe the major modules and their responsibilities.
