@@ -1,0 +1,123 @@
+@startuml search_activity
+skinparam dpi 200
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 11
+skinparam shadowing false
+skinparam ActivityBackgroundColor #F7F7F7
+skinparam ActivityBorderColor #333333
+
+title run_steps(runner, order, victim, n, shuffles, seed)  (runner/diagnose.py)
+
+start
+:order = tests up to and including the victim;
+
+partition "Reproduce (search.py)" {
+  :run order up to n times,
+  stop at the first real failure;
+  note right
+    real = exception type not flaketrace.*
+    (crash, timeout, skip never count)
+  end note
+}
+
+if (reference signature found?) then (no)
+  if (shuffles > 0?) then (yes)
+    partition "Order exploration (orders.py, ADR-008)" {
+      :build up to ~--shuffles (default 31) distinct
+      class-first shuffled orders, cut at the victim;
+      :run each once, seed recorded;
+      if (a real failure?) then (yes)
+        :order = that shuffled order
+        reference = its signature;
+      else (no)
+      endif
+    }
+  else (no)
+  endif
+else (yes)
+endif
+
+partition "Alone check (verify.py)" {
+  if (reference signature found?) then (no)
+    :run the victim alone n times
+    (repeat_without_reference);
+    if (a real failure alone?) then (yes)
+      #DDDDDD:VICTIM_FAILS_ALONE;
+      stop
+    else (no)
+      #DDDDDD:NOT_REPRODUCED;
+      stop
+    endif
+  else (yes)
+    :run [victim] n times
+    (repeat with the reference);
+    if (>= 1 matching failure?) then (yes)
+      #DDDDDD:VICTIM_FAILS_ALONE;
+      stop
+    else (no)
+    endif
+  endif
+}
+
+partition "Polluter search (search.py)" {
+  :for each earlier test (priority first, CLI passes none):
+  run [candidate, victim] once;
+  if (victim fails with the reference?) then (yes)
+    :polluters = [candidate] (first match wins);
+  else (no candidate does)
+    :polluters = [];
+  endif
+}
+
+if (polluters empty and more than 2 tests in order?) then (yes)
+  partition "Minimise (minimise.py, ADR-007)" {
+    :run the full order once more;
+    note right
+      so a one-off flaky failure
+      never blames every earlier test
+    end note
+    if (fails with the reference?) then (yes)
+      :current = tests before the victim, k = 2;
+      while (size of current > 1?) is (yes)
+        :split current into k chunks;
+        if (some chunk + victim fails?) then (yes)
+          :current = that chunk, k = 2;
+        elseif (some complement + victim fails?) then (yes)
+          :current = that complement
+          k = max(k - 1, 2);
+        elseif (k >= size of current?) then (yes)
+          break
+        else (no)
+          :k = min(2k, size of current);
+        endif
+      endwhile (no)
+      :polluters = current;
+      note right
+        each subset runs at most once (cache);
+        only the reference signature counts;
+        result is 1-minimal, not minimum
+      end note
+    else (no)
+    endif
+  }
+else (no)
+endif
+
+partition "Verify (verify.py)" {
+  if (polluters found?) then (yes)
+    :sequence = polluters + [victim];
+  else (no)
+    :sequence = the failing order;
+  endif
+  :run sequence n times (repeat):
+  count matching and any-signature failures;
+}
+
+if (polluters found?) then (yes)
+  #DDDDDD:POLLUTER_FOUND;
+else (no)
+  #DDDDDD:NO_SINGLE_POLLUTER;
+endif
+stop
+
+@enduml

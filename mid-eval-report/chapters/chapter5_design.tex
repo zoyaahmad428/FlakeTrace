@@ -6,12 +6,135 @@
 % Rules: mid-eval-report/CLAUDE.md. Do not edit a file you do not own.
 % ===========================================================================
 \chapter{System Design}
-\section{System Architecture}
-% Current architecture (M2): diagrams/m2/architecture.puml -> figures/m2/architecture.png
-\placeholderfig{ch5:fig:arch}{FlakeTrace architecture at Iteration 1 (as implemented)}{M2}
-\section{Architectural Components}
-\section{Interfaces and Dependencies}
-\section{Architecture Decisions and Rationale}
+\section{System Architecture}\label{ch5:sec:arch}
+FlakeTrace is three Python packages, one per member: \texttt{runner/} (Member 2), \texttt{evidence/} (Member 1) and \texttt{eval/} (Member 3). They meet only through the contracts in \texttt{docs/contracts/}: \texttt{interfaces.md} (who calls whom), \texttt{report-schema.md} (the report every part feeds) and \texttt{resource-evidence.md} (the evidence format). Figure~\ref{ch5:fig:arch} shows every module and call as it is on \texttt{main}; solid boxes are implemented, dashed grey boxes are planned for FYP-2.
+
+One command, \texttt{py -m runner diagnose -{}-project DIR -{}-victim Class\#method}, starts a diagnosis. \texttt{runner/cli.py} is the only place that calls all three packages, in five layers:
+\begin{enumerate}
+  \item \textbf{Entry:} \texttt{cli.py} checks the arguments and maps every outcome to an exit code (0, 1, 2 or 3).
+  \item \textbf{Orchestration:} \texttt{diagnose.py} discovers the tests, then \texttt{run\_steps} reproduces the failure, checks the victim alone, searches for the polluter, minimises and verifies (Figure~\ref{ch5:fig:search-activity}).
+  \item \textbf{Execution:} every run goes through \texttt{RecordingRunner}, which logs it, to \texttt{OrderRunner}, which starts one fresh JVM per order and runs the tests in exactly that order with JUnit's \texttt{JUnitCore} (\texttt{runner/harness/FtHarness.java}).
+  \item \textbf{Bytecode evidence:} only when a polluter is found, \texttt{evidence/extract.py} reads the compiled classes with \texttt{javap} and names the static field or system property the polluter writes and the victim reads.
+  \item \textbf{Decision and report:} \texttt{eval/report.py} turns the raw run counts into Wilson intervals and an outcome with \texttt{eval/outcome.py}, and validates the report against \texttt{eval/schema/report.schema.json}.
+\end{enumerate}
+
+The analysed project is only read. Maven compiles it into its own \texttt{target/} folder (\texttt{maven\_test\_classpath}, \texttt{runner/order\_runner.py}); \texttt{runner/integrity.py} hashes every other file with SHA-256 before and after the diagnosis and reports any file changed, added or removed; and \texttt{diagnose()} refuses a record folder inside the project, because the record itself would break that check (\texttt{runner/diagnose.py}, ADR-004). The execution record (one JSON line per JVM run) and the report are written to \texttt{flaketrace-records/}.
+
+\begin{figure}[p]\centering
+  \includegraphics[width=0.92\textheight,angle=90]{figures/m2/architecture}
+  \caption{FlakeTrace architecture: implemented at Iteration 1 (solid) and planned for FYP-2 (dashed grey)}\label{ch5:fig:arch}
+\end{figure}
+\section{Architectural Components}\label{ch5:sec:components}
+Table~\ref{ch5:tab:components} maps each component of the proposal's architecture (\path{docs/03-Design/architecture.md}) to the code that implements it at Iteration 1. ``Partial'' means part of the component's responsibility exists and the rest is named.
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.33\textwidth}}
+\caption{Proposal components and their Iteration 1 implementation}\label{ch5:tab:components}\\
+\toprule
+Component & Implemented in & Owner & Status at Mid\\
+\midrule
+\endfirsthead
+\toprule
+Component & Implemented in & Owner & Status at Mid\\
+\midrule
+\endhead
+Project adapter & \texttt{runner/discovery.py}, \texttt{order\_runner.py} (\texttt{maven\_test\_classpath}), \texttt{diagnose.py} (\texttt{environment}) & M2 & Partial: discovers tests by Surefire's default includes and records project commit, uncommitted changes, OS and JDK; no pinned repository, module or budget input\\
+Sandbox runner & \texttt{runner/order\_runner.py}, \texttt{harness/FtHarness.java} & M2 & Partial: one fresh JVM per order, 120\,s timeout; no container, no budget beyond the timeout\\
+Outcome normaliser & \texttt{eval/baseline.py} (\texttt{FailureSignature}), \texttt{runner/order\_runner.py} & M3, M2 & Built: exception type plus stack trace cut at the first JUnit/reflection frame; message masked\\
+Evidence collector & \texttt{evidence/extract.py} & M1 & Partial: static-only (\texttt{javap}), static fields and system properties, depth 2 deepening to 5; no filesystem paths, no runtime collection\\
+Evidence store / graph & --- & M1 & Planned (FYP-2); pair mode per found polluter instead\\
+Diagnosis planner & \texttt{runner/search.py} (\texttt{priority} argument only) & M2 & Planned (FYP-2); the CLI passes no priority\\
+Minimiser / verifier & \texttt{runner/search.py}, \texttt{orders.py}, \texttt{minimise.py}, \texttt{verify.py}; \texttt{eval/stats.py} & M2, M3 & Built: single-polluter search, \texttt{ddmin} to a 1-minimal set, $n$ repeated runs, Wilson interval\\
+Certificate generator & \texttt{eval/report.py}, \texttt{outcome.py}, \texttt{schema\_validator.py}; \texttt{runner/cli.py} (summary) & M3, M2 & Partial: schema-validated JSON and console summary; no human-readable renderer or replay command; no report for \texttt{NO\_SINGLE\_POLLUTER}\\
+CLI / CI adapter & \texttt{runner/cli.py}; \path{.github/workflows/ci.yml} & M2 & Partial: \texttt{py -m runner diagnose} built; CI tests FlakeTrace itself, no adapter for a user's pipeline\\
+Source integrity, execution record & \texttt{runner/integrity.py}, \texttt{recording.py} & M2 & Built: report fields \texttt{source\_integrity} and \texttt{execution\_\allowbreak record\_\allowbreak reference}\\
+CDR (gated) & --- & M3 & Planned (FYP-2), only for \texttt{VERIFIED} reports\\
+\bottomrule
+\end{longtable}}
+
+Four rules keep the components honest with each other; each is enforced in code, not only in documents:
+\begin{itemize}
+  \item \textbf{Every test is reported.} A crash, timeout or skip becomes a failure with a \texttt{flaketrace.*} exception type, never a missing entry or a pass (\texttt{runner/README.md}, ``Every test is always reported'').
+  \item \textbf{Only the reference failure counts.} \texttt{FailureSignature.matches()} compares exception type and normalised stack trace and ignores the message, because the message changes between runs of the same bug (\texttt{eval/baseline.py}). A \texttt{flaketrace.*} failure never becomes the reference (\texttt{runner/search.py}).
+  \item \textbf{No evidence is not ``no dependency''.} When no edge is found, the resource fields are \texttt{null} and the outcome is \texttt{UNRESOLVED(NO\_SUPPORTED\_RESOURCE\_EVIDENCE)} (\texttt{docs/contracts/interfaces.md}).
+  \item \textbf{The runner reports counts, not verdicts.} \texttt{diagnose()} returns raw counts in \texttt{DiagnosisRuns}; only \path{eval/outcome.py} decides the outcome (\path{runner/diagnose.py}).
+\end{itemize}
+\section{Interfaces and Dependencies}\label{ch5:sec:interfaces}
+The three packages are joined by three interfaces, all defined in \path{docs/contracts/interfaces.md}. A change to any of them needs the agreement of all three members, recorded in the pull request.
+
+\subsection{Interface 1: OrderRunner}
+Member 3 wrote this interface in \path{eval/baseline.py} before any runner existed, so the runner had to fit it, not the other way round. Any object with this method satisfies it (a Python \texttt{Protocol}):
+\begin{lstlisting}[language=Python,basicstyle=\small\ttfamily,caption={The OrderRunner interface (\texttt{eval/baseline.py})},label=ch5:lst:orderrunner]
+class OrderRunner(Protocol):
+    def run_ordered(self, order: List[TestIdentifier])
+            -> Dict[TestIdentifier, RunOutcome]: ...
+\end{lstlisting}
+The contract adds five rules, and \path{runner/order_runner.py} keeps all of them: every test in \texttt{order} runs in \emph{one} JVM in exactly that order, because shared static state only survives inside one JVM; each call uses a \emph{fresh} JVM, so calls cannot pollute each other; every test appears in the result, so a crash is reported as a failure; a failed test carries a \texttt{FailureSignature}; and the target project's source files are never written to. Three implementations use it: \texttt{OrderRunner}, \texttt{RecordingRunner} (which wraps another runner and logs every run) and Member 3's \texttt{FakeOrderRunner}, which exists only under \path{eval/tests/}.
+
+Inside \texttt{OrderRunner}, Python talks to the JVM through a small text protocol: \texttt{java FtHarness <result-file>} reads one \texttt{Class\#method} per line on standard input and writes one line per test, \texttt{index}, test, \texttt{PASS|FAIL|SKIP}, exception class, message and stack frames, separated by tabs (\path{runner/README.md}, ``Harness protocol''). The classpath is passed in the \texttt{CLASSPATH} variable, which avoids the Windows command-line length limit.
+
+\subsection{Interface 2: resource evidence}
+\texttt{runner/cli.py} calls Member 1's extractor in-process, once per found polluter: it builds a \texttt{Project} from the target's \path{target/classes} and \path{target/test-classes}, calls \texttt{analyse\_pair(project, polluter, victim)}, then \texttt{report\_fields(pair)}. \texttt{analyse\_pair} starts at depth 2 and goes one call level deeper, up to 5, only while no edge is found and a walk was cut off by the depth limit (ADR-006). The same analysis runs from the command line:
+\begin{lstlisting}[basicstyle=\small\ttfamily]
+python -m evidence.extract --classes DIR --test-classes DIR \
+    --polluter Class#method --victim Class#method
+\end{lstlisting}
+It prints JSON on standard output and exits with 0 (done, even with no edge), 1 (\texttt{javap} missing or failed) or 2 (bad input) (\path{docs/contracts/resource-evidence.md}). Iteration 1 supports two resource kinds, \texttt{static-field} and \texttt{system-property}.
+
+\subsection{Interface 3: report assembly}
+\texttt{diagnose()} returns only raw counts in a \texttt{DiagnosisRuns} object. \texttt{assemble\_report(runs, fields)} in \path{eval/report.py} turns them into the report: \texttt{wilson\_interval} gives the 95\% interval for the sequence and for the victim alone, \texttt{decide()} gives the outcome, and \texttt{validate\_report} must accept the result against \path{eval/schema/report.schema.json} before it is written. Table~\ref{ch5:tab:fields} shows which member produces the main report fields (full list in \path{docs/contracts/report-schema.md}).
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.33\textwidth}>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.38\textwidth}}
+\caption{Main report fields and who produces them}\label{ch5:tab:fields}\\
+\toprule
+Field & Produced by & Meaning\\
+\midrule
+\endfirsthead
+\toprule
+Field & Produced by & Meaning\\
+\midrule
+\endhead
+\texttt{victim}, \texttt{polluters}, \texttt{original\_failing\_order}, \texttt{reduced\_sequence} & M2 & The test, the blamed tests, the order that failed and the minimised sequence\\
+\texttt{reproduction}, \texttt{victim\_alone} & M3 from M2's counts & Successes out of $n$ with the Wilson interval\\
+\texttt{shared\_resource}, \texttt{polluter\_write\_location}, \texttt{victim\_read\_location} & M1 & Resource and bytecode offsets; \texttt{null} when no edge is found\\
+\texttt{failure\_signature}, \texttt{source\_integrity}, \texttt{execution\_record\_reference} & M2 & Reference failure, SHA-256 check, path of the run log\\
+\texttt{outcome}, \texttt{unresolved\_reason} & M3 & \texttt{VERIFIED}, \texttt{CANDIDATE} or \texttt{UNRESOLVED} with a typed reason\\
+\bottomrule
+\end{longtable}}
+
+\subsection{External dependencies}
+FlakeTrace needs a JDK 8 or newer (\texttt{java}, \texttt{javac}, \texttt{javap}), Maven, and Python 3; its only Python package is \texttt{jsonschema} 4.26.0 (\path{eval/requirements.txt}). The analysed project needs no added dependency: the runner uses the JUnit jar the project already declares. CI runs on Temurin JDK 8 and Python 3.11 (\path{.github/workflows/ci.yml}); the runner was also run locally on JDK 21 (\path{runner/README.md}). Supported tests are JUnit 4 and JUnit 3; JUnit 5 is not supported.
+
+Two dependencies differ from the contract's picture. First, \path{interfaces.md} draws a straight pipeline from runner to evidence to eval, while in the code \texttt{runner/cli.py} calls all three (Figure~\ref{ch5:fig:arch}). Second, \path{eval/report.py} imports \texttt{DiagnosisRuns} from \path{runner/diagnose.py}, so \texttt{eval} depends back on \texttt{runner}: report assembly cannot be used without the runner package. The offline scripts \path{eval/tools/run_baseline_real.py} and \path{run_w9_integration.py} also import the runner, to run real experiments.
+\section{Architecture Decisions and Rationale}\label{ch5:sec:adrs}
+Every design choice that affects more than one member is written as an Architecture Decision Record (ADR) in \path{docs/03-Design/decisions/}. The owner proposes it, the other two members accept it in a pull request, and only then is it implemented. Each ADR records the constraint that forced the choice, so a later reader can tell when the choice may change. Table~\ref{ch5:tab:adrs} summarises the eight ADRs of Iteration 1.
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}>{\raggedright\arraybackslash}p{0.30\textwidth}>{\raggedright\arraybackslash}p{0.24\textwidth}}
+\caption{Architecture decisions of Iteration 1}\label{ch5:tab:adrs}\\
+\toprule
+ADR & Decision & Constraint that forced it & Rejected alternative\\
+\midrule
+\endfirsthead
+\toprule
+ADR & Decision & Constraint that forced it & Rejected alternative\\
+\midrule
+\endhead
+001 & Evidence from controlled re-execution plus static bytecode analysis; no instrumentation in Iteration 1 & The panel asked whether trace code is injected or source modified, and how detection works without logs & A runtime Java agent from the start: highest skill risk, and the POC once erased the failure by changing the environment\\
+002 & Write the extractor fresh in Python over \texttt{javap}; default depth 2 & F2's victim reads its property one call below the test method; Member 1 must explain every line & Copying the POC code; a Java tool on ASM, which does not expose instruction offsets easily\\
+003 & Python \texttt{OrderRunner} launching a small \texttt{JUnitCore} harness, one fresh JVM per call & One JVM per order, exact order, every test reported; Windows, WSL and CI on JDK 8; no dependency added to the analysed project & Maven Surefire with \texttt{-Dtest}: it groups methods by class, so it cannot run an order such as \texttt{[A\#x, B\#y, A\#z]}\\
+004 & Six small runner modules, each run through a recording wrapper; raw counts, no verdict & The report needs the reference failure, alone counts, the polluter, repeat counts, integrity and a record of every run & One module doing everything; each step writing its own log lines, where one forgotten call silently loses a run\\
+005 & One command, \texttt{py -m runner diagnose}, in Python, with exit codes 0/1/2/3 & A developer, and the live demo, diagnose one failing test at a time & An installable \texttt{flaketrace} command (deferred)\\
+006 & Depths 1--5; pair mode starts at 2 and deepens one level only when nothing was found and a walk was cut off & On fastjson, the real cases need depth 4 (FJ-01) and 5 (FJ-02); FJ-02 at depth 5 took 26.3\,s (\path{docs/evidence-m1.md}), against about 3--6\,s at depth 2 (ADR-006) & A fixed default of 5: every pair pays the deepest cost and the most over-approximation\\
+007 & Delta debugging (\texttt{ddmin}) over the earlier tests when no single polluter exists; full order re-run first & F3 fails only when both \texttt{setFlagA} and \texttt{setFlagB} run first, so the one-by-one search found nothing & Bisection: with two polluters in different halves, neither half fails; one-at-a-time deletion: one run per earlier test\\
+008 & Accept the real failing order (\texttt{-{}-order}); if nothing reproduces, try up to 31 distinct class-first shuffled orders; always run the alone check; report \texttt{NOT\_REPRODUCED} honestly & The discovered order may not be the order CI ran, and no number of reruns proves a test reliable & Reusing Member 3's random-order baseline: it is what FlakeTrace is evaluated against, and it interleaves classes, which JUnit cannot produce\\
+\bottomrule
+\end{longtable}}
+
+Three of these decisions replaced parts of earlier ones, and the code follows the later one. ADR-006 widened ADR-002's depth range from 1--3 to 1--5 and made \texttt{runner/cli.py} call \texttt{analyse\_pair} instead of the depth-2 calls ADR-005 first described. ADR-007 made \texttt{POLLUTER\_FOUND} mean ``one or more polluters'', so fixture F3 gets a report instead of exit code 3. ADR-008 removed \texttt{NOT\_REPRODUCED} from exit code 3: it now gives a report, and exit code 3 remains only for \texttt{NO\_SINGLE\_POLLUTER}.
+
+The budget of 31 shuffled orders comes from a published study of Python projects that gives about 31 random-order runs for 95\% confidence that a test is not order-dependent~\cite{gruber2021flaky}. That the figure carries over to JUnit is an assumption, and ADR-008 says so.
 \section{Design Evolution}
 Show important design changes since the proposal and justify them.
 \begin{figure}[H]\centering
