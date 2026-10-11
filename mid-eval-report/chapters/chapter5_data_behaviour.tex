@@ -36,12 +36,61 @@ polluters, each one is analysed as a separate pair with the victim. Finally, Mem
   \caption{Domain model of one order-dependence diagnosis}\label{ch5:fig:domain}
 \end{figure}
 \section{Data Design}
+FlakeTrace keeps no database. Its data is three kinds of file, one per stage of a diagnosis
+(Table~\ref{ch5:tab:datastores}). The diagnosis report is the one all three members write into,
+so its structure is shown in Figure~\ref{ch5:fig:datamodel}, drawn only from
+\texttt{eval/schema/report.schema.json}.
+
+\begin{table}[H]\centering\small\setlength{\tabcolsep}{4pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.16\textwidth}>{\raggedright\arraybackslash}p{0.36\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.2\textwidth}}
+\toprule
+Data & Format & Written by & Defined in \\
+\midrule
+Resource evidence & JSON: Output 1 (accesses per test) and Output 2 (edges for one pair) & \nolinkurl{evidence/extract.py} (M1) & Resource-evidence contract (\nolinkurl{docs/contracts/}) \\
+Execution record & JSON lines: a header (victim, $n$, Java version, project commit, OS, shuffle settings), then one line per JVM run (step, order, every test's outcome and signature, time) & \nolinkurl{runner/recording.py} (M2) & ADR-004 \\
+Diagnosis report & One JSON file per victim, \texttt{<record>.report.json}, validated against the schema & \nolinkurl{eval/report.py}, saved by \nolinkurl{runner/cli.py} & Report schema (\nolinkurl{eval/schema/}) \\
+\bottomrule
+\end{tabular}
+\caption{The data FlakeTrace stores for one diagnosis}\label{ch5:tab:datastores}
+\end{table}
+
+\paragraph{The report.} A report describes one victim. It has 17 required fields and one optional
+field, \texttt{order\_exploration}, added by ADR-008. Each field in Figure~\ref{ch5:fig:datamodel}
+is tagged with the member who fills it, following the field table in
+\texttt{docs/contracts/report-schema.md}. Member~2's runner supplies the tests, the orders, the
+reference failure signature, the source-integrity result and the pointer to the execution record.
+Member~3 turns the runner's raw counts into Wilson intervals and decides \texttt{outcome} and
+\texttt{unresolved\_reason}. My module fills \texttt{shared\_resource},
+\texttt{polluter\_write\_location} and \texttt{victim\_read\_location} through
+\texttt{report\_fields} (Section~\ref{ch5:sec:process}), and adds its limitation lines.
+
+\paragraph{Rules the schema enforces.} \texttt{unresolved\_reason} must be set exactly when the
+outcome is \texttt{UNRESOLVED}. \texttt{failure\_signature} is null exactly when the reason is
+\texttt{NOT\_REPRODUCED} or \texttt{INFRASTRUCTURE\_FAILURE}: nothing ever failed for a real
+reason, so there is no real signature to report. No other fields are allowed. Every report is
+checked by \texttt{validate\_report} (\texttt{eval/schema\_validator.py}) before it is saved. The
+rule that \texttt{VERIFIED} needs a resource edge is not in the schema; it is enforced by
+\texttt{decide()} in \texttt{eval/outcome.py}.
+
+\paragraph{A real example.} In \texttt{eval/reports/f2.json} (fixture case F2), the runner reduced
+an order of 6 tests to 2: \texttt{FeaturePolluterTest\#enableTurbo}, then the victim
+\texttt{FeatureVictimTest\#expectsTurboDisabled}. My fields say the shared resource is the system
+property \texttt{odfixture.turbo}, written in \texttt{enableTurbo} at bytecode offset 4 and read in
+\texttt{FeatureFlags.isTurboEnabled} at offset 2, a helper one call below the test. The pair
+reproduced the failure 20 times out of 20 (Wilson lower bound 0.839) and the victim never failed
+alone (0/20), so the outcome is \texttt{VERIFIED}.
+
+\paragraph{Limitations.} The report holds one resource and one write and read location. Any other
+edge is only named in \texttt{limitations}; for example, \texttt{f3.json} shows \texttt{flagA} and
+names \texttt{flagB} there. The execution records themselves are not committed to the repository
+(\texttt{eval/reports/README.md}); each report keeps only the path to its record.
+
 % Report data model (M1): diagrams/m1/report_data_model.puml -> figures/m1/report_data_model.png
 \begin{figure}[p]\centering
   \includegraphics[angle=90,height=0.8\textheight]{figures/m1/report_data_model}
   \caption{Diagnosis report data model (from report.schema.json)}\label{ch5:fig:datamodel}
 \end{figure}
-\section{Process / Behavior Design}
+\section{Process / Behavior Design}\label{ch5:sec:process}
 Include appropriate activity, sequence, state, DFD, ERD/schema, class, component, or other project-specific artefacts.
 % Evidence extraction data flow (M1): diagrams/m1/evidence_dataflow.puml
 \begin{figure}[p]\centering
