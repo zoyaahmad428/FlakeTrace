@@ -249,8 +249,57 @@ exclusion of automatic repair still holds.
 evidence (reduced to unsupported evidence), then the adaptive search policy (ranked one-by-one
 remains the default). The end-to-end diagnosis path is cut last. Any cut needs the supervisor's
 approval before it is made.
-\section{Project Modules}
-Describe the major modules and their responsibilities.
+\section{Project Modules}\label{ch1:sec:modules}
+FlakeTrace is built as three modules, one per team member, each in its own folder. The modules meet
+only through written contracts in \texttt{docs/contracts/}: the report schema and the component
+interfaces. Table~\ref{ch1:tab:modules} summarises them; Chapter~5 gives the architecture
+(Section~\ref{ch5:sec:arch}) and Chapter~6 the implementation.
+
+{\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.43\textwidth}>{\raggedright\arraybackslash}p{0.34\textwidth}@{}}
+\caption{FlakeTrace modules}\label{ch1:tab:modules}\\
+\toprule
+\textbf{Module} & \textbf{Responsibility (built in Iteration~1)} & \textbf{Gives to the other modules} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Module} & \textbf{Responsibility (built in Iteration~1)} & \textbf{Gives to the other modules} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\textbf{Bounded search and verification} (M2, \texttt{runner/}) &
+Runs tests in a given order in a fresh JVM; reproduces the failure, including shuffled orders;
+checks the victim alone; finds the polluters one by one or by delta debugging; repeats the reduced
+order; hashes the project; writes the execution record; provides the \texttt{diagnose} command. &
+Victim, polluters, reduced order, raw run counts, failure signature, integrity result, path of the
+execution record. \\
+\addlinespace
+\textbf{Resource evidence} (M1, \texttt{evidence/}) &
+Reads the compiled classes with \texttt{javap}; finds static-field and system-property reads and
+writes reachable from each test, including set-up and tear-down; matches the polluter's writes to
+the victim's reads. &
+The shared resource and the code locations of the polluter's write and the victim's read, or
+\texttt{null} when no edge is found, plus the evidence limitations. \\
+\addlinespace
+\textbf{Evaluation} (M3, \texttt{eval/}, \texttt{fixtures/}) &
+Computes Wilson intervals; decides the outcome and the typed reason; assembles the report and
+validates it against the schema; maintains the seeded fixture suite with written ground truth and
+the team's own random-order baseline. &
+The final, schema-validated report; ground truth and baseline results to check the other two
+modules against. \\
+\end{longtable}
+}
+
+The modules depend on each other in one direction per diagnosis: the runner's polluters decide
+which test pairs the evidence module analyses, and the evaluation module needs both the run counts
+and the evidence before it can decide the outcome. Later iterations add the planned components of
+the proposal's architecture to these modules: a project adapter and sandboxed runner, a
+test--resource graph, a planner that ranks candidates within a budget, and a certificate generator,
+with Certificate-Driven Remediation as a gated extension. In that design the dependency becomes a
+loop: the planner's budget decisions change what the evidence module observes, which changes the
+graph and so the planner's next decision.
 \section{Stakeholders and User Classes}
 Identify users, stakeholders, and their characteristics.
 \section{Success Criteria}
