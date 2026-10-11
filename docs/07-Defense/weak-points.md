@@ -118,9 +118,9 @@ this differently, the panel will pursue the inconsistency far harder than they w
 a gap we named ourselves.
 
 **The defence (and it is a good one):** what was excluded is *automatic source-code repair* —
-the system deciding on and applying a fix. CDR does not modify source. It consumes a
-**Verified** certificate and produces ranked remediation options with supporting evidence,
-which a human evaluates and applies. It is gated behind the core reaching Final-1 exit
+the system deciding on and applying a fix. CDR never changes the analysed project's source.
+For a **Verified** certificate it proposes a candidate patch, checks it on a disposable copy,
+and gives the diff with its evidence to a developer, who reviews and applies it. It is gated behind the core reaching Final-1 exit
 criteria.
 
 **Never say "automatically fixing"** — even informally. One such phrase and the panel holds
@@ -128,6 +128,13 @@ you to the stronger claim for the rest of the session.
 
 **Closure action:** audit all three documents for consistent wording. Joint. Before slides
 are built.
+
+**Repo audit (2026-10-11, M2):** 110 mentions in 29 docs checked against
+[[07-Defense/decisions/cdr-gated-module]]. Fixed: "options" vs "patch" wording (now one
+sentence: suggested patch, checked on a copy, a developer applies), architecture's "applies it",
+the phrase "automated repair" in RQ7, two names for the exclusion, and a gate that required
+held-out results the roadmap schedules after CDR V1. **Not yet checked:** the proposal document,
+Revision 2 and the original slide deck (not in the repo).
 
 ---
 
