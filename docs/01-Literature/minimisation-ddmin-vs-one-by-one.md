@@ -6,8 +6,8 @@ Design decision it supports: [[03-Design/decisions/ADR-007-w10-ddmin-minimisatio
 > **Source check.** Every literature statement below is taken from the team's existing notes
 > ([[per-paper/ifixflakies]], [[per-paper/rankf]], [[parameter-provenance]]); no new reference is
 > added. Before any of it is cited in the report, the citing member opens the original:
-> - [ ] [4] iFixFlakies, the Minimizer section
-> - [ ] [11] Zeller and Hildebrandt, the ddmin algorithm and its 1-minimality property
+> - [x] [4] iFixFlakies, the Minimizer section — opened by Member 1, 2026-10-11
+> - [x] [11] Zeller and Hildebrandt, the ddmin algorithm and its 1-minimality property — opened by Member 1, 2026-10-11
 
 ## The question
 
