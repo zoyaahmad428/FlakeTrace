@@ -1220,3 +1220,68 @@ written.
 - Limitation: none. Report chapters 4/7/8 (drafted earlier, sent to the member) are flagged
   as needing a refresh against this now-current state — not done in this entry, since it
   needs the member's confirmation on whether/how they were incorporated first.
+
+## 2026-10-11 — ADR-008 crash-count follow-ups, requested by Member 2 against PR #49
+
+**Requirement:** PR #49 (ADR-008 runner side) merged to `main`: `runner.diagnose.DiagnosisRuns`
+now really carries `order_given`, `shuffled_orders`, `orders_exhausted`, `shuffle_seed_base`,
+`reproducing_seed`, `infrastructure_failures`, `shuffle_infrastructure_failures` and
+`alone_infrastructure_failures`. Member 2 flagged two gaps against the merged branch: (1) the
+NOT_REPRODUCED/INFRASTRUCTURE_FAILURE limitation text always said "given order" even when
+ADR-008 discovered the order itself via a shuffle, and never mentioned how many shuffles were
+tried; (2) `runner.cli`'s own summary totals crashes across the sequence, shuffles and the
+alone check (`infrastructure_failures + shuffle_infrastructure_failures +
+alone_infrastructure_failures`), but the report JSON's `order_exploration.infrastructure_failures`
+only ever held the sequence-phase field, so a victim that only crashed during the alone check
+(sequence itself clean) silently reported 0 crashes.
+
+- File/function: `eval/report.py` — `_order_exploration()` now takes an already-combined
+  `infrastructure_failures` total (summed in `assemble_report` from all three DiagnosisRuns
+  fields via `getattr(..., 0)`, matching `runner.cli`'s own sum) and includes it in the
+  `order_exploration` dict unconditionally (not scoped to any one status: a shuffle that found
+  the reproduction, e.g. F4, is exactly as worth reporting as one that never did). The
+  NOT_REPRODUCED/INFRASTRUCTURE_FAILURE limitation text now reads `diagnosis.order_given` to
+  say "given" vs "discovered", and names `diagnosis.shuffled_orders` when non-zero. The
+  INFRASTRUCTURE_FAILURE text now branches on whether the sequence itself failed
+  (`sequence_any_failures > 0`, the original crash-only-sequence case) or not (the new case:
+  sequence clean, crashes only in another phase).
+- File/function: `eval/outcome.py` — `decide()` gained the new branch (`sequence_failures_any
+  == 0 and infrastructure_failures > 0` → `UNRESOLVED(INFRASTRUCTURE_FAILURE)`, row 3b in the
+  updated module docstring's decision table). `DecisionInput.__post_init__`'s validation for
+  `infrastructure_failures` relaxed from `0 <= x <= sequence_failures_any` to `x >= 0`: the
+  field is now a combined total across every phase, not bounded by the sequence's own failure
+  count (a clean sequence with a crashing alone check is real and valid, not an input error).
+- File/function: `eval/schema/report.schema.json` — `orderExploration`'s
+  `infrastructure_failures` property and `required` entry (already added in the prior session,
+  confirmed still correct and consistent with the above).
+- Tests: `eval/tests/test_outcome.py` — replaced
+  `test_infrastructure_failures_exceeding_failures_any_raises` (now describes behaviour that no
+  longer exists) with `test_infrastructure_failures_exceeding_sequence_failures_any_is_allowed`
+  (asserts it does *not* raise) and a new `test_infrastructure_failures_negative_raises`; added
+  `test_row3b_infrastructure_failure_elsewhere` for the new decide() branch; renamed the
+  existing row-lettering tests to match the docstring's new 3a/3b/3c/3d split.
+  `eval/tests/test_report.py` — replaced the hand-rolled `_WithInfraFailures` stand-in (no
+  longer needed now that `DiagnosisRuns` has the real field) with direct
+  `infrastructure_failures=`/`alone_infrastructure_failures=` overrides on `_diagnosis()`;
+  added `test_not_reproduced_names_discovered_order_and_shuffle_count` and
+  `test_infrastructure_failure_elsewhere_gives_unresolved_with_null_signature`.
+  `eval/tests/test_schema_validator.py` — `test_order_exploration_is_optional_but_validated_
+  when_present`'s literal `order_exploration` fixture was missing the new required
+  `infrastructure_failures` key (pre-existing test, written before this field existed); added
+  it.
+- Command: `py -m unittest eval.tests.test_stats eval.tests.test_outcome
+  eval.tests.test_schema_validator eval.tests.test_examples eval.tests.test_baseline
+  eval.tests.test_yield_report eval.tests.test_report` (the CLAUDE.md §8 command plus
+  `test_report`). Result: **84/84 passed**.
+- Mutation check: temporarily changed the new `decide()` branch's condition (`if
+  d.infrastructure_failures > 0:` → `if False:`) and re-ran `eval.tests.test_outcome`:
+  `test_row3b_infrastructure_failure_elsewhere` failed as expected
+  (`NOT_REPRODUCED != INFRASTRUCTURE_FAILURE`), confirming the test actually exercises the new
+  branch rather than passing vacuously. Reverted; re-ran clean: 17/17 passed.
+- Limitation: `eval/report.py`'s `_order_exploration()` is reported for every status now that
+  `DiagnosisRuns`'s order fields have real defaults (not just NOT_REPRODUCED) — this is a
+  behaviour change from the previous session's hasattr-gated version, done deliberately (not
+  flagged by anyone) because scoping it to one status would have hidden F4's real shuffle data
+  (`reproducing_seed=1`) from its own `VERIFIED` report. Not yet cross-checked against a real
+  `runner diagnose` CLI run on F4/N3 (that needs JDK 8 + Maven, not run in this session) — only
+  against hand-built `DiagnosisRuns` objects and the real schema/decide() code.

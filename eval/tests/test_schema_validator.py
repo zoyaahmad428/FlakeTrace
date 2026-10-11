@@ -135,6 +135,7 @@ class TestValidateReport(unittest.TestCase):
         ok["order_exploration"] = {
             "order_given": True, "shuffled_orders_tried": 5,
             "orders_exhausted": False, "seed_base": 0, "reproducing_seed": 3,
+            "infrastructure_failures": 0,
         }
         validate_report(ok)  # must not raise
 
