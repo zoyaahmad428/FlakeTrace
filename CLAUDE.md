@@ -16,6 +16,10 @@ said. Ownership is in [docs/09-Team/members.md](docs/09-Team/members.md).
 | 2 | Bounded search & verification: order runner, polluter search, minimisation, failure signatures, repeated-run verification, certificate generation, CLI, CI | `runner/`, `.github/` |
 | 3 | Evaluation: fixtures, benchmark manifest, baselines, statistics, outcome decision | `eval/`, `fixtures/` |
 | Joint | Contracts, architecture, report, Mid Eval evidence | `docs/` |
+| Per chapter | The FYP-1 Mid Report — each `.tex` file has one owner | `mid-eval-report/` |
+
+**Writing the report?** Read [mid-eval-report/CLAUDE.md](mid-eval-report/CLAUDE.md) first: who
+owns which chapter, the rubric each chapter is graded on, and the writing rules.
 
 **Do not edit another member's folder** without the member explicitly saying the owner agreed.
 If a change in someone else's area is needed, write it up as a GitHub issue or a note for them
@@ -132,7 +136,9 @@ same honesty rules.
 
 ## 6. Record your own assistance (required by the GenAI policy)
 
-After each working session that materially changed code, tests, diagrams or report text:
+After each working session that materially changed code, tests or diagrams (report-writing
+sessions inside `mid-eval-report/` are exempt by team decision — see
+[mid-eval-report/CLAUDE.md](mid-eval-report/CLAUDE.md) §7 for how the report discloses AI use):
 
 1. Append an entry to the member's GenAI log: `docs/genai-log-m<N>.md` — what was asked, what
    was kept, what the member changed, how it was verified, what was rejected or wrong.
@@ -156,6 +162,7 @@ runner/                                 Member 2 — order runner, search, minim
 evidence/                               Member 1 — static extraction, resource edges
 eval/  fixtures/                        Member 3 — evaluation, fixtures, statistics
 POC/                                    proposal-defence proof of concept (legacy, read-only)
+mid-eval-report/                        FYP-1 Mid Report (LaTeX) — one owner per chapter file
 docs/                                   Obsidian vault — open this folder in Obsidian
   contracts/                            integration contracts (joint)
   08-MidEval/                           what the Mid Evaluation requires and our evidence

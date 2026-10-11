@@ -1,0 +1,22 @@
+% ===========================================================================
+% OWNER: M1 (Zoya Ahmad); diagrams contributed by M2 and M3 as listed below
+% GRADED BY: Form 3 #6 Data / process / behaviour design (10) - artefacts must be project-specific and explained in text
+% DRAW FROM: eval/schema/report.schema.json, docs/contracts/*, evidence/extract.py, runner/diagnose.py, search.py, minimise.py, verify.py, eval/outcome.py
+% NOTE: Each diagram is explained in prose: what it shows, and which code it was drawn from
+% Rules: mid-eval-report/CLAUDE.md. Do not edit a file you do not own.
+% ===========================================================================
+% Included from chapter5_design.tex — no \chapter here.
+\section{Domain Model}
+\section{Data Design}
+% Report data model (M1): diagrams/m1/report_data_model.puml -> figures/m1/report_data_model.png
+\placeholderfig{ch5:fig:datamodel}{Diagnosis report data model (from report.schema.json)}{M1}
+\section{Process / Behavior Design}
+Include appropriate activity, sequence, state, DFD, ERD/schema, class, component, or other project-specific artefacts.
+% Evidence extraction data flow (M1): diagrams/m1/evidence_dataflow.puml
+\placeholderfig{ch5:fig:evidence-dfd}{Static evidence extraction: from bytecode to resource edges}{M1}
+% Diagnose sequence (M2): diagrams/m2/diagnose_sequence.puml
+\placeholderfig{ch5:fig:diagnose-seq}{Sequence of a \texttt{diagnose} run across the three components}{M2}
+% Search pipeline activity (M2): diagrams/m2/search_activity.puml
+\placeholderfig{ch5:fig:search-activity}{Reproduce, polluter search, minimisation and verification}{M2}
+% Outcome decision (M3): diagrams/m3/outcome_decision.puml
+\placeholderfig{ch5:fig:outcome}{Outcome decision: Verified, Candidate and typed Unresolved reasons}{M3}

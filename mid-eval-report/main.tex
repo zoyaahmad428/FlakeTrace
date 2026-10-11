@@ -1,0 +1,112 @@
+\documentclass{fast-nuces-bs}
+%\documentclass{article}
+
+% ---------------------------------------------------------------------------
+% FlakeTrace — FYP-1 Mid Report (F26-214)
+% Owner of this file: M2 (Abdul Raffay). Other members: change it only by PR.
+% Rules for editing the report: mid-eval-report/CLAUDE.md
+% ---------------------------------------------------------------------------
+
+\usepackage{blindtext}
+\usepackage{mathptmx}% Times Roman font
+\usepackage[T1]{fontenc}
+\usepackage{lipsum}
+\usepackage{sectsty}
+\usepackage{tikz-uml}
+\usepackage{titlesec}
+
+% Added for FlakeTrace: the template's chapters use longtable/booktabs but did not load them.
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{listings}
+
+% Marks unfinished text. CI does not fail on it, but the final PDF must contain none:
+%   grep -rn '\\todo{' chapters/   must print nothing before submission.
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
+
+% A figure slot that can be cited before the diagram exists.
+% Usage: \placeholderfig{ch5:fig:arch}{Caption text}{M2}
+% Replace with a real \includegraphics figure; keep the same label and caption.
+\newcommand{\placeholderfig}[3]{%
+  \begin{figure}[H]\centering
+    \fbox{\parbox[c][4cm][c]{0.8\textwidth}{\centering\textcolor{red}{\textbf{Diagram pending (#3)}}}}
+    \caption{#2}\label{#1}
+  \end{figure}}
+
+% Used by chapters/01_students_submission.tex (the template referenced these but never defined them)
+\newcommand{\projecttitle}{FlakeTrace: Evidence-Certified Diagnosis of Order-Dependent Java Test Failures}
+\newcommand{\studentone}{Zoya Ahmad (23i-0805)}
+\newcommand{\studenttwo}{Abdul Raffay (23i-0587)}
+\newcommand{\studentthree}{Zarpash Nasim (23i-0027)}
+
+% Information about the Thesis
+% -----------------------------------------------------------------------------
+% (All are compulsory, do not delete any line other than author Information)
+% For e.g., usually there are 3 students in a group, so leave authorone,
+% authortwo, and authorthree, and delete authorfour.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\department{FAST School of Computing}
+\faculty{Computer Science}
+\degreeyear{2026}
+\degreemonth{October}
+\degreename{Computer Science}
+\campuscity{Islamabad}
+\authorone{Zoya Ahmad}{23i-0805}
+\authortwo{Abdul Raffay}{23i-0587}
+\authorthree{Zarpash Nasim}{23i-0027}
+\supervisor{TODO: Supervisor Name}
+\sessionduration{2023-2027}
+% Uncomment only if there is a co-supervisor (the title page changes layout when it is set):
+%\cosupervisor{Mr./ Ms./ Dr. Co-Supervisor Name}
+\deanname{Dr. Dean Computing}
+\directorname{Dr. Director of the Campus}
+\hodname{Dr. Head of Computer Science Department}
+\fypcoordinatorname{Name of FYP Coordinator}
+\title{\projecttitle}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Former document starts below this
+\begin{document}
+
+\cleardoublepage
+\pagenumbering{roman}
+\input{chapters/01_students_submission}
+\input{chapters/02_anti_plagiarism}
+\input{chapters/03_authors_declaration}
+\input{chapters/04_abstract}
+\input{chapters/05_acknowledgments}
+\input{chapters/06_executive_summary}
+\tableofcontents
+\listoffigures
+\listoftables
+\input{chapters/07_abbreviations}
+
+\cleardoublepage
+\pagenumbering{arabic}
+\input{chapters/chapter1_introduction}
+\input{chapters/chapter2_research}
+\input{chapters/chapter3_iteration_plan}
+\input{chapters/chapter4_requirements}
+\input{chapters/chapter5_design}
+\input{chapters/chapter6_iteration1}
+\input{chapters/chapter8_testing}
+\input{chapters/chapter9_development_evidence}
+\input{chapters/chapter10_fyp2_plan}
+\input{chapters/conclusion}
+
+\appendix
+\input{chapters/appendix_action_register}
+\input{chapters/appendix_requirements}
+\input{chapters/appendix_test_cases}
+\input{chapters/appendix_repository}
+\input{chapters/appendix_diagrams}
+\input{chapters/appendix_meetings}
+
+\bibliographystyle{IEEEtran}
+% One .bib per member so three people never edit the same bibliography file.
+\bibliography{references/refs-m1,references/refs-m2,references/refs-m3}
+\end{document}

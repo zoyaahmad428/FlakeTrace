@@ -1,0 +1,14 @@
+# LaTeX build output (CI uploads the PDF as an artifact)
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.log
+*.out
+*.toc
+*.synctex.gz
+main.pdf
+# NOT ignored on purpose: tables/generated/*.tex (committed so Overleaf can build without Python)
