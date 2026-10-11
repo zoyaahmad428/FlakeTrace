@@ -109,8 +109,23 @@ document and the real repository: the seven real cases are what Chapter 7's resu
 acceptance criteria in Chapter 4 are measured against, not the ten-case plan.
 
 \section{Test Results}
+Table \ref{ch8:tab:fixture-results} is generated directly from the seven real reports in
+\texttt{eval/reports/*.json} by \texttt{scripts/json\_to\_tex.py} --- every number in it was
+produced by actually running \texttt{runner.diagnose()} end to end, never typed by hand. It was
+regenerated while drafting this chapter and confirmed byte-identical to what was already
+committed, so it is current.
+
 % Generated from eval/reports/*.json — run: python3 mid-eval-report/scripts/json_to_tex.py
 \IfFileExists{tables/generated/fixture_results.tex}{\input{tables/generated/fixture_results}}{\todo{run scripts/json\_to\_tex.py}}
+
+\noindent All four positive cases reach \texttt{VERIFIED} at 20/20 reproduced, 0/20 alone, with
+a real resource edge each --- F4 only because the shuffled-order search (ADR-008) finds it,
+never the natural discovered order. All three negative controls abstain correctly: N1 and N2
+both land on \texttt{VICTIM\_FAILS\_ALONE} (N1 deterministically 20/20 alone-failures, N2
+intermittently --- 9/20 in the committed run, which varies run to run by the mechanism's own
+design), and N3 is honestly \texttt{NOT\_REPRODUCED} after exhausting 31 shuffled orders, never
+blaming a polluter for a failure the pipeline never actually observed.
+
 \section{Acceptance Testing / Validation}\label{ch8:sec:acceptance}
 \section{Edge and Failure Cases}
 \section{Defects and Corrective Actions}
