@@ -59,7 +59,54 @@ Four rules keep the components honest with each other; each is enforced in code,
   \item \textbf{No evidence is not ``no dependency''.} When no edge is found, the resource fields are \texttt{null} and the outcome is \texttt{UNRESOLVED(NO\_SUPPORTED\_RESOURCE\_EVIDENCE)} (\texttt{docs/contracts/interfaces.md}).
   \item \textbf{The runner reports counts, not verdicts.} \texttt{diagnose()} returns raw counts in \texttt{DiagnosisRuns}; only \path{eval/outcome.py} decides the outcome (\path{runner/diagnose.py}).
 \end{itemize}
-\section{Interfaces and Dependencies}
+\section{Interfaces and Dependencies}\label{ch5:sec:interfaces}
+The three packages are joined by three interfaces, all defined in \path{docs/contracts/interfaces.md}. A change to any of them needs the agreement of all three members, recorded in the pull request.
+
+\subsection{Interface 1: OrderRunner}
+Member 3 wrote this interface in \path{eval/baseline.py} before any runner existed, so the runner had to fit it, not the other way round. Any object with this method satisfies it (a Python \texttt{Protocol}):
+\begin{lstlisting}[language=Python,basicstyle=\small\ttfamily,caption={The OrderRunner interface (\texttt{eval/baseline.py})},label=ch5:lst:orderrunner]
+class OrderRunner(Protocol):
+    def run_ordered(self, order: List[TestIdentifier])
+            -> Dict[TestIdentifier, RunOutcome]: ...
+\end{lstlisting}
+The contract adds five rules, and \path{runner/order_runner.py} keeps all of them: every test in \texttt{order} runs in \emph{one} JVM in exactly that order, because shared static state only survives inside one JVM; each call uses a \emph{fresh} JVM, so calls cannot pollute each other; every test appears in the result, so a crash is reported as a failure; a failed test carries a \texttt{FailureSignature}; and the target project's source files are never written to. Three implementations use it: \texttt{OrderRunner}, \texttt{RecordingRunner} (which wraps another runner and logs every run) and Member 3's \texttt{FakeOrderRunner}, which exists only under \path{eval/tests/}.
+
+Inside \texttt{OrderRunner}, Python talks to the JVM through a small text protocol: \texttt{java FtHarness <result-file>} reads one \texttt{Class\#method} per line on standard input and writes one line per test, \texttt{index}, test, \texttt{PASS|FAIL|SKIP}, exception class, message and stack frames, separated by tabs (\path{runner/README.md}, ``Harness protocol''). The classpath is passed in the \texttt{CLASSPATH} variable, which avoids the Windows command-line length limit.
+
+\subsection{Interface 2: resource evidence}
+\texttt{runner/cli.py} calls Member 1's extractor in-process, once per found polluter: it builds a \texttt{Project} from the target's \path{target/classes} and \path{target/test-classes}, calls \texttt{analyse\_pair(project, polluter, victim)}, then \texttt{report\_fields(pair)}. \texttt{analyse\_pair} starts at depth 2 and goes one call level deeper, up to 5, only while no edge is found and a walk was cut off by the depth limit (ADR-006). The same analysis runs from the command line:
+\begin{lstlisting}[basicstyle=\small\ttfamily]
+python -m evidence.extract --classes DIR --test-classes DIR \
+    --polluter Class#method --victim Class#method
+\end{lstlisting}
+It prints JSON on standard output and exits with 0 (done, even with no edge), 1 (\texttt{javap} missing or failed) or 2 (bad input) (\path{docs/contracts/resource-evidence.md}). Iteration 1 supports two resource kinds, \texttt{static-field} and \texttt{system-property}.
+
+\subsection{Interface 3: report assembly}
+\texttt{diagnose()} returns only raw counts in a \texttt{DiagnosisRuns} object. \texttt{assemble\_report(runs, fields)} in \path{eval/report.py} turns them into the report: \texttt{wilson\_interval} gives the 95\% interval for the sequence and for the victim alone, \texttt{decide()} gives the outcome, and \texttt{validate\_report} must accept the result against \path{eval/schema/report.schema.json} before it is written. Table~\ref{ch5:tab:fields} shows which member produces the main report fields (full list in \path{docs/contracts/report-schema.md}).
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.33\textwidth}>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.38\textwidth}}
+\caption{Main report fields and who produces them}\label{ch5:tab:fields}\\
+\toprule
+Field & Produced by & Meaning\\
+\midrule
+\endfirsthead
+\toprule
+Field & Produced by & Meaning\\
+\midrule
+\endhead
+\texttt{victim}, \texttt{polluters}, \texttt{original\_failing\_order}, \texttt{reduced\_sequence} & M2 & The test, the blamed tests, the order that failed and the minimised sequence\\
+\texttt{reproduction}, \texttt{victim\_alone} & M3 from M2's counts & Successes out of $n$ with the Wilson interval\\
+\texttt{shared\_resource}, \texttt{polluter\_write\_location}, \texttt{victim\_read\_location} & M1 & Resource and bytecode offsets; \texttt{null} when no edge is found\\
+\texttt{failure\_signature}, \texttt{source\_integrity}, \texttt{execution\_record\_reference} & M2 & Reference failure, SHA-256 check, path of the run log\\
+\texttt{outcome}, \texttt{unresolved\_reason} & M3 & \texttt{VERIFIED}, \texttt{CANDIDATE} or \texttt{UNRESOLVED} with a typed reason\\
+\bottomrule
+\end{longtable}}
+
+\subsection{External dependencies}
+FlakeTrace needs a JDK 8 or newer (\texttt{java}, \texttt{javac}, \texttt{javap}), Maven, and Python 3; its only Python package is \texttt{jsonschema} 4.26.0 (\path{eval/requirements.txt}). The analysed project needs no added dependency: the runner uses the JUnit jar the project already declares. CI runs on Temurin JDK 8 and Python 3.11 (\path{.github/workflows/ci.yml}); the runner was also run locally on JDK 21 (\path{runner/README.md}). Supported tests are JUnit 4 and JUnit 3; JUnit 5 is not supported.
+
+Two dependencies differ from the contract's picture. First, \path{interfaces.md} draws a straight pipeline from runner to evidence to eval, while in the code \texttt{runner/cli.py} calls all three (Figure~\ref{ch5:fig:arch}). Second, \path{eval/report.py} imports \texttt{DiagnosisRuns} from \path{runner/diagnose.py}, so \texttt{eval} depends back on \texttt{runner}: report assembly cannot be used without the runner package. The offline scripts \path{eval/tools/run_baseline_real.py} and \path{run_w9_integration.py} also import the runner, to run real experiments.
 \section{Architecture Decisions and Rationale}
 \section{Design Evolution}
 Show important design changes since the proposal and justify them.
