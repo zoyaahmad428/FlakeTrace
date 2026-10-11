@@ -169,7 +169,85 @@ FYP-2. \\
 \end{longtable}
 }
 \section{Project Scope}\label{ch1:sec:scope}
-Define included and excluded functionality.
+The scope is the approved proposal's scope after the narrowing described below. It is kept in
+\texttt{docs/02-Requirements/scope-boundary.md}; Table~\ref{ch1:tab:scope} adds what Iteration~1
+has actually built. Everything outside the three supported resource families (databases, network,
+caches, services, threads, timing) is recorded as unsupported evidence, never diagnosed.
+
+{\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.79\textwidth}@{}}
+\caption{FlakeTrace scope by status}\label{ch1:tab:scope}\\
+\toprule
+\textbf{Status} & \textbf{Functionality} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Status} & \textbf{Functionality} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\textbf{Built in Iteration~1} &
+Maven project input and test discovery; environment recorded in every execution record; JUnit~4
+and JUnit~3 tests run through JUnitCore, one fresh JVM per order; reproduction in the given or
+discovered order, then up to 31 valid shuffled orders; victim-alone check; one-by-one polluter
+search, then delta debugging to a 1-minimal set; failure-signature normalisation; 20 repeated
+runs with 95\% Wilson intervals; static bytecode extraction of static fields and system
+properties, including set-up, tear-down and static initialisers, at depth 1--5 with
+auto-deepening; outcome decision with typed reasons; schema-validated JSON report and execution
+record; source-integrity hashing; command-line tool with CI exit codes; seeded fixture suite with
+written ground truth; CI on every pull request. \\
+\addlinespace
+\textbf{Committed, not yet built} &
+Containerised runner (rootless, network disabled, resource limits, redaction of paths and
+credentials); execution budget with a reserved verification share; candidate ranking and a
+cost-aware search policy; filesystem paths as the third resource family; test--resource graph;
+runtime evidence as a fallback where static analysis cannot explain a case (ADR-001); fidelity
+to projects whose build runs suite classes; a runnable replay command in the report; frozen
+benchmark of real projects with yield and exclusions; published baselines (iFixFlakies, RankF);
+ablations including the depth sweep; statistics layer; reproducibility bundle; clean Linux
+install from the documentation. Iteration~2 (November--January, ending at the FYP-1 Final evaluation) is committed to ranking and the adaptive policy, runtime evidence, the graph, the ablation harness, one real benchmark project end to end and a first container deployment; the rest follows in FYP-2 (Section~\ref{ch3:sec:it2}). \\
+\addlinespace
+\textbf{Supporting, if time allows} &
+HTML report, explanation chain with evidence labels, plain-language explanation mode,
+resource-coverage reporting, caching. \\
+\addlinespace
+\textbf{Gated} &
+Certificate-Driven Remediation: for a \texttt{VERIFIED} result only, propose a patch, check it on a
+disposable copy and hand the diff to a developer, who decides. Enabled only after the core meets
+its Final-1 exit criteria (the FYP-1 Final evaluation). Also gated: JUnit~5, Gradle, GitHub Checks, database and network
+adapters. \\
+\addlinespace
+\textbf{Excluded} &
+Flaky-test detection as the contribution; other languages and build systems; claims of definitive
+causality; automatic repair applied by the tool; hosted dashboards, team inboxes, IDE plugins,
+natural-language queries, cross-project correlation; broad database or network tracing;
+safe multi-tenant execution. \\
+\end{longtable}
+}
+
+\paragraph{How the scope was narrowed.} Four recorded decisions shaped the table:
+\begin{itemize}
+\item \textbf{Proof of concept, NARROW (28 August 2026).} At depth~1, static analysis found no
+  write/read overlap for any candidate in any case, and pre-registered gates failed, including a
+  0\% execution saving against a 30\% target. The team kept the approach but changed the resource
+  scope.
+\item \textbf{Configurable analysis depth.} Depth became a committed, reported parameter instead
+  of a fixed value of 1. It now starts at 2 and deepens to 5 when needed (ADR-006).
+\item \textbf{Three resource families.} Static fields, system properties and filesystem paths are
+  diagnosed; everything else is opaque.
+\item \textbf{No instrumentation in Iteration~1.} After the proposal defence (approved with minor
+  modifications), ADR-001 fixed Iteration~1 to controlled reruns plus static analysis, with a
+  runtime agent as the fallback in a later iteration.
+\end{itemize}
+Certificate-Driven Remediation was added as a gated module, not committed scope, so that the
+exclusion of automatic repair still holds.
+
+\paragraph{If the team falls behind.} The recorded cut order is: remediation first, then filesystem
+evidence (reduced to unsupported evidence), then the adaptive search policy (ranked one-by-one
+remains the default). The end-to-end diagnosis path is cut last. Any cut needs the supervisor's
+approval before it is made.
 \section{Project Modules}
 Describe the major modules and their responsibilities.
 \section{Stakeholders and User Classes}
