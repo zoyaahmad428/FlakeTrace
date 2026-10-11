@@ -226,3 +226,18 @@ A baseline-run log claimed a 7-test candidate pool (5 noise tests); the fixture'
 \bottomrule
 \end{longtable}
 \section{Current Validation Status}
+\textbf{Validated now:} all 7 real fixture cases match their pre-registered ground truth exactly
+(Table \ref{ch8:tab:cases}, Table \ref{ch8:tab:fixture-results}); all 268 unit tests across the
+three members' suites pass; CI is green on all 5 jobs on the current \texttt{main} tip, including
+the build of this document itself; the Verified threshold, deletion-check and explanation
+acceptance criteria are met \emph{by construction}, not just by observation (Table
+\ref{ch4:tab:acceptance}).
+
+\textbf{Genuinely open, not validated yet:} published-tool baseline comparison (claim B11,
+\texttt{docs/07-Defense/claims-ledger.md} --- only our own random-order baseline has run for
+real); the user acceptance tasks (Section \ref{ch8:sec:acceptance}); the instrumentation
+overhead threshold (NFR-1); the non-perturbation control as an automated check; and any
+real-world project (the \texttt{idoft} benchmark cases remain metadata-only, not cloned or
+built). None of these are claimed as done anywhere in this report --- each is named here, in
+the claims ledger, or flagged in its own section above, consistent with the rule that an open
+item stated plainly costs far less than one discovered later.
