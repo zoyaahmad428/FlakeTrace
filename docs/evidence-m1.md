@@ -550,3 +550,37 @@ component's pair evidence as the ADR says, using `analyse_pair` per polluter.
   this report".
 - Limitation: the report shows one resource; `flagB` is only named until the schema allows one
   edge per polluter (ADR-007, long-term shape).
+
+## ADR-008 check: fixture cases F4 and N3, and F4 end to end (2026-10-11)
+
+**Requirement:** before ticking ADR-008 (M1 row "for information"), confirm that M3's new fixture
+cases and M2's runner side leave this component correct. No change to `evidence/`.
+
+- **Fixture with F4/N3** (M3's PR #45, merged; main `9dcd439`). Both projects compiled with
+  `mvn -B -q test-compile` (exit 0). Command:
+  `FLAKETRACE_REQUIRE_JVM=1 python3 -m unittest evidence.tests.test_extract` → `Ran 39 tests … OK`
+  (javap 21.0.12.1, Python 3.13). `GroundTruthTest` now covers the 16 fixture tests, 240 ordered
+  pairs, and still finds exactly the ground-truth edges. The same suite was also OK on M3's branch
+  before the merge (commits `50a8bd8` and `e0cb904`).
+- **F4 pair** (`analyse_pair` + `report_fields`, scratch script): `depth_used` 2,
+  `odfixture.LateFlag#isSet`, write `ZzzLatePolluterTest.setLateFlag@1`, read
+  `AlwaysEarlyVictimTest.expectsLateFlagUnset@0`.
+- **N3** (`EnvDependentNegativeTest#onlyFailsUnderCI`): no accesses and no unsupported observations;
+  `java.lang.System` is listed in `external_calls_not_followed` (its `System.getenv` call).
+  Environment variables are not a modelled resource (fixed limitation 4), and a Java test cannot set
+  one, so it cannot be a polluter channel.
+- **Other members' suites on main `9dcd439`** (same machine, run as CI does):
+  eval `Ran 80 tests … OK`; runner (`FLAKETRACE_REQUIRE_JVM=1`) `Ran 108 tests … OK`.
+- **M2's PR #49** (runner side of ADR-008, commit `fa621af`, not merged at the time): it does not change
+  how `runner/cli.py` calls `analyse_pair`/`report_fields`. Evidence 39 OK, eval 80 OK, runner 144 OK.
+  Real command `python3 -m runner diagnose --project fixtures/od-fixture --victim
+  odfixture.AlwaysEarlyVictimTest#expectsLateFlagUnset --records <scratch>` → exit 0 in 17 s:
+  `VERIFIED`, "reproduced in shuffled order (seed 1) after 2 shuffled orders", resource
+  `odfixture.LateFlag isSet` (write `@1`, read `@0`, as above), reproduced 20/20 (lower bound 0.839),
+  alone 0/20.
+- **F3 on main `39b2dff`** (for panel action A6): the same command for
+  `odfixture.ToggleVictimTest#expectsNotBothFlagsSet` → exit 0 in 18 s, `VERIFIED`, "14 earlier
+  tests -> 2 polluters in 10 runs". Execution record step counts: search 14, minimise 10 (1 re-check
+  + 9 `ddmin`), verify 20, alone 20.
+- **Limitations:** all runs on javap 21 here; CI's evidence job runs the suite on JDK 8 for each PR.
+  The F4 end-to-end run used PR #49 before review and merge.

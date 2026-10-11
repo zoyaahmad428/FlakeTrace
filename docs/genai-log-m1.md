@@ -407,3 +407,32 @@ resource is `defaultLocale` (tie-break by name), not the causal `defaultTimeZone
 know which field is causal, and the ordering is part of the agreed contract.
 
 Ownership checkpoint: you need to understand and verify this implementation before claiming it as your contribution.
+
+## 2026-10-11 — ADR-008 tick, I2, ADR-001 status, panel action A6
+
+**Assistance level:** L2 (Moderate): checks run and text drafted by the assistant; the list of
+open items and the decision to close them came from the team's status review.
+
+**What I asked:** make one patch for what is left for Member 1: tick ADR-008, answer I2, close
+panel action A6 (a note on minimisation), and set ADR-001's status.
+
+**What was retained:**
+- ADR-008 M1 row ticked (for information), after re-running the evidence tests with F4/N3.
+- I2 answered from ADR-006 (per pair, `analyse_pair` once per polluter).
+- ADR-001 `ACCEPTED` (PRs #17, #18, #20), plus a research-basis section.
+- New note `docs/01-Literature/minimisation-ddmin-vs-one-by-one.md`; A6 `COMPLETE`.
+- Claim E10 and the W8 line updated from 156 to 240 pairs.
+
+**What I changed:** *fill after review.*
+
+**How it was verified:** evidence 39 OK on main `9dcd439` and on PR #49; M2's and M3's suites OK;
+real F4 and F3 runs (see `docs/evidence-m1.md`). Each literature statement in the note was checked
+against the team's existing notes.
+
+**Errors found:** the first draft of the note said iFixFlakies' Minimizer falls back to OBO; the
+note on iFixFlakies says that of cleaner discovery. Corrected before handing over.
+
+**Rejections:** no new references. Sources [4] and [11] are listed in the note for the citing
+member to open before the report cites them.
+
+Ownership checkpoint: you need to understand and verify this before claiming it as your contribution.
