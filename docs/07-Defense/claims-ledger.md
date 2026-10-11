@@ -25,7 +25,7 @@ published finding — defend as a choice) · `FROZEN` (committed pre-registratio
 | A6 | Typed abstention is wanted by users, not a cop-out | SH1: "a clearly stated unknown is more useful than a confident but incorrect diagnosis". SH2: "A tool that guesses is worse than useless… if it tells me test B is caused by test A and it is wrong, I have wasted an hour chasing a phantom" | [[00-Meta/stakeholder-evidence]] | Joint | SETTLED |
 | A7 | Quarantine removes coverage permanently | SH3: 8-test accessibility suite on `continue-on-error` — "practically disabled in function if not in name" | [[00-Meta/stakeholder-evidence]] | Joint | SETTLED |
 | A8 | Our CI overhead budget is realistic | SH1: 5–15 min acceptable on PR if not every build. SH3: 5 min "pushback", 15 min "completely unacceptable" on every PR, **but 30 min tolerable opt-in or nightly** | [[00-Meta/stakeholder-evidence]] | M2 | SETTLED |
-| **A9** | **Our stakeholders face the problem in our target ecosystem** | **NOT SUPPORTED.** All three are Python/pytest, Node/Vitest, TS/Vitest. **None uses Java, Maven, JUnit or Surefire.** Their OD instances are DB/staging-state pollution, not JVM static fields | [[00-Meta/stakeholder-evidence]], [[07-Defense/weak-points]] | Joint | **OPEN** |
+| **A9** | **Our stakeholders face the problem in our target ecosystem** | **NOT SUPPORTED.** All three are Python/pytest, Node/Vitest, TS/Vitest. **None uses Java, Maven, JUnit or Surefire.** Their OD instances are DB/staging-state pollution, not JVM static fields. **Say instead:** the interviews show the *problem* is real (manual bug hunting, "unknown" preferred to a wrong answer); that *Java* teams have it rests on published Java studies (IDoFT; RankF's 155 OD tests in 24 Java projects) | [[00-Meta/stakeholder-evidence]], [[07-Defense/weak-points]] §1, [[01-Literature/per-paper/rankf]] | Joint | **OPEN — Java developer interview planned after the Mid evaluation** |
 | A10 | Order dependence is a minority by count but disproportionate by investigation time | Luo et al.: 19/201 commits (12%). Lam et al. iDFlakies dataset: 50.5% of 422 flaky tests OD. Retry works for timing flakiness, not for OD | [[01-Literature/per-paper/luo-2014-empirical-analysis]] | Joint | SETTLED |
 
 ## B. Prior art and differentiation
@@ -110,7 +110,7 @@ published finding — defend as a choice) · `FROZEN` (committed pre-registratio
 | --- | --- | --- | --- | --- | --- |
 | F1 | Member 3's role passes the removal test | The POC's two invalidating defects were *harness* problems, not algorithm problems. Without M3: an algorithm and no trustworthy evidence it works | [[07-Defense/ownership-map]] | Joint | SETTLED |
 | F2 | Scope grew by exactly one pillar when the team grew | Resource families, build system, language and certificate contract are unchanged from the two-member boundary | [[07-Defense/decisions/three-member-split]] | Joint | SETTLED |
-| **F3** | **The three-member group is departmentally approved** | **NOT CONFIRMED.** Listed as decision 1 requiring supervisor input | [[07-Defense/weak-points]] | Joint | **OPEN** |
+| **F3** | **The three-member group is departmentally approved** | The FYP portal registration lists all three members (23i-0805, 23i-0587, 23i-0027); checked by Member 2 on 2026-10-11 | FYP portal; [[09-Team/members]] | Joint | SETTLED |
 | F4 | AI tool usage is logged and acknowledged | Required by HEC guidance and the School guide. No component we claim as contribution is core-replacement | [[00-Meta/ai-usage-log]] | Joint | OPEN — *log must be current on the day* |
 
 ---

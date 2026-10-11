@@ -1,6 +1,6 @@
 # Decision: expand from two members to three, evaluation as the third pillar
 
-**Date:** 4 September 2026 (Revision 2) · **Status:** `PROPOSED — departmental approval pending`
+**Date:** 4 September 2026 (Revision 2) · **Status:** `APPROVED` — the FYP portal registration lists all three members (checked 2026-10-11)
 · **Owner:** joint
 
 ---
@@ -10,8 +10,8 @@
 The team expands from two to three. The third pillar is **evaluation infrastructure**, not a
 third product feature. CDR is a gated extension owned by the same member.
 
-**Approval status:** this is Dossier decision 1, awaiting supervisor and departmental
-confirmation. *A scope written for three against a roster of two would be worse than a
+**Approval status:** approved — the FYP portal registration lists all three members (checked
+2026-10-11, claim F3). Originally Dossier decision 1. *A scope written for three against a roster of two would be worse than a
 narrower scope written for two* — which is why it must resolve before the proposal is
 submitted. Tracked in [[07-Defense/weak-points]] §8.
 
