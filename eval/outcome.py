@@ -7,10 +7,14 @@ Decision table (confirmed with Member 3 on 2026-10-08; first match wins):
      (isolation_successes >= 1; a "success" here means the isolation run
      failed with the SAME signature as the reference failure)
   3. sequence never reproduces that signature  (sequence_successes == 0):
-       a. and never failed at all              -> UNRESOLVED(NOT_REPRODUCED)
-       b. failed only with crashes/timeouts, no real failure at all
+       a. and never failed at all, and no infrastructure failures anywhere
+          (sequence_failures_any == 0 and infrastructure_failures == 0) -> UNRESOLVED(NOT_REPRODUCED)
+       b. never failed in the sequence, but some other phase (e.g. the alone
+          check) only crashed/timed out (sequence_failures_any == 0 and
+          infrastructure_failures > 0) -> UNRESOLVED(INFRASTRUCTURE_FAILURE)
+       c. sequence failed only with crashes/timeouts, no real failure at all
           (sequence_failures_any == infrastructure_failures > 0) -> UNRESOLVED(INFRASTRUCTURE_FAILURE)
-       c. failed with a real but different signature -> UNRESOLVED(SIGNATURE_MISMATCH)
+       d. failed with a real but different signature -> UNRESOLVED(SIGNATURE_MISMATCH)
   4. sequence reproduces it at least once       (sequence_successes >= 1):
        a. no polluter-write/victim-read resource edge -> UNRESOLVED(NO_SUPPORTED_RESOURCE_EVIDENCE)
        b. resource edge exists, Wilson lower bound >= threshold -> VERIFIED
@@ -24,15 +28,20 @@ BELOW_CONFIDENCE_THRESHOLD stays in the schema's unresolved-reason enum (the
 brief requires it "at least"), but this decision function never emits it --
 case 4c uses CANDIDATE instead, per the 2026-10-08 team decision.
 
-Row 3b (INFRASTRUCTURE_FAILURE, ADR-008, 2026-10-10) distinguishes "the sequence
-never produced a real failure, only crashes/timeouts" from row 3c
-(SIGNATURE_MISMATCH, "it failed for real but not the reference bug") -- before
-this, a crash-only sequence read as SIGNATURE_MISMATCH, which suggests a
-different real bug rather than a tooling/infrastructure problem.
-`infrastructure_failures` defaults to 0, so a caller that has not counted this
-(every pre-ADR-008 caller) gets exactly the old row 3c (SIGNATURE_MISMATCH)
-behaviour whenever `sequence_failures_any > 0` -- row 3b is unreachable unless
-a caller actually reports `infrastructure_failures > 0`.
+Rows 3b/3c (INFRASTRUCTURE_FAILURE, ADR-008, 2026-10-10/11) distinguish "no real
+failure anywhere, only crashes/timeouts" from row 3d (SIGNATURE_MISMATCH, "it
+failed for real but not the reference bug") -- before this, a crash-only
+sequence read as SIGNATURE_MISMATCH, which suggests a different real bug
+rather than a tooling/infrastructure problem. `infrastructure_failures` is a
+caller-supplied total across every phase a real diagnosis has (the given/
+discovered order, any shuffled orders tried, and the alone check) -- not just
+the sequence runs row 3's other fields describe -- because a crash can happen
+in any of them even when the sequence itself ran clean (row 3b is exactly
+that case: a victim that never fails in its own order but crashes sometimes
+when run alone). `infrastructure_failures` defaults to 0, so a caller that
+has not counted this (every pre-ADR-008 caller) gets exactly the old
+behaviour: row 3a whenever `sequence_failures_any == 0`, row 3d (renamed from
+3c) whenever it is not.
 """
 
 from dataclasses import dataclass
@@ -78,9 +87,11 @@ class DecisionInput:
     confidence: float = DEFAULT_CONFIDENCE
     lower_bound_threshold: float = DEFAULT_LOWER_BOUND_THRESHOLD
     infrastructure_failures: int = 0
-    """How many of sequence_failures_any were a crash/timeout, not a real but
-    different exception (ADR-008). Defaults to 0: a caller that has not
-    counted this gets exactly the pre-ADR-008 SIGNATURE_MISMATCH behaviour."""
+    """Total runs, across every phase (the given/discovered order, any shuffled orders, and
+    the alone check), that only crashed, timed out or were skipped -- never a real exception
+    (ADR-008). Not bounded by sequence_failures_any: a phase other than the given/discovered
+    order can be where the infrastructure failures actually happened. Defaults to 0: a caller
+    that has not counted this gets exactly the pre-ADR-008 SIGNATURE_MISMATCH behaviour."""
 
     def __post_init__(self):
         if self.isolation_n <= 0:
@@ -109,12 +120,8 @@ class DecisionInput:
                 f"sequence_successes={self.sequence_successes!r}, "
                 f"sequence_failures_any={self.sequence_failures_any!r}"
             )
-        if not (0 <= self.infrastructure_failures <= self.sequence_failures_any):
-            raise ValueError(
-                "infrastructure_failures (a subset of the any-signature failures) cannot "
-                f"exceed sequence_failures_any, got infrastructure_failures={self.infrastructure_failures!r}, "
-                f"sequence_failures_any={self.sequence_failures_any!r}"
-            )
+        if self.infrastructure_failures < 0:
+            raise ValueError(f"infrastructure_failures must be >= 0, got {self.infrastructure_failures!r}")
         if not (0.0 < self.confidence < 1.0):
             raise ValueError(f"confidence must be in (0, 1), got {self.confidence!r}")
         if not (0.0 <= self.lower_bound_threshold <= 1.0):
@@ -165,6 +172,14 @@ def decide(d: DecisionInput) -> Decision:
 
     if d.sequence_successes == 0:
         if d.sequence_failures_any == 0:
+            if d.infrastructure_failures > 0:
+                return result(
+                    OUTCOME_UNRESOLVED,
+                    REASON_INFRASTRUCTURE_FAILURE,
+                    f"Sequence never failed in {d.sequence_n} runs, but {d.infrastructure_failures} "
+                    "run(s) elsewhere (e.g. the alone check) only crashed or timed out, never a real "
+                    "exception -- a tooling problem, not evidence this victim is reliable.",
+                )
             return result(
                 OUTCOME_UNRESOLVED,
                 REASON_NOT_REPRODUCED,

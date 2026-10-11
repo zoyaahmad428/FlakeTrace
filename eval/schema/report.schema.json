@@ -86,11 +86,15 @@
         "shuffled_orders_tried": { "type": "integer", "minimum": 0 },
         "orders_exhausted": { "type": "boolean" },
         "seed_base": { "type": "integer" },
-        "reproducing_seed": { "type": ["integer", "null"] }
+        "reproducing_seed": { "type": ["integer", "null"] },
+        "infrastructure_failures": { "type": "integer", "minimum": 0 }
       },
-      "required": ["order_given", "shuffled_orders_tried", "orders_exhausted", "seed_base", "reproducing_seed"],
+      "required": [
+        "order_given", "shuffled_orders_tried", "orders_exhausted", "seed_base",
+        "reproducing_seed", "infrastructure_failures"
+      ],
       "additionalProperties": false,
-      "description": "ADR-008: how many orders were tried beyond the given/discovered one, and which (if any) reproduced. Optional on the report -- omitted entirely until the producing field exists (Member 2's diagnose(), ADR-008 step 4)."
+      "description": "ADR-008: how many orders were tried beyond the given/discovered one, and which (if any) reproduced. infrastructure_failures is the combined count of runs that only crashed, timed out or were skipped across every phase (the given/discovered order, shuffled orders, and the alone check) -- never a real exception, so never a reproduction. Optional on the report -- omitted entirely until the producing fields exist (Member 2's diagnose(), ADR-008)."
     }
   },
   "properties": {

@@ -56,8 +56,20 @@ class TestDecisionTableRows(unittest.TestCase):
         self.assertEqual(decision.outcome, OUTCOME_UNRESOLVED)
         self.assertEqual(decision.unresolved_reason, REASON_NOT_REPRODUCED)
 
-    def test_row3b_infrastructure_failure(self):
-        """ADR-008: every any-signature failure was a crash/timeout, no real exception."""
+    def test_row3b_infrastructure_failure_elsewhere(self):
+        """ADR-008 (2026-10-11): the sequence itself never failed, but some other phase (e.g.
+        the alone check) only crashed/timed out -- still INFRASTRUCTURE_FAILURE, not
+        NOT_REPRODUCED, because a crash is not the same evidence as a clean pass."""
+        d = DecisionInput(**base_kwargs(
+            sequence_successes=0, sequence_failures_any=0, infrastructure_failures=2,
+        ))
+        decision = decide(d)
+        self.assertEqual(decision.outcome, OUTCOME_UNRESOLVED)
+        self.assertEqual(decision.unresolved_reason, REASON_INFRASTRUCTURE_FAILURE)
+
+    def test_row3c_infrastructure_failure_within_sequence(self):
+        """ADR-008: every any-signature failure in the sequence itself was a crash/timeout,
+        no real exception."""
         d = DecisionInput(**base_kwargs(
             sequence_successes=0, sequence_failures_any=5, infrastructure_failures=5,
         ))
@@ -65,7 +77,7 @@ class TestDecisionTableRows(unittest.TestCase):
         self.assertEqual(decision.outcome, OUTCOME_UNRESOLVED)
         self.assertEqual(decision.unresolved_reason, REASON_INFRASTRUCTURE_FAILURE)
 
-    def test_row3b_infrastructure_failure_is_unreachable_by_default(self):
+    def test_row3d_signature_mismatch_is_default_when_no_infrastructure_failures_reported(self):
         """Pre-ADR-008 behaviour is exactly preserved when a caller never reports
         infrastructure_failures: any any-signature failure reads as SIGNATURE_MISMATCH."""
         d = DecisionInput(**base_kwargs(sequence_successes=0, sequence_failures_any=5))
@@ -73,7 +85,7 @@ class TestDecisionTableRows(unittest.TestCase):
         decision = decide(d)
         self.assertEqual(decision.unresolved_reason, REASON_SIGNATURE_MISMATCH)
 
-    def test_row3c_signature_mismatch(self):
+    def test_row3d_signature_mismatch(self):
         """At least one failure was a real, different exception -- not infrastructure-only."""
         d = DecisionInput(**base_kwargs(
             sequence_successes=0, sequence_failures_any=5, infrastructure_failures=3,
@@ -126,11 +138,19 @@ class TestDecisionInputValidation(unittest.TestCase):
         with self.assertRaises(ValueError):
             DecisionInput(**base_kwargs(confidence=1.0))
 
-    def test_infrastructure_failures_exceeding_failures_any_raises(self):
+    def test_infrastructure_failures_exceeding_sequence_failures_any_is_allowed(self):
+        """infrastructure_failures (2026-10-11) is a combined total across every phase, not
+        just the sequence runs sequence_failures_any counts -- e.g. a clean sequence
+        (sequence_failures_any=0) plus crashes in the alone check is a real, valid shape
+        (row 3b), so it must not raise."""
+        d = DecisionInput(**base_kwargs(
+            sequence_successes=0, sequence_failures_any=0, infrastructure_failures=6,
+        ))
+        self.assertEqual(d.infrastructure_failures, 6)
+
+    def test_infrastructure_failures_negative_raises(self):
         with self.assertRaises(ValueError):
-            DecisionInput(**base_kwargs(
-                sequence_successes=0, sequence_failures_any=5, infrastructure_failures=6,
-            ))
+            DecisionInput(**base_kwargs(infrastructure_failures=-1))
 
 
 if __name__ == "__main__":
