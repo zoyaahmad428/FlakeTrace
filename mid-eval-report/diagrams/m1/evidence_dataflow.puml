@@ -1,0 +1,80 @@
+@startuml evidence_dataflow
+' Static evidence extraction data flow - drawn only from evidence/extract.py (main)
+' and docs/contracts/resource-evidence.md. Built behaviour only; nothing planned is shown.
+' Owner: M1 (Zoya Ahmad). Slot: ch5:fig:evidence-dfd.
+skinparam dpi 200
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 11
+skinparam shadowing false
+skinparam ActivityBackgroundColor #F7F7F7
+skinparam ActivityBorderColor #333333
+skinparam NoteBackgroundColor #FFFFEE
+title analyse_pair(project, polluter, victim, depth=2, deepen=True)\nevidence/extract.py
+
+start
+:inputs: compiled class folders
+(target/classes, target/test-classes; read only),
+polluter and victim as Class#method,
+depth 1..5 (default 2);
+:used = depth;
+repeat
+  partition "analyse_test(project, test, used)\nfor the polluter, then the victim" {
+    :find_roots: the test class and its project superclasses;
+    note right
+      roots: the test method,
+      @Before / @After, @BeforeClass / @AfterClass,
+      JUnit 3 setUp / tearDown,
+      the test class's <clinit>;
+      overridden methods are skipped
+    end note
+    :walk_root: breadth-first from each root,
+    each method at most once per root;
+    :Project.load(class): javap -v -p -c,
+    parsed into ClassInfo, Method and
+    Instruction objects, cached per class;
+    :scan_method / scan_call: one bytecode instruction at a time
+    * getstatic / putstatic -> static-field READ / WRITE
+    * System.getProperty / setProperty / clearProperty,
+       Integer.getInteger, Long.getLong, Boolean.getBoolean
+       with a constant key -> system-property READ / WRITE
+    * call into a project class -> follow_call queues the
+       named target one level deeper (DEPTH_LIMIT if too deep)
+    * call into the JDK or a library -> external_calls_not_followed
+    * anything else it cannot model -> typed unsupported observation;
+    note right
+      unsupported kinds:
+      REFLECTION, INVOKEDYNAMIC,
+      VIRTUAL_DISPATCH, UNRESOLVED_CALL,
+      SYSPROP_NON_CONSTANT_KEY, SYSPROP_BULK,
+      IMPLICIT_CLINIT, DEPTH_LIMIT,
+      JUNIT_RULE_OR_RUNNER
+    end note
+    :Output 1 per test:
+    accesses (resource, READ / WRITE, class, method,
+    bytecode_offset, via, depth, call_path),
+    unsupported_observations,
+    external_calls_not_followed;
+  }
+  :find_edges: resources the polluter WRITES that the victim READS;
+  :Output 2: edges with every write
+  and read location,
+  no_supported_resource_evidence = no edges,
+  both tests' observations,
+  the 7 fixed limitations;
+repeat while (no edge, deepen on,\na DEPTH_LIMIT hit, used < 5?) is (yes: used + 1)
+->no;
+:record depth_requested and depth_used;
+:report_fields(pair):
+first edge -> shared_resource,
+its first write -> polluter_write_location,
+its first read -> victim_read_location,
+limitations (+ other edges and locations,
+evidence deeper than depth 2);
+note right
+  used by runner/cli.py: analyse_pair once
+  per polluter, combined by combine_fields,
+  then put in the report by eval/report.py.
+  The command line prints Output 1 / 2 as JSON.
+end note
+stop
+@enduml
