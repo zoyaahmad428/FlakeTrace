@@ -36,8 +36,29 @@ Its purpose is to replace the manual search developers do today, rerunning subse
 until the culprit appears, with a bounded diagnosis whose result anyone can check. It does not
 detect flaky tests in general and does not repair them. Section~\ref{ch1:sec:scope} separates
 what Iteration~1 has built from what is planned for FYP-2.
-\section{Problem Statement}
-Clearly formulate the problem being addressed.
+\section{Problem Statement}\label{ch1:sec:problem}
+\begin{quote}
+When a Java test passes in isolation but fails after other tests have run, developers can usually
+detect that the instability exists but still have no bounded, reproducible, evidence-producing way
+to identify which earlier test interaction caused it and decide what to inspect next.
+\end{quote}
+Stated precisely: a test suite runs in some order, and one test, the \emph{victim}, fails in that
+order but passes when run alone. The problem is to find the smallest set of earlier tests, the
+\emph{polluters}, whose running before the victim makes it fail; to show how reliably that reduced
+order reproduces the same failure; to name the shared state that links the polluters to the
+victim, at the exact places in the code where it is written and read; and, when the evidence does
+not support an answer, to say so with a reason instead of guessing.
+
+Three consequences follow from this statement and shape the whole project:
+\begin{itemize}
+\item \textbf{The input is a known failure.} FlakeTrace starts from a failing test the developer
+  already has; finding flaky tests in the first place is not part of the problem.
+\item \textbf{The output is evidence, not a fix.} The result tells the developer what to inspect;
+  changing the code stays with the developer.
+\item \textbf{The process is bounded.} An unbounded search is what developers already do by hand.
+  Iteration~1 bounds the number of orders and repeats; an explicit execution budget is planned
+  for FYP-2.
+\end{itemize}
 \section{Problem Context and Motivation}
 Explain the context, stakeholders, motivation, and significance.
 \section{Project Vision}
