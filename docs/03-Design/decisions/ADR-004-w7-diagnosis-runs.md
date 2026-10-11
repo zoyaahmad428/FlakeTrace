@@ -1,7 +1,7 @@
 # ADR-004 — W7: victim-alone check, polluter search, repeated runs, integrity, execution record
 
-**Date:** 2026-10-09 · **Status:** `PROPOSED` — chosen by M2; the default `n = 20` answers open
-question I3 in [[contracts/interfaces]] and needs M3's agreement · **Owner:** M2 ·
+**Date:** 2026-10-09 · **Status:** `ACCEPTED` by M1, M2 and M3 (PRs #17, #43); the default `n = 20` answers open
+question I3 in [[contracts/interfaces]] · **Owner:** M2 ·
 **Work package:** W7 · **Builds on:** [[03-Design/decisions/ADR-003-order-runner-junitcore-harness]]
 
 ## Context

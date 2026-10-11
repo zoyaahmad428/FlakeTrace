@@ -1,7 +1,7 @@
 # ADR-005 — W9: one command from a failing test to a validated report
 
-**Date:** 2026-10-10 · **Status:** `PROPOSED` — chosen by M2; it proposes the answer to open
-question I4 in [[contracts/interfaces]], which needs M1's and M3's agreement · **Owner:** M2 ·
+**Date:** 2026-10-10 · **Status:** `ACCEPTED` by M1, M2 and M3 (PRs #30, #31); it answers open
+question I4 in [[contracts/interfaces]] · **Owner:** M2 ·
 **Work package:** W9 · **Builds on:** [[03-Design/decisions/ADR-004-w7-diagnosis-runs]],
 [[03-Design/decisions/ADR-002-evidence-extractor-implementation]]
 

@@ -1,7 +1,7 @@
 # ADR-007 — W10: find several polluters by delta-debugging the failing order
 
-**Date:** 2026-10-10 · **Status:** `PROPOSED` — chosen by M2; the multi-polluter report rule
-(§ Evidence and report) applies agreed rules to a new case and needs M1's and M3's confirmation ·
+**Date:** 2026-10-10 · **Status:** `ACCEPTED` by M1, M2 and M3 (PRs #43, #44), including the multi-polluter report
+rule (§ Evidence and report) ·
 **Owner:** M2 · **Work package:** W10 · **Builds on:**
 [[03-Design/decisions/ADR-004-w7-diagnosis-runs]], [[03-Design/decisions/ADR-005-w9-diagnose-cli]]
 
