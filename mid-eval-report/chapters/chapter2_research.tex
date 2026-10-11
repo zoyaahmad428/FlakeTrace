@@ -220,8 +220,87 @@ the approved scope are not built yet and are planned for FYP-2:
 \item evaluation against published baselines, including iFixFlakies and RankF, on a frozen
   benchmark of real projects.
 \end{itemize}
-\section{Complex Computing Problem}
-Clearly identify and explain the complex computing problem addressed by the project.
+\section{Complex Computing Problem}\label{ch2:sec:ccp}
+The problem FlakeTrace addresses is stated in one sentence in the team's project summary:
+\begin{quote}
+Allocating a finite execution budget across competing diagnostic actions under uncertainty, and
+knowing when the evidence does not justify a claim.
+\end{quote}
+In full, the tool must produce evidence that can be reproduced on another machine, is minimal under
+a declared rule, is supported by an observed shared-resource interaction and comes with a
+statistical measure of reliability. At the same time the search is bounded, the analysis must not
+change the behaviour it studies, and the tool must refuse to answer rather than answer wrongly.
+These are not separate requirements that can be met one after another: each one limits the others.
+
+The team claims seven of the nine Seoul Accord characteristics of a complex computing problem.
+Table~\ref{ch2:tab:ccp} gives the evidence for each and states how much of it Iteration~1 already
+shows; parts that depend on the execution budget are planned for FYP-2.
+
+\begin{table}[tbp]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\caption{Seoul Accord characteristics claimed by FlakeTrace}\label{ch2:tab:ccp}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.45\textwidth}>{\raggedright\arraybackslash}p{0.32\textwidth}@{}}
+\toprule
+\textbf{Characteristic} & \textbf{Why it applies} & \textbf{Evidence in Iteration~1} \\
+\midrule
+Conflicting requirements &
+More resource coverage and more repeated runs give stronger evidence but cost more analysis and CI
+time, and a fixed budget must be split between searching and verifying. &
+Partly. Deeper static analysis explains more real cases but costs more per pair and adds false
+edges (ADR-006). The budget split is FYP-2. \\
+\addlinespace
+Depth of analysis &
+The possible test orders form a large search space; the failure can need several polluters
+together and may not appear in every run. &
+Shown. F3 needs two polluters together, found by delta debugging; N3 did not reproduce in 31
+shuffled orders. \\
+\addlinespace
+Depth of knowledge &
+Program analysis, software testing, delta debugging, statistical estimation, sequential
+decision-making and secure execution are all needed. &
+Partly. Bytecode analysis, delta debugging and Wilson intervals are built; planning and the
+locked-down container are FYP-2. \\
+\addlinespace
+Beyond standard practice &
+Retrying, dashboards and quarantining do not produce a checkable explanation of one failure. &
+Shown on fixtures: the report names polluter, resource and code locations with a reproduction
+interval. \\
+\addlinespace
+Significant consequences &
+A wrong diagnosis wastes engineering effort, or leads a team to ignore a real regression. &
+Shown in the design: the victim-alone check and typed \texttt{UNRESOLVED} reasons (N1--N3). \\
+\addlinespace
+Interdependence &
+Evidence quality changes candidate ranking, ranking changes execution cost, and execution results
+change verification and the decision to abstain. &
+Partly. The polluters found by reruns decide which pairs are analysed, and \texttt{VERIFIED} needs
+both a resource edge and the interval. The ranking loop is FYP-2. \\
+\addlinespace
+Ill-defined cause &
+At the start, the responsible test, the shared resource and the conditions that reproduce the
+failure are all unknown. &
+Shown. Each fixture case starts from the victim's name only. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The conflict between depth of analysis and its cost has already been measured. On the fastjson
+case FJ-01, static analysis at depths 1--3 found none of the 42 tests that really affect the
+victim; at depth~4 it found all 42, plus one false edge among the 30 tests that do not. That false
+edge comes from a test that writes the shared time-zone field but restores it afterwards, which the
+static analysis does not model. One pair took about 3--6~s to analyse at depth~2, but 7.5~s for
+FJ-01 at depth~4 and 26.3~s for FJ-02 at depth~5 (ADR-006). FlakeTrace therefore starts at depth~2
+and goes deeper only when no edge is found.
+
+Two characteristics are not claimed. \textbf{Diverse stakeholders} would hold only if interviews
+showed that developers, QA engineers and CI maintainers need materially different things, and that
+those differences shape the requirements. The three practitioner interviews done so far (a chief
+executive, an engineering lead and a full-stack engineer) describe overlapping needs rather than
+conflicting ones. \textbf{Unfamiliar issues} is not claimed because
+using an unfamiliar framework does not count; the team has not yet set out which new computing
+knowledge the problem itself demands.
 \section{Technical Challenges}\label{ch2:sec:challenges}
 Document major technical challenges anticipated or encountered.
 \section{Research Findings and Design Decisions}
