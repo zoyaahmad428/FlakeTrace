@@ -91,8 +91,31 @@ their stacks are Python and TypeScript, and their shared state is mostly databas
 interviews show that the \emph{workflow problem} is real. That Java teams face it rests on the
 published Java studies above. An interview with a Java developer is planned after the Mid
 evaluation.
-\section{Project Vision}
-State what the project intends to achieve.
+\section{Project Vision}\label{ch1:sec:vision}
+FlakeTrace aims to turn ``this test is flaky'' into a result a developer can check and act on: which
+earlier tests break the failing test, through which shared state, how reliably that happens, and,
+when this cannot be established, an honest statement of why.
+
+The team's contribution statement places this against existing work:
+\begin{quote}
+Existing products mainly detect, track or quarantine flaky tests, while research tools separately
+detect and classify order dependence, minimise relevant test orders, rank order-dependent relevant
+tests or compare dynamic invariants. FlakeTrace contributes a self-hosted, budget-aware
+active-diagnosis pipeline that combines bounded resource-event evidence with controlled
+interventions and returns a statistically verified replay certificate or an explicit abstention,
+evaluated against current research baselines on a frozen, project-separated Java benchmark.
+\end{quote}
+The project does not claim a new algorithm, and it does not claim to fix flaky tests. It defends
+three properties of the complete product:
+\begin{enumerate}
+\item \textbf{Typed abstention:} when the evidence is insufficient, the result is a named reason,
+  never a guess. Built in Iteration~1.
+\item \textbf{Intervention-backed evidence:} the polluters are confirmed by controlled reruns, not
+  only inferred from the code; the shared resource is supporting evidence. Built in Iteration~1.
+\item \textbf{Budget as a first-class input:} the tool spends a declared number of test
+  executions and then stops. Planned for FYP-2.
+\end{enumerate}
+The benchmark evaluation against published baselines named in the statement is also FYP-2 work.
 \section{Project Objectives}
 List measurable project objectives.
 \section{Project Scope}\label{ch1:sec:scope}
