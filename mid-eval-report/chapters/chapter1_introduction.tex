@@ -362,8 +362,73 @@ already known to be order-dependent, so classification stays out of scope.
 one interviewee agreed to review FlakeTrace's results later and give practitioner feedback.
 Because the three user classes want overlapping things, the team does not claim ``diverse
 stakeholders'' as a complex-problem characteristic (Section~\ref{ch2:sec:ccp}).
-\section{Success Criteria}
-Define measurable criteria that will indicate project success.
+\section{Success Criteria}\label{ch1:sec:success}
+Table~\ref{ch1:tab:success} gives the criteria by which the finished project will be judged, from
+\texttt{docs/02-Requirements/non-functional.md}. The \emph{Basis} column says where each target comes
+from: a published finding, the team's own policy, or a project-set target, which must be defended as
+a choice. The current status of each criterion is in Table~\ref{ch4:tab:acceptance}.
+
+{\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.40\textwidth}>{\raggedright\arraybackslash}p{0.32\textwidth}@{}}
+\caption{Success criteria}\label{ch1:tab:success}\\
+\toprule
+\textbf{Criterion} & \textbf{Target} & \textbf{Basis} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Criterion} & \textbf{Target} & \textbf{Basis} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Verified result &
+Wilson 95\% lower bound of at least 0.70 over 20 clean replays, which in practice means at least
+19 of 20. &
+Team policy; the Wilson estimator is from the literature \cite{brown2001interval}. \\
+\addlinespace
+Minimality &
+Every \texttt{VERIFIED} reduced order passes the 1-minimality deletion checks. &
+Delta debugging \cite{zeller2002ddmin}. \\
+\addlinespace
+Explanation &
+Every \texttt{VERIFIED} result names a polluter $\to$ resource $\to$ victim path in a supported
+resource family. &
+Design rule: shared state alone is not proof \cite{gyori2015poldet}. \\
+\addlinespace
+No false confidence &
+No \texttt{VERIFIED} result on any negative control. &
+Design rule. \\
+\addlinespace
+Cost &
+At least 25\% fewer test executions (median) than iFixFlakies or unguided minimisation, at the same
+isolation success, on the cases both can solve. &
+Project-set target. \\
+\addlinespace
+Success at budget &
+At most 5 percentage points below the strongest comparator, reported with paired confidence
+intervals. &
+Project-set target. \\
+\addlinespace
+Overhead &
+Runtime evidence collection below a threshold accepted by stakeholders. &
+No number yet, deliberately: it will be set from measurement, with the interview bounds as
+context (5--15 minutes per pull request, up to 30 minutes on request). \\
+\end{longtable}
+}
+
+\paragraph{How results will be judged.} The statistical rules are fixed before any results are
+seen: comparisons are paired by project, because tests within one project are not independent;
+results are reported with bootstrap confidence intervals and an effect size, not p-values alone;
+and excluded or timed-out cases stay in the yield and failure analysis instead of disappearing from
+the denominator. The thresholds above are frozen before the held-out evaluation, because changing
+them after seeing results would invalidate it.
+
+\paragraph{A note on the verification rule.} The project documents state the verified rule as
+``at least 18 of 20 replays and a Wilson lower bound of at least 0.70''. With the team's own
+\texttt{eval.stats.wilson\_interval}, 18 of 20 gives a lower bound of 0.699, 19 gives 0.764 and 20
+gives 0.839, so the lower-bound condition alone decides, and it needs 19. This report states the
+rule as it is implemented in \texttt{eval/outcome.py}.
 \section{Constraints and Assumptions}
 Document relevant constraints and assumptions.
 \section{Ethical, Legal and DEI Considerations}
