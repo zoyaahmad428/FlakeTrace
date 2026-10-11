@@ -8,10 +8,11 @@ polluted shared state (the *polluter*), reduces the failing order to a minimal s
 identifies the shared resource from compiled bytecode, and reports how reliably the failure
 replays — without needing application logs and without modifying the project's source.
 
-> **Status (2026-10-09):** proposal approved with minor modifications. Iteration 1 in progress
-> towards the FYP-1 Mid Evaluation. The evaluation layer (`eval/`) and seeded fixtures
-> (`fixtures/`) exist and are tested; the runner (`runner/`) and evidence extractor
-> (`evidence/`) are not yet built.
+> **Status (2026-10-11):** proposal approved with minor modifications (defence 11 September 2026).
+> Iteration 1 is built for the FYP-1 Mid Evaluation: one command, `py -m runner diagnose`, runs
+> the runner (`runner/`), the static evidence extractor (`evidence/`) and the outcome decision and
+> report (`eval/`) on all seven seeded fixture cases (`fixtures/`). What is and is not shown live:
+> [docs/08-MidEval/demo-plan.md](docs/08-MidEval/demo-plan.md).
 
 ## Repository layout
 
@@ -34,14 +35,33 @@ replays — without needing application logs and without modifying the project's
 
 ## Run the checks
 
+Needs Python 3.11+, a JDK 8 or newer (`java`, `javac`, `javap`) and Maven on `PATH`. Run from the
+repository root.
+
+Linux, macOS, WSL or Git Bash:
+
 ```bash
 pip install -r eval/requirements.txt
 python3 -m unittest -v $(ls eval/tests/test_*.py | sed 's#/#.#g; s#\.py$##')
 mvn -B -f fixtures/od-fixture/pom.xml test-compile
-python3 -m unittest -v runner.tests.test_order_runner   # needs JDK 8+ and Maven on PATH
+python3 -m unittest -v $(ls runner/tests/test_*.py | sed 's#/#.#g; s#\.py$##')   # starts real JVMs, a few minutes
 python3 -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode
 mvn -B -q -f evidence/tests/resources/m1-selftest/pom.xml test-compile
 python3 -m unittest -v evidence.tests.test_extract       # needs the two compiles above and javap
 ```
 
-CI (`.github/workflows/ci.yml`) runs these on every pull request.
+Windows (cmd or PowerShell):
+
+```
+py -m pip install -r eval/requirements.txt
+py -m unittest -v eval.tests.test_baseline eval.tests.test_examples eval.tests.test_outcome eval.tests.test_report eval.tests.test_schema_validator eval.tests.test_stats eval.tests.test_yield_report
+mvn -B -f fixtures/od-fixture/pom.xml test-compile
+py -m unittest -v runner.tests.test_cli runner.tests.test_diagnose runner.tests.test_discovery runner.tests.test_integrity runner.tests.test_minimise runner.tests.test_order_runner runner.tests.test_orders runner.tests.test_recording runner.tests.test_search
+py -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode
+mvn -B -q -f evidence/tests/resources/m1-selftest/pom.xml test-compile
+py -m unittest -v evidence.tests.test_extract
+```
+
+CI (`.github/workflows/ci.yml`) runs the three test suites on every pull request, on Linux with
+JDK 8 and Python 3.11. The `diagnose` command writes its execution record and report to
+`flaketrace-records/` (git-ignored).

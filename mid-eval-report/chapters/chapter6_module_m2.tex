@@ -4,5 +4,180 @@
 % DRAW FROM: runner/README.md, runner/*.py, runner/harness/FtHarness.java, docs/04-Implementation/{sandbox-runner,diagnosis-runs,diagnose-cli}.md, docs/evidence-m2.md, ADR-003/004/005/007/008
 % Rules: mid-eval-report/CLAUDE.md. Do not edit a file you do not own.
 % ===========================================================================
-\subsection{Ordered Runner, Polluter Search, Minimisation and CLI (Member 2)}
-\todo{M2: files, main functions, ddmin, verification, CLI exit codes, limitations, real results from evidence-m2.md}
+\subsection{Ordered Runner, Polluter Search, Minimisation and CLI (Member 2)}\label{ch6:sec:m2}
+Member 2's module is the \path{runner/} package: it runs tests in a chosen order, finds the polluter, shrinks the failing order, repeats it, and is the command that joins the three packages. It is 1{,}119 lines of Python and Java, with 1{,}488 lines of tests (\texttt{wc -l}, 11 October 2026).
+
+\subsubsection{Files and main functions}
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.26\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.55\textwidth}}
+\caption{Files of the runner module}\label{ch6:tab:m2-files}\\
+\toprule
+File & Lines & Job\\
+\midrule
+\endfirsthead
+\toprule
+File & Lines & Job\\
+\midrule
+\endhead
+\path{order_runner.py} & 220 & \texttt{OrderRunner.run\_ordered}: one fresh JVM per order; \texttt{maven\_test\_classpath}; failure-signature normalisation\\
+\path{harness/FtHarness.java} & 122 & Runs the listed tests in order with \texttt{JUnitCore}; lists test methods for discovery\\
+\path{discovery.py} & 31 & \texttt{discover\_order}: test classes by Surefire's default include patterns, methods from JUnit\\
+\path{search.py} & 55 & \texttt{reproduce} (first real failure becomes the reference); \texttt{find\_polluter} (one-by-one)\\
+\path{orders.py} & 69 & \texttt{distinct\_shuffles}, \texttt{search\_orders}: class-first shuffled orders (ADR-008)\\
+\path{minimise.py} & 55 & \texttt{ddmin}: 1-minimal polluter set (ADR-007)\\
+\path{verify.py} & 33 & \texttt{repeat}: $n$ runs, matching and any-signature failure counts\\
+\path{integrity.py} & 40 & \texttt{snapshot}, \texttt{compare}: SHA-256 of the project's files before and after\\
+\path{recording.py} & 54 & \texttt{RecordingRunner}: writes every JVM run to the execution record\\
+\path{diagnose.py} & 208 & \texttt{diagnose}, \texttt{run\_steps}: the whole diagnosis, returns raw counts\\
+\path{cli.py}, \path{__main__.py} & 232 & \texttt{py -m runner diagnose}: options, evidence per polluter, report, summary, exit codes\\
+\bottomrule
+\end{longtable}}
+
+\subsubsection{Ordered runner}
+\texttt{OrderRunner} compiles \path{FtHarness.java} once with \texttt{javac -source 8 -target 8}. Each call to \texttt{run\_ordered(order)} then starts \texttt{java FtHarness <result-file>} in the analysed project's folder, with the project's own test classpath, sends the test list on standard input, and waits at most 120\,s. The harness runs each test with JUnit's \texttt{JUnitCore.run(Request.method(...))} and writes one line per test to the result file, so output printed by a test cannot corrupt the results. Python then turns each failure into a \texttt{FailureSignature}:
+\begin{itemize}
+  \item \textbf{exception type:} the class of the thrown exception (not its cause);
+  \item \textbf{stack trace:} the frames from the throw point down to the first frame of JUnit's runner, Java reflection or the harness. Those lower frames differ between JDK 8 and JDK 21 and say nothing about the failure;
+  \item \textbf{message:} the first line with numbers, hexadecimal ids, timestamps and paths masked. It is stored but not compared, because the same bug can print different values on each run.
+\end{itemize}
+The contract requires every test in the order to appear in the result, so the runner never drops one (Table~\ref{ch6:tab:m2-always}).
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.42\textwidth}>{\raggedright\arraybackslash}p{0.46\textwidth}}
+\caption{How the runner reports every test (\texttt{runner/README.md})}\label{ch6:tab:m2-always}\\
+\toprule
+Situation & Reported as\\
+\midrule
+\endfirsthead
+\toprule
+Situation & Reported as\\
+\midrule
+\endhead
+JVM runs longer than 120\,s & failure, \texttt{flaketrace.Timeout}\\
+JVM exits before reporting a test (crash, \texttt{System.exit}) & failure, \texttt{flaketrace.JvmCrash}, exit code in the message\\
+Class or method not found & failure with JUnit's own exception\\
+\texttt{@Ignore} or a failed \texttt{Assume} & failure, \texttt{flaketrace.NotExecuted}: a skip never counts as a pass\\
+The same test twice in one order & \texttt{ValueError} before any JVM starts\\
+\bottomrule
+\end{longtable}}
+
+The \texttt{flaketrace.*} types mark failures the tool produced, not the test. Such a failure is counted as ``failed for any reason'' but never becomes the reference signature and never counts as a reproduction.
+
+\subsubsection{Diagnosis flow}
+\texttt{diagnose()} hashes the project, builds the classpath, discovers the tests, wraps the runner in a \texttt{RecordingRunner}, and calls \texttt{run\_steps} (Figure~\ref{ch5:fig:search-activity}). It returns a \texttt{DiagnosisRuns} object with raw counts and one of four statuses (Table~\ref{ch6:tab:m2-status}); it never decides the outcome, which is Member 3's \texttt{decide()}.
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.25\textwidth}>{\raggedright\arraybackslash}p{0.40\textwidth}>{\raggedright\arraybackslash}p{0.23\textwidth}}
+\caption{Statuses returned by \texttt{diagnose()}}\label{ch6:tab:m2-status}\\
+\toprule
+Status & Meaning & Sequence repeated $n$ times\\
+\midrule
+\endfirsthead
+\toprule
+Status & Meaning & Sequence repeated $n$ times\\
+\midrule
+\endhead
+\texttt{POLLUTER\_FOUND} & One earlier test, or a 1-minimal set found by \texttt{ddmin}, makes the victim fail with the reference signature & polluters + victim\\
+\texttt{VICTIM\_FAILS\_ALONE} & The victim fails with nothing before it; no test is blamed & victim alone\\
+\texttt{NO\_SINGLE\_POLLUTER} & A failure was seen but did not come back; no test is blamed & the failing order\\
+\texttt{NOT\_REPRODUCED} & No real failure in $n$ runs of the order, in the shuffled orders, or in $n$ runs alone & the starting order\\
+\bottomrule
+\end{longtable}}
+
+\subsubsection{Minimisation with ddmin}\label{ch6:sec:ddmin}
+When no single earlier test makes the victim fail, \texttt{run\_steps} first runs the full order once more. Only if it fails again with the reference signature does \texttt{ddmin} (\path{runner/minimise.py}) shrink the tests before the victim; otherwise a one-off flaky failure would make every earlier test look guilty. Listing~\ref{ch6:lst:ddmin} is the core loop.
+
+\begin{lstlisting}[language=Python,basicstyle=\footnotesize\ttfamily,columns=fullflexible,keepspaces=true,caption={Core of \texttt{ddmin} (\texttt{runner/minimise.py})},label=ch6:lst:ddmin]
+current, k = list(prefix), 2
+while len(current) > 1:
+    chunks = _split(current, k)
+    smaller = next((chunk for chunk in chunks if fails(chunk)), None)
+    if smaller is not None:
+        current, k = smaller, 2
+        continue
+    complements = ([t for t in current if t not in chunk] for chunk in chunks)
+    smaller = next((rest for rest in complements if fails(rest)), None)
+    if smaller is not None:
+        current, k = smaller, max(k - 1, 2)
+        continue
+    if k >= len(current):
+        break
+    k = min(2 * k, len(current))
+return current, runs
+\end{lstlisting}
+
+\texttt{fails(subset)} runs \texttt{subset + [victim]} in its original relative order in one fresh JVM and returns true only if the victim fails with the \emph{reference} signature; a crash or a different exception never removes a test. A cache keyed by the set of tests means no subset runs twice. The loop ends when \texttt{k} equals the set size, so its last round has tried removing each remaining test on its own: the result is \emph{1-minimal} (removing any one test makes the failure disappear), not necessarily the smallest set that exists.
+
+On fixture F3 (run on 11 October 2026, Windows 11, JDK 21.0.9), the command printed \texttt{minimised: 14 earlier tests -> 2 polluters in 10 runs}, and the two polluters were the ground truth's \texttt{setFlagA} and \texttt{setFlagB}. The execution record of that run shows 65 JVM runs in total: 1 to reproduce, 20 alone, 14 for the one-by-one search, 10 for minimisation (including the one re-run of the full order) and 20 to verify.
+
+\subsubsection{Verification and order search}
+\texttt{repeat} (\path{runner/verify.py}) runs the final sequence $n$ times, each in a fresh JVM, and returns two counts: runs where the victim failed with the reference signature, and runs where it failed for any reason. The default is $n = 20$, agreed by all three members: 20 matching failures out of 20 give a Wilson lower bound of 0.839 and 19 out of 20 give 0.764, both above the 0.70 that Member 3's \texttt{decide()} requires for \texttt{VERIFIED} (\path{docs/contracts/interfaces.md}, question I3; ADR-004). The victim-alone check uses the same function on \texttt{[victim]}.
+
+When the starting order never fails for real, \path{runner/orders.py} tries up to 31 distinct shuffled orders, one run each (ADR-008). Classes are shuffled first and then the methods inside each class, because JUnit never interleaves the methods of two classes; every seed is written to the execution record, so any shuffle can be replayed. In the worst case a diagnosis that never reproduces costs $20 + 31 + 20 = 71$ JVM runs. On the fixture, F4's discovered order never fails, and the failure was reproduced in the second shuffled order (seed 1); N3 never failed in 20 runs of its order, 31 shuffled orders or 20 runs alone, and its report gives the bound ``failure rate below 0.161 (95\% Wilson), not proof of reliability'' (\path{docs/evidence-m2.md}, 11 October 2026).
+
+\subsubsection{Command line}
+\texttt{py -m runner diagnose} (\path{runner/cli.py}, ADR-005) takes the options in Table~\ref{ch6:tab:m2-options} and maps every result to an exit code (Table~\ref{ch6:tab:m2-exit}). A known error prints one line, \texttt{error: ...}, with no stack trace; an unexpected bug still prints its trace, on purpose.
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.56\textwidth}}
+\caption{Options of \texttt{py -m runner diagnose}}\label{ch6:tab:m2-options}\\
+\toprule
+Option & Default & Meaning\\
+\midrule
+\endfirsthead
+\toprule
+Option & Default & Meaning\\
+\midrule
+\endhead
+\texttt{-{}-project} & required & Maven project folder, must contain \texttt{pom.xml}\\
+\texttt{-{}-victim} & required & failing test as \texttt{Class\#method}\\
+\texttt{-{}-n} & 20 & repeat count\\
+\texttt{-{}-records} & \texttt{flaketrace-\allowbreak records} & folder for the record and report; refused if inside the project\\
+\texttt{-{}-order} & none & file with the real failing order, one \texttt{Class\#method} per line\\
+\texttt{-{}-shuffles} & 31 & shuffled orders to try if the order never fails; 0 turns it off\\
+\texttt{-{}-seed} & 0 & first shuffle seed\\
+\bottomrule
+\end{longtable}}
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.06\textwidth}>{\raggedright\arraybackslash}p{0.82\textwidth}}
+\caption{Exit codes of \texttt{py -m runner diagnose}}\label{ch6:tab:m2-exit}\\
+\toprule
+Code & Meaning\\
+\midrule
+\endfirsthead
+\toprule
+Code & Meaning\\
+\midrule
+\endhead
+0 & Report written, whatever the outcome, including \texttt{UNRESOLVED}\\
+2 & Input is wrong: victim not \texttt{Class\#method}, no \texttt{pom.xml}, $n < 1$, records folder inside the project, bad \texttt{-{}-order} file, victim not among the project's tests\\
+1 & A tool failed: Maven, \texttt{java}, \texttt{javac}, a timeout during discovery, or the extractor\\
+3 & The diagnosis ran but no report can be built: \texttt{NO\_SINGLE\_POLLUTER}\\
+\bottomrule
+\end{longtable}}
+
+Listing~\ref{ch6:lst:m2-f1} is the summary printed for fixture F1 on 11 October 2026 (the two lines with the report and record paths are left out).
+\begin{lstlisting}[basicstyle=\footnotesize\ttfamily,columns=fullflexible,keepspaces=true,breaklines=true,breakatwhitespace=true,caption={Summary for F1 (exit code 0)},label=ch6:lst:m2-f1]
+VERIFIED  odfixture.ConfigVictimTest#expectsDefaultMode
+  polluter:   odfixture.ConfigPolluterTest#pollute
+  resource:   static-field odfixture.Config mode (write odfixture.ConfigPolluterTest#pollute@1 -> read odfixture.ConfigVictimTest#expectsDefaultMode@1)
+  reproduced: 20/20 (lower bound 0.839)   alone: 0/20
+\end{lstlisting}
+
+\subsubsection{Testing}
+The module has 144 tests in nine files under \path{runner/tests/}. Most of the logic (search, minimisation, order search, recording) is tested against Member 3's \texttt{FakeOrderRunner}, which returns scripted outcomes without a JVM and exists only under \path{eval/tests/}; the order runner, \texttt{diagnose()} and the command are also tested with real JVM runs on the fixture. Without \texttt{java} or Maven the real tests are skipped, except in CI, where \texttt{FLAKETRACE\_REQUIRE\_JVM} turns a skip into a failure. All 144 passed in CI on Linux with JDK 8 in 105.2\,s (pull request \#49) and locally on Windows with JDK 21 in 344.8\,s (Table~\ref{ch6:tab:setup-results}).
+
+Most tests were written before the code they check and were seen failing first; key tests were also checked by breaking the code on purpose and watching them fail (\path{docs/evidence-m2.md} records both for each task). Two examples: changing the alone check from \texttt{alone\_successes >= 1} to \texttt{>= 100} made \texttt{test\_victim\_failing\_alone\_stops\_before\_the\_search} fail; and a test that reads a 20{,}001-line \texttt{-{}-order} file within 5\,s failed at 33.4\,s, which exposed a quadratic duplicate check, after which the same file took 0.094\,s.
+
+\subsubsection{Limitations and a failure case}
+\begin{itemize}
+  \item \textbf{No sandbox.} The analysed project's tests run as ordinary processes with the user's permissions; there is no container yet. FlakeTrace should only be run on projects the user trusts.
+  \item \textbf{JUnit 3 and 4 only.} JUnit 5 is not supported. Each method is its own JUnit request, so \texttt{@BeforeClass} and \texttt{@AfterClass} run once per method, not once per class as under Maven Surefire.
+  \item \textbf{Signatures within one JDK.} Frames from the JDK itself above the cut keep their line numbers, which differ between JDK versions, so such signatures are only compared within one diagnosis. Only the top-level exception is compared, not its cause.
+  \item \textbf{Discovery order.} Tests are discovered in alphabetical order; Surefire's default runs them in file-system order. For a failure seen in CI, the real order should be passed with \texttt{-{}-order}.
+  \item \textbf{No report for \texttt{NO\_SINGLE\_POLLUTER}.} The report schema has no reason for it, so the command exits with code 3 and only the execution record remains.
+  \item \textbf{31 shuffles is an assumption.} The figure comes from a study of Python projects~\cite{gruber2021flaky}.
+\end{itemize}
+
+\textbf{Failure case: N2 on one laptop.} N2 is meant to fail at random. On 9 October 2026 its real-JVM test failed: \texttt{diagnose()} returned \texttt{NOT\_REPRODUCED}, because N2 failed in none of 40 runs of its order and none of 40 runs alone, although a design experiment earlier that day had seen it fail 18 times in 60 runs alone. A probe showed that \texttt{System.nanoTime()} on that laptop only returned multiples of 100, so N2's random condition could never come true there; why the earlier run differed was not found. The diagnosis was right and the test's assumption was wrong: the test now checks that no polluter is ever blamed and accepts \texttt{NOT\_REPRODUCED} when N2 never fails (\path{docs/evidence-m2.md}, ADR-004).
