@@ -61,7 +61,8 @@ status tracking · plain-language explanation mode · policy engine · audit exp
 ## GATED — Certificate-Driven Remediation
 
 Enabled **only** after ranking quality and explanation correctness meet acceptance thresholds
-on held-out projects, and after the committed core reaches its **Final-1 exit criteria**.
+on the development benchmark (held-out projects stay for the final evaluation), and after the
+committed core reaches its **Final-1 exit criteria**.
 
 Certificate-to-repair-context transformation · certificate-directed code retrieval · repair
 playbook library · deterministic recommendation layer · **templated patch generator (mandatory,
@@ -90,7 +91,8 @@ one demonstration case.
 - Generic flaky-test **detection** as the contribution
 - Multiple languages · Python support · multiple build systems
 - **Claims of definitive causality**
-- Unconstrained automatic repair
+- Automatic source-code repair (the tool deciding on and applying a fix) — CDR only suggests;
+  a developer applies
 - Hosted analytics dashboard
 - Team case inbox and collaboration features
 - IDE plugins

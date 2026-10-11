@@ -762,3 +762,17 @@ two-order suite, victim-first shuffle, `--shuffles 0`, seeds in the record).
 - CI on the PR (`m2/adr-008-runner`, commit `0299e7b`): job `runner` (JDK 8, Linux) -> `Ran 144 tests in 105.225s — OK`
   (line copied from the job log by Member 2), so F4 via a shuffle and the N3 report also pass on Linux/JDK 8.
   Claim E15 SETTLED.
+### 2026-10-11 — Docs sync after PR #49 (ADR-008 merged)
+
+- Requirement: docs must match the merged code before the Mid packaging (CLAUDE.md §5).
+- Re-ran on main `557d901` (JDK 21, Windows 11), records to a temp folder (not committed):
+  `py -m runner diagnose --project fixtures/od-fixture --victim odfixture.AlwaysEarlyVictimTest#expectsLateFlagUnset`
+  -> `VERIFIED`, polluter `ZzzLatePolluterTest#setLateFlag`, reproduced in shuffled order (seed 1) after 2 shuffled
+  orders, resource `odfixture.LateFlag isSet`, 20/20 (lower bound 0.839), alone 0/20, 36 s.
+  `py -m runner diagnose --project fixtures/od-fixture --victim odfixture.EnvDependentNegativeTest#onlyFailsUnderCI`
+  -> `UNRESOLVED (NOT_REPRODUCED)`, discovered order 20x, 31 distinct shuffled orders, alone 20x, bound < 0.161, 37 s.
+- Checked the F4 execution record for panel action A7: header has `"shuffles": 31, "seed_base": 0`; shuffled run lines
+  carry `"seed": 0` and `"seed": 1`; the report has `"reproducing_seed": 1`.
+- Docs changed: ADR-003/004/005/007/008 status `ACCEPTED` (ticks already present); W14 row merged; W9 row, A1, A5,
+  A7 (seed no longer "not applicable"), demo-plan status and mocked table, members row, architecture status line.
+- Limitation: F4/N3 JSON reports are still not in `eval/reports/` (Member 3's `run_w9_integration.py` covers F1/F2/N1/N2).

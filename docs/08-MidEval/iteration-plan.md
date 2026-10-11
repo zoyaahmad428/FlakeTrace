@@ -7,9 +7,8 @@ interval, and the source verified unchanged. A negative control is correctly rep
 `UNRESOLVED`. *(This is the "before the supervisory mid-evaluation" milestone of the
 post-defence plan, §13.)*
 
-> ⚠ **Set the date.** The meeting is 12–16 October. Submission is **48 h before**. If the
-> meeting is 12 or 13 October, submission is **10–11 October** — use the *emergency cut*
-> below.
+> **Dates:** meeting **Friday 16 October, 8:30 AM**; submission (48 h before) **Wednesday
+> 14 October, 8:30 AM**. The *emergency cut* below is not needed.
 
 ## Work packages
 
@@ -25,14 +24,14 @@ post-defence plan, §13.)*
 | W8 | Static extraction: static fields + system properties, attributed to test methods | M1 | S−1 | **Complete**: lifecycle attribution, call depth 1–5 with pair-mode auto-deepening (ADR-006, accepted by all three), polluter→victim edges; fixture matches `ground_truth.json` exactly (240 pairs incl. F4/N3); fastjson FJ-01/FJ-02 edges at `depth_used` 4/5; 39 tests green on JDK 8 in CI (PR #34) | `evidence/extract.py`, `docs/evidence-m1.md` |
 | W9 | End-to-end CLI: F1 → validated JSON report | M2 + M3 | S−1 | **Complete for all 7 fixture cases.** Real `runner.diagnose()` + M1's `find_edges`/`report_fields`/`analyse_pair` assembled by `eval.report.assemble_report()`, schema-validated, via both `eval/tools/run_w9_integration.py` (library) and `py -m runner diagnose` (ADR-005). F1/F2 → `VERIFIED`; N1/N2 → `UNRESOLVED(VICTIM_FAILS_ALONE)`; **F3 → `VERIFIED`** since W10 landed (row below). ADR-008 (merged, PR #49) added real `NOT_REPRODUCED`/`INFRASTRUCTURE_FAILURE` handling (nullable `failure_signature`, `order_exploration` field with combined crash counts, 2026-10-11) end to end: **F4 → `VERIFIED`** through a shuffled order (seed 1, the given/discovered order never reproduces it) and **N3 → `UNRESOLVED(NOT_REPRODUCED)`**, both real schema-validated reports, not hand-built. `NO_SINGLE_POLLUTER` is the only status still deliberately unhandled — see [[evidence-m3]]. | `eval/report.py`, `eval/reports/`, [[evidence-m3]], `runner/cli.py`, [[03-Design/decisions/ADR-008-not-reproduced-and-order-search]] |
 | W10 | Deletion minimisation incl. F3 two-polluter case | M2 | S | **Complete** (PR #35/#38/#40, merged): `ddmin` when no single polluter; real F3 → `POLLUTER_FOUND` with the ground-truth polluters (`setFlagA`+`setFlagB`), command → `VERIFIED` 20/20, 0/20 alone | `runner/minimise.py`, [[03-Design/decisions/ADR-007-w10-ddmin-minimisation]], [[evidence-m2]] |
-| W14 | ADR-008 runner side: `--order`, class-first shuffled orders, alone check always, `NOT_REPRODUCED` reports | M2 (+ M3's schema/fixtures, PR #45) | After S | **Complete** (PR #49 merged): real F4 `VERIFIED` via shuffle seed 1; real N3 `NOT_REPRODUCED` report after 31 shuffles | `runner/orders.py`, [[03-Design/decisions/ADR-008-not-reproduced-and-order-search]], [[evidence-m2]] |
+| W14 | ADR-008 runner side: `--order`, class-first shuffled orders, alone check always, `NOT_REPRODUCED` reports | M2 (+ M3's schema/fixtures, PR #45) | After S | **Complete** (PR #49, merged; CI 144 runner tests on JDK 8): real F4 `VERIFIED` via shuffle seed 1; real N3 `NOT_REPRODUCED` report after 31 shuffles | `runner/orders.py`, [[03-Design/decisions/ADR-008-not-reproduced-and-order-search]], [[evidence-m2]] |
 | W11 | Mid report (template) | All, chapter owners in [[08-MidEval/README]] | S | **In progress (M3):** chapters 4, 7, 8 drafted and sent to the member; not yet confirmed incorporated into the actual submission, and due for a refresh (drafted before F3/W10 and ADR-008 landed) | — |
 | W12 | Worksheet, GenAI register, tag `mid-eval-v1` | M2 (tag), all | S | Not started | — |
 | W13 | Deck + rehearsal on demo laptop | All | Meeting −1 | Not started | — |
 
 *S = submission day (meeting − 48 h).*
 
-## Day plan (fill dates once the meeting is confirmed)
+## Day plan (S = Wed 14 Oct, Meeting −1 = Thu 15 Oct)
 
 | Day | M1 | M2 | M3 |
 | --- | --- | --- | --- |

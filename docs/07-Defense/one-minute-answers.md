@@ -116,7 +116,7 @@ Print this. Carry it. It is the last thing you read before walking in.
 | ❌ Never | ✅ Instead |
 | --- | --- |
 | "minimum" | **"1-minimal"** / "deletion-minimal" |
-| "automatically fixing" (CDR) | **"ranked remediation options a human applies"** |
+| "automatically fixing" (CDR) | **"a suggested patch, checked on a copy, that a developer reviews and applies"** |
 | "commercial products can't do this" | **"their published documentation does not describe it"** |
 | "the dataset is ready" | **"amber, deliberately — a catalogue is not a benchmark"** |
 

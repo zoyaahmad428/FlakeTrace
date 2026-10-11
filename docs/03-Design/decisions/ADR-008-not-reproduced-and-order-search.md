@@ -1,8 +1,8 @@
 # ADR-008 — When the failure does not reproduce: a given order, valid shuffled orders, and an honest report
 
-**Date:** 2026-10-10 · **Status:** `PROPOSED` — chosen by M2; it **changes the report contract**
-(`eval/schema/report.schema.json`, Member 3's file) and asks Member 3 for two fixture cases, so it
-needs M3's agreement before any of that code is written, and M1's for information · **Owner:** M2
+**Date:** 2026-10-10 · **Status:** `ACCEPTED` by M1, M2 and M3 (PRs #45, #50); it **changes the report contract**
+(`eval/schema/report.schema.json`, Member 3's file, changed in PR #45) and added two fixture cases
+(F4, N3, Member 3); runner side in PR #49 · **Owner:** M2
 (runner, CLI) with M3 (schema, report assembly, decision table, fixtures) · **Builds on:**
 [[03-Design/decisions/ADR-004-w7-diagnosis-runs]], [[03-Design/decisions/ADR-005-w9-diagnose-cli]],
 [[03-Design/decisions/ADR-007-w10-ddmin-minimisation]] · **Research basis:**
