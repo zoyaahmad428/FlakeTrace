@@ -6,8 +6,40 @@
 % Rules: mid-eval-report/CLAUDE.md. Do not edit a file you do not own.
 % ===========================================================================
 \chapter{Research and Existing Solutions}
-\section{Research Method / Approach}
-Describe how relevant technical and domain knowledge was investigated.
+\section{Research Method / Approach}\label{ch2:sec:method}
+The research behind FlakeTrace used five sources of evidence. Each one is recorded in the
+project's documentation folder, so every claim in this chapter can be traced back to it.
+
+\begin{enumerate}
+\item \textbf{Literature review.} 41 sources on flaky and order-dependent tests, minimisation,
+  repair, statistics and benchmark reproducibility are listed in
+  \nolinkurl{docs/01-Literature/references.md}. Each of the closest research systems has its
+  own note recording what it does, what it leaves open and how FlakeTrace relates to it. A
+  separate note lists what we must never claim as our own, for example delta-debugging
+  minimisation and the polluter/victim vocabulary.
+\item \textbf{Product review.} The published documentation of three commercial flaky-test
+  products (Trunk Flaky Tests, Tuist and Gradle Develocity) was compared on the same questions
+  (\nolinkurl{docs/01-Literature/commercial-tools.md}).
+\item \textbf{Previous FYPs.} All 989 project records in the department's FYP repository from
+  Fall 2019 to Fall 2025 were searched for testing, flakiness, test-order, CI and debugging
+  terms, and the full record of every hit was read. Three projects were structurally comparable;
+  none deals with order dependence (\nolinkurl{docs/01-Literature/prior-fyp-comparison.md}).
+\item \textbf{Practitioner interviews.} Three developers from three companies answered 14
+  questions in 15--20 minutes each, about process and timing only; no source code or customer
+  data was collected (\nolinkurl{docs/00-Meta/stakeholder-evidence.md}). All three described the
+  same manual procedure for an order-dependent failure: rerun the failing test after smaller and
+  smaller groups of earlier tests until the culprit appears. None had a tool for it. Their
+  projects use Python, JavaScript and TypeScript, not Java, so the interviews support the shape
+  of the problem, not the claim that Java teams in particular have it.
+\item \textbf{Proof of concept (POC).} From 25 to 28 August 2026 the team tested the proposal's
+  central assumption before building anything (\nolinkurl{docs/05-Testing/poc/poc-log.md}).
+  The definitions and pass/fail gates were committed before any experiment ran. Cases came from
+  the Illinois Dataset of Flaky Tests \cite{idoft}: its 8,075 rows were filtered to 1,438
+  order-dependent rows, and then to 8 targets in two Java projects (json-iterator and fastjson)
+  built at fixed commits. The runs used clean JDK~8 containers with the network switched off.
+  Four targets, all in fastjson, reproduced; 2,606 test orders were executed in total. The
+  result is discussed in Section~\ref{ch2:sec:challenges}.
+\end{enumerate}
 \section{Existing Solutions / Products}
 Review relevant existing solutions.
 \section{Comparison of Existing Solutions}
@@ -18,7 +50,7 @@ Identify limitations and the gap motivating the proposed solution.
 Explain how the proposed system addresses the identified gap.
 \section{Complex Computing Problem}
 Clearly identify and explain the complex computing problem addressed by the project.
-\section{Technical Challenges}
+\section{Technical Challenges}\label{ch2:sec:challenges}
 Document major technical challenges anticipated or encountered.
 \section{Research Findings and Design Decisions}
 Explain how research findings influenced requirements, architecture, algorithms, tools, or other decisions.
