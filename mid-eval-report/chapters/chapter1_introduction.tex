@@ -300,8 +300,68 @@ test--resource graph, a planner that ranks candidates within a budget, and a cer
 with Certificate-Driven Remediation as a gated extension. In that design the dependency becomes a
 loop: the planner's budget decisions change what the evidence module observes, which changes the
 graph and so the planner's next decision.
-\section{Stakeholders and User Classes}
-Identify users, stakeholders, and their characteristics.
+\section{Stakeholders and User Classes}\label{ch1:sec:stakeholders}
+FlakeTrace has three user classes. Chapter~4 models two of them as system actors: the
+\emph{Developer}, who runs the tool, and the \emph{CI Pipeline}, which a CI maintainer configures
+to run it (Figure~\ref{ch4:fig:usecases}). Table~\ref{ch1:tab:users} describes each class. The
+people interviewed so far were a chief executive, an engineering lead and a full-stack engineer;
+no dedicated QA engineer or CI maintainer has been interviewed yet, so those two rows describe the
+roles rather than interview findings.
+
+{\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.14\textwidth}>{\raggedright\arraybackslash}p{0.26\textwidth}>{\raggedright\arraybackslash}p{0.28\textwidth}>{\raggedright\arraybackslash}p{0.26\textwidth}@{}}
+\caption{User classes}\label{ch1:tab:users}\\
+\toprule
+\textbf{User class} & \textbf{Characteristics} & \textbf{Needs} & \textbf{What FlakeTrace gives} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{User class} & \textbf{Characteristics} & \textbf{Needs} & \textbf{What FlakeTrace gives} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Developer (primary) &
+Writes and maintains the tests; has a failing test in front of them; knows the code but not which
+earlier test broke it. &
+The culprit and the shared state, quickly; enough evidence to check the answer; no guess when the
+tool is unsure. &
+Polluters, reduced order, resource and code locations, or a typed \texttt{UNRESOLVED} reason. \\
+\addlinespace
+QA engineer &
+Triages failing CI runs across a team; decides what is retried, skipped or investigated. &
+To tell a real regression from a test-order problem, and a result to hand to the right
+developer. &
+A report with the reproduction rate and its interval, and a record of every run. \\
+\addlinespace
+CI maintainer &
+Owns the pipeline and its time budget; must approve any tool that touches the code. &
+Runs on the team's own machines; predictable cost; machine-readable results. &
+Self-hosted command with CI exit codes and JSON output; run on demand, not on every build. \\
+\end{longtable}
+}
+
+\paragraph{What the interviews added.} The three practitioner interviews
+(Section~\ref{ch1:sec:context}) turned several design choices into stakeholder requirements:
+\begin{itemize}
+\item \textbf{Self-hosting.} One interviewee said sending the repository to an external service
+  was ``out of the question''; another said a tool that runs inside their own infrastructure
+  would be easier to approve. FlakeTrace needs no cloud service, GPU or paid API.
+\item \textbf{On-demand use.} One team found 5~extra minutes on every pull request already caused
+  pushback, but 30~minutes acceptable when run on request. FlakeTrace is therefore run for a known
+  failing test, not on every build.
+\item \textbf{Typed abstention.} Two interviewees said independently that a wrong
+  answer is worse than an honest refusal.
+\end{itemize}
+One request was deliberately not taken up: an interviewee asked for flaky tests to be
+\emph{classified} by cause (environment, order or randomness). FlakeTrace starts from a failure
+already known to be order-dependent, so classification stays out of scope.
+
+\paragraph{Other stakeholders.} The project supervisor and the evaluation panel judge the work;
+one interviewee agreed to review FlakeTrace's results later and give practitioner feedback.
+Because the three user classes want overlapping things, the team does not claim ``diverse
+stakeholders'' as a complex-problem characteristic (Section~\ref{ch2:sec:ccp}).
 \section{Success Criteria}
 Define measurable criteria that will indicate project success.
 \section{Constraints and Assumptions}
