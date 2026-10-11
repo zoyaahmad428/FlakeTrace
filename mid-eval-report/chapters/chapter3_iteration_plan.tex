@@ -6,18 +6,41 @@
 % Rules: mid-eval-report/CLAUDE.md. Do not edit a file you do not own.
 % ===========================================================================
 \chapter{Proposal Feedback and Iteration Plan}
-\section{Proposal Feedback Summary}
-Summarize feedback received during the proposal stage.
-\section{Proposal Action Register}
-\begin{longtable}{p{0.06\textwidth}p{0.28\textwidth}p{0.25\textwidth}p{0.14\textwidth}p{0.17\textwidth}}
+\section{Proposal Feedback Summary}\label{ch3:sec:feedback}
+The proposal was defended on 11 September 2026 and the decision was \textbf{Approved with Minor Modifications}. The panel wrote:
+\begin{quote}
+Approved. Do more research to improve your proposed solution and implement the given suggestions. \ldots{} students need to think more carefully about the proposed solution (e.g., in the case of a Flake Trace, how will the system detect it if no logs are available?). In the next presentation, students need to answer: 1) Will log trace instructions be injected into the code? 2) Will the code be modified? 3) How will the code block be isolated? 4) What are diverse scenarios where this approach is applicable?
+\end{quote}
+We turned each point into a numbered action, A1--A6, and added four actions, A7--A10, from sections 7--10 of the post-defence improvement and execution plan (\path{Mid Eval/FlakeTrace-Defense.pdf}). Every action has an owner, a decision, a status and an evidence link, kept in \path{docs/08-MidEval/panel-action-register.md} and updated whenever the work moved it.
+
+\section{Proposal Action Register}\label{ch3:sec:register}
+Table~\ref{ch3:tab:register} summarises all ten actions; Appendix~\ref{app:action-register} gives each one in full with every evidence path. Links are to the pull requests that closed them.
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.05\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}>{\raggedright\arraybackslash}p{0.30\textwidth}>{\raggedright\arraybackslash}p{0.12\textwidth}>{\raggedright\arraybackslash}p{0.12\textwidth}}
+\caption{Proposal action register (summary)}\label{ch3:tab:register}\\
 \toprule
-No. & Feedback / Required Change & Action Taken & Status & Evidence\\
+No. & Feedback / required change & Action taken & Status & Evidence\\
 \midrule
-1 & & & &\\
-2 & & & &\\
-3 & & & &\\
+\endfirsthead
+\toprule
+No. & Feedback / required change & Action taken & Status & Evidence\\
+\midrule
+\endhead
+A1 & How will it detect the problem with no logs? & Detection uses only test order, pass/fail, exceptions and stack traces from re-execution, plus bytecode evidence; the fixture has no logging & Complete & \pr{26}, \pr{35}, \pr{49}\\
+A2 & Will trace instructions be injected? & No: evidence is read from compiled classes with \texttt{javap}; nothing is injected (ADR-001) & Complete & \pr{9}, \pr{15}\\
+A3 & Will the code be modified? & No: every project file is hashed before and after; a change forces \texttt{UNRESOLVED} & Complete & \pr{11}\\
+A4 & How will the code block be isolated? & Sequence isolation (alone check, polluter search, \texttt{ddmin}, repeated runs) and cause localisation (resource with bytecode offsets) & Complete & \pr{11}, \pr{15}, \pr{34}, \pr{35}\\
+A5 & Which diverse scenarios apply? & Seven fixture cases, including two polluters, a needed reorder and three negative controls; unsupported causes reported as \texttt{UNRESOLVED} & Complete & \pr{45}, \pr{49}\\
+A6 & Do more research to improve the solution & Research note on one-by-one search versus \texttt{ddmin}; measured over-approximation added to ADR-001 & Complete & \pr{50}\\
+A7 & Record the controlled execution environment & Execution record per run with JDK, OS, project commit, uncommitted changes and shuffle seeds; no container yet & Complete & \pr{41}, \pr{49}\\
+A8 & Reproduction confidence & $n$ repeats, victim-alone comparison and Wilson interval in every real report & Complete & \pr{57}\\
+A9 & An evidence report with all fields & Schema-validated reports for all seven fixture cases, produced by the real pipeline & Complete & \pr{57}\\
+A10 & The plan lists databases, ports, threads, caches & Adapted: Iteration 1 keeps static fields and system properties, filesystem paths in Iteration 2; others reported as unsupported & Decided; supervisor confirmation pending & ---\\
 \bottomrule
-\end{longtable}
+\end{longtable}}
+
+Nine actions are complete. A10 is a scope decision that we will ask the supervisor to confirm at the Mid evaluation; until then it is not counted as closed.
 \section{Iteration Strategy}
 Describe the iterative development strategy.
 \section{Iteration 1 Plan}

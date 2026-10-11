@@ -26,6 +26,8 @@
 \setlength{\emergencystretch}{3em}
 % The class loads natbib in author-year mode; IEEEtran is numeric, so citations fail without this.
 \setcitestyle{numbers,square}
+% \pr{49} prints a clickable "#49" linking to that pull request.
+\newcommand{\pr}[1]{\href{https://github.com/zoyaahmad428/FlakeTrace/pull/#1}{\##1}}
 
 % Marks unfinished text. CI does not fail on it, but the final PDF must contain none:
 %   grep -rn '\\todo{' chapters/   must print nothing before submission.
