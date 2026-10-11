@@ -4,5 +4,115 @@
 % DRAW FROM: eval/README.md, eval/*.py, eval/schema/, fixtures/od-fixture/, docs/05-Testing/fixture-suite.md, docs/evidence-m3.md
 % Rules: mid-eval-report/CLAUDE.md. Do not edit a file you do not own.
 % ===========================================================================
-\subsection{Evaluation, Statistics and Report Assembly (Member 3)}
-\todo{M3: files, Wilson interval, outcome decision, report schema, fixtures, limitations, real results from evidence-m3.md}
+\subsection{Evaluation, Statistics and Report Assembly (Member 3)}\label{ch6:sec:m3}
+Member 3's module is the \path{eval/} package and the \path{fixtures/od-fixture} project: it
+turns Member 2's raw run counts into a Wilson interval and a typed outcome, assembles and
+schema-validates the diagnosis report, and owns the seeded fixture every real result in this
+report is measured against. It is 913 lines of Python across six files, with 1{,}231 lines of
+tests (\texttt{wc -l}, 11 October 2026).
+
+\subsubsection{Files and main functions}
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.24\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.57\textwidth}}
+\caption{Files of the evaluation module}\label{ch6:tab:m3-files}\\
+\toprule
+File & Lines & Job\\
+\midrule
+\endfirsthead
+\toprule
+File & Lines & Job\\
+\midrule
+\endhead
+\path{stats.py} & 145 & \texttt{wilson\_interval}: dependency-free Wilson score interval (own
+  rational-approximation normal quantile, no \texttt{scipy}/\texttt{statsmodels} at runtime)\\
+\path{outcome.py} & 227 & \texttt{decide()}: the VERIFIED/CANDIDATE/UNRESOLVED decision table,
+  first match wins\\
+\path{report.py} & 228 & \texttt{assemble\_report}: joins Member 2's raw counts and Member 1's
+  resource evidence into one schema-shaped report\\
+\path{schema\_validator.py} & 35 & \texttt{validate\_report}: checks a report against
+  \path{schema/report.schema.json} before it is saved\\
+\path{baseline.py} & 188 & \texttt{run\_random\_order\_baseline}: the random-order comparator
+  (claim B11), class-first shuffling\\
+\path{benchmark/yield\_report.py} & 90 & Funnel report (attempted $\to$ built $\to$ reproduced
+  $\to$ excluded) from real log files only, never invented counts\\
+\bottomrule
+\end{longtable}}
+
+\subsubsection{Wilson interval, not Wald}
+Every reproduction rate in this report is a Wilson score interval, not the textbook Wald
+interval, because Brown, Cai and DasGupta show Wald's coverage is ``chaotic'' at the sample
+sizes this project actually uses --- D3 in the claims ledger. \texttt{wilson\_interval} is
+tested against \texttt{statsmodels}'s own implementation (\path{eval/tests/test\_stats.py}) so
+the estimator itself does not drift from the literature it is supposed to match. The threshold
+that turns an interval into \texttt{VERIFIED} (lower bound $\geq 0.70$) is a separate,
+explicitly \textbf{project-policy} decision --- the certificate contract states this distinction
+on purpose, because panels respect ``that is our acceptance policy, frozen on [date]'' and
+punish blurring it with a published finding.
+
+\subsubsection{The outcome decision table}
+\texttt{decide()} implements the table in Figure~\ref{ch5:fig:outcome}, evaluated top to bottom,
+first match wins: source integrity, then whether the victim fails alone, then whether the
+sequence reproduces at all (split further into clean/infrastructure-failure/signature-mismatch
+sub-cases added by ADR-008), then whether a resource edge exists, then the Wilson threshold.
+Ranking alone can never produce \texttt{VERIFIED} --- a concrete resource edge is always
+required alongside the statistics, which is the one rule the schema itself does not enforce (it
+is enforced in code, by \texttt{decide()} requiring \texttt{resource\_edge\_exists} before
+reaching the threshold check at all).
+
+\subsubsection{Report assembly}
+\texttt{assemble\_report} combines a \texttt{DiagnosisRuns} (Member 2), resource fields (Member
+1, via \texttt{report\_fields}/\texttt{combine\_fields}) and \texttt{decide()}'s verdict into one
+dict, then \texttt{validate\_report} checks it against the schema before \texttt{runner/cli.py}
+saves it --- an invalid report is never written. Three of \texttt{DiagnosisRuns}'s four statuses
+are handled (\texttt{POLLUTER\_FOUND}, \texttt{VICTIM\_FAILS\_ALONE}, \texttt{NOT\_REPRODUCED});
+\texttt{NO\_SINGLE\_POLLUTER} is deliberately not, since the schema has no
+\texttt{unresolved\_reason} for it yet (\texttt{UnhandledStatus}, exit code 3 from Member 2's
+CLI) --- a real, open question, not an oversight.
+
+\subsubsection{The fixture suite}
+\path{fixtures/od-fixture} has seven real cases, their expected outcomes written to
+\path{ground_truth.json} before any run against them: F1--F4 are order-dependent (single
+static-field write, a system property read one call below the test, two polluters both
+required, and a case the discovered order can never reproduce without a shuffle); N1--N3 are
+negative controls (fails alone deterministically, fails alone intermittently, and an
+externally-caused failure FlakeTrace never observes). Every one matches its pre-registered
+ground truth exactly as of this report (Table~\ref{ch8:tab:cases}).
+
+\subsubsection{Testing}
+268 tests pass across the whole project; this module's own suite is 7 files under
+\path{eval/tests/}, including a scriptable \texttt{FakeOrderRunner} that lives only there and is
+never imported by production code (checked by \texttt{grep}, not just asserted). Every one of
+the 7 fixture cases also has a real, committed report in \path{eval/reports/*.json}, produced by
+actually running the pipeline end to end, not hand-written (Table~\ref{ch8:tab:fixture-results}).
+
+\subsubsection{Limitations and a failure case}
+\begin{itemize}
+  \item \textbf{No numeric confidence score.} Reliability is always matching failures out of $N$
+    replays plus an interval, never a single number --- a deliberate choice, not a gap.
+  \item \textbf{\texttt{BELOW\_CONFIDENCE\_THRESHOLD} is reserved, never emitted.} \texttt{CANDIDATE}
+    is used instead for a reproducing-but-below-threshold sequence, a team decision recorded in
+    the report-schema contract.
+  \item \textbf{No replay command in the certificate.} The schema has no field that serialises
+    \texttt{reduced\_sequence} into a runnable command string --- found while writing Chapter 4's
+    requirements traceability table, a real gap against FR-6, not fixed yet.
+  \item \textbf{The random-order baseline (claim B11) is only partially run.} Our own baseline
+    ran for real on F1--F4; published comparators (iFixFlakies, iDFlakies) are not yet
+    integrated.
+  \item \textbf{31 shuffles is Member 2's assumption, not mine} --- reused here only because
+    \texttt{decide()} consumes whatever \texttt{infrastructure\_failures} count it reports.
+\end{itemize}
+
+\textbf{Failure case: N2's flakiness mechanism.} N2 is meant to fail at random, independent of
+order, so that a diagnosis never blames a polluter for it. Its original mechanism read
+\texttt{System.nanoTime()}'s lowest bit; on at least one real machine that bit was
+deterministically 0, so N2 passed 100\% of the time there --- the opposite of the negative
+control's purpose, and the same root cause Member 2's Chapter 6 section independently observed
+from the runner side (N2 returning \texttt{NOT\_REPRODUCED} when it should have been
+intermittent). I replaced the mechanism with \texttt{new Random().nextBoolean()}, which mixes
+\texttt{nanoTime()} through a full linear congruential generator rather than exposing one raw
+timer bit, and re-measured it for real on two platforms after the fix: 11/20 (55\%,
+Windows/JDK24) and 10/20 (50\%, Linux/JDK8, Docker) --- genuinely balanced on both, confirming
+the fix addressed the mechanism rather than moving the symptom to a different machine
+(\path{docs/evidence-m3.md}). The committed report \path{eval/reports/n2.json} is a separate,
+later run (9/20, 45\%) --- cited in Chapter 7's test-case table, not here, to avoid mixing two
+different measurements under one number.
