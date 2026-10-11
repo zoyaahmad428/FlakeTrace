@@ -695,3 +695,16 @@ continuations into real line breaks; found by reading the file back and fixed be
 measured 33 s for 20,001 lines. After the fix: 0.094 s.
 
 **What I changed:** *fill after reading the diff.*
+## 2026-10-11 — Docs sync after ADR-008 merged
+
+**Tool:** Claude Opus 5.5 · **Level:** L1
+
+**What was asked:** list what is left for each member, then prepare a docs-only PR fixing stale status text.
+
+**What was retained:** ADR status lines set to `ACCEPTED` with the PRs that carried each tick; W14, W9, A1, A5, A7,
+demo-plan, members and architecture status text matched to the merged code; F4 and N3 re-run on main to back the text.
+
+**What was wrong:** panel action A7 said the seed was "not applicable — the runner never shuffles", false since PR #49;
+the architecture status line still said the runner, collector, minimiser and CLI were not implemented.
+
+**What I changed:** *fill after reading the diff.*

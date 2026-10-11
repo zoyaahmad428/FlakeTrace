@@ -1,8 +1,14 @@
 # Architecture
 
-*Status (2026-10-09): `PROPOSED`, partially implemented. Implemented: outcome decision,
-statistics, report schema (`eval/`). Not yet implemented: runner, evidence collector,
-minimiser, CLI. Iteration 1 evidence approach: [[03-Design/decisions/ADR-001-iteration1-evidence-without-instrumentation]].
+*Status (2026-10-11): target architecture for the whole project; Iteration 1 implements part of it.
+Implemented: sandbox runner (`runner/order_runner.py`, one fresh JVM per order, per-run timeout,
+no container yet), test discovery and environment record (`runner/discovery.py`,
+`runner/diagnose.py`), outcome normaliser (failure signatures), evidence collector — static only
+(`evidence/extract.py`), minimiser/verifier (`runner/search.py`, `runner/minimise.py`, repeated
+runs, `eval/stats.py`), certificate as a schema-validated JSON report plus summary
+(`eval/report.py`, `eval/outcome.py`), CLI (`runner/cli.py`). Not yet implemented: evidence
+store/graph, diagnosis planner (only a candidate `priority` hook, unused by the CLI), budgets
+beyond the timeout, dynamic evidence, CI adapter, CDR. Iteration 1 evidence approach: [[03-Design/decisions/ADR-001-iteration1-evidence-without-instrumentation]].
 How components call each other: [[contracts/interfaces]].*
 
 ---
