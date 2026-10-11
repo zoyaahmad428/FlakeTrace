@@ -145,5 +145,37 @@ stakeholders does not yet exist. This is Final-1/FYP-2 scope per the evaluation 
 Iteration-1 deliverable -- stated here as genuinely not started, not filled with a plausible
 account of a task that did not happen.}
 \section{Edge and Failure Cases}
+Section \ref{ch8:sec:cases}'s N1--N3 are the fixture's own edge cases (fails alone,
+intermittent, externally caused). This section covers failure modes in the \textbf{harness
+itself} --- what happens when a run does not behave cleanly, not just when a victim does not.
+
+\textbf{A crashed or timed-out JVM is reported, never silently dropped.}
+\texttt{runner/order\_runner.py}'s \texttt{OrderRunner} gives every test in the requested order
+a result: if the JVM exits early or exceeds \texttt{timeout\_s}, every test that did not report
+is marked failed with \texttt{flaketrace.JvmCrash} or \texttt{flaketrace.Timeout} rather than
+being left out of the count. \texttt{eval.outcome.decide()} then keeps these
+\texttt{infrastructure\_failures} distinct from a real signature mismatch (ADR-008, row 3b/3c in
+Figure \ref{ch5:fig:outcome}) --- a crash is a tooling problem, never silently counted as
+evidence of a different bug.
+
+\textbf{A source change mid-diagnosis voids everything else.}
+The project's source is SHA-256 hashed before and after every diagnosis; a mismatch forces
+\texttt{UNRESOLVED(SOURCE\_INTEGRITY\_FAILED)} regardless of what every other check found ---
+the first row \texttt{decide()} evaluates, before even the isolation check.
+
+\textbf{When no single test explains the failure and minimisation cannot either, the pipeline
+refuses to report rather than guess.} \texttt{NO\_SINGLE\_POLLUTER} is the one
+\texttt{DiagnosisRuns} status \texttt{eval.report.assemble\_report()} deliberately does
+\textbf{not} handle --- it raises \texttt{UnhandledStatus}, which \texttt{runner/cli.py} turns
+into exit code 3 and a plain-text explanation (``the victim failed in the original order but not
+again \ldots likely flaky'') rather than a schema-shaped report with an invented verdict. This is
+a real, currently-open design question (there is no \texttt{unresolved\_reason} enum value for
+it yet), not an oversight --- see Table \ref{ch4:tab:fr}'s FR-6 gap and
+\texttt{eval/report.py}'s own module docstring.
+
+\textbf{Malformed input and missing tools fail fast, before any test runs.} A \texttt{--victim}
+that is not \texttt{Class\#method}, or a \texttt{--project} without a \texttt{pom.xml}, exits 2
+immediately. A missing \texttt{java}/\texttt{mvn}/\texttt{javap} on \texttt{PATH} exits 1 with
+the tool's name named, not a generic stack trace.
 \section{Defects and Corrective Actions}
 \section{Current Validation Status}
