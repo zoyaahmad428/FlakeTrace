@@ -59,8 +59,38 @@ Three consequences follow from this statement and shape the whole project:
   Iteration~1 bounds the number of orders and repeats; an explicit execution budget is planned
   for FYP-2.
 \end{itemize}
-\section{Problem Context and Motivation}
-Explain the context, stakeholders, motivation, and significance.
+\section{Problem Context and Motivation}\label{ch1:sec:context}
+\paragraph{How common the problem is.} Order dependence is a major source of flaky tests in Java:
+of the 422 flaky tests iDFlakies found, 50.5\% were order-dependent \cite{lam2019idflakies}. Most
+order-dependent tests are victims, the case FlakeTrace starts from: Shi et al.\ found 100 victims
+against 10 brittle tests \cite{shi2019ifixflakies}, and the 155 cases in RankF's evaluation are 135
+victims and 20 brittle tests \cite{rahman2025rankf}.
+
+\paragraph{How developers handle it today.} Before the proposal, the team interviewed three
+practitioners: the chief executive of Inspirovix, an engineering lead at Trillet~AI and a
+full-stack engineer at Learnsignal. All three described the same procedure: notice that one test
+fails after others, run it alone, then rerun it after smaller and smaller groups of earlier tests
+until the culprit appears. One called it ``manual binary search'' with ``no tooling support for
+it''. They reported 15~minutes to an hour per incident, and up to a full working day for the worst
+cases. One team saw flaky failures a few times a week but investigated the cause only once or
+twice a month, because the work competes with other priorities. Their existing tools show
+\emph{what} failed, not that one test changed shared state that broke another one later.
+
+\paragraph{Why it matters.} A failure that nobody explains is usually retried, ignored or
+quarantined. That wastes time, and it also hides real regressions behind ``it's just flaky''. The
+practitioners also said that a tool that guesses is worse than none: in their words, ``a clearly
+stated unknown is more useful than a confident but incorrect diagnosis''. FlakeTrace is designed
+around that requirement.
+
+\paragraph{Where the project started.} FlakeTrace is a Stream~B (application-derived) project: it
+began from this workflow failure, not from a paper. Research tools such as iFixFlakies and RankF
+are baselines it will be compared against, not its starting point (Section~\ref{ch2:sec:comparison}).
+
+\paragraph{A limit in the evidence.} None of the three interviewed teams uses Java, Maven or JUnit;
+their stacks are Python and TypeScript, and their shared state is mostly database records. The
+interviews show that the \emph{workflow problem} is real. That Java teams face it rests on the
+published Java studies above. An interview with a Java developer is planned after the Mid
+evaluation.
 \section{Project Vision}
 State what the project intends to achieve.
 \section{Project Objectives}
