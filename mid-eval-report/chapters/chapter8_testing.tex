@@ -127,6 +127,23 @@ design), and N3 is honestly \texttt{NOT\_REPRODUCED} after exhausting 31 shuffle
 blaming a polluter for a failure the pipeline never actually observed.
 
 \section{Acceptance Testing / Validation}\label{ch8:sec:acceptance}
+Acceptance asks a different question from testing: not ``does the implementation meet its
+requirements'', but ``would the people it is for actually use it'' (\texttt{docs/05-Testing/
+evaluation-plan.md}, Q74). The plan defines a five-step task for a real participant: run
+FlakeTrace on a prepared project and read the outcome (Verified/Candidate/Unresolved); replay
+the returned order on a clean environment; identify the suspected predecessor, shared resource,
+evidence strength and remaining limitation; choose the next engineering action and explain why;
+then compare that experience against doing the same work from raw logs and a conventional
+flaky-test history view. It would be measured by task completion, whether the chosen action was
+correct, time, errors, assistance needed, and a recorded accept/reject decision.
+
+\todo{M3: acceptance testing has \textbf{not been run} in Iteration 1. One named participant is
+secured (SH1, Mahad Sheikh, Inspirovix, who agreed during the proposal-stage interviews to
+review results and give practitioner feedback --- \texttt{docs/00-Meta/stakeholder-evidence.md}),
+but no session has been scheduled or conducted, and a substitute plan for the other two
+stakeholders does not yet exist. This is Final-1/FYP-2 scope per the evaluation plan, not an
+Iteration-1 deliverable -- stated here as genuinely not started, not filled with a plausible
+account of a task that did not happen.}
 \section{Edge and Failure Cases}
 \section{Defects and Corrective Actions}
 \section{Current Validation Status}
