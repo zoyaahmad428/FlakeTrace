@@ -50,9 +50,10 @@ are?"*
 > port is a legitimate future direction (iPFlakies did exactly this for Python) but it is a
 > different resource abstraction, not a configuration flag.
 
-**Closure action:** get **one Java/Maven practitioner** on record before the defence. Even a
-single 30-minute conversation moves this from OPEN to SETTLED. This is Dossier decision 5 —
-ask the supervisor for an introduction. *Priority: highest of anything on this list.*
+**Closure action:** get **one Java/Maven practitioner** on record. Even a single 30-minute
+conversation moves this from OPEN to SETTLED. This is Dossier decision 5 — ask the supervisor
+for an introduction. **Status (2026-10-11):** not done; planned after the Mid evaluation. Until
+then, give the answer above.
 
 ---
 
@@ -168,10 +169,13 @@ found only 38% of Maven project history compilable. Our own build-and-reproduce 
 
 ---
 
-## 8. Three-member approval not confirmed
+## 8. Three-member approval — resolved
 
-**The gap.** Team expanded 2 → 3 with evaluation infrastructure as the third pillar.
-Departmental approval is pending (Dossier decision 1).
+**Resolved 2026-10-11:** the FYP portal registration lists all three members (claim F3,
+SETTLED). Kept below for the record.
+
+**The gap (was).** Team expanded 2 → 3 with evaluation infrastructure as the third pillar.
+Departmental approval was pending (Dossier decision 1).
 
 **Why it matters:** a scope written for three against a roster of two is worse than a
 narrower scope written for two.
