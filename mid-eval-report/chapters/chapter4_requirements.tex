@@ -59,8 +59,56 @@ UC7 & Developer, CI Pipeline & Invoke FlakeTrace via its CLI and consume a CI-co
 \end{table}
 
 \section{Functional Requirements}
-\subsection{Module 1}
-\subsection{Module 2}
+FlakeTrace's seven functional requirements form one committed core pipeline rather than two
+independently deliverable modules, so Table \ref{ch4:tab:fr} presents them as a single
+sequence, in the order the use cases execute them. Each acceptance check is the objective,
+testable condition from \texttt{docs/02-Requirements/functional.md}; the \textbf{Status} column
+states what Iteration 1 actually delivers today, checked against the real code in
+\texttt{runner/} and \texttt{evidence/} rather than assumed from the proposal (consistent with
+Figure \ref{ch4:fig:usecases}'s notes). Section \ref{ch4:sec:traceability} links every row to
+the file(s) and test(s) that back it.
+
+\begin{longtable}{p{0.9cm}p{4.6cm}p{5.0cm}p{3.8cm}}
+\caption{Functional requirements, acceptance checks and Iteration-1 status}\label{ch4:tab:fr}\\
+\toprule
+\textbf{ID} & \textbf{Requirement} & \textbf{Acceptance Check} & \textbf{Iteration-1 Status} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{ID} & \textbf{Requirement} & \textbf{Acceptance Check} & \textbf{Iteration-1 Status} \\
+\midrule
+\endhead
+FR-1 & Accept a pinned commit, module, target test and budget; validate the project, discover
+  tests, record the environment & A frozen, reproducible case identity is emitted and stored &
+  \textbf{Done.} Environment (commit, JDK, OS) recorded in every execution record. \\
+FR-2 & Execute declared test orders in a sandboxed container, one fresh JVM per order & Outcomes
+  normalised to a failure signature; budgets/timeouts enforced; cleanup verified &
+  \textbf{Partial.} One fresh JVM per order: done, tested. Sandboxed container: \textbf{not
+  built} --- planned FYP-2. \\
+FR-3 & Collect bounded resource events for the three committed resource families, attributed to
+  test boundaries, at configurable analysis depth & Every reported event names the resource
+  identifier and bytecode offset; events outside a test boundary are recorded as such &
+  \textbf{Partial.} Static fields + system properties, depth 1--5 (auto-deepening): done,
+  tested. Filesystem paths: \textbf{not built} --- planned FYP-2. \\
+FR-4 & Rank candidates and select the next experiment by expected information gain per unit
+  cost & Two policies implemented: ranked one-by-one and cost-aware adaptive. Both evaluated &
+  \textbf{Partial.} Ranked one-by-one + delta-debugging minimisation: done, tested. Cost-aware
+  adaptive policy: \textbf{not built} --- planned FYP-2. \\
+FR-5 & Minimise the reproducing order with 1-minimality deletion checks, then verify by repeated
+  clean replay with a Wilson interval & Deletion-minimality rate measured; multi-test candidates
+  preserved rather than discarded & \textbf{Done.} \\
+FR-6 & Emit Verified / Candidate / Unresolved with a typed reason, a human-readable report, the
+  exact replay command, and the evidence bundle & Contents per the certificate contract; no
+  numeric confidence score & \textbf{Partial.} Typed outcome, full evidence bundle,
+  schema-validated: done, tested. \textbf{Gap found while drafting this table:} the schema has
+  no literal replay-command field --- \texttt{reduced\_sequence} gives the ordered test list,
+  but nothing serialises it into a runnable command string. \\
+FR-7 & Provide a CLI with CI-compatible exit codes, installable on clean Linux from documentation
+  & See NFR-2 & \textbf{Partial.} CLI + exit codes: done, tested. Clean-Linux install verified by
+  a third party (NFR-2): \textbf{not attempted} --- a stated Final-2 (FYP-2) exit requirement. \\
+\bottomrule
+\end{longtable}
+
 \section{Non-Functional Requirements}\label{ch4:sec:nfr}
 \subsection{Reliability}
 \subsection{Usability}
@@ -68,5 +116,5 @@ UC7 & Developer, CI Pipeline & Invoke FlakeTrace via its CLI and consume a CI-co
 \subsection{Security}
 \section{Acceptance Criteria}
 Define objective acceptance checks for important requirements.
-\section{Requirements Traceability}
+\section{Requirements Traceability}\label{ch4:sec:traceability}
 Trace important requirements to modules, design elements, implementation, and tests.
