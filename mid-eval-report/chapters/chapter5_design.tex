@@ -135,11 +135,41 @@ ADR & Decision & Constraint that forced it & Rejected alternative\\
 Three of these decisions replaced parts of earlier ones, and the code follows the later one. ADR-006 widened ADR-002's depth range from 1--3 to 1--5 and made \texttt{runner/cli.py} call \texttt{analyse\_pair} instead of the depth-2 calls ADR-005 first described. ADR-007 made \texttt{POLLUTER\_FOUND} mean ``one or more polluters'', so fixture F3 gets a report instead of exit code 3. ADR-008 removed \texttt{NOT\_REPRODUCED} from exit code 3: it now gives a report, and exit code 3 remains only for \texttt{NO\_SINGLE\_POLLUTER}.
 
 The budget of 31 shuffled orders comes from a published study of Python projects that gives about 31 random-order runs for 95\% confidence that a test is not order-dependent~\cite{gruber2021flaky}. That the figure carries over to JUnit is an assumption, and ADR-008 says so.
-\section{Design Evolution}
-Show important design changes since the proposal and justify them.
+\section{Design Evolution}\label{ch5:sec:evolution}
+Figure~\ref{ch5:fig:proposal-arch} is the block diagram we presented at the proposal defence; Figure~\ref{ch5:fig:arch} is the design as built. The components are the same, but one thing changed in how they connect. In the proposal, evidence comes \emph{before} the search: the collector fills a test--resource graph and the planner uses it to choose experiments. In Iteration 1, evidence comes \emph{after} the search: the runner finds the polluter by execution alone, and only then does \texttt{runner/cli.py} ask the extractor to explain it, once per polluter. The evidence explains a result; it does not yet guide the search. The \texttt{priority} argument of \texttt{find\_polluter} is where it will plug in once the planner exists.
+
 \begin{figure}[H]\centering
-  \includegraphics[width=0.85\textwidth]{figures/shared/proposal_block_diagram}
+  \includegraphics[height=0.5\textheight]{figures/shared/proposal_block_diagram}
   \caption{System block diagram as presented at the proposal defence}\label{ch5:fig:proposal-arch}
 \end{figure}
+
+Table~\ref{ch5:tab:evolution} lists every block of the proposal diagram, what exists now, and the decision behind the change.
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.33\textwidth}>{\raggedright\arraybackslash}p{0.28\textwidth}>{\raggedright\arraybackslash}p{0.10\textwidth}}
+\caption{Design changes since the proposal}\label{ch5:tab:evolution}\\
+\toprule
+Proposal block & Now (Iteration 1) & Why & Decision\\
+\midrule
+\endfirsthead
+\toprule
+Proposal block & Now (Iteration 1) & Why & Decision\\
+\midrule
+\endhead
+Pinned repository, module, test, budget & \texttt{-{}-project}, \texttt{-{}-victim}, optional \texttt{-{}-order}, \texttt{-{}-n}, \texttt{-{}-shuffles}, \texttt{-{}-seed}; the project's commit and uncommitted changes are recorded, not pinned; no budget & A developer diagnoses one failing test at a time; the real failing order may come from CI & ADR-005, ADR-008\\
+Project adapter & Test discovery by Surefire's default includes; classpath from Maven & Needed before any run & ADR-004\\
+Sandbox runner & One fresh JVM per order through a JUnitCore harness; 120\,s timeout; no container & Surefire cannot run an arbitrary method-level order; the container is not built yet & ADR-003\\
+Evidence collector (static + dynamic) & Static only: \texttt{javap} over compiled classes, depth 2 deepening to 5 & The panel asked whether code is injected; fastjson's real cases need depth 4 and 5 & ADR-001, 002, 006\\
+Outcome normaliser & Inside the runner: \texttt{FailureSignature} with a normalised stack & Signatures must match across runs and across JDK 8 and 21 & ADR-003\\
+Test--resource graph / evidence store & Not built; evidence is computed per polluter--victim pair after the polluter is found & Agreed by all three: the extractor runs per pair, after the runner has found the polluter (open question I2, \path{interfaces.md}) & ADR-006\\
+Planner $\rightarrow$ minimiser $\rightarrow$ verifier & No planner; one-by-one search, then \texttt{ddmin}, then $n = 20$ repeats with a Wilson interval & F3 needs two polluters; \texttt{ddmin} was planned for Dec--Feb and was brought forward & ADR-004, ADR-007\\
+\emph{(new)} Order exploration & Up to 31 class-first shuffled orders when the starting order never fails; the alone check always runs & The discovered order may not be the order that failed in CI & ADR-008\\
+Certificate generator & Schema-validated JSON report plus a console summary; \texttt{NOT\_REPRODUCED} also gets a report & A report must say what was tried, never ``the test is fine'' & ADR-005, ADR-008\\
+CLI / CI adapter & \texttt{py -m runner diagnose}; no installable command, no CI adapter & Installing needs package renaming across all three members & ADR-005\\
+CDR (gated) & Unchanged: planned, only for \texttt{VERIFIED} reports & Depends on a trustworthy certificate first (\path{docs/07-Defense/decisions/cdr-gated-module.md}) & Defence decision\\
+\bottomrule
+\end{longtable}}
+
+Three blocks were built earlier than planned. The proposal schedule put deletion minimisation in December to February, failure signatures and repeated-run verification in January to March, and the CLI in March to May (Figure~\ref{ch3:fig:gantt}); all three exist at the Mid evaluation. Two blocks scheduled to start in Iteration 1 are not built: the container (planned August to October) and the test--resource graph (planned September to January). Chapter 3, ``Delays, Deviations and Recovery Plan'', explains these deviations.
 % Sections 5.6-5.8 are owned by M1:
 \input{chapters/chapter5_data_behaviour}
