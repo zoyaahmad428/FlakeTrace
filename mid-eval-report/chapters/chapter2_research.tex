@@ -361,5 +361,98 @@ cases static analysis cannot explain.
 \item The published baseline tools, including iFixFlakies and RankF, have not been run yet; only
   the team's own baseline has been run, on fixture cases F1--F4.
 \end{itemize}
-\section{Research Findings and Design Decisions}
-Explain how research findings influenced requirements, architecture, algorithms, tools, or other decisions.
+\section{Research Findings and Design Decisions}\label{ch2:sec:decisions}
+Most of FlakeTrace's design choices and constants come from a published finding. Where the
+literature does not settle a value, the value is the team's own policy, and it is labelled as such.
+Table~\ref{ch2:tab:decisions} links each finding to the decision it led to and to where that
+decision is recorded.
+
+{\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.38\textwidth}>{\raggedright\arraybackslash}p{0.35\textwidth}>{\raggedright\arraybackslash}p{0.21\textwidth}@{}}
+\caption{Research findings and the design decisions they led to}\label{ch2:tab:decisions}\\
+\toprule
+\textbf{Finding} & \textbf{Decision in FlakeTrace} & \textbf{Recorded in} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Finding} & \textbf{Decision in FlakeTrace} & \textbf{Recorded in} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+A victim is a test that passes when run alone and fails after another test; a brittle test fails
+alone \cite{shi2019ifixflakies}. &
+Run the victim alone before searching; if it fails alone, stop with \texttt{VICTIM\_FAILS\_ALONE}
+instead of blaming another test. &
+Ch.~5; cases N1, N2 \\
+\addlinespace
+Valid random orders shuffle the test classes first and never interleave methods of different
+classes, because JUnit never runs tests that way \cite{lam2019idflakies}. &
+Order search uses only such class-first shuffles. &
+ADR-008 \\
+\addlinespace
+About 31 random-order runs give 95\% confidence that a test is not order-dependent, in a study of
+Python projects \cite{gruber2021flaky}. &
+Try up to 31 shuffled orders before reporting \texttt{NOT\_REPRODUCED}. That the figure carries
+over to Java is an assumption, and is stated as one. &
+ADR-008; option \texttt{-{}-shuffles} \\
+\addlinespace
+Delta debugging returns a 1-minimal result \cite{zeller2002ddmin}; iFixFlakies applies it to the
+tests before the victim \cite{shi2019ifixflakies}. &
+Use delta debugging when no single polluter is found, and always call the result ``1-minimal'',
+never ``minimum''. &
+ADR-007 \\
+\addlinespace
+82\% of dependent tests can be revealed by at most two tests, so the rest need more
+\cite{zhang2014independence}; RankF leaves multi-test cases out \cite{rahman2025rankf}. &
+Keep failures that need several polluters instead of excluding them (fixture case F3). &
+ADR-007 \\
+\addlinespace
+Of 324 polluting tests PolDet reported, manual inspection judged 194 relevant
+\cite{gyori2015poldet}. &
+Shared state supports a conclusion but never makes one: \texttt{VERIFIED} needs controlled reruns
+\emph{and} a resource edge. &
+\texttt{eval/\allowbreak outcome.py} \\
+\addlinespace
+Sound dependency detection slowed execution by about 20 times \cite{bell2015electrictest}; a
+single added delay exposed 85\% of asynchronous-wait failures \cite{luo2014empirical}. &
+Iteration~1 adds no instrumentation: reruns plus static bytecode analysis; a runtime agent is the
+FYP-2 fallback. &
+ADR-001 \\
+\addlinespace
+Static fields and the filesystem are among the common root causes \cite{zhang2014independence};
+PolDet monitors heap state and the filesystem \cite{gyori2015poldet}. &
+Static fields and system properties in Iteration~1; filesystem paths in FYP-2. &
+\texttt{resource-\allowbreak evidence.md} \\
+\addlinespace
+The Wald interval's coverage is erratic for small samples; the Wilson interval is recommended
+instead \cite{brown2001interval}. &
+Report every reproduction rate with a 95\% Wilson interval; verification uses only 20 runs, so the
+small-sample case applies. &
+\texttt{eval/\allowbreak stats.py} \\
+\addlinespace
+Two interviewed practitioners said a clearly stated unknown is more useful than a confident
+wrong answer (stakeholder interviews). &
+Every inconclusive result is \texttt{UNRESOLVED} with a typed reason. &
+\texttt{report-\allowbreak schema.md} \\
+\addlinespace
+\emph{Policy, not a published finding.} &
+20 verification runs, 95\% confidence, and a Wilson lower bound of at least 0.70 for
+\texttt{VERIFIED}. Fixed before evaluation; changing them after seeing results would invalidate
+it. &
+\texttt{parameter-\allowbreak provenance.md} \\
+\end{longtable}
+}
+
+The proof of concept also changed the design directly (Section~\ref{ch2:sec:challenges}). Its
+null result at depth~1 led to a configurable analysis depth starting at~2. Its time-zone mistake
+led to the rule that a test failing alone is classified, never ``fixed'' by changing the
+environment. Its fake polluters led to the rule that the runner must reproduce the project's own
+execution context.
+
+Two questions remain open for FYP-2. Evaluation will use the metrics RankF reports, such as the
+rank of the first true polluter, so that results can be compared directly with it
+\cite{rahman2025rankf}. No paper reviewed gives a ratio for splitting a fixed budget between
+searching and verifying, so the split is project policy, and running without a verification
+reserve will be tested as an ablation.
