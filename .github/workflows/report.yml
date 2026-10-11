@@ -1,0 +1,50 @@
+name: Report
+
+# Builds the FYP-1 Mid Report on every PR that touches it, and uploads the PDF.
+# Owner: Member 2 (.github/). Separate from ci.yml so a LaTeX problem never blocks code PRs.
+
+on:
+  pull_request:
+    branches: [main]
+    paths: ["mid-eval-report/**", "eval/reports/**", ".github/workflows/report.yml"]
+  push:
+    branches: [main]
+    paths: ["mid-eval-report/**", "eval/reports/**", ".github/workflows/report.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # The committed results tables must equal what the real reports say.
+      - name: Generated tables match eval/reports
+        run: |
+          python mid-eval-report/scripts/json_to_tex.py
+          git diff --exit-code -- mid-eval-report/tables/generated \
+            || { echo "::error::Run python3 mid-eval-report/scripts/json_to_tex.py and commit the result"; exit 1; }
+
+      - name: Compile with latexmk
+        uses: xu-cheng/latex-action@v3
+        with:
+          working_directory: mid-eval-report
+          root_file: main.tex
+
+      - name: Count unfinished TODOs (informational until the freeze)
+        run: |
+          n=$(grep -rn '\\todo{' mid-eval-report/chapters | wc -l)
+          echo "Unfinished \\todo{} markers: $n"
+          echo "### Report: $n unfinished \\todo{} markers" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mid-eval-report-pdf
+          path: mid-eval-report/main.pdf
