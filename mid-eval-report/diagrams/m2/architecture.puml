@@ -1,0 +1,93 @@
+@startuml architecture
+skinparam dpi 200
+skinparam componentStyle rectangle
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 11
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam ArrowColor #333333
+skinparam nodesep 25
+skinparam ranksep 45
+
+actor "Developer" as dev
+
+package "runner/  (Member 2)" as RUN {
+  component "cli.py\nmain / run_diagnose" as cli
+  component "diagnose.py\ndiagnose() -> DiagnosisRuns" as diag
+  component "integrity.py\nsnapshot / compare" as integ
+  component "discovery.py\ndiscover_order" as disc
+  component "search.py\nreproduce / find_polluter" as search
+  component "orders.py\ndistinct_shuffles / search_orders" as orders
+  component "minimise.py\nddmin" as ddmin
+  component "verify.py\nrepeat / repeat_without_reference" as verify
+  component "recording.py\nRecordingRunner" as rec
+  component "order_runner.py\nOrderRunner / maven_test_classpath" as orun
+  component "harness/FtHarness.java\nJUnitCore + Request.method" as harness
+}
+
+package "evidence/  (Member 1)" as EVI {
+  component "extract.py\nProject / analyse_pair (depth 2..5)\nreport_fields" as extract
+}
+
+package "eval/  (Member 3)" as EVAL {
+  component "report.py\nassemble_report" as report
+  component "outcome.py\ndecide" as outcome
+  component "stats.py\nwilson_interval" as stats
+  component "schema_validator.py\nvalidate_report\n+ schema/report.schema.json" as schema
+  interface "baseline.py: OrderRunner Protocol\nTestIdentifier, FailureSignature, RunOutcome" as proto
+  component "baseline.py\nrun_random_order_baseline\n(via tools/run_baseline_real.py)" as baseline
+}
+
+node "External tools" as EXT {
+  component "Maven\ntest-compile + dependency:build-classpath" as mvn
+  component "javac" as javac
+  component "JVM\n(one fresh JVM per run_ordered call)" as jvm
+  component "javap" as javap
+}
+
+folder "Target project\npom.xml, target/classes, target/test-classes" as target
+folder "flaketrace-records/\n<time>-<victim>.jsonl\n<time>-<victim>.report.json" as records
+records -[hidden]right- target
+
+dev --> cli : py -m runner diagnose\n~--project ~--victim
+
+cli --> diag : diagnose()
+cli --> extract : analyse_pair + report_fields\n(only if POLLUTER_FOUND)
+cli --> report : assemble_report(runs, fields)
+cli --> records : write .report.json
+
+diag --> integ : before / after
+diag --> disc
+diag --> rec : wraps OrderRunner
+diag --> search
+diag --> orders
+diag --> ddmin
+diag --> verify
+
+disc --> orun : list_methods
+search --> rec : run_ordered
+orders --> rec : run_ordered
+ddmin --> rec : run_ordered
+verify --> rec : run_ordered
+rec --> orun : run_ordered
+rec --> records : append one line per JVM run
+
+orun ..|> proto : implements
+orun --> mvn : test classpath
+orun --> javac : compile harness once
+orun --> jvm : order on stdin, result file back
+jvm --> harness : runs
+mvn --> target : writes target/ only
+integ --> target : SHA-256 of every file\n(except target/, .git/)
+
+extract --> javap
+javap --> target : reads .class files
+
+report --> outcome : decide()
+outcome --> stats
+report --> schema : validate_report()
+report ..> diag : imports DiagnosisRuns
+
+baseline ..> proto : uses (offline)
+
+@enduml
