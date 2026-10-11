@@ -6,9 +6,24 @@
 % Rules: mid-eval-report/CLAUDE.md. Do not edit a file you do not own.
 % ===========================================================================
 \chapter{System Design}
-\section{System Architecture}
-% Current architecture (M2): diagrams/m2/architecture.puml -> figures/m2/architecture.png
-\placeholderfig{ch5:fig:arch}{FlakeTrace architecture at Iteration 1 (as implemented)}{M2}
+\section{System Architecture}\label{ch5:sec:arch}
+FlakeTrace is three Python packages, one per member: \texttt{runner/} (Member 2), \texttt{evidence/} (Member 1) and \texttt{eval/} (Member 3). They meet only through the contracts in \texttt{docs/contracts/}: \texttt{interfaces.md} (who calls whom), \texttt{report-schema.md} (the report every part feeds) and \texttt{resource-evidence.md} (the evidence format). Figure~\ref{ch5:fig:arch} shows every module and call as it is on \texttt{main}; solid boxes are implemented, dashed grey boxes are planned for FYP-2.
+
+One command, \texttt{py -m runner diagnose -{}-project DIR -{}-victim Class\#method}, starts a diagnosis. \texttt{runner/cli.py} is the only place that calls all three packages, in five layers:
+\begin{enumerate}
+  \item \textbf{Entry:} \texttt{cli.py} checks the arguments and maps every outcome to an exit code (0, 1, 2 or 3).
+  \item \textbf{Orchestration:} \texttt{diagnose.py} discovers the tests, then \texttt{run\_steps} reproduces the failure, checks the victim alone, searches for the polluter, minimises and verifies (Figure~\ref{ch5:fig:search-activity}).
+  \item \textbf{Execution:} every run goes through \texttt{RecordingRunner}, which logs it, to \texttt{OrderRunner}, which starts one fresh JVM per order and runs the tests in exactly that order with JUnit's \texttt{JUnitCore} (\texttt{runner/harness/FtHarness.java}).
+  \item \textbf{Bytecode evidence:} only when a polluter is found, \texttt{evidence/extract.py} reads the compiled classes with \texttt{javap} and names the static field or system property the polluter writes and the victim reads.
+  \item \textbf{Decision and report:} \texttt{eval/report.py} turns the raw run counts into Wilson intervals and an outcome with \texttt{eval/outcome.py}, and validates the report against \texttt{eval/schema/report.schema.json}.
+\end{enumerate}
+
+The analysed project is only read. Maven compiles it into its own \texttt{target/} folder (\texttt{maven\_test\_classpath}, \texttt{runner/order\_runner.py}); \texttt{runner/integrity.py} hashes every other file with SHA-256 before and after the diagnosis and reports any file changed, added or removed; and \texttt{diagnose()} refuses a record folder inside the project, because the record itself would break that check (\texttt{runner/diagnose.py}, ADR-004). The execution record (one JSON line per JVM run) and the report are written to \texttt{flaketrace-records/}.
+
+\begin{figure}[p]\centering
+  \includegraphics[width=0.92\textheight,angle=90]{figures/m2/architecture}
+  \caption{FlakeTrace architecture: implemented at Iteration 1 (solid) and planned for FYP-2 (dashed grey)}\label{ch5:fig:arch}
+\end{figure}
 \section{Architectural Components}
 \section{Interfaces and Dependencies}
 \section{Architecture Decisions and Rationale}
