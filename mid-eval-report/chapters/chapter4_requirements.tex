@@ -28,6 +28,36 @@ family, the cost-aware adaptive search policy, and NFR-2's clean-machine deploym
 checked against the real code (\texttt{runner/}, \texttt{evidence/}) while drawing this
 diagram, not assumed from the proposal.
 \section{Detailed Use Cases}
+Table \ref{ch4:tab:usecases} summarises each use case from Figure \ref{ch4:fig:usecases}: who
+starts it, what it does, and which functional requirement it traces to. UC2--UC6 are not
+started directly by an actor --- they are \texttt{<<include>>}d in sequence by UC1, as the
+diagram shows. Full use-case descriptions (preconditions, main flow, postconditions) are in
+Appendix \ref{app:requirements}, Section \ref{appb:sec:usecases}, to keep this chapter
+readable.
+
+\begin{table}[H]\centering
+\caption{Use cases, actors and functional-requirement trace}\label{ch4:tab:usecases}
+\begin{tabular}{p{1.4cm}p{2.6cm}p{7.2cm}p{1.3cm}}
+\toprule
+\textbf{ID} & \textbf{Actor(s)} & \textbf{Description} & \textbf{Traces to} \\
+\midrule
+UC1 & Developer, CI Pipeline & Submit a diagnosis request: a pinned commit, Maven module,
+  target test and execution budget & FR-1 \\
+UC2 & (included by UC1) & Run the declared test order in one fresh JVM & FR-2 \\
+UC3 & (included by UC2) & Collect resource events (static fields, system properties) for
+  that run, attributed to the test methods involved & FR-3 \\
+UC4 & (included by UC3) & Rank and run candidate predecessors to find the one(s) that
+  reproduce the failure & FR-4 \\
+UC5 & (included by UC4) & Minimise the reproducing order to a 1-minimal sequence and verify
+  it with repeated clean replays & FR-5 \\
+UC6 & (included by UC5) & Receive the Verified / Candidate / Unresolved certificate with its
+  typed reason and evidence & FR-6 \\
+UC7 & Developer, CI Pipeline & Invoke FlakeTrace via its CLI and consume a CI-compatible exit
+  code & FR-7 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \section{Functional Requirements}
 \subsection{Module 1}
 \subsection{Module 2}
