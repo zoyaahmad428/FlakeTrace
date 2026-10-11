@@ -141,8 +141,46 @@ matters. Two items from the proposal are not in our row because they are not bui
 the candidate tests before the search (RankF is the baseline it will be measured against) and an
 explicit execution budget. Both are planned for FYP-2.
 \section{Limitations and Gaps}\label{ch2:sec:gaps}
-Identify limitations and the gap motivating the proposed solution.
-\section{Proposed Solution}
+Each part of diagnosing an order-dependent failure has already been solved by someone. Reducing a
+failing order is solved by delta debugging \cite{zeller2002ddmin} as used in iFixFlakies
+\cite{shi2019ifixflakies}. Ranking the likely responsible tests is solved for single polluters by
+RankF \cite{rahman2025rankf}. Explaining the shared state has been shown at a preliminary scale by
+Takuan \cite{levin2025takuan} and PolDet \cite{gyori2015poldet}. FlakeTrace claims none of these
+techniques, nor the victim and polluter vocabulary, as its own.
+
+The limits the papers themselves report are what leave room for this project:
+\begin{itemize}
+\item \textbf{iFixFlakies} returns a reduced order without saying how reliably it reproduces the
+  failure or which shared state connects the tests, and, as the authors of ODRepair point out \cite{li2022odrepair}, its repair depends on a
+  cleaner test already existing.
+\item \textbf{RankF} leaves out failures that need several earlier tests together, and its
+  history-based variant needs previously observed test orders.
+\item \textbf{Takuan}'s evaluation covers 13 tests.
+\item \textbf{Shared state alone is not proof.} PolDet reported 324 polluting tests, but manual
+  inspection judged only 194 of them relevant \cite{gyori2015poldet}. A tool that blames a test
+  only because it touches the same state as the victim will often be wrong.
+\item \textbf{Watching execution is costly and can change the result.} ElectricTest's sound
+  detection slowed execution by about 20 times \cite{bell2015electrictest}, and Luo et al.
+  found that 85\% of their asynchronous-wait flaky failures appeared when a single time delay was
+  added \cite{luo2014empirical}. Instrumentation heavy enough to change timing can therefore
+  change the failure it is meant to explain.
+\end{itemize}
+
+\paragraph{The gap.} No system reviewed here produces a single result for one order-dependent
+failure that does all of the following:
+\begin{enumerate}
+\item names the responsible test or tests through controlled reruns, not through state overlap
+  alone;
+\item states how reliably the reduced order reproduces the failure, with a statistical interval;
+\item links polluter, shared resource and victim to exact code locations;
+\item says clearly, with a typed reason, when the evidence does not support a conclusion;
+\item spends no more than a declared execution budget.
+\end{enumerate}
+Iteration~1 of FlakeTrace covers points 1--4; the execution budget (point 5) is planned for FYP-2
+(Section~\ref{ch2:sec:proposed}). For commercial tools the gap is narrower: their published
+documentation describes detecting and quarantining flaky tests, not diagnosing a single
+failure in this way.
+\section{Proposed Solution}\label{ch2:sec:proposed}
 Explain how the proposed system addresses the identified gap.
 \section{Complex Computing Problem}
 Clearly identify and explain the complex computing problem addressed by the project.
