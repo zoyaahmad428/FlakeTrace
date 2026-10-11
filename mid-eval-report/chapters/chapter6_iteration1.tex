@@ -22,8 +22,96 @@ Each case maps to a step of the live demonstration (Section~\ref{ch6:sec:demo}).
 
 \section{Design}\label{ch6:sec:design}
 The design is described in Chapter~5: the components and their contracts in Figure~\ref{ch5:fig:arch}, one \texttt{diagnose} run in Figure~\ref{ch5:fig:diagnose-seq}, and the reproduce--search--minimise--verify logic in Figure~\ref{ch5:fig:search-activity}. This chapter describes how that design is implemented and how to run it.
-\section{Implementation}
-\section{Completed Features / Module}
+\section{Implementation}\label{ch6:sec:setup}
+All code is in one GitHub repository; Table~\ref{ch6:tab:layout} shows where each part lives and who owns it.
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.58\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}}
+\caption{Repository layout}\label{ch6:tab:layout}\\
+\toprule
+Path & Contents & Owner\\
+\midrule
+\endfirsthead
+\toprule
+Path & Contents & Owner\\
+\midrule
+\endhead
+\path{runner/} & Order runner, polluter search, minimisation, verification, command line & Member 2\\
+\path{evidence/} & Static bytecode extraction of shared-resource edges & Member 1\\
+\path{eval/} & Statistics, outcome decision, report schema, baselines, benchmark manifest & Member 3\\
+\path{fixtures/} & Seeded order-dependent Maven project with pre-registered ground truth & Member 3\\
+\path{.github/} & CI workflow, pull-request template, code owners & Member 2\\
+\path{docs/} & Contracts, ADRs, evidence logs, Mid evaluation records & Joint\\
+\path{POC/} & Proposal-defence proof of concept, not product code & ---\\
+\bottomrule
+\end{longtable}}
+
+\subsection{Setup and running}
+FlakeTrace needs Python 3.11 or newer, a JDK 8 or newer (\texttt{java}, \texttt{javac}, \texttt{javap}) and Maven on \texttt{PATH}. The commands below are copied from the root \path{README.md} and are run from the repository root; this is the Windows form (the README also gives the same steps for Linux and macOS):
+\begin{lstlisting}[basicstyle=\footnotesize\ttfamily,breaklines=true,breakatwhitespace=true,columns=fullflexible,caption={Setup and checks (Windows), from \texttt{README.md}},label=ch6:lst:setup]
+py -m pip install -r eval/requirements.txt
+py -m unittest -v eval.tests.test_baseline eval.tests.test_examples eval.tests.test_outcome eval.tests.test_report eval.tests.test_schema_validator eval.tests.test_stats eval.tests.test_yield_report
+mvn -B -f fixtures/od-fixture/pom.xml test-compile
+py -m unittest -v runner.tests.test_cli runner.tests.test_diagnose runner.tests.test_discovery runner.tests.test_integrity runner.tests.test_minimise runner.tests.test_order_runner runner.tests.test_orders runner.tests.test_recording runner.tests.test_search
+py -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode
+mvn -B -q -f evidence/tests/resources/m1-selftest/pom.xml test-compile
+py -m unittest -v evidence.tests.test_extract
+\end{lstlisting}
+
+Before quoting them here, Member 2 ran every one of these commands on 11 October 2026 on Windows 11 with Python 3.14.0, JDK 21.0.9 and Maven 3.10.0 (\path{docs/evidence-m2.md}, entry ``Root README''). Table~\ref{ch6:tab:setup-results} gives the results. The same test suites run in CI on every pull request, on Linux with JDK 8 and Python 3.11.
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.38\textwidth}>{\raggedright\arraybackslash}p{0.50\textwidth}}
+\caption{Result of each setup command (11 October 2026, Windows 11)}\label{ch6:tab:setup-results}\\
+\toprule
+Command & Result\\
+\midrule
+\endfirsthead
+\toprule
+Command & Result\\
+\midrule
+\endhead
+Evaluation tests (7 modules) & 85 tests, OK, 2.8\,s\\
+Fixture and self-test compile & exit code 0, both\\
+Evidence tests & 39 tests, OK, 86.3\,s\\
+Runner tests (9 modules) & 144 tests, OK, 344.8\,s (real JVM runs)\\
+\texttt{diagnose} on F1 & exit code 0, \texttt{VERIFIED}, 20/20 reproduced (lower bound 0.839), 0/20 alone\\
+\texttt{git status} afterwards & only \path{README.md} changed; the fixture is unchanged\\
+\bottomrule
+\end{longtable}}
+
+The \texttt{diagnose} command writes one execution record (\texttt{.jsonl}, one line per JVM run) and one report (\texttt{.report.json}) to \path{flaketrace-records/}, which git ignores.
+
+\section{Completed Features / Module}\label{ch6:sec:completed}
+Table~\ref{ch6:tab:wps} gives the state of every work package on 11 October 2026. ``Done'' means merged into \texttt{main} through a pull request.
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.06\textwidth}>{\raggedright\arraybackslash}p{0.38\textwidth}>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.21\textwidth}}
+\caption{Iteration 1 work packages}\label{ch6:tab:wps}\\
+\toprule
+WP & Work & Owner & State & Pull requests\\
+\midrule
+\endfirsthead
+\toprule
+WP & Work & Owner & State & Pull requests\\
+\midrule
+\endhead
+W1 & Seeded fixture with pre-registered ground truth (F1--F3, N1--N2; F4, N3 added later) & M3 & Done & \#1; F4, N3 in \#45\\
+W2 & Wilson interval, isolation comparison & M3 & Done & \#1\\
+W3 & Report schema and outcome decision & M3 & Done & \#1\\
+W4 & Random-order baseline, benchmark manifest, yield report & M3 & Done & \#1; real runs \#54\\
+W5 & Single repository, CI, team rules & M2 & Done & \#1, \#3, \#20\\
+W6 & Ordered single-JVM runner and failure signatures & M2 & Done & \#10\\
+W7 & Victim-alone check, polluter search, repeated runs, integrity, execution record & M2 & Done & \#11\\
+W8 & Static extraction: static fields and system properties, depth 1--5 & M1 & Done & \#9, \#12, \#15, \#34\\
+W9 & One command from a failing test to a validated report & M2, M3 & Done & \#13, \#18, \#21, \#26\\
+W10 & Minimisation with \texttt{ddmin} (F3) & M2 & Done & \#35, \#40\\
+W14 & Given order, shuffled orders, \texttt{NOT\_REPRODUCED} reports (ADR-008) & M2, M3 & Done & \#45, \#49\\
+W11 & This report & All & In progress & \#60, \#62, \#63\\
+W12 & Evidence worksheet, GenAI register, tag \texttt{mid-eval-v1} & All, M2 & Not done & ---\\
+W13 & Rehearsed demonstration on the demo laptop & All & Not done & ---\\
+\bottomrule
+\end{longtable}}
 \section{Technical Implementation Details}
 Describe important files, classes, functions, algorithms, configurations, and technical decisions.
 \input{chapters/chapter6_module_m1}
