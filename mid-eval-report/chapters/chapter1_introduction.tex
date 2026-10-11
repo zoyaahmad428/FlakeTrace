@@ -429,7 +429,46 @@ them after seeing results would invalidate it.
 \texttt{eval.stats.wilson\_interval}, 18 of 20 gives a lower bound of 0.699, 19 gives 0.764 and 20
 gives 0.839, so the lower-bound condition alone decides, and it needs 19. This report states the
 rule as it is implemented in \texttt{eval/outcome.py}.
-\section{Constraints and Assumptions}
-Document relevant constraints and assumptions.
+\section{Constraints and Assumptions}\label{ch1:sec:constraints}
+\paragraph{Constraints.}
+\begin{itemize}
+\item \textbf{Target projects:} Java projects built with Maven, with JUnit~4 tests or JUnit~3
+  test classes. Diagnosis runs use JUnit's own \texttt{JUnitCore} in one JVM per order, not
+  Maven Surefire (ADR-003).
+\item \textbf{Platform:} JDK~8 or newer and Python~3.11. CI runs on Ubuntu with JDK~8; development
+  is on Windows and WSL. The evidence module uses only the Python standard library and the JDK's
+  \texttt{javap}.
+\item \textbf{No changes to the analysed project:} FlakeTrace never writes to the project's source,
+  a promise made to the defence panel, and checks it by hashing.
+\item \textbf{No instrumentation in Iteration~1:} evidence is static only (ADR-001).
+\item \textbf{Limits of the static evidence,} stated in every report: calls into the JDK and
+  third-party libraries are not followed; reflection and virtual dispatch are not resolved; only
+  static fields and constant-key system properties are modelled; the values written are not
+  modelled, so a test that restores what it changed still counts as a writer; timing is not
+  modelled; and missing evidence is never taken as proof of independence.
+\item \textbf{Self-hosted and free to run:} no cloud service, GPU or paid API.
+\item \textbf{Team and time:} three members with fixed ownership of separate folders, integrated
+  only through the contracts; Iteration~1 had to be complete for the Mid evaluation on
+  16~October~2026.
+\end{itemize}
+
+\paragraph{Assumptions.} Each assumption below is believed but not yet shown, and is stated as such.
+\begin{itemize}
+\item \textbf{The 31-order figure holds for Java.} It comes from a study of Python projects
+  \cite{gruber2021flaky} (ADR-008). It will be checked on the real benchmark.
+\item \textbf{The supported resource families cover a useful share of real failures.} The
+  real-project evidence so far comes from one project, fastjson, which relies heavily on global
+  static configuration; this favours the assumption. The benchmark in later iterations tests it.
+\item \textbf{Static analysis to depth~5 is enough for most cases.} At depths~4--5 it found the
+  shared field in both fastjson cases measured (ADR-006), where the earlier test is a state-setter
+  for a brittle test, but that is two cases from one project. Where it is not
+  enough, runtime evidence is the planned fallback (ADR-001).
+\item \textbf{Victims are the main case.} The literature supports this (Section~\ref{ch1:sec:context}).
+  A brittle test fails alone, so FlakeTrace reports it as \texttt{VICTIM\_FAILS\_ALONE} instead of
+  diagnosing it.
+\item \textbf{Java teams face the same workflow problem as the interviewed teams.} The interviewed
+  teams do not use Java (Section~\ref{ch1:sec:context}); an interview with a Java developer is
+  planned after the Mid evaluation.
+\end{itemize}
 \section{Ethical, Legal and DEI Considerations}
 Document relevant ethical, legal, accessibility, privacy, or diversity considerations where applicable.
