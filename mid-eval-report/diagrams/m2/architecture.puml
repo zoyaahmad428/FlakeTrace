@@ -9,7 +9,9 @@ skinparam ArrowColor #333333
 skinparam nodesep 25
 skinparam ranksep 45
 
-actor "Developer" as dev
+rectangle " " as USER #transparent;line:transparent {
+  actor "Developer" as dev
+}
 
 package "runner/  (Member 2)" as RUN {
   component "cli.py\nmain / run_diagnose" as cli
@@ -23,11 +25,21 @@ package "runner/  (Member 2)" as RUN {
   component "recording.py\nRecordingRunner" as rec
   component "order_runner.py\nOrderRunner / maven_test_classpath" as orun
   component "harness/FtHarness.java\nJUnitCore + Request.method" as harness
+  component "Diagnosis planner\nranks candidates, picks next experiment,\nreserves verification budget" <<planned, FYP-2>> as planner #F4F4F4;line:999999;line.dashed;text:666666
+  component "Container sandbox + budgets" <<planned, FYP-2>> as sandbox #F4F4F4;line:999999;line.dashed;text:666666
+  component "CI adapter" <<planned, FYP-2>> as ci #F4F4F4;line:999999;line.dashed;text:666666
+  component "Certificate renderer\nhuman-readable report, replay command" <<planned, FYP-2>> as renderer #F4F4F4;line:999999;line.dashed;text:666666
 }
 
 package "evidence/  (Member 1)" as EVI {
   component "extract.py\nProject / analyse_pair (depth 2..5)\nreport_fields" as extract
+  component "Dynamic evidence collector\nruntime instrumentation" <<planned, FYP-2>> as dynamic #F4F4F4;line:999999;line.dashed;text:666666
+  component "Evidence store /\ntest-resource graph" <<planned, FYP-2>> as store #F4F4F4;line:999999;line.dashed;text:666666
 }
+note bottom of extract #F4F4F4;line:999999;line.dashed;text:666666
+  built: static-field, system-property
+  planned (FYP-2): filesystem paths
+end note
 
 package "eval/  (Member 3)" as EVAL {
   component "report.py\nassemble_report" as report
@@ -36,6 +48,14 @@ package "eval/  (Member 3)" as EVAL {
   component "schema_validator.py\nvalidate_report\n+ schema/report.schema.json" as schema
   interface "baseline.py: OrderRunner Protocol\nTestIdentifier, FailureSignature, RunOutcome" as proto
   component "baseline.py\nrun_random_order_baseline\n(via tools/run_baseline_real.py)" as baseline
+  component "Ablation harness\ndepth / policy sweeps, replayed offline" <<planned, FYP-2>> as ablation #F4F4F4;line:999999;line.dashed;text:666666
+}
+
+package "CDR (gated, FYP-2)" as CDR #F9F9F9;line:999999;line.dashed;text:666666 {
+  component "Repair-context builder" <<planned, FYP-2>> as cdrctx #F4F4F4;line:999999;line.dashed;text:666666
+  component "Patch generator\ntemplated; model-based optional" <<planned, FYP-2>> as cdrgen #F4F4F4;line:999999;line.dashed;text:666666
+  component "Patch verifier\nre-runs on a disposable copy" <<planned, FYP-2>> as cdrver #F4F4F4;line:999999;line.dashed;text:666666
+  artifact "patch diff + evidence\nfor a developer to review\n(never edits the analysed project)" <<planned, FYP-2>> as patch #F4F4F4;line:999999;line.dashed;text:666666
 }
 
 node "External tools" as EXT {
@@ -89,5 +109,25 @@ report --> schema : validate_report()
 report ..> diag : imports DiagnosisRuns
 
 baseline ..> proto : uses (offline)
+
+planner -[#999999,dashed]-> search : priority order\n(hook exists, CLI does not pass it)
+store -[#999999,dashed]-> planner
+dynamic -[#999999,dashed]-> store
+extract -[#999999,dashed]-> store
+sandbox -[#999999,dashed]-> orun : isolates each JVM run
+ci -[#999999,dashed]-> cli
+records -[#999999,dashed]-> renderer : .report.json
+records -[#999999,dashed]-> ablation : outcome table
+records -[#999999,dashed]-> cdrctx : VERIFIED reports only
+cdrctx -[#999999,dashed]-> cdrgen
+cdrgen -[#999999,dashed]-> cdrver
+cdrver -[#999999,dashed]-> patch
+
+legend right
+  |= Style |= Meaning |
+  | solid box | implemented on main (Mid evaluation) |
+  | <color:#666666>dashed grey box</color> | planned for FYP-2, not built |
+  | dashed arrow | type import, interface, or planned link |
+endlegend
 
 @enduml
