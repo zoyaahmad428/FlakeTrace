@@ -25,8 +25,9 @@ seven cases with pre-registered, before-any-run ground truth
 every push and pull request, not only locally.
 
 \section{Test Levels and Techniques}\label{ch8:sec:levels}
-Table \ref{ch8:tab:ci} lists the five real CI jobs (\texttt{.github/workflows/ci.yml}), each
-testing a different level, all green on the current \texttt{main} tip.
+Table \ref{ch8:tab:ci} lists the five real CI jobs, each testing a different level, all green
+on the current \texttt{main} tip: four in \texttt{.github/workflows/ci.yml} and
+\texttt{build-report} in \texttt{.github/workflows/report.yml}.
 
 \begin{table}[H]\centering
 \caption{CI jobs and what they test}\label{ch8:tab:ci}
@@ -50,8 +51,8 @@ testing a different level, all green on the current \texttt{main} tip.
 \end{table}
 
 \noindent All 268 unit tests (85 + 144 + 39) and the fixture/report builds pass on the current
-\texttt{main} tip (CI run \texttt{38146685651}, all 5 jobs green --- see Appendix
-\ref{appc:sec:ci}), confirmed by re-running the three suites locally while drafting this
+\texttt{main} tip (CI run \texttt{38155613996}, 4 jobs, and Report run \texttt{38155613976}, 1 job, all green
+--- see Appendix \ref{appc:sec:ci}), confirmed by re-running the three suites locally while drafting this
 chapter, not taken from a possibly-stale prior log. A project-wide discipline backs every one of them:
 \texttt{eval/tests/fake\_runner.py}'s \texttt{FakeOrderRunner} and similar scriptable fakes live
 \emph{only} under \texttt{*/tests/} and are never imported by production code (checked by
@@ -228,7 +229,7 @@ A baseline-run log claimed a 7-test candidate pool (5 noise tests); the fixture'
 \section{Current Validation Status}
 \textbf{Validated now:} all 7 real fixture cases match their pre-registered ground truth exactly
 (Table \ref{ch8:tab:cases}, Table \ref{ch8:tab:fixture-results}); all 268 unit tests across the
-three members' suites pass; CI is green on all 5 jobs on the current \texttt{main} tip, including
+three members' suites pass; all 5 jobs across both workflows are green on the current \texttt{main} tip, including
 the build of this document itself; the Verified threshold, deletion-check and explanation
 acceptance criteria are met \emph{by construction}, not just by observation (Table
 \ref{ch4:tab:acceptance}).
