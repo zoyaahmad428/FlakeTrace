@@ -7,6 +7,29 @@
 % ===========================================================================
 % Included from chapter5_design.tex — no \chapter here.
 \section{Domain Model}
+Figure~\ref{ch5:fig:domain} shows the concepts FlakeTrace works with and how they relate. Each
+box uses the name the concept has in the code, shown in brackets. The figure is drawn from the
+three contracts in \texttt{docs/contracts/} and from the data classes in \texttt{eval/baseline.py}
+and \texttt{runner/diagnose.py}.
+
+A \emph{diagnosis} starts from one failing test, the \emph{victim}, in a Maven project. Member~2's
+runner executes \emph{test orders}. Each \emph{run} uses one fresh JVM and runs the tests in
+exactly the given order, and every test in the order gets an \emph{outcome}. A failed outcome
+carries a \emph{failure signature}: the exception type and a normalised stack trace. The message is
+kept but not compared (\texttt{FailureSignature.matches}), because it can change from run to run
+for the same bug. The first real failure of the victim becomes the diagnosis's \emph{reference}
+signature, and later runs count only failures that match it. Every run is one line of the
+\emph{execution record}, and the project's files are hashed before and after the diagnosis
+(\emph{source integrity}), because FlakeTrace must not change the code it analyses.
+
+My module adds the explanation. A test makes \emph{accesses} to a \emph{shared resource}, either a
+static field or a system property with a constant key, by reading or writing it at a bytecode
+location. Each access also records which root it was reached from (for example a \texttt{@Before}
+method) and how many calls deep it is. An \emph{edge} pairs one polluter write with one victim read
+of the same resource. It is the mechanism the report names. When the runner finds several
+polluters, each one is analysed as a separate pair with the victim. Finally, Member~3's
+\emph{report} concludes the diagnosis with an outcome and, if it is unresolved, a typed reason.
+
 % Domain model (M1): diagrams/m1/domain_model.puml -> figures/m1/domain_model.png
 \begin{figure}[H]\centering
   \includegraphics[width=\textwidth]{figures/m1/domain_model}
