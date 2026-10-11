@@ -86,9 +86,38 @@ M3: Zarpash Nasim (23i-0027) & \texttt{ZarpashNasim} & Evaluation infrastructure
 \end{longtable}}
 
 The contracts, the architecture, this report, the evidence worksheet and the presentation are joint. Each chapter of this report has one owner, named in the first line of its source file. Member 2 is the integration owner: Member 2 keeps CI passing, merges the final Mid pull request and creates the \texttt{mid-eval-v1} tag.
-\section{Progress Against Plan}
-Compare planned milestones with actual progress.
+\section{Progress Against Plan}\label{ch3:sec:progress}
+Figure~\ref{ch3:fig:gantt} sets the proposal's schedule against what happened. The coloured bars are the plan presented at the defence; the diamonds are actual events, each dated by a merge into \texttt{main} or by a dated file in the repository. The two grey bars are the working phases as stated by the team, because their start and end are not recorded in git: the proposal and proof of concept from August to the defence on 11 September, and post-defence work from 15 September to 8 October. Most code reached \texttt{main} between 8 and 11 October because the team moved the separate code and documentation repositories into one repository after the defence (\path{docs/06-Meetings/2026-10-09-post-defence-kickoff.md}).
+
 % Planned-vs-actual Gantt (M2): diagrams/m2/gantt.puml -> figures/m2/gantt.png
-\placeholderfig{ch3:fig:gantt}{Iteration 1: planned versus actual schedule}{M2}
-\section{Delays, Deviations and Recovery Plan}
-Explain deviations and recovery actions.
+\begin{figure}[p]\centering
+  \includegraphics[height=0.85\textheight,width=\textwidth,keepaspectratio]{figures/m2/gantt}
+  \caption{Iteration 1: planned versus actual schedule}\label{ch3:fig:gantt}
+\end{figure}
+
+Three blocks are \textbf{ahead of plan}: deletion minimisation (planned December to February), failure signatures and repeated-run verification (planned January to March) and the command line (planned March to May) were all merged by 10 October; the controlled fixtures, planned from January, exist with seven cases. Iteration 1's own blocks, static extraction, the order runner and the benchmark manifest with baselines, were finished within their August-to-October window. The items that are late or \textbf{behind} plan are listed in Section~\ref{ch3:sec:deviations}, each with its cause and recovery. Table~\ref{ch6:tab:wps} gives the state of every work package.
+
+\section{Delays, Deviations and Recovery Plan}\label{ch3:sec:deviations}
+Table~\ref{ch3:tab:deviations} lists every deviation from the plan. Dates for recovery are taken from the roadmap and the iteration plan; where neither gives a date, the table says which iteration the work belongs to and nothing more.
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.25\textwidth}>{\raggedright\arraybackslash}p{0.25\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}}
+\caption{Deviations from the plan and recovery}\label{ch3:tab:deviations}\\
+\toprule
+Deviation & Cause & Recovery & Owner & When\\
+\midrule
+\endfirsthead
+\toprule
+Deviation & Cause & Recovery & Owner & When\\
+\midrule
+\endhead
+Interface contracts planned by end of September; merged 9 October & Code and documentation were in two repositories until the post-defence restructure & Contracts merged with the restructure (\pr{1}) before any runner or extractor code; ADR-001 to 008 accepted 9--11 October & All & Done\\
+Order runner not started on 9 October (the plan's own variance record) & Repository and team process were set up first, after the post-defence decisions & The runner became the critical path; Member 2 worked on nothing else until it was merged (\pr{10}) & M2 & Done, 9 October (planned S$-$2)\\
+Sandbox runner without a container (planned August to October) & \todo{M2: cause, from the member; not recorded in the repository} & First deployment attempt in a container is part of the FYP-1 Final outcome (\path{iteration-plan.md}) & M2 & Iteration 2\\
+Test--resource graph not started (planned from September) & The team agreed that evidence is computed per polluter--victim pair after the polluter is found, which the report needs at Iteration 1 (open question I2, ADR-006) & Graph built in Iteration 2 (\path{roadmap.md}) & M1 & Iteration 2\\
+Threat model not written (freeze planned by October) & \todo{M2: cause, from the team; not recorded in the repository} & Security requirements exist (\path{docs/02-Requirements/non-functional.md}); threat-model tests are FYP-2 exit evidence (\path{roadmap.md}) & All & \todo{date or iteration agreed by the team}\\
+No diagnosis yet on a real project end to end & Iteration 1's objective was the seeded fixture; only the extractor has run on fastjson & Real project from the benchmark manifest is part of the FYP-1 Final outcome & All & Iteration 2\\
+\bottomrule
+\end{longtable}}
+
+Two Mid items are not late but not yet done: the rehearsed demonstration (due the day before the meeting) and the tag \texttt{mid-eval-v1} (due with the submission on 14 October). Both are tracked as W12 and W13 (Table~\ref{ch6:tab:wps}).
