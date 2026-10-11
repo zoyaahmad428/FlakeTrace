@@ -32,7 +32,9 @@ realistic CI conditions.
 
 ---
 
-## Proposal defence outcome — 2026-10
+## Proposal defence outcome — 11 September 2026
+
+*Date as stated by the team (2026-10-11); no dated record of the defence is in the repository.*
 
 **Decision: Approved with Minor Modifications.** The panel asked how detection works without
 logs, whether trace instructions are injected, whether code is modified, how the code block
