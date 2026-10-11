@@ -1,0 +1,136 @@
+@startuml report_data_model
+' Diagnosis report data model - drawn only from eval/schema/report.schema.json (main).
+' Field producers from docs/contracts/report-schema.md ("Produced by" column).
+' Owner: M1 (Zoya Ahmad). Slot: ch5:fig:datamodel.
+!pragma layout smetana
+skinparam dpi 200
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 11
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor #F7F7F7
+  BorderColor #333333
+  ArrowColor #333333
+}
+hide empty methods
+hide circle
+
+class "DiagnosisReport" as Report <<one JSON file per victim>> {
+  victim : TestIdentifier  {M2}
+  polluters : TestIdentifier [0..*]  {M2}
+  original_failing_order : TestIdentifier [0..*]  {M2}
+  reduced_sequence : TestIdentifier [0..*]  {M2}
+  reproduction : WilsonCount  {M3}
+  sequence_any_signature_failures : integer >= 0  {M3}
+  victim_alone : WilsonCount  {M3}
+  shared_resource : SharedResource | null  {M1}
+  polluter_write_location : CodeLocation | null  {M1}
+  victim_read_location : CodeLocation | null  {M1}
+  failure_signature : FailureSignature | null  {M2}
+  order_exploration : OrderExploration [0..1]  {M2}
+  instrumentation_level : "static-only"  {M1, M3}
+  execution_record_reference : string  {M2}
+  source_integrity : SourceIntegrity  {M2}
+  outcome : Outcome  {M3}
+  unresolved_reason : UnresolvedReason | null  {M3}
+  limitations : string [0..*]  {M3, lines from M1}
+}
+
+class TestIdentifier {
+  class : string
+  method : string
+}
+
+class CodeLocation {
+  class : string
+  method : string
+  bytecode_offset : integer >= 0
+}
+
+class WilsonCount {
+  successes : integer >= 0
+  n : integer >= 1
+  {field} confidence : number, 0 < c < 1
+  {field} lower : number, 0..1
+  {field} upper : number, 0..1
+}
+
+abstract class SharedResource <<oneOf>> {
+  kind : string
+}
+class StaticField {
+  kind = "static-field"
+  class : string
+  field : string
+}
+class SystemProperty {
+  kind = "system-property"
+  key : string
+}
+
+class FailureSignature {
+  exception_type : string
+  message : string | null
+  stack_trace : string
+}
+
+class OrderExploration <<optional, ADR-008>> {
+  order_given : boolean
+  shuffled_orders_tried : integer >= 0
+  orders_exhausted : boolean
+  seed_base : integer
+  reproducing_seed : integer | null
+  infrastructure_failures : integer >= 0
+}
+
+class SourceIntegrity {
+  passed : boolean
+  details : string
+}
+
+enum Outcome {
+  VERIFIED
+  CANDIDATE
+  UNRESOLVED
+}
+
+enum UnresolvedReason {
+  VICTIM_FAILS_ALONE
+  NOT_REPRODUCED
+  SIGNATURE_MISMATCH
+  INFRASTRUCTURE_FAILURE
+  NO_SUPPORTED_RESOURCE_EVIDENCE
+  BELOW_CONFIDENCE_THRESHOLD «reserved, not emitted»
+  SOURCE_INTEGRITY_FAILED
+}
+
+Report *-left- "1..*" TestIdentifier : victim, polluters,\norders
+Report *-- "2" WilsonCount : reproduction,\nvictim_alone
+Report *-- "0..1" SharedResource
+Report *-left- "0..2" CodeLocation : write / read\nlocation
+Report *-- "0..1" FailureSignature
+Report *-- "0..1" OrderExploration
+Report *-- "1" SourceIntegrity
+Report -right-> "1" Outcome
+Report -right-> "0..1" UnresolvedReason
+Outcome -[hidden]down- UnresolvedReason
+TestIdentifier -[hidden]down- CodeLocation
+SharedResource <|-- StaticField
+SharedResource <|-- SystemProperty
+
+note top of Report
+  Rules enforced by the schema (allOf):
+  - unresolved_reason is non-null exactly when outcome = UNRESOLVED
+  - failure_signature is null exactly when unresolved_reason is
+    NOT_REPRODUCED or INFRASTRUCTURE_FAILURE
+  The 17 fields other than order_exploration are required;
+  no other fields are allowed (additionalProperties: false).
+end note
+
+legend right
+  {M1} filled by Resource Evidence (evidence/extract.py report_fields)
+  {M2} filled by Search & Verification (runner/)
+  {M3} filled by Evaluation (eval/report.py, eval/outcome.py)
+endlegend
+@enduml
