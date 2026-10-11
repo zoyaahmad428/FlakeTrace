@@ -5,11 +5,128 @@
 % Rules: mid-eval-report/CLAUDE.md. Do not edit a file you do not own.
 % ===========================================================================
 \chapter{Remaining FYP Plan}
+
 \section{Remaining Scope}
+Scope was baselined at the proposal and has not been reopened; what remains is what was already
+committed but not yet built, plus two explicitly gated tiers (\path{docs/02-Requirements/
+scope-boundary.md}). \textbf{Committed, not yet built:} the filesystem resource-event family
+(static fields and system properties are built; filesystem is not); the cost-aware adaptive
+search policy (ranked one-by-one ships now); rootless container sandboxing and the rest of the
+security posture (Chapter 4's Table~\ref{ch4:tab:fr} and Appendix B's Table~\ref{appb:tab:security}
+list exactly what is and is not built today); the test--resource graph beyond pairwise
+edges; and NFR-2's clean-machine deployment check by a third party. \textbf{Gated, conditional
+on the committed core:} Certificate-Driven Remediation (CDR) --- enabled only after the
+committed core reaches its Final-1 exit criteria and ranking/explanation quality clears an
+acceptance threshold on the development benchmark (\path{docs/07-Defense/decisions/
+cdr-gated-module.md}) --- and the other optional tier (JUnit 5, Gradle, GitHub Checks,
+issue-tracker export, a history dashboard, database/network resource adapters), each gated the
+same way. If the team is behind at Final-1, the recorded cut order is CDR first, then
+filesystem evidence (reduced to an opaque event), then the adaptive policy (ranked one-by-one
+stays default); \textbf{the committed core end-to-end path is cut last, because it is the
+project.}
+
 \section{Remaining Modules and Features}
+\textbf{Evaluation (M3, confident --- this is my own module).} Integrate at least one published
+baseline (iFixFlakies minimiser, or RankFO) so claim B11 can move from ``partially'' to
+measured; run the ablations already designed but not executed (resource-only, order-only,
+static-only, no-cost-term, no-verification-reserve, the depth-sweep reporting both rank and
+overlap-set size); build the held-out evaluation split (development / validation / untouched
+projects, never split randomly by test); run the five user-acceptance tasks with the named
+participant (SH1) and a substitute plan for the other two.
+
+\todo{M1: please confirm --- from \path{docs/00-Meta/roadmap.md}'s FYP-I-end and FYP-II-early
+phases, your remaining work is: the filesystem resource family; the test--resource graph beyond
+pairwise edges; dynamic/runtime evidence collection if static evidence proves insufficient
+(Iteration 2, ADR-001); the depth matrix and over-approximation measurement at full scale.}
+
+\todo{M2: please confirm --- from the same roadmap phases, your remaining work is: the
+cost-aware adaptive search policy (ranked one-by-one is the Iteration-1 default); container
+sandboxing and the full security posture (rootless, network-disabled, resource limits,
+redaction, audit); the verification-and-abstention hardening the roadmap calls out for
+FYP-II-early; CI/CD packaging and the clean-install deployment check (NFR-2).}
+
 \section{Remaining Iterations}
+Table~\ref{ch10:tab:iterations} maps the roadmap's own iteration plan
+(\path{docs/00-Meta/roadmap.md}) to what each iteration must produce as exit evidence, not just
+what work happens --- the roadmap itself insists a timeline answer is about evidence at each
+gate, not a list of activities.
+
+\begin{table}[H]\centering
+\caption{Remaining iterations and their exit evidence}\label{ch10:tab:iterations}
+\begin{tabular}{p{1.6cm}p{2.2cm}p{9.3cm}}
+\toprule
+\textbf{Iteration} & \textbf{Months} & \textbf{Exit evidence (not activities)} \\
+\midrule
+2 & Nov -- Jan & Resource normalisation and the full graph; dynamic collection if static proves
+  insufficient; the adaptive policy and ablation harness; deletion minimisation (already landed
+  early, W10/ADR-007) \\
+3 & Feb -- Apr & Failure-signature and repeated-run verification hardening; the controlled
+  fixtures extended and a reproducibility bundle; the certificate's full evidence path;
+  CLI/CI and container security; the non-perturbation control as an automated check \\
+4 & May -- Jun & End-to-end integration on real projects; user acceptance tasks; final testing,
+  deployment and handover \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \section{Implementation Plan}
+My own near-term order: (1) wire one published baseline into \path{eval/baseline.py}'s existing
+\texttt{OrderRunner} interface, reusing the class-first shuffle discipline already built and
+tested; (2) extend the random-order comparison from the seeded fixture to the \texttt{idoft}
+benchmark cases already listed (metadata-only today) in \path{eval/benchmark/manifest.json};
+(3) build the held-out split once a second real project is cloned, per the leakage rule (a fix
+commit used as an algorithm input cannot also be the oracle that judges it); (4) run the
+acceptance tasks last, since they need a stable, demonstrable pipeline rather than one still
+changing week to week.
+
+\todo{M1/M2: please add your own near-term implementation order here, or confirm mine does not
+block yours --- the evaluation work above can start independently of the filesystem family or
+the adaptive policy, but the held-out real-project work benefits from both being closer to done.}
+
 \section{Testing and Validation Plan}
+The evaluation plan (\path{docs/05-Testing/evaluation-plan.md}) already defines what remains to
+be measured, not just tested: eight research questions (RQ1--RQ6 committed, RQ7--RQ8 gated with
+CDR), six baselines (random, one-by-one, iFixFlakies, RankFO/RankFL, Takuan, an oracle ceiling),
+and a pre-registered failure condition --- a Verified certificate later shown wrong is the single
+worst result the project can produce, more serious than any baseline underperforming. Testing
+itself (does the implementation meet its requirements) stays continuous, as in Chapter 7;
+evaluation (is the approach better under budget) and acceptance (would the intended users use
+it) are what remain, and neither is started yet, stated plainly rather than implied as done.
+
 \section{Deployment Plan}
+\todo{M2: please confirm --- NFR-2 commits to: a third party installs on clean Linux from
+documentation, runs one frozen benchmark case, obtains the same certificate class, replays the
+returned order, and removes all created containers and workspaces, with the two-phase network
+model (a networked dependency-fetch stage, then a disabled-network test-execution stage as a
+separate container invocation) keeping test code itself never network-reachable even though the
+build was. This is explicitly a Final-2 exit requirement, not attempted in Iteration 1.}
+
 \section{Tentative Timeline}
+Table~\ref{ch10:tab:gates} gives the remaining gates from \path{docs/00-Meta/roadmap.md}, each
+with what must be true to pass it --- the roadmap's own framing, not a restatement of the
+iteration table above.
+
+\begin{table}[H]\centering
+\caption{Remaining gates}\label{ch10:tab:gates}
+\begin{tabular}{p{2.6cm}p{10.5cm}}
+\toprule
+\textbf{Gate} & \textbf{What must be true} \\
+\midrule
+Final-1 & Working primary scenario end-to-end; integration proven; baseline measured; first
+  deployment attempted \\
+Mid-2 & Committed scope integrated; system and non-functional testing complete; evaluation
+  underway; failure/edge cases exercised; release/deployment rehearsed \\
+Job fair (mid-April) & Stable enough for professional repeated demonstration --- the roadmap is
+  explicit that essential development should not be left to after this point \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \section{Expected Final Deliverables}
+Per the roadmap's FYP-II-final exit evidence: frozen held-out results, a recorded acceptance
+decision from the user tasks, a deployed release passing the NFR-2 clean-install check, and a
+one-command reproducibility bundle. CDR ships only as V1 first, and only if its own gates (ranking
+quality, explanation correctness, the committed core's Final-1 exit criteria) are met --- its
+absence does not block any of the other deliverables, by design (``remove CDR and the product
+still delivers its contribution,''
+\path{docs/07-Defense/decisions/cdr-gated-module.md}).
