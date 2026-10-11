@@ -1,0 +1,55 @@
+@startuml outcome_decision
+' Outcome decision table, exactly as implemented in eval/outcome.py's decide()
+' on main today (2026-10-11) -- built only, no FYP-2 branches invented.
+' First match wins, top to bottom.
+skinparam dpi 200
+
+start
+if (source_integrity.passed?) then (no)
+  :UNRESOLVED\n(SOURCE_INTEGRITY_FAILED);
+  stop
+else (yes)
+endif
+
+if (isolation_successes >= 1?) then (yes)
+  :UNRESOLVED\n(VICTIM_FAILS_ALONE);
+  stop
+else (no)
+endif
+
+if (sequence_successes == 0?) then (yes)
+  if (sequence_failures_any == 0?) then (yes)
+    if (infrastructure_failures > 0?) then (yes)
+      :UNRESOLVED\n(INFRASTRUCTURE_FAILURE)\n[row 3b: clean sequence,\ncrash elsewhere, e.g. alone check];
+      stop
+    else (no)
+      :UNRESOLVED\n(NOT_REPRODUCED)\n[row 3a];
+      stop
+    endif
+  else (no)
+    if (sequence_failures_any == infrastructure_failures?) then (yes)
+      :UNRESOLVED\n(INFRASTRUCTURE_FAILURE)\n[row 3c: every failure\nwas a crash/timeout];
+      stop
+    else (no)
+      :UNRESOLVED\n(SIGNATURE_MISMATCH)\n[row 3d];
+      stop
+    endif
+  endif
+else (no, sequence_successes >= 1)
+endif
+
+if (resource_edge_exists?) then (no)
+  :UNRESOLVED\n(NO_SUPPORTED_RESOURCE_EVIDENCE);
+  stop
+else (yes)
+endif
+
+if (Wilson lower bound >= lower_bound_threshold\n(default 0.70)?) then (yes)
+  :VERIFIED;
+  stop
+else (no)
+  :CANDIDATE;
+  stop
+endif
+
+@enduml
