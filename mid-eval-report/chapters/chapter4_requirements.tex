@@ -7,22 +7,238 @@
 % ===========================================================================
 \chapter{Software Requirements}
 \section{User Interactions / Use Cases}
+FlakeTrace has two actors. A \textbf{Developer} invokes it directly against a failing test
+they are investigating. A \textbf{CI Pipeline} invokes it the same way, on demand for a known
+failing test rather than on every build --- Non-Functional Requirement NFR-1 (Section
+\ref{ch4:sec:nfr}) is the reason: our stakeholders' own CI-time budgets rule out running it on
+every successful build. Both actors drive the same seven use cases (Figure
+\ref{ch4:fig:usecases}): submit a diagnosis request, through to receiving a typed certificate.
+
 \section{Use Case Diagram}
 % Use case diagram (M3): diagrams/m3/use_cases.puml -> figures/m3/use_cases.png
 \begin{figure}[H]\centering
   \includegraphics[width=0.85\textwidth]{figures/m3/use_cases}
   \caption{FlakeTrace use case diagram}\label{ch4:fig:usecases}
 \end{figure}
+Figure \ref{ch4:fig:usecases} shows the whole committed project, not only what Iteration 1
+delivers: every use case carries the \texttt{<<iteration 1>>} stereotype because all seven are
+implemented on \texttt{main} today, but the attached notes mark exactly which part of each
+FR's full commitment is still FYP-2 work (container sandboxing, the filesystem resource
+family, the cost-aware adaptive search policy, and NFR-2's clean-machine deployment check) ---
+checked against the real code (\texttt{runner/}, \texttt{evidence/}) while drawing this
+diagram, not assumed from the proposal.
 \section{Detailed Use Cases}
+Table \ref{ch4:tab:usecases} summarises each use case from Figure \ref{ch4:fig:usecases}: who
+starts it, what it does, and which functional requirement it traces to. UC2--UC6 are not
+started directly by an actor --- they are \texttt{<<include>>}d in sequence by UC1, as the
+diagram shows. Full use-case descriptions (preconditions, main flow, postconditions) are in
+Appendix \ref{app:requirements}, Section \ref{appb:sec:usecases}, to keep this chapter
+readable.
+
+\begin{table}[H]\centering
+\caption{Use cases, actors and functional-requirement trace}\label{ch4:tab:usecases}
+\begin{tabular}{p{1.4cm}p{2.6cm}p{7.2cm}p{1.3cm}}
+\toprule
+\textbf{ID} & \textbf{Actor(s)} & \textbf{Description} & \textbf{Traces to} \\
+\midrule
+UC1 & Developer, CI Pipeline & Submit a diagnosis request: a pinned commit, Maven module,
+  target test and execution budget & FR-1 \\
+UC2 & (included by UC1) & Run the declared test order in one fresh JVM & FR-2 \\
+UC3 & (included by UC2) & Collect resource events (static fields, system properties) for
+  that run, attributed to the test methods involved & FR-3 \\
+UC4 & (included by UC3) & Rank and run candidate predecessors to find the one(s) that
+  reproduce the failure & FR-4 \\
+UC5 & (included by UC4) & Minimise the reproducing order to a 1-minimal sequence and verify
+  it with repeated clean replays & FR-5 \\
+UC6 & (included by UC5) & Receive the Verified / Candidate / Unresolved certificate with its
+  typed reason and evidence & FR-6 \\
+UC7 & Developer, CI Pipeline & Invoke FlakeTrace via its CLI and consume a CI-compatible exit
+  code & FR-7 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \section{Functional Requirements}
-\subsection{Module 1}
-\subsection{Module 2}
-\section{Non-Functional Requirements}
+FlakeTrace's seven functional requirements form one committed core pipeline rather than two
+independently deliverable modules, so Table \ref{ch4:tab:fr} presents them as a single
+sequence, in the order the use cases execute them. Each acceptance check is the objective,
+testable condition from \texttt{docs/02-Requirements/functional.md}; the \textbf{Status} column
+states what Iteration 1 actually delivers today, checked against the real code in
+\texttt{runner/} and \texttt{evidence/} rather than assumed from the proposal (consistent with
+Figure \ref{ch4:fig:usecases}'s notes). Section \ref{ch4:sec:traceability} links every row to
+the file(s) and test(s) that back it.
+
+\begin{longtable}{p{0.9cm}p{4.6cm}p{5.0cm}p{3.8cm}}
+\caption{Functional requirements, acceptance checks and Iteration-1 status}\label{ch4:tab:fr}\\
+\toprule
+\textbf{ID} & \textbf{Requirement} & \textbf{Acceptance Check} & \textbf{Iteration-1 Status} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{ID} & \textbf{Requirement} & \textbf{Acceptance Check} & \textbf{Iteration-1 Status} \\
+\midrule
+\endhead
+FR-1 & Accept a pinned commit, module, target test and budget; validate the project, discover
+  tests, record the environment & A frozen, reproducible case identity is emitted and stored &
+  \textbf{Done.} Environment (commit, JDK, OS) recorded in every execution record. \\
+FR-2 & Execute declared test orders in a sandboxed container, one fresh JVM per order & Outcomes
+  normalised to a failure signature; budgets/timeouts enforced; cleanup verified &
+  \textbf{Partial.} One fresh JVM per order: done, tested. Sandboxed container: \textbf{not
+  built} --- planned FYP-2. \\
+FR-3 & Collect bounded resource events for the three committed resource families, attributed to
+  test boundaries, at configurable analysis depth & Every reported event names the resource
+  identifier and bytecode offset; events outside a test boundary are recorded as such &
+  \textbf{Partial.} Static fields + system properties, depth 1--5 (auto-deepening): done,
+  tested. Filesystem paths: \textbf{not built} --- planned FYP-2. \\
+FR-4 & Rank candidates and select the next experiment by expected information gain per unit
+  cost & Two policies implemented: ranked one-by-one and cost-aware adaptive. Both evaluated &
+  \textbf{Partial.} Ranked one-by-one + delta-debugging minimisation: done, tested. Cost-aware
+  adaptive policy: \textbf{not built} --- planned FYP-2. \\
+FR-5 & Minimise the reproducing order with 1-minimality deletion checks, then verify by repeated
+  clean replay with a Wilson interval & Deletion-minimality rate measured; multi-test candidates
+  preserved rather than discarded & \textbf{Done.} \\
+FR-6 & Emit Verified / Candidate / Unresolved with a typed reason, a human-readable report, the
+  exact replay command, and the evidence bundle & Contents per the certificate contract; no
+  numeric confidence score & \textbf{Partial.} Typed outcome, full evidence bundle,
+  schema-validated: done, tested. \textbf{Gap found while drafting this table:} the schema has
+  no literal replay-command field --- \texttt{reduced\_sequence} gives the ordered test list,
+  but nothing serialises it into a runnable command string. \\
+FR-7 & Provide a CLI with CI-compatible exit codes, installable on clean Linux from documentation
+  & See NFR-2 & \textbf{Partial.} CLI + exit codes: done, tested. Clean-Linux install verified by
+  a third party (NFR-2): \textbf{not attempted} --- a stated Final-2 (FYP-2) exit requirement. \\
+\bottomrule
+\end{longtable}
+
+\section{Non-Functional Requirements}\label{ch4:sec:nfr}
+
 \subsection{Reliability}
-\subsection{Usability}
-\subsection{Performance}
-\subsection{Security}
+A \textbf{Verified} certificate requires $\geq 18$ of 20 matching clean replays \emph{and} a
+Wilson 95\% lower bound $\geq 0.70$ on the reproduction rate --- both figures are stated in
+\texttt{docs/03-Design/certificate-contract.md} and implemented as the literal default
+threshold in \texttt{eval/outcome.py} (\texttt{DEFAULT\_LOWER\_BOUND\_THRESHOLD = 0.70}). The
+Wilson estimator itself is tested against \texttt{statsmodels} (\texttt{eval/tests/
+test\_stats.py}), not just asserted. We never report a single numeric confidence score ---
+reliability is always \emph{matching failures out of $N$ replays plus an interval}, per the
+certificate contract.
+
+The \textbf{non-perturbation control} (execute the passing and failing order, each
+uninstrumented and instrumented, requiring all four outcomes to match before any measurement is
+accepted) is \textbf{not yet implemented as a dedicated, automated check} in Iteration 1. It
+remains a committed requirement, not a dropped one: our own N2 timezone-sensitivity defect
+(\texttt{docs/evidence-m3.md}) is exactly the kind of self-inflicted-failure risk this control
+exists to catch, found instead by manual cross-platform re-measurement.
+
+\subsection{Instrumentation Overhead (NFR-1)}
+\todo{M3: no overhead threshold exists yet, deliberately -- \texttt{non-functional.md} states
+this explicitly rather than inventing a number before it is measured. Iteration 1's evidence
+collection is static-only (\texttt{javap} bytecode reads, no code is instrumented or executed
+differently because of FlakeTrace), so there is no runtime overhead to measure yet: this NFR
+becomes testable once Iteration 2 adds runtime instrumentation, if static evidence proves
+insufficient (\texttt{docs/03-Design/decisions/ADR-001-iteration1-evidence-without-
+instrumentation.md}). The envelope from stakeholder interviews (5--15 min PR-CI tolerance,
+SH1; 30 min opt-in, SH3) is recorded as context, not a current measurement.}
+
+\subsection{Security and Usability}
+\textbf{Security.} \texttt{non-functional.md}'s security requirements (rootless containers, no
+network during test execution, resource limits, redaction) describe the \textbf{committed,
+containerised Iteration-1-and-beyond runtime} --- checked against the real code
+(\texttt{grep -rn "redact\textbackslash{}|rootless\textbackslash{}|sandbox" runner/ evidence/
+eval/}), none of it exists yet: Iteration 1 runs tests as a native JVM process
+(\texttt{runner/order\_runner.py}), not inside any container. This is a real, stated gap, not a
+silent one: every real diagnosis still runs real project code locally, so the committed
+sandboxing work is squarely FYP-2 scope, named on the cut list in
+\texttt{docs/02-Requirements/scope-boundary.md} if the team is behind at Final-1.
+
+\textbf{Usability.} The proposal's brief described four generic abstention reasons (unsupported
+resource, budget exhausted, unstable build, inconsistent outcomes --- \texttt{docs/03-Design/
+certificate-contract.md}). What Iteration 1 actually built in \texttt{eval/outcome.py} is a
+\textbf{richer, different} typed-reason enum with six reasons the decision table can actually
+emit (\texttt{VICTIM\_FAILS\_ALONE}, \texttt{NOT\_REPRODUCED}, \texttt{SIGNATURE\_MISMATCH},
+\texttt{INFRASTRUCTURE\_FAILURE}, \texttt{NO\_SUPPORTED\_RESOURCE\_EVIDENCE},
+\texttt{SOURCE\_INTEGRITY\_FAILED}) plus one reserved for forward compatibility
+(\texttt{BELOW\_CONFIDENCE\_THRESHOLD}, never emitted --- \texttt{CANDIDATE} is used instead,
+a team decision recorded in \texttt{docs/contracts/report-schema.md}). This is a deliberate
+scope change from the proposal, not a drift we are hiding: every reason still maps to a
+different, concrete next action for the developer, which was the brief's actual usability
+requirement.
+
 \section{Acceptance Criteria}
-Define objective acceptance checks for important requirements.
-\section{Requirements Traceability}
-Trace important requirements to modules, design elements, implementation, and tests.
+Table \ref{ch4:tab:acceptance} reproduces the project's success criteria (\texttt{docs/02-
+Requirements/non-functional.md}, Q71) with an honest Iteration-1 status against each one ---
+some are met structurally by how \texttt{eval/outcome.py} is written, others are genuinely
+unmeasured yet.
+
+\begin{longtable}{p{4.3cm}p{3.6cm}p{5.8cm}}
+\caption{Success criteria and Iteration-1 status}\label{ch4:tab:acceptance}\\
+\toprule
+\textbf{Criterion} & \textbf{Target} & \textbf{Iteration-1 Status} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Criterion} & \textbf{Target} & \textbf{Iteration-1 Status} \\
+\midrule
+\endhead
+Verified threshold & $\geq 18/20$ replays, Wilson lower bound $\geq 0.70$ & \textbf{Met by
+  construction.} \texttt{decide()} cannot reach \texttt{VERIFIED} any other way; tested in
+  \texttt{eval/tests/test\_outcome.py}. \\
+Deletion checks & Every Verified sequence passes 1-minimality & \textbf{Met.} \texttt{ddmin}
+  (ADR-007) guarantees this for every multi-polluter case; real F3 case confirms it. \\
+Explanation & Every Verified explanation includes a test$\to$resource$\to$test path &
+  \textbf{Met by construction.} \texttt{decide()} requires a non-null resource edge before
+  \texttt{VERIFIED} is reachable. \\
+Controls & No false confident diagnosis on non-OD controls & \textbf{Partially measured.} All
+  3 negative controls in the fixture (N1, N2, N3) correctly abstain, never \texttt{VERIFIED}
+  (\texttt{fixtures/od-fixture/ground\_truth.json}). Not yet measured on a larger corpus. \\
+Cost reduction vs.\ baseline ($\geq 25\%$ lower median invocations) & $\geq 25\%$ & \textbf{Open
+  --- claim B11.} Our own random-order baseline now runs for real on F1--F4 (found the bug in
+  1--3 shuffles every trial); published-tool comparators (iFixFlakies, iDFlakies) are not yet
+  integrated, so the rigorous paired comparison this criterion requires is not yet possible. \\
+Success-at-budget ($\leq 5$pp lower, paired CIs) & $\leq 5$pp & \textbf{Open --- same claim
+  B11 gap.} \\
+Instrumentation overhead & Below a stakeholder-accepted threshold & \textbf{Open, no number
+  yet} --- see NFR-1 (Section \ref{ch4:sec:nfr}). \\
+\bottomrule
+\end{longtable}
+
+\section{Requirements Traceability}\label{ch4:sec:traceability}
+Table \ref{ch4:tab:traceability} traces every functional requirement to the real component,
+file(s) and test file(s) that implement and verify it, extending \texttt{functional.md}'s own
+component/owner table with the file-level detail the rubric asks for. Every file and test name
+was confirmed to exist in the repository before being written here (\texttt{ls runner/tests
+evidence/tests eval/tests}), not assumed from memory. M3's evaluation infrastructure
+(\texttt{eval/stats.py}, \texttt{eval/outcome.py}) underpins the acceptance check for every row,
+not just FR-5 and FR-6 where it is the primary implementer --- it is what turns each other
+component's raw counts into the objective pass/fail decision this chapter requires.
+
+\begin{longtable}{p{0.8cm}p{3.5cm}p{3.6cm}p{3.6cm}p{2.2cm}}
+\caption{Requirements traceability: FR $\to$ component $\to$ file $\to$ test}\label{ch4:tab:traceability}\\
+\toprule
+\textbf{FR} & \textbf{Component (owner)} & \textbf{File(s)} & \textbf{Test(s)} & \textbf{Status} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{FR} & \textbf{Component (owner)} & \textbf{File(s)} & \textbf{Test(s)} & \textbf{Status} \\
+\midrule
+\endhead
+FR-1 & Project adapter, discovery (M2) & \texttt{runner/diagnose.py}, \texttt{runner/
+  discovery.py} & \texttt{test\_diagnose.py}, \texttt{test\_discovery.py} & Done \\
+FR-2 & Sandbox runner (M2) & \texttt{runner/order\_runner.py} & \texttt{test\_order\_runner.py}
+  & Partial \\
+FR-3 & Evidence collector (M1) & \texttt{evidence/extract.py} & \texttt{test\_extract.py} &
+  Partial \\
+FR-4 & Diagnosis planner (M2) & \texttt{runner/search.py}, \texttt{runner/orders.py} &
+  \texttt{test\_search.py}, \texttt{test\_orders.py} & Partial \\
+FR-5 & Minimiser, verifier (M2); statistics (M3) & \texttt{runner/minimise.py},
+  \texttt{runner/verify.py}, \texttt{eval/stats.py} & \texttt{test\_minimise.py},
+  \texttt{eval/tests/test\_stats.py} & Done \\
+FR-6 & Certificate generator (M3, evidence path M1) & \texttt{eval/outcome.py},
+  \texttt{eval/report.py}, \texttt{eval/schema/report.schema.json} &
+  \texttt{eval/tests/test\_outcome.py}, \texttt{test\_report.py},
+  \texttt{test\_schema\_validator.py} & Partial \\
+FR-7 & CLI / CI adapter (M2) & \texttt{runner/cli.py} & \texttt{test\_cli.py} & Partial \\
+\bottomrule
+\end{longtable}
+
+\noindent Full acceptance-check wording and the specific FYP-2 gap behind every \textbf{Partial}
+is in Table \ref{ch4:tab:fr}; this table exists to let a reader (or the supervisor) go straight
+from a requirement to the code and test that back it, without re-deriving the mapping.
