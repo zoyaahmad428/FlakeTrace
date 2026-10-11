@@ -470,5 +470,34 @@ rule as it is implemented in \texttt{eval/outcome.py}.
   teams do not use Java (Section~\ref{ch1:sec:context}); an interview with a Java developer is
   planned after the Mid evaluation.
 \end{itemize}
-\section{Ethical, Legal and DEI Considerations}
-Document relevant ethical, legal, accessibility, privacy, or diversity considerations where applicable.
+\section{Ethical, Legal and DEI Considerations}\label{ch1:sec:ethics}
+\paragraph{Legal.} Every project FlakeTrace is evaluated on is open source, and its licence is
+recorded: the proof of concept used json-iterator (MIT) and fastjson (Apache-2.0). Source code is
+fetched by script at a pinned commit and never redistributed; the team's evidence contains
+manifests, logs, results and its own code, not third-party source. The IDoFT catalogue
+\cite{idoft} is public research data with no personal information.
+
+\paragraph{Ethics.} Three issues apply.
+\begin{itemize}
+\item \textbf{Running other people's code.} Diagnosing a failure means executing the project's
+  tests. Iteration~1 runs them as an ordinary local JVM process, so it should only be used on code
+  the user already runs. The committed containerised runner (rootless, network disabled, resource
+  limits, redaction of paths and credentials) is planned for a later iteration
+  (Section~\ref{ch1:sec:scope}).
+\item \textbf{Handling code and test output.} Test output can contain proprietary details or
+  credentials. FlakeTrace is self-hosted, so nothing leaves the user's machine, and it never writes
+  to the analysed project.
+\item \textbf{Responsible claims.} A confident but wrong diagnosis can make a developer change
+  working code. FlakeTrace never claims definitive causality: it reports evidence, its limits and a
+  reproduction rate, and abstains with a typed reason when the evidence is insufficient.
+\end{itemize}
+The practitioner interviews were voluntary questionnaires about process and timing only; no
+source code, credentials or customer data were requested. Two participants are identified by role
+only until they confirm how they wish to be named. The team's use of generative AI is recorded in
+each member's log and in \texttt{docs/08-MidEval/genai-register.md}.
+
+\paragraph{Diversity and inclusion.} FlakeTrace is free to run and needs no cloud subscription, GPU
+or paid API, so teams and institutions with few resources can use it. Diagnosing order-dependent
+failures today depends on scarce senior expertise; a checkable report makes that diagnosis
+available to less experienced developers. A plain-language explanation mode, aimed at junior
+developers and non-native English speakers, is in the supporting scope but not yet built.
