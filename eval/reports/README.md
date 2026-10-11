@@ -15,8 +15,11 @@ JDK on `PATH`, same requirements as `runner/`).
 | --- | --- | --- |
 | `f1.json` | `odfixture.ConfigVictimTest#expectsDefaultMode` | `VERIFIED` (20/20 reproduced, 0/20 alone, real resource edge) |
 | `f2.json` | `odfixture.FeatureVictimTest#expectsTurboDisabled` | `VERIFIED` (20/20 reproduced, 0/20 alone, real resource edge via a helper call, `FeatureFlags.isTurboEnabled`) |
+| `f3.json` | `odfixture.ToggleVictimTest#expectsNotBothFlagsSet` | `VERIFIED` (20/20 reproduced, 0/20 alone; two polluters, both required — `ddmin` minimisation, ADR-007; `flagA` shown, `flagB` named in `limitations`) |
+| `f4.json` | `odfixture.AlwaysEarlyVictimTest#expectsLateFlagUnset` | `VERIFIED` (20/20 reproduced, 0/20 alone; the discovered order never reproduces this on its own — found only through a shuffled order, seed 1, ADR-008) |
 | `n1.json` | `odfixture.NegativeAloneFailTest#alwaysFails` | `UNRESOLVED(VICTIM_FAILS_ALONE)` (20/20 alone-failures) |
 | `n2.json` | `odfixture.NegativeFlakyTest#sometimesFails` | `UNRESOLVED(VICTIM_FAILS_ALONE)` (intermittent by design — 9/20 alone-successes in the committed run; the exact count varies run to run, as N2's whole point requires) |
+| `n3.json` | `odfixture.EnvDependentNegativeTest#onlyFailsUnderCI` | `UNRESOLVED(NOT_REPRODUCED)` (0/20 in the discovered order, 0/20 across 31 shuffled orders, 0/20 alone — the externally-caused failure this models genuinely never reproduces under FlakeTrace's control, ADR-008) |
 
 Each report's `execution_record_reference` points at a raw per-run JSONL execution record
 (`runner.recording.RecordingRunner`) under a local `flaketrace-records/` folder — one real JVM
@@ -39,10 +42,11 @@ if a portable reference is wanted later.
 
 ## What's NOT here yet
 
-F3 only — it needs multi-polluter search, not implemented by Member 2 yet (`W10`). That is an
-open item tracked in `docs/evidence-m3.md`, not invented or worked around.
+Nothing from the OD fixture — all 7 cases (F1-F4, N1-N3) now have a real report. Only the
+`idoft` benchmark cases (`eval/benchmark/manifest.json`) remain unrun; they are still
+metadata-only (not cloned/built), tracked separately, not in this folder.
 
-F2 and N2 **are** here now, both added after being blocked:
+F2, F3, F4, N2 and N3 were each added here after being blocked on a real dependency landing:
 
 - F2 needed `--depth 2` (the contract default, already implemented by Member 1), not a depth
   Member 1 hadn't built. This script was wrongly calling `analyse_test` with `depth=1`, which
@@ -55,6 +59,17 @@ F2 and N2 **are** here now, both added after being blocked:
   deterministically even on some hardware. After Member 3 fixed that mechanism and Member 2
   confirmed it now reliably reports `VICTIM_FAILS_ALONE` on every platform tested, N2 needed
   no new code here — `assemble_report` already handles that status.
+- F3 needed multi-polluter search (W10, `ddmin`, ADR-007, Member 2's PR #35/#38/#40) before a
+  single-polluter search could ever find both required polluters together. This script now
+  gets its resource fields from `runner.cli.resource_fields()` (not a hand-rolled
+  `analyse_pair`/`report_fields` call per polluter) so F3's two-polluter combination (ADR-007's
+  `combine_fields`) is exactly what the real `py -m runner diagnose` CLI does, not a
+  reimplementation of it.
+- F4 and N3 needed ADR-008's order-search step (Member 2's PR #49: `--order`/shuffled orders,
+  the alone check always run) before `diagnose()` could either find F4's bug (the discovered
+  order alone never reproduces it — only a shuffle does, seed 1) or build a real
+  `NOT_REPRODUCED` report for N3 (this module's own `assemble_report` guard against `alone_n
+  == 0`, landed the same day, PR #52).
 
 ## Depth: `analyse_pair()`, not separate `analyse_test()`+`find_edges()` calls
 

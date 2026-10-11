@@ -1,0 +1,154 @@
+{
+  "victim": {
+    "class": "odfixture.ToggleVictimTest",
+    "method": "expectsNotBothFlagsSet"
+  },
+  "polluters": [
+    {
+      "class": "odfixture.ToggleAPolluterTest",
+      "method": "setFlagA"
+    },
+    {
+      "class": "odfixture.ToggleBPolluterTest",
+      "method": "setFlagB"
+    }
+  ],
+  "original_failing_order": [
+    {
+      "class": "odfixture.AlwaysEarlyVictimTest",
+      "method": "expectsLateFlagUnset"
+    },
+    {
+      "class": "odfixture.ConfigPolluterTest",
+      "method": "pollute"
+    },
+    {
+      "class": "odfixture.ConfigVictimTest",
+      "method": "expectsDefaultMode"
+    },
+    {
+      "class": "odfixture.EnvDependentNegativeTest",
+      "method": "onlyFailsUnderCI"
+    },
+    {
+      "class": "odfixture.FeaturePolluterTest",
+      "method": "enableTurbo"
+    },
+    {
+      "class": "odfixture.FeatureVictimTest",
+      "method": "expectsTurboDisabled"
+    },
+    {
+      "class": "odfixture.MathUtilTest",
+      "method": "squaresANumber"
+    },
+    {
+      "class": "odfixture.MathUtilTest",
+      "method": "addsTwoNumbers"
+    },
+    {
+      "class": "odfixture.NegativeAloneFailTest",
+      "method": "alwaysFails"
+    },
+    {
+      "class": "odfixture.NegativeFlakyTest",
+      "method": "sometimesFails"
+    },
+    {
+      "class": "odfixture.StringUtilTest",
+      "method": "detectsPalindrome"
+    },
+    {
+      "class": "odfixture.StringUtilTest",
+      "method": "reversesAString"
+    },
+    {
+      "class": "odfixture.ToggleAPolluterTest",
+      "method": "setFlagA"
+    },
+    {
+      "class": "odfixture.ToggleBPolluterTest",
+      "method": "setFlagB"
+    },
+    {
+      "class": "odfixture.ToggleVictimTest",
+      "method": "expectsNotBothFlagsSet"
+    }
+  ],
+  "reduced_sequence": [
+    {
+      "class": "odfixture.ToggleAPolluterTest",
+      "method": "setFlagA"
+    },
+    {
+      "class": "odfixture.ToggleBPolluterTest",
+      "method": "setFlagB"
+    },
+    {
+      "class": "odfixture.ToggleVictimTest",
+      "method": "expectsNotBothFlagsSet"
+    }
+  ],
+  "reproduction": {
+    "successes": 20,
+    "n": 20,
+    "confidence": 0.95,
+    "lower": 0.83887484172924,
+    "upper": 1.0
+  },
+  "sequence_any_signature_failures": 20,
+  "victim_alone": {
+    "successes": 0,
+    "n": 20,
+    "confidence": 0.95,
+    "lower": 0.0,
+    "upper": 0.16112515827076002
+  },
+  "shared_resource": {
+    "kind": "static-field",
+    "class": "odfixture.Toggles",
+    "field": "flagA"
+  },
+  "polluter_write_location": {
+    "class": "odfixture.ToggleAPolluterTest",
+    "method": "setFlagA",
+    "bytecode_offset": 1
+  },
+  "victim_read_location": {
+    "class": "odfixture.ToggleVictimTest",
+    "method": "expectsNotBothFlagsSet",
+    "bytecode_offset": 0
+  },
+  "failure_signature": {
+    "exception_type": "java.lang.AssertionError",
+    "message": "",
+    "stack_trace": "org.junit.Assert.fail:87\norg.junit.Assert.assertTrue:42\norg.junit.Assert.assertFalse:65\norg.junit.Assert.assertFalse:75\nodfixture.ToggleVictimTest.expectsNotBothFlagsSet:14"
+  },
+  "instrumentation_level": "static-only",
+  "execution_record_reference": "C:\\Users\\zarpa\\OneDrive\\Documents\\GitHub\\FlakeTracee\\eval\\reports\\flaketrace-records\\20261011T085539Z-odfixture.ToggleVictimTest#expectsNotBothFlagsSet.jsonl",
+  "source_integrity": {
+    "passed": true,
+    "details": "23 files hashed (SHA-256) before and after; all identical"
+  },
+  "outcome": "VERIFIED",
+  "unresolved_reason": null,
+  "limitations": [
+    "instrumentation_level is static-only (Iteration 1); runtime instrumentation is Iteration 2.",
+    "Static analysis only; no runtime evidence (Iteration 2).",
+    "Calls into JDK classes and third-party jars are not followed.",
+    "Virtual dispatch to subclasses and reflection are not resolved (see VIRTUAL_DISPATCH, REFLECTION).",
+    "Only static fields and constant-key system properties are modelled. Files, environment variables, network, databases, singletons reached through instance fields, etc. are not.",
+    "Written values are not modelled: a polluter that writes and then restores the original value still produces a WRITE.",
+    "Execution timing is not modelled (e.g. a victim <clinit> read that happens before the polluter runs).",
+    "Missing evidence is not proof of independence.",
+    "Polluter odfixture.ToggleBPolluterTest#setFlagB: shared resource odfixture.Toggles#flagB is not shown in this report"
+  ],
+  "order_exploration": {
+    "order_given": false,
+    "shuffled_orders_tried": 0,
+    "orders_exhausted": false,
+    "seed_base": 0,
+    "reproducing_seed": null,
+    "infrastructure_failures": 0
+  }
+}

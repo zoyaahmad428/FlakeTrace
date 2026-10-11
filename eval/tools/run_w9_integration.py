@@ -1,5 +1,5 @@
-"""W9 end-to-end integration: produce real, pipeline-assembled diagnosis reports for F1, F2,
-N1 and N2.
+"""W9 end-to-end integration: produce real, pipeline-assembled diagnosis reports for F1-F4,
+N1, N2 and N3.
 
 One-off script, not part of the unit test suite (it shells out to real Maven/JDK via
 runner.diagnose and runner.OrderRunner, and takes a few minutes). Run manually:
@@ -34,6 +34,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from eval.baseline import TestIdentifier
 from eval.report import assemble_report
 from evidence.extract import Project, analyse_pair, report_fields
+from runner.cli import resource_fields as cli_resource_fields
 from runner.diagnose import diagnose
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -84,6 +85,54 @@ def run_f2():
     return report
 
 
+def run_f3():
+    victim = TestIdentifier("odfixture.ToggleVictimTest", "expectsNotBothFlagsSet")
+    print("=== F3: running diagnose() for real (n=20) ===")
+    diagnosis = diagnose(FIXTURE, victim, n=20, record_dir=str(RECORD_DIR))
+    print(diagnosis)
+
+    print("=== F3: resource evidence for both polluters, combined (ADR-007) ===")
+    fields = cli_resource_fields(FIXTURE, diagnosis)
+    print("resource fields:", fields)
+
+    report = assemble_report(diagnosis, fields)
+    print("=== F3 report ===")
+    print(json.dumps(report, indent=2))
+    (REPORTS_DIR / "f3.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    return report
+
+
+def run_f4():
+    victim = TestIdentifier("odfixture.AlwaysEarlyVictimTest", "expectsLateFlagUnset")
+    print("=== F4: running diagnose() for real (n=20) -- the discovered order never "
+          "reproduces this; ADR-008's shuffle search must find it ===")
+    diagnosis = diagnose(FIXTURE, victim, n=20, record_dir=str(RECORD_DIR))
+    print(diagnosis)
+
+    print("=== F4: resource evidence for its polluter (ADR-007's combine_fields, one polluter) ===")
+    fields = cli_resource_fields(FIXTURE, diagnosis)
+    print("resource fields:", fields)
+
+    report = assemble_report(diagnosis, fields)
+    print("=== F4 report ===")
+    print(json.dumps(report, indent=2))
+    (REPORTS_DIR / "f4.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    return report
+
+
+def run_n3():
+    victim = TestIdentifier("odfixture.EnvDependentNegativeTest", "onlyFailsUnderCI")
+    print("=== N3: running diagnose() for real (n=20) -- expected to never reproduce ===")
+    diagnosis = diagnose(FIXTURE, victim, n=20, record_dir=str(RECORD_DIR))
+    print(diagnosis)
+
+    report = assemble_report(diagnosis)  # no resource edge: N3 needs none
+    print("=== N3 report ===")
+    print(json.dumps(report, indent=2))
+    (REPORTS_DIR / "n3.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    return report
+
+
 def run_n1():
     victim = TestIdentifier("odfixture.NegativeAloneFailTest", "alwaysFails")
     print("=== N1: running diagnose() for real (n=20) ===")
@@ -114,10 +163,16 @@ if __name__ == "__main__":
     REPORTS_DIR.mkdir(exist_ok=True)
     f1 = run_f1()
     f2 = run_f2()
+    f3 = run_f3()
+    f4 = run_f4()
     n1 = run_n1()
     n2 = run_n2()
+    n3 = run_n3()
     print("\n=== SUMMARY ===")
     print("F1 outcome:", f1["outcome"], f1["unresolved_reason"])
     print("F2 outcome:", f2["outcome"], f2["unresolved_reason"])
+    print("F3 outcome:", f3["outcome"], f3["unresolved_reason"])
+    print("F4 outcome:", f4["outcome"], f4["unresolved_reason"])
     print("N1 outcome:", n1["outcome"], n1["unresolved_reason"])
     print("N2 outcome:", n2["outcome"], n2["unresolved_reason"])
+    print("N3 outcome:", n3["outcome"], n3["unresolved_reason"])
