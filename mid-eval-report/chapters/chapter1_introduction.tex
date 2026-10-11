@@ -116,8 +116,58 @@ three properties of the complete product:
   executions and then stops. Planned for FYP-2.
 \end{enumerate}
 The benchmark evaluation against published baselines named in the statement is also FYP-2 work.
-\section{Project Objectives}
-List measurable project objectives.
+\section{Project Objectives}\label{ch1:sec:objectives}
+Each objective below has a measure that can be checked, and a status. Iteration~1 results are from
+the seven committed fixture reports in \texttt{eval/reports/} (Table~\ref{ch8:tab:fixture-results});
+the requirements behind each objective are in Table~\ref{ch4:tab:fr}.
+
+{\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.05\textwidth}>{\raggedright\arraybackslash}p{0.31\textwidth}>{\raggedright\arraybackslash}p{0.30\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}@{}}
+\caption{Project objectives, their measures and status}\label{ch1:tab:objectives}\\
+\toprule
+\textbf{ID} & \textbf{Objective} & \textbf{Measure} & \textbf{Status} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{ID} & \textbf{Objective} & \textbf{Measure} & \textbf{Status} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+O1 & Find the polluter or polluters of a known order-dependent failure from one command. &
+Every seeded order-dependent fixture case ends \texttt{VERIFIED} with its true polluters. &
+Met on fixtures: F1--F4 \texttt{VERIFIED}, including F3's two polluters. Real projects: FYP-2. \\
+\addlinespace
+O2 & Never give a confident diagnosis that is not supported. &
+No \texttt{VERIFIED} result on any negative control. &
+Met on fixtures: N1--N3 all \texttt{UNRESOLVED} with a typed reason. \\
+\addlinespace
+O3 & Report how reliably the failure reproduces. &
+Every report gives the count out of 20 runs and a 95\% Wilson interval; \texttt{VERIFIED} needs a
+lower bound of at least 0.70, which means at least 19 of 20. &
+Built: F1--F4 reproduced 20/20 (interval 0.84--1.00). \\
+\addlinespace
+O4 & Explain the failure through shared state. &
+Every \texttt{VERIFIED} report names the resource and the bytecode locations of the polluter's
+write and the victim's read. &
+Met on fixtures for static fields and system properties; filesystem paths in FYP-2. \\
+\addlinespace
+O5 & Leave the analysed project unchanged. &
+File hashes before and after every diagnosis are equal. &
+Met: integrity check passed in all seven fixture reports. \\
+\addlinespace
+O6 & Diagnose at lower cost than existing approaches. &
+At least 25\% fewer test executions (median) than the strongest baseline, losing at most 5
+percentage points of success at the same budget. &
+FYP-2: needs the execution budget, candidate ranking and published baselines. \\
+\addlinespace
+O7 & Make results reproducible by others. &
+A frozen benchmark of real projects with yield and exclusions published, and a clean Linux
+install from the documentation. &
+FYP-2. \\
+\end{longtable}
+}
 \section{Project Scope}\label{ch1:sec:scope}
 Define included and excluded functionality.
 \section{Project Modules}
