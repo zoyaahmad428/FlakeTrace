@@ -172,12 +172,128 @@ parsing output.
 \textbf{not attempted} in Iteration 1 (Table \ref{ch4:tab:fr}).
 
 \section{Extended Non-Functional Tables}\label{appb:sec:nfr}
-\todo{M3: full security-requirements table and the complete success-criteria table (with
-status) from non-functional.md, drawn out in full here since Section \ref{ch4:sec:nfr} and
-Table \ref{ch4:tab:acceptance} only summarise them}
+This section extends Section \ref{ch4:sec:nfr}'s summary with the full security requirements
+table and success-criteria table from \texttt{docs/02-Requirements/non-functional.md}, each
+with an Iteration-1 status checked against the real code rather than copied unchanged.
+
+\subsection*{Security requirements}
+Every row below describes the \textbf{committed} execution environment for the project as a
+whole, not what Iteration 1 runs today. Checked by grepping \texttt{runner/}, \texttt{evidence/}
+and \texttt{eval/} for container, sandbox and redaction code: \textbf{none exists yet}.
+Iteration 1 runs the analysed project's real tests as a native JVM process on the host machine
+(\texttt{runner/order\_runner.py}) --- every row except Audit is therefore FYP-2 scope, stated
+plainly rather than implied as already satisfied.
+
+\begin{longtable}{p{2.2cm}p{8.0cm}p{3.5cm}}
+\caption{Security requirements and Iteration-1 status}\\
+\toprule
+\textbf{Requirement} & \textbf{Detail} & \textbf{Status} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Requirement} & \textbf{Detail} & \textbf{Status} \\
+\midrule
+\endhead
+Container & Rootless; no Docker socket mounted; Linux capabilities dropped; no privileged mode &
+  Not built --- FYP-2 \\
+Network & Disabled by default; allowlisted dependency-fetch stage separated from test execution
+  & Not built --- FYP-2 \\
+Limits & CPU, memory, PID, file-size and wall-time; process-group termination; verified cleanup
+  & Partial: a per-run timeout exists (\texttt{runner/order\_runner.py}'s
+  \texttt{timeout\_s}); resource/PID limits and verified cleanup --- not built, FYP-2 \\
+Filesystem & Read-only base; isolated writable workspace; no host home-directory mount & Not
+  built --- FYP-2 \\
+Secrets & No CI secrets, SSH agents or cloud credentials in the execution environment & Not
+  applicable yet: no network access exists to leak them over, but the stated boundary itself is
+  not enforced --- FYP-2 \\
+Data & Path and log redaction; configurable retention; source and artifacts remain self-hosted &
+  Self-hosted: true today (no component sends data anywhere). Redaction: not built --- FYP-2 \\
+Audit & Every command, image digest, input commit and environment variable & \textbf{Partial.}
+  Every execution record already captures the analysed project's git commit, whether it had
+  uncommitted changes, JDK version and OS (\texttt{runner/recording.py},
+  \texttt{runner.diagnose.environment()}). Image digest: not applicable yet (no container);
+  full environment-variable audit: not built. \\
+CDR additions & Only certificate-directed code slices may leave the machine, after redaction;
+  an on-premises disable flag; prompts/responses logged in full & Not applicable: CDR itself is
+  a gated FYP-2 module (\texttt{docs/07-Defense/decisions/cdr-gated-module.md}) that has not
+  started \\
+\bottomrule
+\end{longtable}
+
+\subsection*{Success criteria, with basis}
+Table \ref{ch4:tab:acceptance} already gives the Iteration-1 status for each criterion; this
+table adds the literature or policy basis behind each number, from
+\texttt{non-functional.md}.
+
+\begin{longtable}{p{3.6cm}p{2.6cm}p{6.0cm}}
+\caption{Success criteria with their basis}\\
+\toprule
+\textbf{Criterion} & \textbf{Value} & \textbf{Basis} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Criterion} & \textbf{Value} & \textbf{Basis} \\
+\midrule
+\endhead
+Cost reduction vs.\ baseline & $\geq 25\%$ lower median invocations, overlapping solvable
+  subset & \textbf{Project-set} success target, not a published finding; the comparator
+  baselines' own cost figures are literature-derived \\
+Success-at-budget & $\leq 5$pp lower than the strongest feasible comparator, paired CIs &
+  \textbf{Project-set}, reported with paired confidence intervals rather than averages (project
+  statistical policy) \\
+Verified certificate & $\geq 18/20$ clean replays, Wilson 95\% lower bound $\geq 0.70$ &
+  \textbf{Project policy}; the Wilson \emph{estimator} is literature-mandated (Brown, Cai \&
+  DasGupta --- Wald intervals' coverage is ``chaotic'' for small $n$), the \emph{threshold} is
+  ours, frozen before any held-out run \\
+Deletion checks & Every Verified sequence passes 1-minimality & Definitional: a sequence that
+  is not 1-minimal is, by the certificate contract, not eligible to be called Verified \\
+Explanation & Every Verified explanation includes a test$\to$resource$\to$test path in a
+  supported family & Same --- a resource edge is a structural precondition of
+  \texttt{VERIFIED} in \texttt{eval/outcome.py} \\
+Controls & No false confident diagnosis on non-OD controls & Measured directly against the
+  fixture's 3 negative controls (N1, N2, N3); no larger-corpus measurement yet \\
+Instrumentation overhead & Below a stakeholder-accepted threshold & \textbf{No number yet,
+  deliberately} (NFR-1); the stakeholder envelope (5--15 min PR-CI tolerance, SH1; 30 min
+  opt-in, SH3) is recorded as context for when it is measured, not a current figure \\
+\bottomrule
+\end{longtable}
 
 \section{Frozen Definitions Reference}\label{appb:sec:frozen}
-\todo{M3: reproduce functional.md's Frozen Definitions section (candidate set, order-dependent/
-polluter, failure signature, confirmation and cost unit, reproduced case, resource identifier,
-single-scan protocol) -- the FRs in chapter4 are, in its own words, ``meaningless without
-them''}
+\texttt{functional.md} states its own FRs are ``meaningless without'' these definitions, frozen
+in version control \emph{before} the first experiment ran. Reproduced here in summary for a
+reader who does not have \texttt{docs/02-Requirements/functional.md} open:
+
+\begin{itemize}
+  \item \textbf{Candidate set.} Every test method in the victim's Maven module except the
+    victim itself. A module over 300 such methods is capped to the victim's own package, and
+    the cap is declared as a limitation, not hidden.
+  \item \textbf{Order-dependent (polluter).} Candidate $c$ such that running $[c, v]$ in one JVM
+    reproduces victim $v$'s target failure, while $[v]$ alone passes.
+  \item \textbf{Failure signature.} (Exception class, normalised first line of the message,
+    topmost project-package stack frame), with digits, hex addresses, temporary paths and
+    timestamps masked. A timeout, compile error or out-of-memory is explicitly \textbf{not} the
+    same reproduction as the real target assertion failure.
+  \item \textbf{Confirmation and cost unit.} One confirmation = one execution of one candidate
+    order. Cost is counted in test-method invocations, not Maven launches, since one launch can
+    run anywhere from 5 to 5{,}000 tests.
+  \item \textbf{Reproduced case.} The victim passes alone in $\geq 10/10$ replays \emph{and}
+    fails with the matching signature in $\geq 9/10$ replays of the confirmed polluting order.
+  \item \textbf{Resource identifier.} \texttt{ownerInternalName.fieldName:descriptor} for static
+    fields only, direct references plus a declared number of hops into project-owned callees.
+    Attribution covers the test method, its class's \texttt{setUp}/\texttt{tearDown}, and its
+    \texttt{<clinit>}. Reflection, filesystem, system properties (outside the dedicated
+    system-property family), network and database state are recorded as
+    \textbf{unsupported}, never as zero-overlap --- absence of evidence is not evidence of
+    independence.
+  \item \textbf{Single-scan protocol.} The exhaustive scan for a case runs exactly once;
+    ground truth, every baseline and the ranked strategy are all computed offline from that one
+    outcome table. No strategy triggers a re-run of the scan itself.
+\end{itemize}
+
+\textbf{Amendment, disclosed unprompted (27 August 2026):} execution-context fidelity was added
+to the runner definition after the original definition produced false positives on
+suite-class-run Surefire configurations. The fix moved a result from 182 false polluters to 0,
+\emph{against} the team's own interest (a smaller, more defensible number), and changed neither
+the reproduction criterion nor any strategy's scoring. Recorded here exactly as
+\texttt{functional.md} records it, because the honesty rule is to volunteer corrections that cut
+against your own favour, not just the ones that help it.
