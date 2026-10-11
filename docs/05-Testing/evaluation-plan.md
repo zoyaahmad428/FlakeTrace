@@ -21,7 +21,7 @@ know the distinction cold.
 | **RQ4** | Are resource explanations correct and appropriately limited? | audited paths, precision and coverage, intervention consistency, unresolved rate |
 | **RQ5** | What engineering overhead and failure modes does the product introduce? | median/p95 overhead, failure taxonomy |
 | **RQ6** | Does the certificate improve a realistic diagnosis task for intended users? | acceptance task outcomes |
-| RQ7 *(gated)* | Does certificate conditioning improve automated repair over unconditioned prompting? | precision, coverage |
+| RQ7 *(gated)* | Does certificate conditioning improve suggested patches over unconditioned prompting? | precision, coverage |
 | RQ8 *(gated)* | Does the verification contract prevent unsafe repairs being reported as fixes? | adversarial patch-rejection rate |
 
 ## Baselines (Q70) — all of them

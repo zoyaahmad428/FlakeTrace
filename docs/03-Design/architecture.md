@@ -70,7 +70,8 @@ Diagram: `attachments/Block_Diagram_SysArch.png`
 | 8 | **CLI / CI adapter** | Starts a diagnosis, streams progress, publishes artifacts and exit states |
 
 Plus **CDR (gated)**: repair-context builder · patch generator (templated mandatory,
-model-based optional and ablatable) · patch verifier.
+model-based optional and ablatable) · patch verifier. Patches are suggestions: a developer
+reviews and applies them.
 
 ## The interdependence — always name this
 
@@ -104,7 +105,8 @@ That loop is:
 5. Minimiser reduces the failing order; verifier establishes the **replay interval**
 6. Generator emits Verified / Candidate / Unresolved
 7. **If and only if Verified**, CDR builds a repair context, retrieves code slices by certificate
-   location, generates a patch, applies it in an isolated workspace, runs the verification contract
+   location, generates a candidate patch, checks it on a disposable copy with the verification
+   contract, and gives the diff to a developer — the analysed project's source is never changed
 
 ## Ownership by component
 

@@ -18,9 +18,9 @@ Revision 2 adds a remediation module.
 **What was excluded:** *automatic source-code repair* — the system deciding on and applying a
 fix.
 
-**What CDR does:** consumes a **Verified** certificate and produces a ranked set of
-remediation options with the evidence supporting each. **A human evaluates and applies.**
-CDR does not modify source.
+**What CDR does:** for a **Verified** certificate only, it proposes a candidate patch, checks it
+by re-running the tests on a disposable copy, and gives the diff with its evidence to a
+developer. **A human reviews and applies.** CDR never changes the analysed project's source.
 
 > **Never say "automatically fixing" — even informally. One such phrase and the panel will
 > hold you to the stronger claim for the rest of the session.**
@@ -93,9 +93,10 @@ CDR is **first on the cut list** if we are behind at Final-1.
 ## Panel answer (Q82)
 
 > The exclusion stands and CDR does not violate it. What we excluded was automatic
-> source-code repair — the system deciding on and applying a fix. CDR does not modify source.
-> It consumes a Verified certificate and produces a ranked set of remediation options with the
-> evidence supporting each, which a human evaluates and applies.
+> source-code repair — the system deciding on and applying a fix. CDR never changes the
+> analysed project's source. For a Verified certificate it proposes a candidate patch, checks it
+> by re-running the tests on a disposable copy, and gives the diff with its evidence to a
+> developer, who reviews and applies it.
 >
 > It is also gated: it is not part of the committed core and does not begin until the core
 > pipeline reaches its exit criteria at Final-1. If the core is late, CDR does not ship and the

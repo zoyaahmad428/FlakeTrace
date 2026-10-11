@@ -7,9 +7,8 @@ interval, and the source verified unchanged. A negative control is correctly rep
 `UNRESOLVED`. *(This is the "before the supervisory mid-evaluation" milestone of the
 post-defence plan, §13.)*
 
-> ⚠ **Set the date.** The meeting is 12–16 October. Submission is **48 h before**. If the
-> meeting is 12 or 13 October, submission is **10–11 October** — use the *emergency cut*
-> below.
+> **Dates:** meeting **Friday 16 October, 8:30 AM**; submission (48 h before) **Wednesday
+> 14 October, 8:30 AM**. The *emergency cut* below is not needed.
 
 ## Work packages
 
@@ -32,7 +31,7 @@ post-defence plan, §13.)*
 
 *S = submission day (meeting − 48 h).*
 
-## Day plan (fill dates once the meeting is confirmed)
+## Day plan (S = Wed 14 Oct, Meeting −1 = Thu 15 Oct)
 
 | Day | M1 | M2 | M3 |
 | --- | --- | --- | --- |
