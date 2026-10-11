@@ -1016,3 +1016,36 @@ already-recorded real evidence (E11), not new bugs.
 Ownership checkpoint: be able to say, without checking anything, which Mid-Eval status docs
 were stale before this session (A8/A9, W4/W9/W14) and why — each had a "pending X" note that
 was already resolved weeks or days earlier by a merged PR, not an ongoing gap.
+
+## 2026-10-11 — Real F3/F4/N3 reports; fix stale eval/reports/README.md and members.md
+
+**What I asked:** Relayed Member 2 message: `eval/reports/` still only has f1/f2/n1/n2.json
+even though F3/F4/N3 have been real, reproducible outcomes since PR #49/#52 landed, and its
+README still says "F3 needs W10, not implemented yet"; also `members.md`'s M3 row still said
+a branch (PR #54) was unpushed after it had merged.
+
+**What was kept:** Used `runner.cli.resource_fields()` (Member 2's own public function) for
+F3/F4's resource evidence rather than writing a second combination function in my own script —
+checked it existed and did exactly what I needed (ADR-007's multi-polluter combine, already
+exercised by the real CLI) before using it, rather than re-deriving the logic myself.
+
+**How it was verified:** Real run, `py eval/tools/run_w9_integration.py` (native JDK 24, all 7
+cases): every outcome matched `ground_truth.json`'s `expected_outcome` exactly (F1-F4
+`VERIFIED`, N1/N2 `VICTIM_FAILS_ALONE`, N3 `NOT_REPRODUCED`). Specifically checked F3's two
+required polluters both appear (one shown, one named per ADR-007), F4's `reproducing_seed=1`,
+and N3's limitation text reads "discovered order (plus 31 shuffled order(s))" — the exact
+wording PR #52 fixed, now confirmed against a real `diagnose()` run rather than only the
+hand-built `DiagnosisRuns` objects that fix's own tests used. `py -m unittest discover -s
+eval/tests -v` -> 85/85, unaffected (sanity check).
+
+**Errors found:** Both gaps Member 2 named were real: `eval/reports/` was genuinely missing 3
+files, and `eval/reports/README.md`'s "What's NOT here yet" section was genuinely stale (said
+F3 was blocked on Member 2, when it had been unblocked for weeks — the committed files just
+hadn't been produced from the real run yet).
+
+**Rejections:** None.
+
+Ownership checkpoint: be able to explain why F3/F4's resource-evidence call goes through
+`runner.cli.resource_fields()` rather than a second hand-rolled combination here, and what
+`order_exploration.reproducing_seed=1` on F4's real report actually means (the discovered
+order alone never finds the bug; the first shuffle tried, seed 1, does).

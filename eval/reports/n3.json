@@ -1,0 +1,82 @@
+{
+  "victim": {
+    "class": "odfixture.EnvDependentNegativeTest",
+    "method": "onlyFailsUnderCI"
+  },
+  "polluters": [],
+  "original_failing_order": [
+    {
+      "class": "odfixture.AlwaysEarlyVictimTest",
+      "method": "expectsLateFlagUnset"
+    },
+    {
+      "class": "odfixture.ConfigPolluterTest",
+      "method": "pollute"
+    },
+    {
+      "class": "odfixture.ConfigVictimTest",
+      "method": "expectsDefaultMode"
+    },
+    {
+      "class": "odfixture.EnvDependentNegativeTest",
+      "method": "onlyFailsUnderCI"
+    }
+  ],
+  "reduced_sequence": [
+    {
+      "class": "odfixture.AlwaysEarlyVictimTest",
+      "method": "expectsLateFlagUnset"
+    },
+    {
+      "class": "odfixture.ConfigPolluterTest",
+      "method": "pollute"
+    },
+    {
+      "class": "odfixture.ConfigVictimTest",
+      "method": "expectsDefaultMode"
+    },
+    {
+      "class": "odfixture.EnvDependentNegativeTest",
+      "method": "onlyFailsUnderCI"
+    }
+  ],
+  "reproduction": {
+    "successes": 0,
+    "n": 20,
+    "confidence": 0.95,
+    "lower": 0.0,
+    "upper": 0.16112515827076002
+  },
+  "sequence_any_signature_failures": 0,
+  "victim_alone": {
+    "successes": 0,
+    "n": 20,
+    "confidence": 0.95,
+    "lower": 0.0,
+    "upper": 0.16112515827076002
+  },
+  "shared_resource": null,
+  "polluter_write_location": null,
+  "victim_read_location": null,
+  "failure_signature": null,
+  "instrumentation_level": "static-only",
+  "execution_record_reference": "C:\\Users\\zarpa\\OneDrive\\Documents\\GitHub\\FlakeTracee\\eval\\reports\\flaketrace-records\\20261011T085747Z-odfixture.EnvDependentNegativeTest#onlyFailsUnderCI.jsonl",
+  "source_integrity": {
+    "passed": true,
+    "details": "23 files hashed (SHA-256) before and after; all identical"
+  },
+  "outcome": "UNRESOLVED",
+  "unresolved_reason": "NOT_REPRODUCED",
+  "limitations": [
+    "instrumentation_level is static-only (Iteration 1); runtime instrumentation is Iteration 2.",
+    "Not reproduced: 20 runs of the discovered order (plus 31 shuffled order(s)), 20 runs alone. In the discovered order the failure rate is below 0.161 with 95% confidence (Wilson). This is not evidence that the test is reliable: flaky tests have been found only after thousands of reruns."
+  ],
+  "order_exploration": {
+    "order_given": false,
+    "shuffled_orders_tried": 31,
+    "orders_exhausted": false,
+    "seed_base": 0,
+    "reproducing_seed": null,
+    "infrastructure_failures": 0
+  }
+}

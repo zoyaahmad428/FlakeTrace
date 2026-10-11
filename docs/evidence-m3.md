@@ -1384,3 +1384,44 @@ against current real state.
   contradiction with a ready panel answer) and found not to need any change — not acted on
   further, since E6's remaining work (auditing the slide deck and proposal document) is outside
   this repository.
+
+## 2026-10-11 — Produce real F3/F4/N3 reports, fix stale eval/reports/README.md and members.md
+
+**Requirement:** Member 2 reviewed the post-PR#54 state and flagged two real gaps: (1)
+`eval/reports/` still only had f1/f2/n1/n2.json plus the baseline results — no f3, f4 or n3
+JSON existed despite all three being real, reproducible `VERIFIED`/`UNRESOLVED` outcomes since
+PR #49/#52 landed — and `eval/reports/README.md` still said "F3 needs W10, not implemented
+yet" (stale since W10 merged weeks ago); (2) `docs/09-Team/members.md`'s M3 row said "baseline/
+wording-fix branch not yet pushed" after PR #54 (that exact branch) had already merged.
+
+- File/function: `eval/tools/run_w9_integration.py` — added `run_f3()`, `run_f4()`, `run_n3()`
+  alongside the existing F1/F2/N1/N2 functions. F3/F4 use `runner.cli.resource_fields()`
+  (M2's own public function, which calls `evidence.extract.analyse_pair` per polluter and
+  `runner.cli.combine_fields` for F3's two-required-polluters case, ADR-007) rather than a
+  second, independent implementation of that combination logic in this script.
+- Command: `py eval/tools/run_w9_integration.py` (real Maven/JDK, native Windows JDK 24, all 7
+  cases in one run). Result: **F1/F2/F3/F4 → `VERIFIED`, N1/N2 → `UNRESOLVED(VICTIM_FAILS_ALONE)`,
+  N3 → `UNRESOLVED(NOT_REPRODUCED)`** — matches `ground_truth.json`'s `expected_outcome` for
+  every one of the 7 cases. F3's report: both `ToggleAPolluterTest#setFlagA` and
+  `ToggleBPolluterTest#setFlagB` named (one shown as `shared_resource`, the other in
+  `limitations`, exactly ADR-007's rule), 20/20 reproduced, 0/20 alone. F4's report:
+  `order_exploration.reproducing_seed=1` after 2 shuffles tried, 20/20 reproduced once found.
+  N3's report: `failure_signature=null`, limitation text reads "Not reproduced: 20 runs of the
+  discovered order (plus 31 shuffled order(s)), 20 runs alone" — confirms the PR #52 wording
+  fix (given/discovered, shuffle count) is correct against a real `diagnose()` run, not just
+  the hand-built `DiagnosisRuns` objects that fix was tested against at the time.
+- Command: `py -m unittest discover -s eval/tests -v`. Result: **85/85 passed** (sanity check;
+  this run only adds committed JSON files and two functions to a script nothing imports).
+- File/function: `eval/reports/README.md` — added f3/f4/n3 rows to the file table; rewrote
+  "What's NOT here yet" (previously claimed only F3 was missing and attributed it to "not
+  implemented by Member 2 yet" — both stale); added F3/F4/N3's own blocked-until-landed notes
+  alongside the existing F2/N2 ones.
+- File/function: `docs/09-Team/members.md` — M3's row corrected: PR #54 (the "baseline/
+  wording-fix branch") is merged, not unpushed; added that `eval/reports/` now has all 7 real
+  reports, with a PR still pending for them.
+- File/function: `docs/08-MidEval/panel-action-register.md` — A9's evidence column now names
+  all 7 `eval/reports/*.json` files directly, not just f1/f2 plus a generic CLI-run claim.
+- Limitation: these 7 JSON files and the `flaketrace-records/` folder they reference are
+  produced locally (not yet committed/pushed) — see the hand-off commands for the exact `git
+  add` list. `flaketrace-records/` itself stays uncommitted per `.gitignore` (Member 2's
+  convention), as it was for f1/f2 already.
