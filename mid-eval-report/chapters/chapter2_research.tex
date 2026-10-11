@@ -101,9 +101,46 @@ variants of a web product line; S25-049-D-TestML uses machine learning for test 
 optimisation and defect prediction. All three create or reuse tests, while FlakeTrace diagnoses an
 interaction between tests inside an existing suite. This check covers the repository summaries
 only; it cannot rule out an internal module of another project.
-\section{Comparison of Existing Solutions}
-Compare solutions using project-relevant criteria.
-\section{Limitations and Gaps}
+\section{Comparison of Existing Solutions}\label{ch2:sec:comparison}
+Table~\ref{ch2:tab:comparison} compares the systems of Section~\ref{ch2:sec:existing} on what a
+developer needs in order to act on one order-dependent failure: is the failure detected, is the
+responsible test found, is the reproducing order reduced, is the shared state explained, is it
+said how reliably the failure reproduces, and does the tool say clearly when it cannot conclude.
+A dash means the publication or documentation does not describe it; it is not a claim that the
+system cannot do it.
+
+\begin{table}[H]\centering\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.19\textwidth}*{6}{>{\centering\arraybackslash}p{0.115\textwidth}}}
+\toprule
+System & Detects & Finds the polluter & Reduced order & Explains the state & Repro\-duction rate & Says ``cannot conclude'' \\
+\midrule
+iDFlakies \cite{lam2019idflakies} & yes & -- & -- & -- & -- & -- \\
+iFixFlakies \cite{shi2019ifixflakies} & -- & yes & 1-minimal & -- & -- & -- \\
+RankF \cite{rahman2025rankf} & -- & ranks them & -- & -- & -- & -- \\
+Takuan \cite{levin2025takuan} & -- & -- & -- & preliminary & -- & -- \\
+PolDet \cite{gyori2015poldet}, ElectricTest \cite{bell2015electrictest} & yes & partly & -- & yes & -- & -- \\
+ODRepair \cite{li2022odrepair}, FlakyDoctor \cite{chen2024flakydoctor} & -- & -- & -- & -- & -- & -- \\
+Commercial products & yes & -- & -- & -- & -- & -- \\
+\midrule
+\textbf{FlakeTrace} (Iteration 1) & --\textsuperscript{a} & yes & 1-minimal & yes\textsuperscript{b} & yes\textsuperscript{c} & yes \\
+\bottomrule
+\end{tabular}
+\caption{What each system's publication or documentation describes}\label{ch2:tab:comparison}
+\end{table}
+{\footnotesize \textsuperscript{a}FlakeTrace starts from a failure that has already been seen; it
+does not search a suite for flaky tests. \textsuperscript{b}Static fields and system properties
+with a constant key, found in the compiled bytecode. \textsuperscript{c}Repeated runs ($n = 20$) with a
+95\% Wilson interval.\par}
+
+\medskip
+No column in our row is new on its own: every one is covered by at least one earlier system.
+ODRepair and FlakyDoctor have no marks because they repair a test whose polluter is already
+known, which is a later step than diagnosis. What the table shows is that no single system
+covers the last four columns together. Section~\ref{ch2:sec:gaps} explains why that combination
+matters. Two items from the proposal are not in our row because they are not built yet: ranking
+the candidate tests before the search (RankF is the baseline it will be measured against) and an
+explicit execution budget. Both are planned for FYP-2.
+\section{Limitations and Gaps}\label{ch2:sec:gaps}
 Identify limitations and the gap motivating the proposed solution.
 \section{Proposed Solution}
 Explain how the proposed system addresses the identified gap.
