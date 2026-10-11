@@ -1,6 +1,7 @@
 # ADR-001 — Iteration 1 gathers evidence without instrumentation
 
-**Date:** 2026-10-09 · **Status:** `PROPOSED` — needs M1, M2, M3 agreement ·
+**Date:** 2026-10-09 · **Status:** `ACCEPTED` by M1, M2 and M3 (PRs #17, #18, #20) and
+implemented in Iteration 1 (W6–W10) ·
 **Owner:** M1 (evidence) with M2 (execution)
 
 ## Context
@@ -46,6 +47,18 @@ cannot resolve a case. This is step 5–7 of the post-defence fallback ladder.
   a resource edge before `VERIFIED`, so a static edge alone cannot overclaim.
 - Reflection, dynamically computed property keys and native code are invisible statically →
   `UNRESOLVED(NO_SUPPORTED_RESOURCE_EVIDENCE)`, not a false explanation.
+
+## Research basis (panel action A6, 2026-10-11)
+
+- Static vs runtime evidence: [[01-Literature/per-paper/poldet-electrictest]] — a shared-state
+  signal is a prior, not proof (PolDet: 324 reported, 194 relevant [9]); sound runtime
+  dependency detection cost about 20× (ElectricTest [10]). Static analysis over-approximates;
+  runtime collection is precise but costs overhead and can perturb the failure.
+- Our measurement of the over-approximation (ADR-006 data, `docs/evidence-m1.md`): on the two
+  real fastjson cases, 1 false edge among the 728 candidates that did not affect the victim
+  (a write that is restored in `tearDown`), and every real state-setter found at depth 4–5.
+  Two cases from one project — a measurement, not a general result.
+- Minimisation: [[01-Literature/minimisation-ddmin-vs-one-by-one]].
 
 ## Agreement
 

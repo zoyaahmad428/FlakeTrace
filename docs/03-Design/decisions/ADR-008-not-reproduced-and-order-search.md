@@ -169,6 +169,6 @@ after thousands of reruns."* (0/20 → upper bound 0.161; 0/31 → 0.110, measur
 
 | Member | Agree? | Comment |
 | --- | --- | --- |
-| M1 | ☐ | for information: no change to `evidence/` |
+| M1 | ☑ | Agree 2026-10-11 (for information): no change to `evidence/`. Checked on main `9dcd439` (after PR #45): 39 evidence tests OK with F4/N3 in the fixture (240 pairs); F4's edge `odfixture.LateFlag#isSet` at depth 2, N3 no edge. On PR #49 (`fa621af`) the real command gives F4 `VERIFIED` with that edge (see `docs/evidence-m1.md`) |
 | M2 | ☑ | Chose a given order + 31 valid shuffles + the honest report, one diagnosis flow, on 2026-10-10 |
 | M3 | ☑ | Agree 2026-10-10 — implemented in PR #45: `failure_signature` null for `NOT_REPRODUCED`/`INFRASTRUCTURE_FAILURE` (widened beyond this ADR's literal text, see `docs/evidence-m3.md`), `order_exploration` optional, new `decide()` row, fixtures F4 and N3 with pre-registered ground truth |
