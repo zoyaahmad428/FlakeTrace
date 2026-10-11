@@ -6,17 +6,179 @@
 % Rules: mid-eval-report/CLAUDE.md. Do not edit a file you do not own.
 % ===========================================================================
 \chapter{Project Management and Development Evidence}
-\section{Work Completed}
-\section{Work Remaining}
-\section{Individual Responsibilities}
-\section{Contribution of Each Team Member}
+\section{Work Completed}\label{ch9:sec:done}
+Eleven of Iteration 1's fourteen work packages are merged (Table~\ref{ch6:tab:wps}). One command, \texttt{py -m runner diagnose}, takes a failing test through ordered re-execution, polluter search, minimisation, bytecode evidence and the outcome decision to a schema-validated report, and has done so for all seven fixture cases (\path{eval/reports/}). Nine of the ten proposal actions are complete (Section~\ref{ch3:sec:register}).
+
+\section{Work Remaining}\label{ch9:sec:remaining}
+Before the Mid evaluation: this report and the evidence worksheet, the tag \texttt{mid-eval-v1}, and a rehearsed demonstration (W11--W13). After it, Iteration 2's commitments (Section~\ref{ch3:sec:it2}) and the deviations still open in Table~\ref{ch3:tab:deviations}: the container, the test--resource graph, the threat model and a first real project end to end.
+
+\section{Individual Responsibilities}\label{ch9:sec:responsibilities}
+Each member owns one package of code and its work packages (Table~\ref{ch3:tab:members}); each chapter of this report has one owner, named in its source file. The next section has each member's own account.
+
+\section{Contribution of Each Team Member}\label{ch9:sec:contributions}
 \input{chapters/chapter9_contribution_m1}
 \input{chapters/chapter9_contribution_m2}
 \input{chapters/chapter9_contribution_m3}
-\section{Repository and Version Control Evidence}
-\section{Milestones and Commit Evidence}
-\section{Tools and Tool-Assisted Development}
-\section{External Components and Dependencies}
-\section{Risks and Mitigation}
-\section{Security and Privacy Considerations}
-\section{Current Limitations}
+
+\section{Repository and Version Control Evidence}\label{ch9:sec:repo}
+All code, tests, documents and this report are in one GitHub repository:
+\begin{center}\url{https://github.com/zoyaahmad428/FlakeTrace}\end{center}
+The working rules are in \path{CONTRIBUTING.md}:
+\begin{itemize}
+  \item \textbf{Branches} are named after their owner and topic (\texttt{m2/order-runner}, \texttt{docs/report-m2}); since the restructure into one repository (\pr{1}), nothing is committed to \texttt{main} directly.
+  \item \textbf{Pull requests} need passing CI and an approval from another member; every pull request was reviewed by a member who did not write it (as stated by the team; Appendix~\ref{app:repository}). A pull-request template asks for the member and area, how the change was verified, its effect on the contracts, and the evidence and GenAI logs.
+  \item \textbf{Commits} are made by the member after reading the change, with a title \texttt{[M<N>] <area>: <what changed>} and a \texttt{Verified:} line giving the real command and result.
+  \item \textbf{CI} (\path{.github/workflows/ci.yml}) runs four jobs on every pull request on Linux with JDK 8: evaluation tests and the yield report, the fixture's premises, the runner tests and the evidence tests. A second workflow (\path{report.yml}) builds this report's PDF.
+\end{itemize}
+
+Reviews found real problems, and the code records them. Two examples from Member 2's reviews of Member 3's report assembly: a merge order in which the command would have crashed with a stack trace instead of exiting with code 3, and report text that said ``given order'' when no order had been given (both noted ``flagged by Member 2'' in \path{eval/report.py}).
+
+Table~\ref{ch9:tab:git} counts the history on \texttt{main} on 11 October 2026 (\texttt{git shortlog} and the merge commits). A pull request is credited to the member who wrote most of its commits.
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.34\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}}
+\caption{Commits and merged pull requests on \texttt{main} (11 October 2026)}\label{ch9:tab:git}\\
+\toprule
+Member & Commits (excluding merges) & Merged pull requests\\
+\midrule
+\endfirsthead
+\toprule
+Member & Commits (excluding merges) & Merged pull requests\\
+\midrule
+\endhead
+M1: Zoya Ahmad & 32 & 20\\
+M2: Abdul Raffay & 78 & 22\\
+M3: Zarpash Nasim & 35 & 21\\
+\bottomrule
+\end{longtable}}
+
+Commit counts measure activity, not size or value: Member 2's count includes the repository restructure, CI and the report, and the three members' code packages differ in kind.
+
+\section{Milestones and Commit Evidence}\label{ch9:sec:milestones}
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.47\textwidth}>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.16\textwidth}}
+\caption{Iteration 1 milestones on \texttt{main}}\label{ch9:tab:milestones}\\
+\toprule
+Merged & Milestone & Pull request & Owner\\
+\midrule
+\endfirsthead
+\toprule
+Merged & Milestone & Pull request & Owner\\
+\midrule
+\endhead
+9 Oct & One repository, CI, team rules; fixture, statistics, schema and outcome decision brought in & \pr{1} & M2, M3\\
+9 Oct & Static extraction of resource accesses & \pr{9} & M1\\
+9 Oct & Ordered single-JVM runner & \pr{10} & M2\\
+9 Oct & Victim-alone check, polluter search, repeated runs, integrity, execution record & \pr{11} & M2\\
+10 Oct & Report assembly from real runs & \pr{21} & M3\\
+10 Oct & One command, \texttt{py -m runner diagnose} & \pr{26} & M2\\
+10 Oct & Evidence depth 1--5 with deepening & \pr{34} & M1\\
+10 Oct & Minimisation with \texttt{ddmin} (F3) & \pr{35} & M2\\
+11 Oct & \texttt{NOT\_REPRODUCED} reports, schema change, fixtures F4 and N3 & \pr{45} & M3\\
+11 Oct & Given order, shuffled orders, alone check always & \pr{49} & M2\\
+11 Oct & Real reports for all seven fixture cases & \pr{57} & M3\\
+11 Oct & Report skeleton with per-chapter ownership & \pr{60} & M2\\
+\bottomrule
+\end{longtable}}
+
+CI results are recorded in the evidence logs: the first runner pull requests with their run numbers in \path{docs/evidence-m2.md} (for example run 37971869749 on \pr{11}); later runs are recorded there by pull request with their test counts, such as 144 runner tests in 105.2\,s on \pr{49}.
+\section{Tools and Tool-Assisted Development}\label{ch9:sec:genai}
+All three members used generative AI, and this section discloses it per artefact, as the FYP GenAI guide requires. Every materially assisted code, test or design change is recorded in \path{docs/08-MidEval/genai-register.md} (date, member, tool, level, what was used, what the member changed, how it was verified, what was rejected), with session-level detail in \path{docs/genai-log-m1.md}, \path{-m2.md} and \path{-m3.md}. The levels are those of the guide:
+\begin{itemize}
+  \item \textbf{L1 supportive:} grammar, formatting, brainstorming, small debugging hints;
+  \item \textbf{L2 assisted:} significant code, tests, diagrams or text generated, then reviewed, changed, tested and fully explainable by the member;
+  \item \textbf{L3 core-assist:} the AI produced a major module or core feature; the member states what the AI produced, what they added, why it works and its limits;
+  \item \textbf{L4 substituted:} the member cannot explain or change it. No artefact is at L4.
+\end{itemize}
+
+Two rules applied to all assisted work: the member, not the AI, makes every commit after reading the change (\path{CLAUDE.md}, \path{CONTRIBUTING.md}), and no result is written down unless a command was actually run. Table~\ref{ch9:tab:genai} gives the disclosure per artefact; the counts are rows in the register on 11 October 2026.
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.28\textwidth}>{\raggedright\arraybackslash}p{0.18\textwidth}}
+\caption{GenAI use per artefact}\label{ch9:tab:genai}\\
+\toprule
+Artefact (member) & Tool & Level & What the member did; an AI output rejected or corrected & Verification\\
+\midrule
+\endfirsthead
+\toprule
+Artefact (member) & Tool & Level & What the member did; an AI output rejected or corrected & Verification\\
+\midrule
+\endhead
+Runner code and tests, CI, repository rules (M2) & Claude Opus 5.5 in Claude Code & L2 (39 rows), L1 (3) & Designed each step in an ADR before code; read every diff and committed it. Rejected: a dummy seed and container entry in the execution record (A7); a one-line change that would have hidden a second polluter's evidence depth & Tests seen failing first, mutation checks, CI on JDK 8, real runs on the fixture (\path{docs/evidence-m2.md})\\
+Evidence extractor and tests (M1) & Claude Code & L3 (6 rows), L2 (4) & Corrected: an annotation constant-pool bug found on JDK 8; a first mutation script that changed nothing; an ADR-006 draft that wrongly said callers need no change & 39 tests, CI on JDK 8, fixture ground truth, fastjson runs (\path{docs/evidence-m1.md})\\
+Evaluation, statistics, schema, fixtures (M3) & Claude Sonnet 5 & L2 (18 rows), L1 (1) & Corrected: a Wilson test tolerance and a schema \texttt{oneOf} bug; three wrong claims in one README & Wilson values checked against \texttt{statsmodels}; 85 tests (\path{docs/evidence-m3.md})\\
+M2's diagrams (Chapters 3 and 5) & Claude Opus 5.5 in Claude Code & L2 & Chose what each diagram shows (built code only in behaviour diagrams; planned parts dashed in the architecture and Gantt); supplied the undocumented phase dates and the defence date & Each box and arrow checked against the code; two ordering errors in the sequence diagram fixed before commit\\
+Report skeleton, \pr{60} (M2) & Claude Opus 5.5 in Claude Code & L2 & Set chapter ownership and the per-file headers & Compiled in CI\\
+Report text: Chapters 3, 5.1--5.5, 6 (frame and runner module), 9 (frame), Appendix~A (M2) & Claude Opus 5.5 in Claude Code & L2 & Approved an outline before each section; chose the scope and the decisions to highlight; read and committed each section. Dates not recorded in the repository are labelled as stated by the team; causes nobody recorded are left open, not filled in & Every figure traced to a file in the repository; each section compiled and its pages checked\\
+Report text and diagrams (M1) & \todo{M1: tool} & \todo{M1: level} & \todo{M1: what you changed, one correction} & \todo{M1: how checked}\\
+Report text and diagrams (M3) & \todo{M3: tool} & \todo{M3: level} & \todo{M3: what you changed, one correction} & \todo{M3: how checked}\\
+\bottomrule
+\end{longtable}}
+
+By team decision, report-writing sessions are not logged one by one in the GenAI logs (\path{mid-eval-report/CLAUDE.md}, section 7); this table is their disclosure. Citations in the report were added only after a member had opened the original paper. At the evaluation the supervisor may ask each member to explain and change their own module without AI.
+\section{External Components and Dependencies}\label{ch9:sec:external}
+FlakeTrace's own code is written by the team; Table~\ref{ch9:tab:external} lists everything it relies on but did not write. No third-party code is copied into the repository's packages: the proof-of-concept extractor was used only as a reference for Member 1's new implementation (ADR-002).
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.28\textwidth}>{\raggedright\arraybackslash}p{0.60\textwidth}}
+\caption{External components}\label{ch9:tab:external}\\
+\toprule
+Component & How it is used\\
+\midrule
+\endfirsthead
+\toprule
+Component & How it is used\\
+\midrule
+\endhead
+JDK (\texttt{java}, \texttt{javac}, \texttt{javap}) & Runs the tests, compiles the harness once, reads bytecode; must be installed by the user\\
+Apache Maven & Compiles the analysed project and lists its test classpath; downloads that project's own dependencies if they are not cached\\
+JUnit 4 & Taken from the analysed project's own dependencies to run its tests; FlakeTrace adds no library to the project\\
+\texttt{jsonschema} 4.26.0 & The only Python package FlakeTrace installs (\path{eval/requirements.txt}); validates every report\\
+GitHub Actions: \texttt{checkout}, \texttt{setup-java}, \texttt{setup-python}, \texttt{upload-artifact}, \texttt{xu-cheng/latex-action} & CI for the code and the report PDF\\
+fastjson (Apache-2.0) and json-iterator (MIT) & Open-source projects used as real subjects in the proof of concept and in Member 1's depth measurements (claims ledger C1); analysed, not included in FlakeTrace\\
+\bottomrule
+\end{longtable}}
+
+\section{Risks and Mitigation}\label{ch9:sec:risks}
+The project's risk register (\path{docs/00-Meta/risk-register.md}) gives each risk a mitigation and a trigger that would force a change of plan. Table~\ref{ch9:tab:risks} gives the risks that matter most after Iteration 1, with their status today.
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}}
+\caption{Main risks and their status on 11 October 2026}\label{ch9:tab:risks}\\
+\toprule
+Risk & Mitigation (register) & Trigger for change & Status now\\
+\midrule
+\endfirsthead
+\toprule
+Risk & Mitigation (register) & Trigger for change & Status now\\
+\midrule
+\endhead
+Historical build rot: real projects may not build in time & Frozen versions; report yield and exclusions honestly & Too few reproducing cases & Open: no real project has been diagnosed end to end yet; first one planned for FYP-1 Final\\
+Invisible resources: polluter or explanation missed & Bound the resource families; abstain when evidence is missing & Any false confident certificate & No false \texttt{VERIFIED} on the fixture: all three negative controls are \texttt{UNRESOLVED}; on fastjson the extractor found 1 false edge among 728 candidates (ADR-001)\\
+Multi-predecessor cases: a pairwise search cannot find them & 1-minimal wording; multi-test candidates kept; fixture F3 & Deletion checks contradict the certificate & Mitigated: \texttt{ddmin} finds both of F3's polluters (Section~\ref{ch6:sec:ddmin})\\
+Scope inflation & Written tiers with gates & FYP-1 lacks an end-to-end certificate or a measured baseline & Not triggered: real reports exist for seven cases and the random-order baseline was run on F1--F4 (\pr{54})\\
+Three-person overload: integration cost & Contracts frozen early; CDR gated & FYP-1 milestones slip & Partly triggered: the container, the graph and the threat model slipped (Table~\ref{ch3:tab:deviations})\\
+Secret leakage: paths or credentials in logs & Redaction; offline flag & Any secret found in an artefact & Open: execution records store the analysed project's absolute path and the operating system, unredacted; they stay local and are git-ignored\\
+\bottomrule
+\end{longtable}}
+
+\section{Security and Privacy Considerations}\label{ch9:sec:security}
+FlakeTrace runs other people's tests, so it executes code it did not write. At Iteration 1:
+\begin{itemize}
+  \item \textbf{No sandbox.} Tests run as ordinary processes with the user's permissions, with a 120\,s timeout and nothing else. The required rootless container with no network, resource limits and verified cleanup (\path{docs/02-Requirements/non-functional.md}) is not built. Until it is, FlakeTrace should only be used on projects the user trusts, which is the risk register's own fallback.
+  \item \textbf{Network.} FlakeTrace's own code makes no network calls. Maven may download the analysed project's dependencies, and the project's tests may use the network themselves.
+  \item \textbf{The analysed source is not changed.} Every file except \path{target/} and \path{.git/} is hashed before and after a diagnosis, and the record folder may not be inside the project (Section~\ref{ch5:sec:arch}).
+  \item \textbf{Data stays local.} Reports and execution records are written to \texttt{flaketrace-\allowbreak records/}, which git ignores. They contain test names, failure messages with numbers and paths masked, the project's absolute path, its git commit and the operating system; nothing is redacted further and nothing is sent anywhere.
+  \item \textbf{AI in the product.} None: generative AI was used to develop FlakeTrace (Section~\ref{ch9:sec:genai}), not inside it.
+\end{itemize}
+
+\section{Current Limitations}\label{ch9:sec:limitations}
+Each module's limitations are in its own section of Chapter~6. Across the system:
+\begin{itemize}
+  \item evidence is static only, for two resource families (static fields and system properties);
+  \item JUnit 3 and 4 only, run through Maven projects;
+  \item a report shows one shared resource; with several polluters the others are named in its limitations;
+  \item no diagnosis has yet run end to end on a real project;
+  \item no sandbox (Section~\ref{ch9:sec:security});
+  \item the budget of 31 shuffled orders is taken from a study of Python projects~\cite{gruber2021flaky}.
+\end{itemize}

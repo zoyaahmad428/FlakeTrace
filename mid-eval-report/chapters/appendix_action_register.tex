@@ -4,5 +4,83 @@
 % DRAW FROM: docs/08-MidEval/panel-action-register.md (full table, every row, with evidence links)
 % Rules: mid-eval-report/CLAUDE.md. Do not edit a file you do not own.
 % ===========================================================================
-\chapter{Proposal Action Register}
-Include the complete proposal-feedback/action register and supporting evidence.
+\chapter{Proposal Action Register}\label{app:action-register}
+% Each action is an unbreakable table; ragged bottom stops LaTeX stretching the gaps between them.
+\begingroup\raggedbottom
+This appendix is the complete register kept in \path{docs/08-MidEval/panel-action-register.md}: every action, including the one not yet closed, with its decision, owner, status, evidence and next step. Pull-request numbers are links. Where the register's text was written before the latest runs, the figures below are the current ones from 11 October 2026 (\path{docs/evidence-m2.md}).
+
+\textbf{Decision:} Approved with Minor Modifications (proposal defence, F26-214, 11 September 2026). \textbf{Sources:} the panel's written comment (Section~\ref{ch3:sec:feedback}); actions A7--A10 come from sections 7--10 of the post-defence improvement and execution plan.
+
+\newcommand{\registeraction}[7]{%
+  \subsection*{#1 --- #2}
+  \begin{tabular}{@{}>{\bfseries}p{0.18\textwidth}>{\raggedright\arraybackslash}p{0.76\textwidth}@{}}
+  Decision & #3\\
+  Owner & #4\\
+  Status & #5\\
+  Evidence & #6\\
+  Next action & #7\\
+  \end{tabular}}
+
+\registeraction{A1}{How will the system detect it if no logs are available?}
+{Accepted. Detection never depends on application logs. It uses test identities, execution order, pass/fail, exceptions and stack traces from controlled re-execution, plus resource reads and writes from compiled bytecode. Logs are optional evidence.}
+{M2}{Complete}
+{The fixture's test sources contain no logging at all (\path{fixtures/od-fixture/src}). \texttt{py -m runner diagnose} reaches every verdict from order, outcomes, exceptions, stack traces and bytecode evidence: F1--F4 \texttt{VERIFIED}, N1 and N2 \texttt{UNRESOLVED(VICTIM\_FAILS\_ALONE)}, N3 \texttt{UNRESOLVED(NOT\_REPRODUCED)} (\path{eval/reports/}). Pull requests \pr{26}, \pr{35}, \pr{49}.}
+{Shown live in the Mid demonstration (F1 and F3).}
+
+\registeraction{A2}{Will log or trace instructions be injected into the code?}
+{Accepted; answer: no, for Iteration 1. Resource evidence is read from compiled bytecode with \texttt{javap}; nothing is injected. A runtime Java agent (in memory only, on the already-reduced sequence) is an Iteration 2 option if static evidence proves insufficient (ADR-001).}
+{M1}{Complete}
+{ADR-001; \path{evidence/extract.py} reads \texttt{.class} files with \texttt{javap} and writes nothing (\pr{9}, \pr{15}). The F1 and F2 reports are \texttt{VERIFIED} with a bytecode-level resource edge and \texttt{source\_integrity.passed: true} (\path{eval/reports/f1.json}, \path{f2.json}).}
+{Demonstration step 3 shows the \texttt{javap} evidence live.}
+
+\registeraction{A3}{Will the code be modified?}
+{Accepted; answer: no. The analysed project's files are hashed before and after every diagnosis; a mismatch forces \texttt{UNRESOLVED(SOURCE\_INTEGRITY\_FAILED)}.}
+{M2}{Complete}
+{\path{runner/integrity.py} hashes every project file with SHA-256, except \path{target/} and \path{.git/}, before and after each diagnosis (W7, \pr{11}). All seven real reports in \path{eval/reports/} record \texttt{source\_integrity.passed: true}. A changed file forces \texttt{UNRESOLVED(SOURCE\_INTEGRITY\_FAILED)} (\path{eval/outcome.py}, tested in \path{eval/tests/test_report.py}). ADR-004.}
+{---}
+
+\registeraction{A4}{How will the code block be isolated?}
+{Accepted. Two isolations: (1) \emph{sequence isolation}: the victim run alone, the polluter search, deletion minimisation to a 1-minimal order, and repeated runs with a Wilson interval; (2) \emph{cause localisation}: the shared resource with the polluter's write and the victim's read located to a method and bytecode offset. Statement-level accuracy is not claimed.}
+{M2 (1), M1 (2)}{Complete}
+{Part (1): victim alone $\times 20$ and one-by-one polluter search (W7, \pr{11}); \texttt{ddmin} to a 1-minimal polluter set when no single test is enough (W10, ADR-007, \pr{35}); repeated runs $\times 20$ with a Wilson interval. On F3, 14 earlier tests were reduced to the ground-truth polluters \texttt{setFlagA} and \texttt{setFlagB}, reproduced 20/20, \texttt{VERIFIED}. Part (2): \texttt{report\_fields} gives the resource with method and bytecode offset on each side, e.g.\ F2's read in \texttt{FeatureFlags.isTurboEnabled@2} (\pr{15}, \pr{34}). Report fields \texttt{reduced\_sequence}, \texttt{polluter\_write\_location}, \texttt{victim\_read\_location}.}
+{---}
+
+\registeraction{A5}{What diverse scenarios is this approach applicable to?}
+{Accepted, scoped honestly. Iteration 1: static-field and system-property pollution, single and multiple polluters (F3), an order that must be reshuffled (F4), and an externally caused failure correctly reported as not reproduced (N3). Iteration 2: filesystem paths. Out of scope and reported as \texttt{UNRESOLVED} rather than forced: concurrency races, external services, time-dependent and always-failing tests. Negative controls N1--N3 test exactly this.}
+{M3}{Complete}
+{\path{fixtures/od-fixture/ground_truth.json} (seven cases, each written before any run); all seven run end to end through the real pipeline (\pr{45}, \pr{49}). F4 is \texttt{VERIFIED} through a shuffled order (seed 1); N3 gets a real \texttt{UNRESOLVED(NOT\_REPRODUCED)} report. Scope: \path{docs/02-Requirements/scope-boundary.md}.}
+{None; closed.}
+
+\registeraction{A6}{Do more research to improve the proposed solution.}
+{Accepted. Research targets: the runtime versus static evidence trade-off (iDFlakies, iFixFlakies, PolDet, ElectricTest, already in \path{docs/01-Literature/}); delta debugging for multi-polluter minimisation.}
+{M1}{Complete (11 October 2026)}
+{\path{docs/01-Literature/minimisation-ddmin-vs-one-by-one.md}: one-by-one search versus \texttt{ddmin}, from the literature notes and our own F3 and test run counts; ADR-001 gained a research-basis section with the measured over-approximation: 1 false edge among the 728 fastjson candidates that did not affect the victim (\pr{50}).}
+{Sources cited by that note are opened by the citing member before this report cites them.}
+
+\registeraction{A7}{Plan \S7: record the controlled execution environment for every run.}
+{Accepted. Each run records the commit, test order, JDK, operating system or container, seed and timestamps.}
+{M2}{Complete}
+{Every diagnosis writes an execution record (\path{runner/recording.py}, W7): one JSON line per JVM run (step, test order, outcomes with signatures, start time, duration) and a header with the victim, $n$, JDK, start time, the analysed project's git commit, whether it had uncommitted changes, and the operating system (\pr{41}). When the starting order never fails, the header records the first shuffle seed, each shuffled run records its own seed, and the report names the seed that reproduced the failure (ADR-008, \pr{49}). Stated rather than faked: there is no container yet, so no container is recorded.}
+{---}
+
+\registeraction{A8}{Plan \S9: reproduction confidence: repeat, compare with the victim alone, report uncertainty.}
+{Accepted.}
+{M3}{Complete}
+{Every one of F1--F4's real reports carries a Wilson interval over real repeated runs: 20/20 reproduced, 0/20 alone. \path{eval/stats.py}, \path{eval/outcome.py}; 85 evaluation unit tests pass (run on 11 October 2026, Table~\ref{ch6:tab:setup-results}); real reports in \path{eval/reports/} (\pr{57}).}
+{---}
+
+\registeraction{A9}{Plan \S10: an evidence report with victim, polluters, reduced sequence, frequency, resource, locations, signature, confidence and limitations.}
+{Accepted.}
+{M3 (schema), all (fields)}{Complete}
+{\path{eval/schema/report.schema.json}, \path{docs/contracts/report-schema.md}. Every field is filled by real runs for all seven fixture cases, \texttt{eval/reports/\{f1,f2,f3,f4,n1,n2,n3\}.json}, each produced by \texttt{runner.diagnose()} and \texttt{eval.report.assemble\_report()} and validated against the schema (ADR-007, ADR-008, \pr{57}).}
+{---}
+
+\registeraction{A10}{Plan \S8 lists databases, ports, threads and caches as resources.}
+{Adapted. The committed Iteration 1 resource families stay static fields and system properties, with filesystem paths in Iteration 2. Wider resources would repeat the over-scoping risk the defence warned about; they are reported as unsupported.}
+{All}{Decision made; supervisor confirmation pending}
+{\path{docs/07-Defense/decisions/resource-family-boundaries.md}, ADR-001.}
+{Ask the supervisor to confirm this exception at the Mid evaluation.}
+
+\subsection*{Summary}
+Nine of the ten actions are complete. A10 is a scope decision awaiting the supervisor's confirmation. The approved scope is unchanged; runtime instrumentation was moved explicitly to Iteration 2 (ADR-001). No supervisor-approved exception has been recorded yet.
+\clearpage\endgroup
