@@ -1,0 +1,150 @@
+{
+  "F1": {
+    "victim": {
+      "class": "odfixture.ConfigVictimTest",
+      "method": "expectsDefaultMode"
+    },
+    "polluters": [
+      {
+        "class": "odfixture.ConfigPolluterTest",
+        "method": "pollute"
+      }
+    ],
+    "candidate_pool_size": 6,
+    "max_runs_per_trial": 50,
+    "trials": [
+      {
+        "base_seed": 0,
+        "found": true,
+        "runs_attempted": 1
+      },
+      {
+        "base_seed": 100,
+        "found": true,
+        "runs_attempted": 1
+      },
+      {
+        "base_seed": 200,
+        "found": true,
+        "runs_attempted": 3
+      },
+      {
+        "base_seed": 300,
+        "found": true,
+        "runs_attempted": 2
+      }
+    ]
+  },
+  "F2": {
+    "victim": {
+      "class": "odfixture.FeatureVictimTest",
+      "method": "expectsTurboDisabled"
+    },
+    "polluters": [
+      {
+        "class": "odfixture.FeaturePolluterTest",
+        "method": "enableTurbo"
+      }
+    ],
+    "candidate_pool_size": 6,
+    "max_runs_per_trial": 50,
+    "trials": [
+      {
+        "base_seed": 0,
+        "found": true,
+        "runs_attempted": 1
+      },
+      {
+        "base_seed": 100,
+        "found": true,
+        "runs_attempted": 1
+      },
+      {
+        "base_seed": 200,
+        "found": true,
+        "runs_attempted": 3
+      },
+      {
+        "base_seed": 300,
+        "found": true,
+        "runs_attempted": 2
+      }
+    ]
+  },
+  "F3": {
+    "victim": {
+      "class": "odfixture.ToggleVictimTest",
+      "method": "expectsNotBothFlagsSet"
+    },
+    "polluters": [
+      {
+        "class": "odfixture.ToggleAPolluterTest",
+        "method": "setFlagA"
+      },
+      {
+        "class": "odfixture.ToggleBPolluterTest",
+        "method": "setFlagB"
+      }
+    ],
+    "candidate_pool_size": 7,
+    "max_runs_per_trial": 50,
+    "trials": [
+      {
+        "base_seed": 0,
+        "found": true,
+        "runs_attempted": 1
+      },
+      {
+        "base_seed": 100,
+        "found": true,
+        "runs_attempted": 2
+      },
+      {
+        "base_seed": 200,
+        "found": true,
+        "runs_attempted": 3
+      },
+      {
+        "base_seed": 300,
+        "found": true,
+        "runs_attempted": 1
+      }
+    ]
+  },
+  "F4": {
+    "victim": {
+      "class": "odfixture.AlwaysEarlyVictimTest",
+      "method": "expectsLateFlagUnset"
+    },
+    "polluters": [
+      {
+        "class": "odfixture.ZzzLatePolluterTest",
+        "method": "setLateFlag"
+      }
+    ],
+    "candidate_pool_size": 6,
+    "max_runs_per_trial": 50,
+    "trials": [
+      {
+        "base_seed": 0,
+        "found": true,
+        "runs_attempted": 1
+      },
+      {
+        "base_seed": 100,
+        "found": true,
+        "runs_attempted": 1
+      },
+      {
+        "base_seed": 200,
+        "found": true,
+        "runs_attempted": 3
+      },
+      {
+        "base_seed": 300,
+        "found": true,
+        "runs_attempted": 2
+      }
+    ]
+  }
+}

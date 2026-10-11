@@ -1285,3 +1285,102 @@ only ever held the sequence-phase field, so a victim that only crashed during th
   (`reproducing_seed=1`) from its own `VERIFIED` report. Not yet cross-checked against a real
   `runner diagnose` CLI run on F4/N3 (that needs JDK 8 + Maven, not run in this session) — only
   against hand-built `DiagnosisRuns` objects and the real schema/decide() code.
+
+## 2026-10-11 — Random-order baseline run for real on F2/F3/F4, class-first shuffling
+
+**Requirement:** `LeftWorkForM1&M3.md` (item M3 #5, backed by a relayed message from Member
+2): claim B11 said "we have run the baseline tools" NOT YET; the plan was (1) reword B11
+honestly rather than leave it OPEN with stale text, and (2) before running more, make
+`eval/baseline.py` shuffle classes first, then methods within a class (never mixing classes —
+JUnit cannot run an order like ClassA#m1, ClassB#m1, ClassA#m2 in one suite), then rerun on
+F1-F4.
+
+- File/function: `eval/baseline.py` — new `_shuffle_classes_then_methods()`, called from
+  `run_random_order_baseline` in place of the old plain `rng.shuffle(order)` on the whole pool.
+  Groups the candidate+victim pool by class, shuffles the class order, then independently
+  shuffles each class's own method order, then concatenates — so a class's methods are always
+  contiguous in the result, which is the only kind of order
+  `runner.order_runner.OrderRunner`/JUnitCore can actually execute.
+- Test: `eval/tests/test_baseline.py` — `test_shuffle_never_interleaves_two_classes`, using a
+  synthetic 5-method, 2-class pool (the real fixture's classes all have exactly 1 method, so a
+  bug here would not show up against it) across 30 shuffles, asserting no class reappears after
+  another class has taken a turn.
+- Command: `py -m unittest eval.tests.test_baseline -v`. Result: all 13 tests pass (12 existing
+  + 1 new), including the 9 pre-existing `TestRandomOrderBaseline` tests unaffected (the real
+  fixture's pool has one method per class, so grouping-then-shuffling and plain shuffling
+  produce the same distribution there).
+- Mutation check: temporarily reverted `_shuffle_classes_then_methods` back to the old plain
+  `rng.shuffle(order)` and re-ran the new test alone: failed immediately
+  (`'odfixture.ClassB' unexpectedly found in [...]`), reproducing exactly the impossible,
+  class-interleaved order the fix prevents. Restored; re-ran clean: 13/13 passed.
+- File/function: `eval/tools/run_baseline_real.py` (new) — runs
+  `eval.baseline.run_random_order_baseline` against the real
+  `runner.order_runner.OrderRunner`, for F1, F2, F3 and F4, each with 4 independent trials
+  (`base_seed` 0/100/200/300, `max_runs=50`), candidate pool = that case's polluter(s) + the
+  fixture's 4 benign noise tests (`MathUtilTest`×2, `StringUtilTest`×2).
+- Command: `py eval/tools/run_baseline_real.py` (real Maven/JDK, native Windows JDK 24).
+  Result: found the bug in **every** trial, every case:
+  - F1 (pool 6, 1 polluter): 1, 1, 3, 2
+  - F2 (pool 6, 1 polluter): 1, 1, 3, 2
+  - F3 (pool 7, 2 polluters, both required): 1, 2, 3, 1
+  - F4 (pool 6, 1 polluter, order-needs-reshuffle): 1, 1, 3, 2
+  Written to `eval/reports/baseline_results.json`.
+- Discrepancy found and flagged (not fixed retroactively): the 2026-10-10 entry above describes
+  F1's candidate pool as "7 tests ... 5 noise tests". Recounting
+  `fixtures/od-fixture/ground_truth.json`'s `benign_noise_tests` gives exactly 4 noise tests (2
+  classes, 2 methods each), so the real pool is 6, not 7. This run's F1 result (1, 1, 3, 2) is
+  byte-for-byte identical to the earlier entry's, confirming the actual candidate set never
+  changed — only the earlier prose's count was wrong. Documented in `eval/README.md` rather than
+  silently editing the 2026-10-10 entry.
+- File/function: `eval/README.md` — baseline status section rewritten with the real F1-F4
+  table and the pool-count discrepancy note above.
+- File/function: `docs/07-Defense/claims-ledger.md` — B11 reworded from "NOT YET" to
+  "PARTIALLY" (our own baseline ran for real on all 4 OD cases; published tools iFixFlakies/
+  iDFlakies still not integrated), kept OPEN per Member 2's suggestion.
+- Limitation: only F1-F4 (the OD fixture cases with a polluter to find) run; N1/N2 have no
+  polluter to search for, so the comparison doesn't apply to them. No idoft case cloned/built
+  yet, so the baseline's real comparative value (targeted search should scale better than
+  random shuffling on a larger project) remains unmeasured on anything but this small fixture.
+
+## 2026-10-11 — Close ADR-002, fix C6/C7 depth wording, sync stale register rows
+
+**Requirement:** `LeftWorkForM1&M3.md` (M3 #2, #4, #6): tick ADR-002 (M3's row was the only one
+missing); fix the C6/C7 "two hops" vs. real-depth wording ADR-002 and claim E11 both flagged as
+needing a check; sync A8/A9's stale "still to do" notes and the W4/W9/W14 iteration-plan rows
+against current real state.
+
+- File/function: `docs/03-Design/decisions/ADR-002-evidence-extractor-implementation.md` —
+  ticked M3's agreement row (depth-2 default needs no change on `eval`'s side: `eval.report`/
+  `eval.outcome` consume `report_fields`'s output, not the depth it was found at). Resolved the
+  ADR's own open wording-check note in its Consequences section: the POC-hop-to-our-depth
+  conversion formula (N+1) does not actually hold for FJ-02 — checked against claim E11's real
+  measurement (the real extractor finds this exact edge only at depth 5, not depth 3, which is
+  what "two hops" (`FT_HOPS=2`) would convert to).
+- File/function: `docs/07-Defense/claims-ledger.md` — C6 and C7 both corrected: "two hops down"
+  is now attributed explicitly to the POC's own hand count, with a note that the real extractor
+  finds the same edge only at depth 5 (not a numbering-convention offset, a materially deeper
+  real call chain); C7's "rank 39 → 1" is now stated as internal to the POC's own ranking
+  methodology, not comparable to our current depth numbering. E11's row updated to point at the
+  fix instead of still asking for it.
+- File/function: `docs/08-MidEval/panel-action-register.md` — A8 and A9 updated from "logic"/
+  "schema" complete with a pending real-data caveat, to fully complete with the real evidence
+  that now exists (85 passing `eval/tests`, real Wilson intervals and real schema-validated
+  reports for F1-F4); "Actions completed" summary line gained A6 (already ticked individually,
+  missing from the rollup list).
+- File/function: `docs/08-MidEval/iteration-plan.md` — W4's row corrected from "Complete (no
+  real runs)" to the real F1-F4 baseline numbers; W9's row corrected to drop the two
+  "pending Member 2's ... landing" clauses, since PR #49 merged (F4 `VERIFIED` via shuffle, N3
+  real `NOT_REPRODUCED`, both schema-validated, not hand-built); W14's "(PR pending)" corrected
+  to "(PR #49 merged)".
+- Command: `py -m unittest discover -s eval/tests -v`. Result: **85/85 passed** (doc-only
+  changes in this entry; sanity check against the baseline-change commit above, both landing in
+  the same session).
+- Limitation: ADR-002's top-level `Status: PROPOSED` line is left as-is — it is M1's own ADR to
+  retitle once they choose to (ADR-007/ADR-008 are left the same way in this repo despite being
+  fully agreed), and `LeftWorkForM1&M3.md` only asked that of M1 for ADR-001, not of me for
+  ADR-002. Claim E6 ("CDR wording is consistent across our own documents") and the E5
+  "contradiction note" it references were checked for internal consistency
+  (`docs/07-Defense/decisions/cdr-gated-module.md` already fully resolves the apparent
+  contradiction with a ready panel answer) and found not to need any change — not acted on
+  further, since E6's remaining work (auditing the slide deck and proposal document) is outside
+  this repository.

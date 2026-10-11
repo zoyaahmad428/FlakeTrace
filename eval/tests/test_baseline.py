@@ -112,6 +112,39 @@ class TestRandomOrderBaseline(unittest.TestCase):
                 max_runs=5,
             )
 
+    def test_shuffle_never_interleaves_two_classes(self):
+        """ADR/eval.baseline (2026-10-11): JUnitCore/Surefire run a suite class by class, so
+        a proposed order where ClassA#m1, ClassB#m1, ClassA#m2 run in that sequence in one JVM
+        is not something runner.order_runner.OrderRunner can actually execute. Each class's
+        methods must stay contiguous in every shuffled order, however many methods it has."""
+        class_a_1 = TestIdentifier("odfixture.ClassA", "m1")
+        class_a_2 = TestIdentifier("odfixture.ClassA", "m2")
+        class_a_3 = TestIdentifier("odfixture.ClassA", "m3")
+        class_b_1 = TestIdentifier("odfixture.ClassB", "m1")
+        class_b_2 = TestIdentifier("odfixture.ClassB", "m2")
+        runner = FakeOrderRunner(_victim_always_passes)
+        result = run_random_order_baseline(
+            runner=runner,
+            victim=VICTIM,
+            candidates=[class_a_1, class_a_2, class_a_3, class_b_1, class_b_2],
+            reference_signature=REFERENCE_SIGNATURE,
+            max_runs=30,
+            base_seed=0,
+        )
+        for attempt in result.attempts:
+            order = attempt.order
+            seen_classes = []
+            for t in order:
+                if not seen_classes or seen_classes[-1] != t.class_name:
+                    # A class reappearing after another class took a turn would mean its
+                    # methods got split across two non-contiguous runs -- exactly the
+                    # impossible-to-execute order this shuffle must never produce.
+                    self.assertNotIn(
+                        t.class_name, seen_classes,
+                        f"class {t.class_name} split across a non-contiguous run in {order}",
+                    )
+                    seen_classes.append(t.class_name)
+
     def test_max_runs_not_positive_raises(self):
         runner = FakeOrderRunner(_victim_always_passes)
         for bad in (0, -1):

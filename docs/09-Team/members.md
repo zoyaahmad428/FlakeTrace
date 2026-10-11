@@ -20,7 +20,7 @@ post-defence action plan's two-student split is superseded by the three-member s
 | --- | --- | --- | --- | --- |
 | 1 | Static-field + system-property extraction for F1/F2 | `m1/adr006-deepen` | W8 complete: Phases 2–6 and ADR-006 (depth 1–5, pair-mode auto-deepening; fastjson FJ-01/FJ-02 at `depth_used` 4/5); report chapters next | M2 and M3 switch their calls to `analyse_pair` |
 | 2 | ADR-008 merged (`--order`, shuffled orders, NOT_REPRODUCED reports, PR #49); addressing M3's crash-count review items | `main` | F4 `VERIFIED` via a shuffle (seed 1), N3 real `NOT_REPRODUCED` report; 144 runner tests green | — |
-| 3 | ADR-008 crash-count follow-ups (shuffle/alone crash counts in the report, "given"/"discovered" wording, INFRASTRUCTURE_FAILURE row 3b); report ch. 4 and 7–8 per `08-MidEval/README`'s Form 3 table next | `m3/adr008-crash-counts` | Phases 0–5 done; real `VERIFIED`/`UNRESOLVED` reports produced for all 7 fixture cases (F1–F4, N1–N3) end to end through `runner.diagnose`/`eval.report` (see `docs/evidence-m3.md`) | Report chapters need a refresh against current state; worksheet and tag (W12) not started |
+| 3 | ADR-008 crash-count follow-ups merged (PR #52); closed remaining Mid-Eval loose ends (ADR-002 tick, C6/C7 depth wording, B11 baseline rerun, stale register rows); report ch. 4 and 7–8 per `08-MidEval/README`'s Form 3 table next | `main` (pending: baseline/wording-fix branch not yet pushed) | Phases 0–5 done; real `VERIFIED`/`UNRESOLVED` reports produced for all 7 fixture cases (F1–F4, N1–N3); random-order baseline now run for real on F1–F4, not just F1 (see `docs/evidence-m3.md`) | Report chapters need a refresh against current state; worksheet and tag (W12) not started |
 
 ## Evidence files per member
 

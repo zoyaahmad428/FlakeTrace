@@ -23,27 +23,51 @@ pip install -r eval/requirements.txt
 python3 -m unittest discover -s eval/tests -v
 ```
 
-## Random-order baseline status: run for real against the real runner (2026-10-10)
+## Random-order baseline status: run for real against the real runner (2026-10-11)
 
 `baseline.py` defines the `OrderRunner` interface; `runner.order_runner.OrderRunner`
 (Member 2, real since PR #10) satisfies it. Unit-tested throughout with
 `eval/tests/fake_runner.py`'s `FakeOrderRunner` — a scriptable fake that never
 launches a JVM, lives **only** under `eval/tests/`, and `baseline.py` does not
-import it.
+import it. Shuffling groups by class first, then methods within a class (never
+interleaving two classes — JUnitCore/Surefire run a suite class by class, so a
+plain whole-pool shuffle could propose an order nothing can actually execute).
 
-**Real run, F1, 4 independent trials** (`runner.order_runner.OrderRunner`, native
-Windows/JDK24, candidate pool of 7 tests — the victim, its polluter, and 5 noise
-tests, `max_runs=50`): found the bug in **1, 1, 3, and 2** random shuffles
-respectively (average 1.75 — close to the ~2 expected for a pool this size, where
-each shuffle has roughly even odds of placing the polluter before the victim).
-Compare to Member 2's real targeted one-by-one search on the same case: 1 search
-run (`docs/evidence-m2.md`). Both are cheap on this small fixture by design; the
-real value of this comparison method will show once run against a larger
-real-world project (the idoft cases in `benchmark/manifest.json`), where a
-targeted search should scale far better than random shuffling.
+**Real runs, F1-F4, 4 independent trials each** (`eval/tools/run_baseline_real.py`,
+native Windows/JDK24, candidate pool = victim + that case's polluter(s) + the
+fixture's 4 benign noise tests (`odfixture.MathUtilTest`/`StringUtilTest`,
+`max_runs=50`, `base_seed` 0/100/200/300):
 
-Not yet done: F2/F3/N1/N2 with the real runner, and any idoft case (still
-metadata-only, not cloned/built).
+| Case | Pool size | Runs to find (seeds 0/100/200/300) |
+| --- | --- | --- |
+| F1 | 6 (1 polluter) | 1, 1, 3, 2 |
+| F2 | 6 (1 polluter) | 1, 1, 3, 2 |
+| F3 | 7 (2 polluters, both required) | 1, 2, 3, 1 |
+| F4 | 6 (1 polluter, order-needs-reshuffle) | 1, 1, 3, 2 |
+
+Found the bug in every trial on every case. Compare to Member 2's real targeted
+search: F1/F2/F4 found their polluter in 1 search run each; F3 needed the
+one-by-one search (12 runs) plus `ddmin` minimisation (`docs/evidence-m2.md`).
+Both are cheap on this small fixture by design — F4 is the more informative
+comparison: FlakeTrace's own *discovered* order can never reproduce F4 at all
+(the polluter class sorts alphabetically after the victim's), which is exactly
+why ADR-008 added a shuffle-search step; a plain random shuffle finds it
+immediately because it doesn't depend on discovery order to begin with. The
+real value of this comparison method on a *targeted-search-favours* case will
+show on a larger real-world project (the idoft cases in
+`benchmark/manifest.json`), where a targeted search should scale far better
+than random shuffling.
+
+Note: an earlier entry (2026-10-10, `docs/evidence-m3.md`) described the F1
+candidate pool as "7 tests ... 5 noise tests". Recounting against
+`fixtures/od-fixture/ground_truth.json`'s `benign_noise_tests` (2 classes, 2
+methods each = 4 noise tests) gives 6, not 7 — the earlier prose miscounted;
+the actual candidate set (and this run's F1 result, byte-for-byte identical)
+did not change. Flagged here rather than silently corrected in the old entry.
+
+Not yet done: N1/N2 (no polluter exists to search for, so the random-order
+comparison does not apply) and any idoft case (still metadata-only, not
+cloned/built).
 
 ## Benchmark yield report status: 5 of 11 cases actually run
 
