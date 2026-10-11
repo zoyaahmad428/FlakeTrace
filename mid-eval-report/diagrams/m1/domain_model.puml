@@ -1,0 +1,98 @@
+@startuml domain_model
+' Domain model of one order-dependence diagnosis - concepts as they exist on main.
+' Drawn from docs/contracts/interfaces.md, report-schema.md, resource-evidence.md,
+' eval/baseline.py (TestIdentifier, RunOutcome, FailureSignature), runner/diagnose.py
+' (DiagnosisRuns), runner/integrity.py (SourceIntegrity), runner/recording.py.
+' Code names in brackets. Owner: M1 (Zoya Ahmad). Slot: ch5:fig:domain.
+!pragma layout smetana
+skinparam dpi 200
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 11
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor #F7F7F7
+  BorderColor #333333
+  ArrowColor #333333
+}
+hide empty methods
+hide circle
+
+class "Project\n(target Maven project)" as Project {
+  compiled classes
+  {field} source files (never written)
+}
+class "Test\n[TestIdentifier]" as Test {
+  class
+  method
+}
+class "Test order" as Order {
+  {field} given (--order), discovered
+  {field} or shuffled (seed)
+}
+class "Run\n[OrderRunner.run_ordered]" as Run {
+  one fresh JVM
+  tests in exactly this order
+}
+class "Test outcome\n[RunOutcome]" as Outcome {
+  passed
+}
+class "Failure signature\n[FailureSignature]" as Sig {
+  exception type
+  normalised stack trace
+  {field} message (not compared)
+}
+class "Diagnosis\n[DiagnosisRuns]" as Diag {
+  status
+  run counts
+}
+class "Execution record\n(.jsonl)" as Rec {
+  header line, then
+  one line per JVM run
+}
+class "Source integrity\n[SourceIntegrity]" as Integ {
+  SHA-256 before = after
+}
+class "Access" as Access {
+  READ or WRITE
+  class, method, bytecode offset
+  {field} via (root), depth
+}
+class "Shared resource" as Res {
+  static field, or
+  {field} system property (constant key)
+}
+class "Edge" as Edge {
+  polluter WRITE and
+  victim READ of one resource
+}
+class "Report\n(report.schema.json)" as Report {
+  outcome
+  unresolved reason
+}
+
+Project *-- "1..*" Test : contains
+Order o-- "1..*" Test
+Run --> "1" Order : executes
+Run *-- "1..*" Outcome : one per test
+Outcome --> "0..1" Sig : if failed
+Diag --> "1" Test : victim
+Diag --> "0..*" Test : polluters
+Diag --> "0..1" Sig : reference
+Diag *-- "1..*" Run : runs
+Diag --> "1" Rec : recorded in
+Diag --> "1" Integ : checks Project
+Test --> "0..*" Access : makes
+Access --> "1" Res : of
+Edge --> "1" Res : on
+Edge --> "2" Access : write, read
+Diag --> "0..*" Edge : explained by\n(one pair per polluter)
+Report --> "1" Diag : concludes
+
+legend right
+  M2 runner/: Test order, Run, Test outcome, Failure signature,
+     Diagnosis, Execution record, Source integrity
+  M1 evidence/: Access, Shared resource, Edge
+  M3 eval/: Report (outcome decided by eval/outcome.py)
+endlegend
+@enduml

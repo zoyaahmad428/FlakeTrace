@@ -7,22 +7,224 @@
 % ===========================================================================
 % Included from chapter5_design.tex — no \chapter here.
 \section{Domain Model}
+Figure~\ref{ch5:fig:domain} shows the concepts FlakeTrace works with and how they relate. Each
+box uses the name the concept has in the code, shown in brackets. The figure is drawn from the
+three contracts in \texttt{docs/contracts/} and from the data classes in \texttt{eval/baseline.py}
+and \texttt{runner/diagnose.py}.
+
+A \emph{diagnosis} starts from one failing test, the \emph{victim}, in a Maven project. Member~2's
+runner executes \emph{test orders}. Each \emph{run} uses one fresh JVM and runs the tests in
+exactly the given order, and every test in the order gets an \emph{outcome}. A failed outcome
+carries a \emph{failure signature}: the exception type and a normalised stack trace. The message is
+kept but not compared (\texttt{FailureSignature.matches}), because it can change from run to run
+for the same bug. The first real failure of the victim becomes the diagnosis's \emph{reference}
+signature, and later runs count only failures that match it. Every run is one line of the
+\emph{execution record}, and the project's files are hashed before and after the diagnosis
+(\emph{source integrity}), because FlakeTrace must not change the code it analyses.
+
+My module adds the explanation. A test makes \emph{accesses} to a \emph{shared resource}, either a
+static field or a system property with a constant key, by reading or writing it at a bytecode
+location. Each access also records which root it was reached from (for example a \texttt{@Before}
+method) and how many calls deep it is. An \emph{edge} pairs one polluter write with one victim read
+of the same resource. It is the mechanism the report names. When the runner finds several
+polluters, each one is analysed as a separate pair with the victim. Finally, Member~3's
+\emph{report} concludes the diagnosis with an outcome and, if it is unresolved, a typed reason.
+
+% Domain model (M1): diagrams/m1/domain_model.puml -> figures/m1/domain_model.png
+\begin{figure}[H]\centering
+  \includegraphics[width=\textwidth]{figures/m1/domain_model}
+  \caption{Domain model of one order-dependence diagnosis}\label{ch5:fig:domain}
+\end{figure}
 \section{Data Design}
+FlakeTrace keeps no database. Its data is three kinds of file, one per stage of a diagnosis
+(Table~\ref{ch5:tab:datastores}). The diagnosis report is the one all three members write into,
+so its structure is shown in Figure~\ref{ch5:fig:datamodel}, drawn only from
+\texttt{eval/schema/report.schema.json}.
+
+\begin{table}[H]\centering\small\setlength{\tabcolsep}{4pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.16\textwidth}>{\raggedright\arraybackslash}p{0.36\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.2\textwidth}}
+\toprule
+Data & Format & Written by & Defined in \\
+\midrule
+Resource evidence & JSON: Output 1 (accesses per test) and Output 2 (edges for one pair) & \nolinkurl{evidence/extract.py} (M1) & Resource-evidence contract (\nolinkurl{docs/contracts/}) \\
+Execution record & JSON lines: a header (victim, $n$, Java version, project commit, OS, shuffle settings), then one line per JVM run (step, order, every test's outcome and signature, time) & \nolinkurl{runner/recording.py} (M2) & ADR-004 \\
+Diagnosis report & One JSON file per victim, \texttt{<record>.report.json}, validated against the schema & \nolinkurl{eval/report.py}, saved by \nolinkurl{runner/cli.py} & Report schema (\nolinkurl{eval/schema/}) \\
+\bottomrule
+\end{tabular}
+\caption{The data FlakeTrace stores for one diagnosis}\label{ch5:tab:datastores}
+\end{table}
+
+\paragraph{The report.} A report describes one victim. It has 17 required fields and one optional
+field, \texttt{order\_exploration}, added by ADR-008. Each field in Figure~\ref{ch5:fig:datamodel}
+is tagged with the member who fills it, following the field table in
+\texttt{docs/contracts/report-schema.md}. Member~2's runner supplies the tests, the orders, the
+reference failure signature, the source-integrity result and the pointer to the execution record.
+Member~3 turns the runner's raw counts into Wilson intervals and decides \texttt{outcome} and
+\texttt{unresolved\_reason}. My module fills \texttt{shared\_resource},
+\texttt{polluter\_write\_location} and \texttt{victim\_read\_location} through
+\texttt{report\_fields} (Section~\ref{ch5:sec:process}), and adds its limitation lines.
+
+\paragraph{Rules the schema enforces.} \texttt{unresolved\_reason} must be set exactly when the
+outcome is \texttt{UNRESOLVED}. \texttt{failure\_signature} is null exactly when the reason is
+\texttt{NOT\_REPRODUCED} or \texttt{INFRASTRUCTURE\_FAILURE}: nothing ever failed for a real
+reason, so there is no real signature to report. No other fields are allowed. Every report is
+checked by \texttt{validate\_report} (\texttt{eval/schema\_validator.py}) before it is saved. The
+rule that \texttt{VERIFIED} needs a resource edge is not in the schema; it is enforced by
+\texttt{decide()} in \texttt{eval/outcome.py}.
+
+\paragraph{A real example.} In \texttt{eval/reports/f2.json} (fixture case F2), the runner reduced
+an order of 6 tests to 2: \texttt{FeaturePolluterTest\#enableTurbo}, then the victim
+\texttt{FeatureVictimTest\#expectsTurboDisabled}. My fields say the shared resource is the system
+property \texttt{odfixture.turbo}, written in \texttt{enableTurbo} at bytecode offset 4 and read in
+\texttt{FeatureFlags.isTurboEnabled} at offset 2, a helper one call below the test. The pair
+reproduced the failure 20 times out of 20 (Wilson lower bound 0.839) and the victim never failed
+alone (0/20), so the outcome is \texttt{VERIFIED}.
+
+\paragraph{Limitations.} The report holds one resource and one write and read location. Any other
+edge is only named in \texttt{limitations}; for example, \texttt{f3.json} shows \texttt{flagA} and
+names \texttt{flagB} there. The execution records themselves are not committed to the repository
+(\texttt{eval/reports/README.md}); each report keeps only the path to its record.
+
 % Report data model (M1): diagrams/m1/report_data_model.puml -> figures/m1/report_data_model.png
 \begin{figure}[p]\centering
   \includegraphics[angle=90,height=0.8\textheight]{figures/m1/report_data_model}
   \caption{Diagnosis report data model (from report.schema.json)}\label{ch5:fig:datamodel}
 \end{figure}
-\section{Process / Behavior Design}
-Include appropriate activity, sequence, state, DFD, ERD/schema, class, component, or other project-specific artefacts.
-% Evidence extraction data flow (M1): diagrams/m1/evidence_dataflow.puml
-\placeholderfig{ch5:fig:evidence-dfd}{Static evidence extraction: from bytecode to resource edges}{M1}
+\section{Process / Behavior Design}\label{ch5:sec:process}
+Four diagrams describe what happens in one diagnosis, in the order it happens:
+\begin{itemize}
+\item who calls whom (Figure~\ref{ch5:fig:diagnose-seq}, Member~2);
+\item which test orders are run and when the search stops (Figure~\ref{ch5:fig:search-activity},
+  Member~2);
+\item how my module finds the shared resource (Figure~\ref{ch5:fig:evidence-dfd});
+\item how the outcome is decided (Figure~\ref{ch5:fig:outcome}, Member~3).
+\end{itemize}
+Each diagram shows only what is implemented on \texttt{main}, and each was drawn from the code
+named in its own source file under \nolinkurl{mid-eval-report/diagrams/}.
+
+\subsection{The \texttt{diagnose} command}
+Figure~\ref{ch5:fig:diagnose-seq} follows one run of
+\texttt{py -m runner diagnose -{}-project <dir> -{}-victim Class\#method}. The command first checks
+its input; a malformed victim, a missing \texttt{pom.xml} or a bad \texttt{-{}-order} file stops it
+with exit code~2. \texttt{diagnose()} then hashes every project file, finds the project's tests by
+running the harness once with \texttt{-{}-list}, and starts the execution record with its header
+line. Every run after that goes through \texttt{RecordingRunner}: a fresh JVM runs the given order
+from standard input, and every test's outcome is appended to the record as one line. After the
+last run the files are hashed again and compared. Only when polluters were found does the command
+call my \texttt{analyse\_pair}, once per polluter, and combine the results. Member~3's
+\texttt{assemble\_report} then decides the outcome, validates the report and writes it next to the
+record (exit~0). A failing Maven or Java call, or an error in my extractor, gives exit~1. The one
+status that still produces no report, \texttt{NO\_SINGLE\_POLLUTER}, gives exit~3.
+
 % Diagnose sequence (M2): diagrams/m2/diagnose_sequence.puml
-\placeholderfig{ch5:fig:diagnose-seq}{Sequence of a \texttt{diagnose} run across the three components}{M2}
+\begin{figure}[p]\centering
+  \includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{figures/m2/diagnose_sequence}
+  \caption{Sequence of a \texttt{diagnose} run across the three components}\label{ch5:fig:diagnose-seq}
+\end{figure}
+
+\subsection{Reproduce, search, minimise, verify}
+Figure~\ref{ch5:fig:search-activity} is \texttt{run\_steps} in \nolinkurl{runner/diagnose.py}. It
+runs five phases:
+\begin{enumerate}
+\item \textbf{Reproduce.} The starting order runs up to $n$ times and stops at the first real
+  failure, whose signature becomes the reference. A crash, timeout or skip never counts as a
+  reproduction.
+\item \textbf{Shuffle} (ADR-008). If nothing failed, up to 31 distinct shuffled orders are tried,
+  one run each. Classes are shuffled first, then the methods inside each class, so methods of
+  different classes are never mixed, which JUnit itself would not do. Each order's seed is
+  recorded. Fixture F4 was found this way: \nolinkurl{eval/reports/f4.json} records the
+  reproducing seed~1 after 2 shuffled orders. Fixture N3 never failed in any of 31 shuffled
+  orders, so its report is \texttt{NOT\_REPRODUCED}.
+\item \textbf{Alone.} The victim runs alone $n$ times. A matching failure means it fails without
+  any polluter.
+\item \textbf{Search, then minimise} (ADR-007). Each earlier test is run once as
+  \texttt{[candidate, victim]}. If no single test is enough, the full order runs once more, and
+  only if it fails again does delta debugging (\texttt{ddmin}) shrink the earlier tests to a set
+  in which removing any one test stops the failure (1-minimal, not necessarily the smallest). For
+  F3 this reduced 15 tests to the 2 polluters plus the victim (\nolinkurl{eval/reports/f3.json}).
+\item \textbf{Verify.} The polluters plus the victim run $n$ times, counting the runs that fail
+  with the reference signature and the runs that fail for any reason.
+\end{enumerate}
+
 % Search pipeline activity (M2): diagrams/m2/search_activity.puml
-\placeholderfig{ch5:fig:search-activity}{Reproduce, polluter search, minimisation and verification}{M2}
+\begin{figure}[p]\centering
+  \includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{figures/m2/search_activity}
+  \caption{Reproduce, polluter search, minimisation and verification}\label{ch5:fig:search-activity}
+\end{figure}
+
+\subsection{Static evidence extraction}
+Figure~\ref{ch5:fig:evidence-dfd} is my module, \nolinkurl{evidence/extract.py}, as one call to
+\texttt{analyse\_pair}. For the polluter and then the victim, \texttt{find\_roots} collects the test
+method and every lifecycle method that runs with it, including inherited ones and the test class's
+static initialiser. From each root a breadth-first walk reads the compiled classes with
+\texttt{javap}, one class at a time and cached, and looks at every bytecode instruction:
+\begin{itemize}
+\item \texttt{getstatic} and \texttt{putstatic} become static-field reads and writes;
+\item the system-property calls become reads and writes when the key is a constant string;
+\item calls into the project's own classes are followed one level deeper;
+\item calls into the JDK or libraries are only listed;
+\item anything else the extractor cannot model becomes a typed unsupported observation.
+\end{itemize}
+\texttt{find\_edges} then keeps the resources that the polluter writes and the victim reads. If
+there is no edge but some walk stopped at the depth limit, the pair is analysed again one level
+deeper, up to depth~5 (ADR-006). Finally \texttt{report\_fields} turns the first edge into the three
+report fields and names everything else in \texttt{limitations}.
+
+An empty result sets \texttt{no\_supported\_resource\_evidence}; it never means the two tests are
+independent. The data flow also shows the extractor's limits: it reads only compiled classes and
+never runs a test, so a write that the polluter restores later is still reported as a write.
+
+% Evidence extraction data flow (M1): diagrams/m1/evidence_dataflow.puml
+\begin{figure}[p]\centering
+  \includegraphics[height=0.85\textheight]{figures/m1/evidence_dataflow}
+  \caption{Static evidence extraction: from bytecode to resource edges}\label{ch5:fig:evidence-dfd}
+\end{figure}
+
+\subsection{Outcome decision}
+Figure~\ref{ch5:fig:outcome} is \texttt{decide()} in \nolinkurl{eval/outcome.py}. The rules are
+checked from top to bottom and the first one that matches decides:
+\begin{enumerate}
+\item failed source integrity means nothing can be trusted;
+\item a victim that fails alone cannot be blamed on a polluter;
+\item if the reduced sequence never failed with the reference signature, the reason says why:
+  \texttt{NOT\_REPRODUCED}, \texttt{INFRASTRUCTURE\_FAILURE} (only crashes or timeouts) or
+  \texttt{SIGNATURE\_MISMATCH} (a different real failure);
+\item without a resource edge the result is \texttt{UNRESOLVED} with the reason
+  \texttt{NO\_\allowbreak SUPPORTED\_\allowbreak RESOURCE\_\allowbreak EVIDENCE};
+\item \texttt{VERIFIED} needs both an edge and a Wilson lower bound of at least 0.70; otherwise the
+  result is \texttt{CANDIDATE}.
+\end{enumerate}
+With $n = 20$, 20 reproductions out of 20 give a lower bound of 0.839, which is what F1--F4 reached.
+
 % Outcome decision (M3): diagrams/m3/outcome_decision.puml
-\begin{figure}[H]\centering
+\begin{figure}[tbp]\centering
   \includegraphics[width=0.85\textwidth]{figures/m3/outcome_decision}
   \caption{Outcome decision: Verified, Candidate and typed Unresolved reasons}\label{ch5:fig:outcome}
 \end{figure}
+
+\subsection{From design to code and tests}
+Table~\ref{ch5:tab:trace} lists, for each element of the diagrams above, the file that implements
+it and the tests that check it.
+
+\begin{table}[H]\centering\small\setlength{\tabcolsep}{4pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.36\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}>{\raggedright\arraybackslash}p{0.3\textwidth}}
+\toprule
+Design element & Code & Tests \\
+\midrule
+One fresh JVM per order, every test reported & \nolinkurl{runner/order_runner.py} & \nolinkurl{runner/tests/test_order_runner.py} \\
+Finding the project's tests & \nolinkurl{runner/discovery.py} & \nolinkurl{runner/tests/test_discovery.py} \\
+Reproduce and one-by-one search & \nolinkurl{runner/search.py} & \nolinkurl{runner/tests/test_search.py} \\
+Shuffled orders (ADR-008) & \nolinkurl{runner/orders.py} & \nolinkurl{runner/tests/test_orders.py} \\
+Minimisation with \texttt{ddmin} (ADR-007) & \nolinkurl{runner/minimise.py} & \nolinkurl{runner/tests/test_minimise.py} \\
+Phases, alone check and repeated runs & \nolinkurl{runner/diagnose.py}, \nolinkurl{runner/verify.py} & \nolinkurl{runner/tests/test_diagnose.py} \\
+Execution record & \nolinkurl{runner/recording.py} & \nolinkurl{runner/tests/test_recording.py} \\
+Source integrity & \nolinkurl{runner/integrity.py} & \nolinkurl{runner/tests/test_integrity.py} \\
+Roots, walk, edges, deepening, \texttt{report\_fields} & \nolinkurl{evidence/extract.py} & \nolinkurl{evidence/tests/test_extract.py} \\
+Command, per-polluter evidence, exit codes & \nolinkurl{runner/cli.py} & \nolinkurl{runner/tests/test_cli.py} \\
+Wilson interval & \nolinkurl{eval/stats.py} & \nolinkurl{eval/tests/test_stats.py} \\
+Outcome decision & \nolinkurl{eval/outcome.py} & \nolinkurl{eval/tests/test_outcome.py} \\
+Report assembly and schema check & \nolinkurl{eval/report.py}, \nolinkurl{eval/schema_validator.py} & \nolinkurl{eval/tests/test_report.py}, \nolinkurl{eval/tests/test_schema_validator.py} \\
+\bottomrule
+\end{tabular}
+\caption{Where each design element is implemented and tested}\label{ch5:tab:trace}
+\end{table}
