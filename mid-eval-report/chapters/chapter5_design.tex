@@ -24,7 +24,41 @@ The analysed project is only read. Maven compiles it into its own \texttt{target
   \includegraphics[width=0.92\textheight,angle=90]{figures/m2/architecture}
   \caption{FlakeTrace architecture: implemented at Iteration 1 (solid) and planned for FYP-2 (dashed grey)}\label{ch5:fig:arch}
 \end{figure}
-\section{Architectural Components}
+\section{Architectural Components}\label{ch5:sec:components}
+Table~\ref{ch5:tab:components} maps each component of the proposal's architecture (\path{docs/03-Design/architecture.md}) to the code that implements it at Iteration 1. ``Partial'' means part of the component's responsibility exists and the rest is named.
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.33\textwidth}}
+\caption{Proposal components and their Iteration 1 implementation}\label{ch5:tab:components}\\
+\toprule
+Component & Implemented in & Owner & Status at Mid\\
+\midrule
+\endfirsthead
+\toprule
+Component & Implemented in & Owner & Status at Mid\\
+\midrule
+\endhead
+Project adapter & \texttt{runner/discovery.py}, \texttt{order\_runner.py} (\texttt{maven\_test\_classpath}), \texttt{diagnose.py} (\texttt{environment}) & M2 & Partial: discovers tests by Surefire's default includes and records project commit, uncommitted changes, OS and JDK; no pinned repository, module or budget input\\
+Sandbox runner & \texttt{runner/order\_runner.py}, \texttt{harness/FtHarness.java} & M2 & Partial: one fresh JVM per order, 120\,s timeout; no container, no budget beyond the timeout\\
+Outcome normaliser & \texttt{eval/baseline.py} (\texttt{FailureSignature}), \texttt{runner/order\_runner.py} & M3, M2 & Built: exception type plus stack trace cut at the first JUnit/reflection frame; message masked\\
+Evidence collector & \texttt{evidence/extract.py} & M1 & Partial: static-only (\texttt{javap}), static fields and system properties, depth 2 deepening to 5; no filesystem paths, no runtime collection\\
+Evidence store / graph & --- & M1 & Planned (FYP-2); pair mode per found polluter instead\\
+Diagnosis planner & \texttt{runner/search.py} (\texttt{priority} argument only) & M2 & Planned (FYP-2); the CLI passes no priority\\
+Minimiser / verifier & \texttt{runner/search.py}, \texttt{orders.py}, \texttt{minimise.py}, \texttt{verify.py}; \texttt{eval/stats.py} & M2, M3 & Built: single-polluter search, \texttt{ddmin} to a 1-minimal set, $n$ repeated runs, Wilson interval\\
+Certificate generator & \texttt{eval/report.py}, \texttt{outcome.py}, \texttt{schema\_validator.py}; \texttt{runner/cli.py} (summary) & M3, M2 & Partial: schema-validated JSON and console summary; no human-readable renderer or replay command; no report for \texttt{NO\_SINGLE\_POLLUTER}\\
+CLI / CI adapter & \texttt{runner/cli.py}; \path{.github/workflows/ci.yml} & M2 & Partial: \texttt{py -m runner diagnose} built; CI tests FlakeTrace itself, no adapter for a user's pipeline\\
+Source integrity, execution record & \texttt{runner/integrity.py}, \texttt{recording.py} & M2 & Built: report fields \texttt{source\_integrity} and \texttt{execution\_\allowbreak record\_\allowbreak reference}\\
+CDR (gated) & --- & M3 & Planned (FYP-2), only for \texttt{VERIFIED} reports\\
+\bottomrule
+\end{longtable}}
+
+Four rules keep the components honest with each other; each is enforced in code, not only in documents:
+\begin{itemize}
+  \item \textbf{Every test is reported.} A crash, timeout or skip becomes a failure with a \texttt{flaketrace.*} exception type, never a missing entry or a pass (\texttt{runner/README.md}, ``Every test is always reported'').
+  \item \textbf{Only the reference failure counts.} \texttt{FailureSignature.matches()} compares exception type and normalised stack trace and ignores the message, because the message changes between runs of the same bug (\texttt{eval/baseline.py}). A \texttt{flaketrace.*} failure never becomes the reference (\texttt{runner/search.py}).
+  \item \textbf{No evidence is not ``no dependency''.} When no edge is found, the resource fields are \texttt{null} and the outcome is \texttt{UNRESOLVED(NO\_SUPPORTED\_RESOURCE\_EVIDENCE)} (\texttt{docs/contracts/interfaces.md}).
+  \item \textbf{The runner reports counts, not verdicts.} \texttt{diagnose()} returns raw counts in \texttt{DiagnosisRuns}; only \path{eval/outcome.py} decides the outcome (\path{runner/diagnose.py}).
+\end{itemize}
 \section{Interfaces and Dependencies}
 \section{Architecture Decisions and Rationale}
 \section{Design Evolution}
