@@ -22,6 +22,8 @@
 \usepackage{float}
 \usepackage{xcolor}
 \usepackage{listings}
+% Long \texttt file names cannot hyphenate; let LaTeX stretch spaces instead of overflowing the margin.
+\setlength{\emergencystretch}{3em}
 
 % Marks unfinished text. CI does not fail on it, but the final PDF must contain none:
 %   grep -rn '\\todo{' chapters/   must print nothing before submission.
