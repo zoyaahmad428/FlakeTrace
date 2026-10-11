@@ -134,7 +134,7 @@ ADR & Decision & Constraint that forced it & Rejected alternative\\
 
 Three of these decisions replaced parts of earlier ones, and the code follows the later one. ADR-006 widened ADR-002's depth range from 1--3 to 1--5 and made \texttt{runner/cli.py} call \texttt{analyse\_pair} instead of the depth-2 calls ADR-005 first described. ADR-007 made \texttt{POLLUTER\_FOUND} mean ``one or more polluters'', so fixture F3 gets a report instead of exit code 3. ADR-008 removed \texttt{NOT\_REPRODUCED} from exit code 3: it now gives a report, and exit code 3 remains only for \texttt{NO\_SINGLE\_POLLUTER}.
 
-The budget of 31 shuffled orders comes from a published study of Python projects that gives about 31 random-order runs for 95\% confidence that a test is not order-dependent \todo{cite Gruber et al. after a member has opened the paper}. That the figure carries over to JUnit is an assumption, and ADR-008 says so.
+The budget of 31 shuffled orders comes from a published study of Python projects that gives about 31 random-order runs for 95\% confidence that a test is not order-dependent~\cite{gruber2021flaky}. That the figure carries over to JUnit is an assumption, and ADR-008 says so.
 \section{Design Evolution}
 Show important design changes since the proposal and justify them.
 \begin{figure}[H]\centering
