@@ -41,14 +41,51 @@ A10 & The plan lists databases, ports, threads, caches & Adapted: Iteration 1 ke
 \end{longtable}}
 
 Nine actions are complete. A10 is a scope decision that we will ask the supervisor to confirm at the Mid evaluation; until then it is not counted as closed.
-\section{Iteration Strategy}
-Describe the iterative development strategy.
-\section{Iteration 1 Plan}
-Define objectives, selected features, deliverables, and evidence.
-\section{Iteration 2 Plan}
-Define objectives, selected features, deliverables, and evidence.
-\section{Work Breakdown and Responsibilities}
-Describe task allocation and ownership.
+\section{Iteration Strategy}\label{ch3:sec:strategy}
+The project runs in four iterations (\path{docs/00-Meta/roadmap.md}): Iteration 1 from August to October, Iteration 2 from November to January, Iteration 3 from February to April and Iteration 4 in May and June. Each phase is judged by its \emph{exit evidence}, what must exist and be demonstrable at its end, not by the activities done in it. For FYP-1 the exit evidence is a working prototype from input to certificate with measured baselines; for the end of FYP-2 it is frozen results, a deployed release and a reproducibility bundle.
+
+Within an iteration the work is split into small work packages, each with one owner. Three rules turn every package into evidence the supervisor can check:
+\begin{enumerate}
+  \item \textbf{Contracts first.} The three packages meet only through the contracts in \path{docs/contracts/}. A decision that affects more than one member becomes an ADR, accepted by all three before code is written against it (Section~\ref{ch5:sec:adrs}).
+  \item \textbf{Branch, pull request, review.} Each package is built on its own branch and merged through a pull request that CI must pass and another member must approve (\path{CONTRIBUTING.md}). Each member commits their own work after reading the change.
+  \item \textbf{Evidence with every change.} Anything run is recorded with its command and real result in the member's evidence log (\path{docs/evidence-m1.md}, \path{-m2.md}, \path{-m3.md}); no result is written down that was not produced by a run.
+\end{enumerate}
+
+\section{Iteration 1 Plan}\label{ch3:sec:it1}
+Iteration 1's objective is stated in Section~\ref{ch6:sec:objectives}: diagnose order-dependent failures on a seeded fixture without logs, minimise the order, name the resource from bytecode, report a confidence interval, keep the source unchanged, and leave negative controls unresolved. The plan (\path{docs/08-MidEval/iteration-plan.md}) has fourteen work packages, W1--W14; Table~\ref{ch6:tab:wps} lists each with its owner and state.
+
+The plan was set against the submission date S (Wednesday 14 October) and the meeting on Friday 16 October:
+\begin{itemize}
+  \item by 8--9 October: the fixture with pre-registered ground truth, the statistics, the outcome decision and the baseline interface (W1--W4, Member 3), and one repository with CI (W5, Member 2);
+  \item by S$-$2: the order runner (W6, Member 2); by S$-$1: the static extractor (W8, Member 1), the diagnosis runs (W7, Member 2) and the end-to-end command (W9, Members 2 and 3);
+  \item by S: minimisation for the two-polluter case (W10, Member 2), the report (W11) and the tag \texttt{mid-eval-v1} (W12); the day before the meeting, a rehearsed demonstration (W13).
+\end{itemize}
+The plan also fixed an \emph{emergency cut} in advance: if the submission came within two days, the demonstration would cover only F1 and N1, and F2, F3 and minimisation would be stated as in progress. It was not needed: all seven fixture cases run end to end (Chapter~6).
+
+\section{Iteration 2 Plan}\label{ch3:sec:it2}
+Iteration 2 runs from November to January. The roadmap commits it to resource normalisation and the test--resource graph, dynamic resource collection, search with ranking and an adaptive policy, the ablation harness, and deletion minimisation (\path{docs/00-Meta/roadmap.md}). Deletion minimisation is already built (Section~\ref{ch6:sec:ddmin}). The outcome fixed for the FYP-1 Final evaluation is: the primary scenario working end to end on all fixtures and on at least one real project from the benchmark manifest, and a first deployment attempt in a container (\path{iteration-plan.md}). The chapter ``Remaining FYP Plan'' gives the full plan for FYP-2.
+
+\section{Work Breakdown and Responsibilities}\label{ch3:sec:work}
+Ownership follows the three-member split approved at the defence (\path{docs/09-Team/members.md}). Each member owns one package of code and the work packages inside it (Table~\ref{ch3:tab:members}).
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.34\textwidth}>{\raggedright\arraybackslash}p{0.14\textwidth}}
+\caption{Team responsibilities}\label{ch3:tab:members}\\
+\toprule
+Member & GitHub & Owns & Folders\\
+\midrule
+\endfirsthead
+\toprule
+Member & GitHub & Owns & Folders\\
+\midrule
+\endhead
+M1: Zoya Ahmad (23i-0805) & \texttt{zoyaahmad428} & Resource evidence and explanation & \path{evidence/}\\
+M2: Abdul Raffay (23i-0587) & \texttt{abdulraffay-m} & Bounded search and verification, command line, CI, integration & \path{runner/}, \path{.github/}\\
+M3: Zarpash Nasim (23i-0027) & \texttt{ZarpashNasim} & Evaluation infrastructure, fixtures, statistics, gated repair & \path{eval/}, \path{fixtures/}\\
+\bottomrule
+\end{longtable}}
+
+The contracts, the architecture, this report, the evidence worksheet and the presentation are joint. Each chapter of this report has one owner, named in the first line of its source file. Member 2 is the integration owner: Member 2 keeps CI passing, merges the final Mid pull request and creates the \texttt{mid-eval-v1} tag.
 \section{Progress Against Plan}
 Compare planned milestones with actual progress.
 % Planned-vs-actual Gantt (M2): diagrams/m2/gantt.puml -> figures/m2/gantt.png
