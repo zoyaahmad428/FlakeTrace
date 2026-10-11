@@ -69,7 +69,7 @@
     "stack_trace": "org.junit.Assert.fail:89\norg.junit.Assert.failNotEquals:835\norg.junit.Assert.assertEquals:647\norg.junit.Assert.assertEquals:633\nodfixture.ConfigVictimTest.expectsDefaultMode:10"
   },
   "instrumentation_level": "static-only",
-  "execution_record_reference": "C:\\Users\\zarpa\\OneDrive\\Documents\\GitHub\\FlakeTracee\\eval\\reports\\flaketrace-records\\20261010T162228Z-odfixture.ConfigVictimTest#expectsDefaultMode.jsonl",
+  "execution_record_reference": "C:\\Users\\zarpa\\OneDrive\\Documents\\GitHub\\FlakeTracee\\eval\\reports\\flaketrace-records\\20261011T085440Z-odfixture.ConfigVictimTest#expectsDefaultMode.jsonl",
   "source_integrity": {
     "passed": true,
     "details": "23 files hashed (SHA-256) before and after; all identical"
@@ -85,5 +85,13 @@
     "Written values are not modelled: a polluter that writes and then restores the original value still produces a WRITE.",
     "Execution timing is not modelled (e.g. a victim <clinit> read that happens before the polluter runs).",
     "Missing evidence is not proof of independence."
-  ]
+  ],
+  "order_exploration": {
+    "order_given": false,
+    "shuffled_orders_tried": 0,
+    "orders_exhausted": false,
+    "seed_base": 0,
+    "reproducing_seed": null,
+    "infrastructure_failures": 0
+  }
 }
