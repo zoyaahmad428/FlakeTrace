@@ -181,7 +181,45 @@ Iteration~1 of FlakeTrace covers points 1--4; the execution budget (point 5) is 
 documentation describes detecting and quarantining flaky tests, not diagnosing a single
 failure in this way.
 \section{Proposed Solution}\label{ch2:sec:proposed}
-Explain how the proposed system addresses the identified gap.
+FlakeTrace combines established techniques into one workflow that ends either in a result anyone
+can check or in a clearly stated refusal. Given a Maven project and one failing test, it:
+\begin{enumerate}
+\item \textbf{reproduces} the failure in the given or discovered order, and if that fails, in up
+  to 31 valid shuffled orders, and records the failure's signature;
+\item \textbf{runs the victim alone}, so that a test which fails by itself is never blamed on
+  another test;
+\item \textbf{finds the polluter or polluters}, first one at a time and, when no single test is
+  enough, by delta debugging to a 1-minimal set;
+\item \textbf{repeats} the reduced order 20 times and gives a 95\% Wilson interval for how often
+  it reproduces the failure;
+\item \textbf{names the shared resource} and the exact bytecode locations where the polluter
+  writes it and the victim reads it, from the compiled classes, without running or changing the
+  code;
+\item \textbf{decides} \texttt{VERIFIED}, \texttt{CANDIDATE}, or \texttt{UNRESOLVED} with a
+  typed reason.
+\end{enumerate}
+The project's files are hashed before and after every diagnosis to show that nothing was changed.
+Chapter~5 gives the design.
+
+Iteration~1 runs this whole path from one command on the team's fixture project. Fixture cases
+F1--F4 are \texttt{VERIFIED}: each failure reproduced 20 times out of 20 and never alone. N1 and
+N2 are \texttt{UNRESOLVED} because the victim fails alone, and N3 is \texttt{UNRESOLVED} because
+the failure never reproduced, not even in 31 shuffled orders (Table~\ref{ch8:tab:fixture-results}).
+These are the cases the design was built to handle; they do not yet show how the tool performs
+on real projects.
+
+This answers the first four points of the gap in Section~\ref{ch2:sec:gaps}: the culprit is found
+by controlled reruns, the reproduction rate comes with an interval, the evidence names exact code
+locations, and an inconclusive case gets a typed reason instead of a guess. The remaining parts of
+the approved scope are not built yet and are planned for FYP-2:
+\begin{itemize}
+\item an explicit execution budget and the ranking of candidate tests before the search;
+\item filesystem paths as a third resource family;
+\item running diagnoses inside a locked-down container;
+\item runtime evidence, kept as a fallback for cases static analysis cannot explain (ADR-001);
+\item evaluation against published baselines, including iFixFlakies and RankF, on a frozen
+  benchmark of real projects.
+\end{itemize}
 \section{Complex Computing Problem}
 Clearly identify and explain the complex computing problem addressed by the project.
 \section{Technical Challenges}\label{ch2:sec:challenges}
