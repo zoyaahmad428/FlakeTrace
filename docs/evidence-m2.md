@@ -794,3 +794,16 @@ two-order suite, victim-first shuffle, `--shuffles 0`, seeds in the record).
   - `git status --short` afterwards: only `README.md` modified; the fixture is unchanged.
 - README changed: status line; the runner line now runs every runner test module (as CI does); a Windows block next
   to the bash one; prerequisites stated. The bash block was not run here (CI runs the same module lists on Linux).
+
+### 2026-10-11 — F3 re-run for the Mid report (fixture now has F4/N3)
+
+- Requirement: the report quotes `ddmin` on F3; the last recorded figure ("12 earlier tests -> 2 polluters in
+  10 runs", 2026-10-10) predates M3's F4/N3 classes, which sort before `ToggleVictimTest` and lengthen the order.
+- `py -m runner diagnose --project fixtures/od-fixture --victim odfixture.ToggleVictimTest#expectsNotBothFlagsSet`
+  (Windows 11, JDK 21.0.9, `main` + report commits, records to a temp folder) -> exit 0, 37.0 s wall:
+  `VERIFIED`, polluters `setFlagA`, `setFlagB`, `minimised: 14 earlier tests -> 2 polluters in 10 runs (1-minimal,
+  not necessarily the minimum)`, 20/20 (lower bound 0.839), alone 0/20.
+- Execution record, run lines per step: reproduce 1, alone 20, search 14, minimise 10 (includes the one full-order
+  re-run), verify 20 = 65 JVM runs, 22.2 s of JVM time.
+- Size for the report: `wc -l` -> runner product code 1,119 lines (11 Python files + `FtHarness.java`), tests 1,488 lines.
+- `git status --short fixtures/` empty.
