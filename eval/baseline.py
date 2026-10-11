@@ -1,12 +1,14 @@
 """Random-order baseline for FlakeTrace evaluation (Iteration 1).
 
-INTERFACE ONLY: this module defines the `OrderRunner` interface Member 2's
-real Docker builder / single-JVM order runner must implement, and a random-
-shuffle baseline built against that interface. No real implementation of
-`OrderRunner` exists in this repo yet, so the baseline has never been run
-against real tests -- see eval/README.md for that status. It is unit-tested
-with a FakeOrderRunner that lives ONLY under eval/tests/ (see
-eval/tests/fake_runner.py); this module must never import it.
+Defines the `OrderRunner` interface Member 2's real single-JVM order runner implements
+(`runner.order_runner.OrderRunner` satisfies it structurally), and a random-shuffle baseline
+built against that interface -- run for real against F1 (see eval/README.md and
+docs/evidence-m3.md for status and numbers). It is unit-tested with a FakeOrderRunner that
+lives ONLY under eval/tests/ (see eval/tests/fake_runner.py); this module must never import it.
+
+Shuffling (2026-10-11) groups by class first: a shuffled order picks a random class order,
+then a random method order within each class, but never interleaves two classes' methods --
+see `_shuffle_classes_then_methods`'s docstring for why.
 """
 
 import random
@@ -104,6 +106,30 @@ class BaselineResult:
         return None
 
 
+def _shuffle_classes_then_methods(pool: List[TestIdentifier], rng: random.Random) -> List[TestIdentifier]:
+    """Shuffle which class runs first, then (independently) each class's own method order --
+    but never interleave two classes' methods in the result. JUnitCore/Surefire run a suite
+    class by class; there is no way to hand them an order where ClassA#m1, ClassB#m1, ClassA#m2
+    run in that sequence in one JVM (iDFlakies [3] shuffles the same way for this reason). A
+    plain whole-pool shuffle (the previous behaviour) can propose exactly that impossible order,
+    which `runner.order_runner.OrderRunner` could not actually execute as requested."""
+    classes: Dict[str, List[TestIdentifier]] = {}
+    class_order: List[str] = []
+    for t in pool:
+        if t.class_name not in classes:
+            classes[t.class_name] = []
+            class_order.append(t.class_name)
+        classes[t.class_name].append(t)
+
+    rng.shuffle(class_order)
+    order: List[TestIdentifier] = []
+    for class_name in class_order:
+        methods = classes[class_name][:]
+        rng.shuffle(methods)
+        order.extend(methods)
+    return order
+
+
 def run_random_order_baseline(
     runner: OrderRunner,
     victim: TestIdentifier,
@@ -132,8 +158,7 @@ def run_random_order_baseline(
     for i in range(max_runs):
         seed = base_seed + i
         rng = random.Random(seed)
-        order = pool[:]
-        rng.shuffle(order)
+        order = _shuffle_classes_then_methods(pool, rng)
 
         outcomes = runner.run_ordered(order)
         victim_outcome = outcomes[victim]

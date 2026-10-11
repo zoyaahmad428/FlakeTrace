@@ -42,9 +42,13 @@ Two choices are left open:
 - F2 resolves at the default depth. The depth sweep still reports 1, 2 and 3.
 - Depth 2 equals the POC's frozen scope ("direct references plus one hop"). **Numbering
   differs:** the POC counts hops, so POC "depth N" (`FT_HOPS=N`) is depth N + 1 in our
-  contract. Any POC or vault figure quoted at "depth 2" (e.g. FJ-02's rank 39 → 1 in
-  [[07-Defense/decisions/depth-configurable]] and the claims ledger, C6/C7) is depth 3
-  in our numbering. These docs need a wording check before the Mid report quotes them.
+  contract — but this is a numbering-*convention* conversion only, not a guarantee the
+  POC's own hop count was accurate. **Resolved 2026-10-11 (claims ledger C6/C7, E11):** the
+  wording check this note asked for found the real conversion does not hold for FJ-02 — the
+  POC's "two hops" (which this formula would place at our depth 3) is actually found by the
+  real extractor only at **depth 5**. The POC's hand-counted hop figure undercounted the real
+  call chain; it was not just an off-by-one labelling mismatch. C6/C7 and the claims ledger now
+  quote depth 5 directly, not a formula applied to the POC's own count.
 - Over-approximation grows with depth. The outcome logic already requires reproduction
   statistics **and** an edge before `VERIFIED` (ADR-001), so a static edge alone cannot
   overclaim.
@@ -57,4 +61,4 @@ Two choices are left open:
 | --- | --- | --- |
 | M1 | ☑ | Chose (a1) fresh Python/javap extractor and default depth 2 on 2026-10-09 |
 | M2 | ☑ | Agreed 2026-10-10: the W9 CLI will call the extractor in-process at depth 2 |
-| M3 | ☐ | |
+| M3 | ☑ | Agreed 2026-10-11: `eval.report`/`eval.outcome` are already caller-agnostic of depth (consume `report_fields`'s output, not the depth it was found at), so default depth 2 needs no change on my side. Also closed this ADR's own open C6/C7 wording-check ask (Consequences, above; claims ledger C6/C7/E11) |
