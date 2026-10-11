@@ -6,15 +6,82 @@
 % Rules: mid-eval-report/CLAUDE.md. Do not edit a file you do not own.
 % ===========================================================================
 \chapter{Project Management and Development Evidence}
-\section{Work Completed}
-\section{Work Remaining}
-\section{Individual Responsibilities}
-\section{Contribution of Each Team Member}
+\section{Work Completed}\label{ch9:sec:done}
+Eleven of Iteration 1's fourteen work packages are merged (Table~\ref{ch6:tab:wps}). One command, \texttt{py -m runner diagnose}, takes a failing test through ordered re-execution, polluter search, minimisation, bytecode evidence and the outcome decision to a schema-validated report, and has done so for all seven fixture cases (\path{eval/reports/}). Nine of the ten proposal actions are complete (Section~\ref{ch3:sec:register}).
+
+\section{Work Remaining}\label{ch9:sec:remaining}
+Before the Mid evaluation: this report and the evidence worksheet, the tag \texttt{mid-eval-v1}, and a rehearsed demonstration (W11--W13). After it, Iteration 2's commitments (Section~\ref{ch3:sec:it2}) and the deviations still open in Table~\ref{ch3:tab:deviations}: the container, the test--resource graph, the threat model and a first real project end to end.
+
+\section{Individual Responsibilities}\label{ch9:sec:responsibilities}
+Each member owns one package of code and its work packages (Table~\ref{ch3:tab:members}); each chapter of this report has one owner, named in its source file. The next section has each member's own account.
+
+\section{Contribution of Each Team Member}\label{ch9:sec:contributions}
 \input{chapters/chapter9_contribution_m1}
 \input{chapters/chapter9_contribution_m2}
 \input{chapters/chapter9_contribution_m3}
-\section{Repository and Version Control Evidence}
-\section{Milestones and Commit Evidence}
+
+\section{Repository and Version Control Evidence}\label{ch9:sec:repo}
+All code, tests, documents and this report are in one GitHub repository:
+\begin{center}\url{https://github.com/zoyaahmad428/FlakeTrace}\end{center}
+The working rules are in \path{CONTRIBUTING.md}:
+\begin{itemize}
+  \item \textbf{Branches} are named after their owner and topic (\texttt{m2/order-runner}, \texttt{docs/report-m2}); since the restructure into one repository (\pr{1}), nothing is committed to \texttt{main} directly.
+  \item \textbf{Pull requests} need passing CI and an approval from another member; every pull request was reviewed by a member who did not write it (as stated by the team; Appendix~\ref{app:repository}). A pull-request template asks for the member and area, how the change was verified, its effect on the contracts, and the evidence and GenAI logs.
+  \item \textbf{Commits} are made by the member after reading the change, with a title \texttt{[M<N>] <area>: <what changed>} and a \texttt{Verified:} line giving the real command and result.
+  \item \textbf{CI} (\path{.github/workflows/ci.yml}) runs four jobs on every pull request on Linux with JDK 8: evaluation tests and the yield report, the fixture's premises, the runner tests and the evidence tests. A second workflow (\path{report.yml}) builds this report's PDF.
+\end{itemize}
+
+Reviews found real problems, and the code records them. Two examples from Member 2's reviews of Member 3's report assembly: a merge order in which the command would have crashed with a stack trace instead of exiting with code 3, and report text that said ``given order'' when no order had been given (both noted ``flagged by Member 2'' in \path{eval/report.py}).
+
+Table~\ref{ch9:tab:git} counts the history on \texttt{main} on 11 October 2026 (\texttt{git shortlog} and the merge commits). A pull request is credited to the member who wrote most of its commits.
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.34\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}}
+\caption{Commits and merged pull requests on \texttt{main} (11 October 2026)}\label{ch9:tab:git}\\
+\toprule
+Member & Commits (excluding merges) & Merged pull requests\\
+\midrule
+\endfirsthead
+\toprule
+Member & Commits (excluding merges) & Merged pull requests\\
+\midrule
+\endhead
+M1: Zoya Ahmad & 32 & 20\\
+M2: Abdul Raffay & 78 & 22\\
+M3: Zarpash Nasim & 35 & 21\\
+\bottomrule
+\end{longtable}}
+
+Commit counts measure activity, not size or value: Member 2's count includes the repository restructure, CI and the report, and the three members' code packages differ in kind.
+
+\section{Milestones and Commit Evidence}\label{ch9:sec:milestones}
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.47\textwidth}>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.16\textwidth}}
+\caption{Iteration 1 milestones on \texttt{main}}\label{ch9:tab:milestones}\\
+\toprule
+Merged & Milestone & Pull request & Owner\\
+\midrule
+\endfirsthead
+\toprule
+Merged & Milestone & Pull request & Owner\\
+\midrule
+\endhead
+9 Oct & One repository, CI, team rules; fixture, statistics, schema and outcome decision brought in & \pr{1} & M2, M3\\
+9 Oct & Static extraction of resource accesses & \pr{9} & M1\\
+9 Oct & Ordered single-JVM runner & \pr{10} & M2\\
+9 Oct & Victim-alone check, polluter search, repeated runs, integrity, execution record & \pr{11} & M2\\
+10 Oct & Report assembly from real runs & \pr{21} & M3\\
+10 Oct & One command, \texttt{py -m runner diagnose} & \pr{26} & M2\\
+10 Oct & Evidence depth 1--5 with deepening & \pr{34} & M1\\
+10 Oct & Minimisation with \texttt{ddmin} (F3) & \pr{35} & M2\\
+11 Oct & \texttt{NOT\_REPRODUCED} reports, schema change, fixtures F4 and N3 & \pr{45} & M3\\
+11 Oct & Given order, shuffled orders, alone check always & \pr{49} & M2\\
+11 Oct & Real reports for all seven fixture cases & \pr{57} & M3\\
+11 Oct & Report skeleton with per-chapter ownership & \pr{60} & M2\\
+\bottomrule
+\end{longtable}}
+
+CI results are recorded in the evidence logs: the first runner pull requests with their run numbers in \path{docs/evidence-m2.md} (for example run 37971869749 on \pr{11}); later runs are recorded there by pull request with their test counts, such as 144 runner tests in 105.2\,s on \pr{49}.
 \section{Tools and Tool-Assisted Development}\label{ch9:sec:genai}
 All three members used generative AI, and this section discloses it per artefact, as the FYP GenAI guide requires. Every materially assisted code, test or design change is recorded in \path{docs/08-MidEval/genai-register.md} (date, member, tool, level, what was used, what the member changed, how it was verified, what was rejected), with session-level detail in \path{docs/genai-log-m1.md}, \path{-m2.md} and \path{-m3.md}. The levels are those of the guide:
 \begin{itemize}
