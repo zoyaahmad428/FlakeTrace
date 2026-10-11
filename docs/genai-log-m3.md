@@ -944,3 +944,75 @@ Ownership checkpoint: be able to explain, without re-reading the code, why
 `infrastructure_failures` had to stop being bounded by `sequence_failures_any` (it's now a
 total across phases that don't all share the same `_n` denominator) and why `order_exploration`
 is reported for every outcome, not just NOT_REPRODUCED.
+
+## 2026-10-11 — Baseline class-first shuffling + real F1-F4 run (LeftWorkForM1&M3.md, M3 #5)
+
+**What I asked:** Pasted `LeftWorkForM1&M3.md`'s M3 section, item 5 (plus a relayed suggestion
+from Member 2): reword claim B11 honestly, and before running more baselines, change
+`eval/baseline.py` to shuffle classes first then methods within a class (JUnit cannot run an
+order that interleaves two classes), then rerun on F1-F4.
+
+**What was kept:** The `_shuffle_classes_then_methods` design (group by class via a dict,
+shuffle the class order, then independently shuffle each class's own methods) as generated —
+checked it against the one invariant that matters (no class's methods appear non-contiguously)
+with a synthetic multi-method-class test, since the real fixture's classes are all
+single-method and couldn't have caught a bug here.
+
+**What I changed:** Wrote `eval/tools/run_baseline_real.py` as a new committed tool (the
+2026-10-10 F1-only run was an uncommitted one-off script, per that entry's own evidence log) so
+this run is reproducible, not ad hoc, and captures each case's reference signature by running
+`[polluters..., victim]` once for real rather than reusing stored report JSON (keeps the same
+mechanism across all 4 cases instead of mixing "read from a file" and "run fresh").
+
+**How it was verified:** `py -m unittest eval.tests.test_baseline -v` → 13/13 passed. Mutation
+check: reverted the new shuffle function to the old plain whole-pool shuffle, re-ran the new
+test alone — failed immediately with a class split across a non-contiguous run, confirming the
+test isn't vacuous; restored, re-ran clean. Real run via `py eval/tools/run_baseline_real.py`
+(native Windows, JDK 24, real Maven classpath, real JVMs): found the bug in every one of 16
+trials (4 cases × 4 seeds); F1's numbers (1, 1, 3, 2) came back byte-for-byte identical to the
+2026-10-10 entry's, which is itself a form of verification (same inputs, same seeded RNG, same
+real runner → same result).
+
+**Errors found:** The 2026-10-10 evidence entry's F1 pool description ("7 tests, 5 noise
+tests") doesn't match `ground_truth.json`'s real `benign_noise_tests` (4 noise tests, pool of
+6) — a documentation miscount from that earlier session, not a code bug (the actual candidate
+set, and therefore the result, never changed). Found by recounting against the real fixture
+file while writing this run's own pool description, not told by anyone.
+
+**Rejections:** None.
+
+Ownership checkpoint: be able to explain why a plain `rng.shuffle()` over the whole candidate
+pool was wrong (it can produce an order no single JVM run of JUnitCore can execute) and why the
+synthetic multi-method-class test, not the real fixture, is what actually exercises that fix.
+
+## 2026-10-11 — Close ADR-002, C6/C7 wording, stale register rows (LeftWorkForM1&M3.md, M3 #2/#4/#6)
+
+**What I asked:** Same `LeftWorkForM1&M3.md`, items 2 (tick ADR-002), 4 (stale A5/A8/A9
+register text) and 6 (claim E5's contradiction note, and the C6/C7 "two hops" vs. depth
+wording M1 asked for).
+
+**What was retained:** The specific numeric correction for C6/C7 (depth 5, not depth 3) came
+from re-reading claim E11's own already-recorded real measurement, not generated fresh — I
+checked the ADR-002 N+1 conversion formula against E11's number myself before writing anything,
+rather than trusting the formula or guessing a number.
+
+**What I decided not to do:** Did not touch ADR-002's own top-level `Status: PROPOSED` line
+(the task list only asked that of Member 1, for ADR-001, which they own; ADR-002 is also
+Member-1-owned, and ADR-007/ADR-008 are left the same way in this repo despite full agreement).
+Did not act further on claim E5/E6: read `docs/07-Defense/decisions/cdr-gated-module.md` in
+full and found the "contradiction note" it points to already resolves the apparent
+contradiction with a ready panel answer — nothing to fix in this repository; E6's remaining
+work (auditing the slide deck and proposal document) is outside it.
+
+**How it was verified:** `py -m unittest discover -s eval/tests -v` → 85/85 passed (a sanity
+check; this session's changes here are documentation only, verified by re-reading the exact
+claim/ADR text being corrected against the real evidence it cites, not by running code).
+
+**Errors found:** None new in this entry — these were documentation corrections against
+already-recorded real evidence (E11), not new bugs.
+
+**Rejections:** None.
+
+Ownership checkpoint: be able to say, without checking anything, which Mid-Eval status docs
+were stale before this session (A8/A9, W4/W9/W14) and why — each had a "pending X" note that
+was already resolved weeks or days earlier by a merged PR, not an ongoing gap.
