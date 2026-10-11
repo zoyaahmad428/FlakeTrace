@@ -35,7 +35,7 @@ as they are, and hashes the project's files before and after every diagnosis to 
 Its purpose is to replace the manual search developers do today, rerunning subsets of the suite
 until the culprit appears, with a bounded diagnosis whose result anyone can check. It does not
 detect flaky tests in general and does not repair them. Section~\ref{ch1:sec:scope} separates
-what Iteration~1 has built from what is planned for FYP-2.
+what Iteration~1 has built from what is planned for later iterations.
 \section{Problem Statement}\label{ch1:sec:problem}
 \begin{quote}
 When a Java test passes in isolation but fails after other tests have run, developers can usually
@@ -57,7 +57,7 @@ Three consequences follow from this statement and shape the whole project:
   changing the code stays with the developer.
 \item \textbf{The process is bounded.} An unbounded search is what developers already do by hand.
   Iteration~1 bounds the number of orders and repeats; an explicit execution budget is planned
-  for FYP-2.
+  for a later iteration.
 \end{itemize}
 \section{Problem Context and Motivation}\label{ch1:sec:context}
 \paragraph{How common the problem is.} Order dependence is a major source of flaky tests in Java:
@@ -113,9 +113,10 @@ three properties of the complete product:
 \item \textbf{Intervention-backed evidence:} the polluters are confirmed by controlled reruns, not
   only inferred from the code; the shared resource is supporting evidence. Built in Iteration~1.
 \item \textbf{Budget as a first-class input:} the tool spends a declared number of test
-  executions and then stops. Planned for FYP-2.
+  executions and then stops. Planned for a later iteration.
 \end{enumerate}
-The benchmark evaluation against published baselines named in the statement is also FYP-2 work.
+The evaluation named in the statement is also later work: real benchmark projects start in
+Iteration~2, and the frozen held-out evaluation is in FYP-2.
 \section{Project Objectives}\label{ch1:sec:objectives}
 Each objective below has a measure that can be checked, and a status. Iteration~1 results are from
 the seven committed fixture reports in \texttt{eval/reports/} (Table~\ref{ch8:tab:fixture-results});
@@ -137,7 +138,7 @@ the requirements behind each objective are in Table~\ref{ch4:tab:fr}.
 \endfoot
 O1 & Find the polluter or polluters of a known order-dependent failure from one command. &
 Every seeded order-dependent fixture case ends \texttt{VERIFIED} with its true polluters. &
-Met on fixtures: F1--F4 \texttt{VERIFIED}, including F3's two polluters. Real projects: FYP-2. \\
+Met on fixtures: F1--F4 \texttt{VERIFIED}, including F3's two polluters. Real projects: from Iteration~2. \\
 \addlinespace
 O2 & Never give a confident diagnosis that is not supported. &
 No \texttt{VERIFIED} result on any negative control. &
@@ -160,7 +161,7 @@ Met: integrity check passed in all seven fixture reports. \\
 O6 & Diagnose at lower cost than existing approaches. &
 At least 25\% fewer test executions (median) than the strongest baseline, losing at most 5
 percentage points of success at the same budget. &
-FYP-2: needs the execution budget, candidate ranking and published baselines. \\
+Later iterations: needs the execution budget, candidate ranking and published baselines. \\
 \addlinespace
 O7 & Make results reproducible by others. &
 A frozen benchmark of real projects with yield and exclusions published, and a clean Linux
@@ -239,7 +240,7 @@ safe multi-tenant execution. \\
   diagnosed; everything else is opaque.
 \item \textbf{No instrumentation in Iteration~1.} After the proposal defence (approved with minor
   modifications), ADR-001 fixed Iteration~1 to controlled reruns plus static analysis, with a
-  runtime agent as the fallback in a later iteration.
+  runtime agent as the Iteration~2 fallback.
 \end{itemize}
 Certificate-Driven Remediation was added as a gated module, not committed scope, so that the
 exclusion of automatic repair still holds.

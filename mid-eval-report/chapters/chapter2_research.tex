@@ -139,7 +139,7 @@ known, which is a later step than diagnosis. What the table shows is that no sin
 covers the last four columns together. Section~\ref{ch2:sec:gaps} explains why that combination
 matters. Two items from the proposal are not in our row because they are not built yet: ranking
 the candidate tests before the search (RankF is the baseline it will be measured against) and an
-explicit execution budget. Both are planned for FYP-2.
+explicit execution budget. Both are planned for later iterations; ranking is due in Iteration~2.
 \section{Limitations and Gaps}\label{ch2:sec:gaps}
 Each part of diagnosing an order-dependent failure has already been solved by someone. Reducing a
 failing order is solved by delta debugging \cite{zeller2002ddmin} as used in iFixFlakies
@@ -176,7 +176,7 @@ failure that does all of the following:
 \item says clearly, with a typed reason, when the evidence does not support a conclusion;
 \item spends no more than a declared execution budget.
 \end{enumerate}
-Iteration~1 of FlakeTrace covers points 1--4; the execution budget (point 5) is planned for FYP-2
+Iteration~1 of FlakeTrace covers points 1--4; the execution budget (point 5) is planned for a later iteration
 (Section~\ref{ch2:sec:proposed}). For commercial tools the gap is narrower: their published
 documentation describes detecting and quarantining flaky tests, not diagnosing a single
 failure in this way.
@@ -211,7 +211,7 @@ on real projects.
 This answers the first four points of the gap in Section~\ref{ch2:sec:gaps}: the culprit is found
 by controlled reruns, the reproduction rate comes with an interval, the evidence names exact code
 locations, and an inconclusive case gets a typed reason instead of a guess. The remaining parts of
-the approved scope are not built yet and are planned for FYP-2:
+the approved scope are not built yet and are planned for later iterations (Section~\ref{ch1:sec:scope}):
 \begin{itemize}
 \item an explicit execution budget and the ranking of candidate tests before the search;
 \item filesystem paths as a third resource family;
@@ -234,7 +234,7 @@ These are not separate requirements that can be met one after another: each one 
 
 The team claims seven of the nine Seoul Accord characteristics of a complex computing problem.
 Table~\ref{ch2:tab:ccp} gives the evidence for each and states how much of it Iteration~1 already
-shows; parts that depend on the execution budget are planned for FYP-2.
+shows; parts that depend on the execution budget are planned for later iterations.
 
 \begin{table}[tbp]
 \centering
@@ -249,7 +249,7 @@ Conflicting requirements &
 More resource coverage and more repeated runs give stronger evidence but cost more analysis and CI
 time, and a fixed budget must be split between searching and verifying. &
 Partly. Deeper static analysis explains more real cases but costs more per pair and adds false
-edges (ADR-006). The budget split is FYP-2. \\
+edges (ADR-006). The budget split comes later. \\
 \addlinespace
 Depth of analysis &
 The possible test orders form a large search space; the failure can need several polluters
@@ -261,7 +261,7 @@ Depth of knowledge &
 Program analysis, software testing, delta debugging, statistical estimation, sequential
 decision-making and secure execution are all needed. &
 Partly. Bytecode analysis, delta debugging and Wilson intervals are built; planning and the
-locked-down container are FYP-2. \\
+locked-down container come later. \\
 \addlinespace
 Beyond standard practice &
 Retrying, dashboards and quarantining do not produce a checkable explanation of one failure. &
@@ -276,7 +276,7 @@ Interdependence &
 Evidence quality changes candidate ranking, ranking changes execution cost, and execution results
 change verification and the decision to abstain. &
 Partly. The polluters found by reruns decide which pairs are analysed, and \texttt{VERIFIED} needs
-both a resource edge and the interval. The ranking loop is FYP-2. \\
+both a resource edge and the interval. The ranking loop is due in Iteration~2. \\
 \addlinespace
 Ill-defined cause &
 At the start, the responsible test, the shared resource and the conditions that reproduce the
@@ -349,7 +349,7 @@ because the analysis does not model the values written (Section~\ref{ch2:sec:ccp
 trace code would be injected and whether the analysed code would be modified. The team's
 post-defence plan named a runtime Java agent as the preferred way to observe shared state, while the team's report contract fixes the evidence level at
 static-only for Iteration~1. ADR-001 resolved this: Iteration~1 uses controlled reruns and static
-bytecode analysis with no instrumentation, and a runtime agent is kept as the FYP-2 fallback for
+bytecode analysis with no instrumentation, and a runtime agent is kept as the Iteration~2 fallback for
 cases static analysis cannot explain.
 
 \paragraph{Open challenges.}
@@ -418,7 +418,7 @@ Shared state supports a conclusion but never makes one: \texttt{VERIFIED} needs 
 Sound dependency detection slowed execution by about 20 times \cite{bell2015electrictest}; a
 single added delay exposed 85\% of asynchronous-wait failures \cite{luo2014empirical}. &
 Iteration~1 adds no instrumentation: reruns plus static bytecode analysis; a runtime agent is the
-FYP-2 fallback. &
+Iteration~2 fallback. &
 ADR-001 \\
 \addlinespace
 Static fields and the filesystem are among the common root causes \cite{zhang2014independence};
@@ -451,7 +451,7 @@ led to the rule that a test failing alone is classified, never ``fixed'' by chan
 environment. Its fake polluters led to the rule that the runner must reproduce the project's own
 execution context.
 
-Two questions remain open for FYP-2. Evaluation will use the metrics RankF reports, such as the
+Two questions remain open for later iterations. Evaluation will use the metrics RankF reports, such as the
 rank of the first true polluter, so that results can be compared directly with it
 \cite{rahman2025rankf}. No paper reviewed gives a ratio for splitting a fixed budget between
 searching and verifying, so the split is project policy, and running without a verification
