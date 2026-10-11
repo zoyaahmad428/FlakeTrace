@@ -776,3 +776,21 @@ two-order suite, victim-first shuffle, `--shuffles 0`, seeds in the record).
 - Docs changed: ADR-003/004/005/007/008 status `ACCEPTED` (ticks already present); W14 row merged; W9 row, A1, A5,
   A7 (seed no longer "not applicable"), demo-plan status and mocked table, members row, architecture status line.
 - Limitation: F4/N3 JSON reports are still not in `eval/reports/` (Member 3's `run_w9_integration.py` covers F1/F2/N1/N2).
+
+### 2026-10-11 — Root README: every setup command run before the report quotes it
+
+- Requirement: Form 3 #7 caps implementation marks if setup is not reproducible; the Mid report's Chapter 6
+  copies its setup commands from the root `README.md`, which still said the runner and extractor were not built
+  and listed only `runner.tests.test_order_runner` (CI runs every `runner/tests/test_*.py`).
+- Ran the Windows form of each command from the repo root on `main` `0e6723a` + the README change (Windows 11,
+  Python 3.14.0, JDK 21.0.9, Maven 3.10.0, `jsonschema` 4.26.0 already installed):
+  - `py -m unittest` over the 7 `eval/tests/test_*.py` modules -> `Ran 85 tests in 2.753s — OK`
+  - `mvn -B -q -f fixtures/od-fixture/pom.xml test-compile` and the `m1-selftest` compile -> exit 0 both
+  - `py -m unittest evidence.tests.test_extract` -> `Ran 39 tests in 86.267s — OK`
+  - `py -m unittest` over the 9 `runner/tests/test_*.py` modules -> `Ran 144 tests in 344.837s — OK`
+  - `py -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode`
+    (records to a temp folder) -> exit 0, `VERIFIED`, polluter `ConfigPolluterTest#pollute`, resource
+    `static-field odfixture.Config mode` (write @1 -> read @1), 20/20 (lower bound 0.839), alone 0/20.
+  - `git status --short` afterwards: only `README.md` modified; the fixture is unchanged.
+- README changed: status line; the runner line now runs every runner test module (as CI does); a Windows block next
+  to the bash one; prerequisites stated. The bash block was not run here (CI runs the same module lists on Linux).
