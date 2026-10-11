@@ -5,4 +5,104 @@
 % Rules: mid-eval-report/CLAUDE.md. Do not edit a file you do not own.
 % ===========================================================================
 \chapter{Repository and Contribution Evidence}\label{app:repository}
-Include selected repository screenshots, milestone/tag evidence, task logs, and contribution evidence.
+\textbf{Repository:} \url{https://github.com/zoyaahmad428/FlakeTrace}
+
+\textbf{Demonstrated version:} tag \texttt{mid-eval-v1} at commit \todo{M2: tag SHA, set at the freeze on 13 October}.
+
+\section*{Branch protection}
+Rule in \path{CONTRIBUTING.md}: \texttt{main} accepts no direct pushes; a pull request needs passing CI and one approval from another member. Since the restructure (\pr{1}), \texttt{main} has no direct commits: all 62 later changes arrived as merged pull requests (\texttt{git log -{}-first-parent}, 11 October 2026).
+
+\todo{M2: screenshot of GitHub Settings, Branches, showing the protection rule on main}
+
+\section*{Continuous integration}
+\path{.github/workflows/ci.yml} runs four jobs on every pull request and push to \texttt{main}, on Linux with Temurin JDK 8 and Python 3.11: evaluation tests and the benchmark yield report; the fixture's premises (it compiles, victims pass alone, F1 and F2 fail after their polluters, N1 fails alone); the runner tests with \texttt{FLAKETRACE\_REQUIRE\_JVM} set, so a missing JVM fails instead of skipping; and the evidence tests. \path{.github/workflows/report.yml} checks that the generated results table matches \path{eval/reports/}, builds this report's PDF and uploads it. \path{.github/CODEOWNERS} requests the owning member's review for changes in their folder, and \path{.github/pull_request_template.md} asks every pull request for its member and area, its verification, its contract impact, and its evidence and GenAI logs.
+
+Recorded CI runs (\path{docs/evidence-m2.md}):
+\begin{itemize}
+  \item run \href{https://github.com/zoyaahmad428/FlakeTrace/actions/runs/37957537495}{37957537495} on \pr{10}, the order runner
+  \item run \href{https://github.com/zoyaahmad428/FlakeTrace/actions/runs/37971869749}{37971869749} on \pr{11}, the diagnosis runs
+  \item \pr{49}, given and shuffled orders: runner job on JDK 8, 144 tests in 105.2\,s (line copied from the job log)
+\end{itemize}
+
+\section*{Merged pull requests}
+Table~\ref{app:tab:prs} lists every pull request merged into \texttt{main} up to 11 October 2026. ``Member'' is the author of most of the pull request's commits; every pull request was reviewed by a member who did not write it.
+% Generated from git, not typed: for each first-parent merge on main, the PR number and branch from the
+% merge title and the author of most of its commits (git log --no-merges <merge>^1..<merge>^2).
+% Regenerate at the freeze so the list ends at the tagged commit.
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.52\textwidth}>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.12\textwidth}}
+\caption{Merged pull requests on \texttt{main}}\label{app:tab:prs}\\
+\toprule
+PR & Branch & Member & Merged\\
+\midrule
+\endfirsthead
+\toprule
+PR & Branch & Member & Merged\\
+\midrule
+\endhead
+\pr{1} & \path{chore/repo-restructure} & M2 & 09 Oct\\
+\pr{3} & \path{docs/commit-protocol} & M2 & 09 Oct\\
+\pr{4} & \path{m1/poc-cleanup} & M1 & 09 Oct\\
+\pr{5} & \path{docs/confirm-m3-identity} & M3 & 09 Oct\\
+\pr{7} & \path{m3/fix-f1-example-offsets} & M3 & 09 Oct\\
+\pr{8} & \path{m1/resource-evidence-contract} & M1 & 09 Oct\\
+\pr{6} & \path{m3/eval-readme-fix} & M3 & 09 Oct\\
+\pr{9} & \path{m1/static-extraction} & M1 & 09 Oct\\
+\pr{10} & \path{m2/order-runner} & M2 & 09 Oct\\
+\pr{11} & \path{m2/w7-diagnosis-runs} & M2 & 09 Oct\\
+\pr{12} & \path{m1/call-depth} & M1 & 10 Oct\\
+\pr{15} & \path{m1/resource-edges} & M1 & 10 Oct\\
+\pr{14} & \path{m3/fix-n2-flake-mechanism} & M3 & 10 Oct\\
+\pr{13} & \path{m3/w9-report-assembly} & M3 & 10 Oct\\
+\pr{16} & \path{m1/require-jvm-guard} & M1 & 10 Oct\\
+\pr{17} & \path{m1/confirm-contract} & M1 & 10 Oct\\
+\pr{18} & \path{m3/w9-report-assembly} & M3 & 10 Oct\\
+\pr{19} & \path{m1/contract-status} & M1 & 10 Oct\\
+\pr{20} & \path{m2/evidence-ci} & M2 & 10 Oct\\
+\pr{23} & \path{m1/ground-truth-check} & M1 & 10 Oct\\
+\pr{21} & \path{m3/w9-report-assembly} & M3 & 10 Oct\\
+\pr{22} & \path{m2/n2-random-fixture} & M2 & 10 Oct\\
+\pr{24} & \path{m1/fastjson-validation} & M1 & 10 Oct\\
+\pr{25} & \path{m3/n2-integration} & M3 & 10 Oct\\
+\pr{26} & \path{m2/w9-cli} & M2 & 10 Oct\\
+\pr{27} & \path{m2/e1-junit3} & M2 & 10 Oct\\
+\pr{28} & \path{m1/phase6-tests} & M1 & 10 Oct\\
+\pr{30} & \path{m1/adr005-agree} & M1 & 10 Oct\\
+\pr{31} & \path{m3/contract-answers} & M3 & 10 Oct\\
+\pr{29} & \path{docs/adr-006-m2} & M2 & 10 Oct\\
+\pr{33} & \path{m3/adr006-agree} & M3 & 10 Oct\\
+\pr{34} & \path{m1/adr006-deepen} & M1 & 10 Oct\\
+\pr{36} & \path{m3/use-analyse-pair} & M3 & 10 Oct\\
+\pr{38} & \path{m3/w10-evidence-wording} & M3 & 10 Oct\\
+\pr{39} & \path{m1/status-a2-w8} & M1 & 10 Oct\\
+\pr{35} & \path{m2/w10-minimise} & M2 & 10 Oct\\
+\pr{40} & \path{m2/w10-summary} & M2 & 10 Oct\\
+\pr{41} & \path{m2/panel-actions} & M2 & 10 Oct\\
+\pr{43} & \path{m3/adr-ticks} & M3 & 10 Oct\\
+\pr{44} & \path{m1/adr007-agree} & M1 & 10 Oct\\
+\pr{42} & \path{m2/adr-008-not-reproduced} & M2 & 10 Oct\\
+\pr{46} & \path{docs/record-agreements} & M2 & 10 Oct\\
+\pr{47} & \path{m2/order-independent-tests} & M2 & 11 Oct\\
+\pr{45} & \path{m3/adr008-not-reproduced} & M3 & 11 Oct\\
+\pr{48} & \path{m3/status-sync} & M3 & 11 Oct\\
+\pr{49} & \path{m2/adr-008-runner} & M2 & 11 Oct\\
+\pr{50} & \path{m1/adr008-a6} & M1 & 11 Oct\\
+\pr{51} & \path{m1/register-fix} & M1 & 11 Oct\\
+\pr{52} & \path{m3/adr008-crash-counts} & M3 & 11 Oct\\
+\pr{54} & \path{m3/close-mideval-loose-ends} & M3 & 11 Oct\\
+\pr{53} & \path{docs/post-adr008-sync} & M2 & 11 Oct\\
+\pr{55} & \path{docs/meeting-date} & M2 & 11 Oct\\
+\pr{57} & \path{m3/real-f3-f4-n3-reports} & M3 & 11 Oct\\
+\pr{58} & \path{m1/disclosures} & M1 & 11 Oct\\
+\pr{56} & \path{docs/claims-f3-a9} & M2 & 11 Oct\\
+\pr{59} & \path{m3/members-status-pr57} & M3 & 11 Oct\\
+\pr{60} & \path{m2/report-skeleton} & M2 & 11 Oct\\
+\pr{61} & \path{docs/report-m3} & M3 & 11 Oct\\
+\pr{62} & \path{docs/report-m1} & M1 & 11 Oct\\
+\pr{63} & \path{docs/report-m2} & M2 & 11 Oct\\
+\pr{64} & \path{docs/report-m3} & M3 & 11 Oct\\
+\pr{65} & \path{docs/report-m1} & M1 & 11 Oct\\
+\pr{66} & \path{docs/report-m2-ch5-evolution} & M2 & 11 Oct\\
+\bottomrule
+\end{longtable}}
