@@ -1,6 +1,7 @@
 # ADR-002 — Resource evidence extractor: fresh Python/javap implementation, default depth 2
 
-**Date:** 2026-10-09 · **Status:** `PROPOSED`, needs agreement from M1, M2 and M3 ·
+**Date:** 2026-10-09 · **Status:** `ACCEPTED` by M1, M2 and M3 (PRs #17, #20, #54) and
+implemented in W8 (the depth range was later widened to 1–5 by ADR-006) ·
 **Owner:** M1 (evidence)
 
 ## Context

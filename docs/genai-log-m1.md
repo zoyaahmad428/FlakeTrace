@@ -89,7 +89,7 @@ code 1 for internal errors (`javap` missing or failing), added beside 0 and 2;
 the `interfaces.md` line marked "planned, not yet implemented", because that
 line says to record it "when implemented".
 
-**What I changed:** *fill after review.*
+**What I changed:** No edits to the generated text; what was merged is the handed-over patch unchanged (checked on 2026-10-11 by comparing each patch with the merged diff). My part: the instructions above (remove the "Member 2 consumes nothing" claim, the Invocation section, the depth trade-off) and the command shape; I applied, committed and pushed it in PR #8. In that PR I also committed a stray pager file by mistake (a `git status` typed into `less`) and removed it in commit `b2d72b9`.
 
 **How it was verified:** see `docs/evidence-m1.md`, "Contract revision": the
 example still matches the javap dump, the projections validate against the
@@ -123,7 +123,7 @@ only; default `--depth 2`.
 **What was retained:** ADR-002 (PROPOSED); the default-2 wording in the
 contract; the numbering note; open question 5 marked resolved.
 
-**What I changed:** *fill after review.*
+**What I changed:** The two decisions are mine: write the extractor fresh with the POC as reference only (a1), and default depth 2; I rejected (a2), ASM, and depths 1 and 3. No edits to the generated ADR text; what was merged is the handed-over patch unchanged (checked on 2026-10-11 by comparing each patch with the merged diff). Committed and pushed in PR #8.
 
 **How it was verified:** the depth-numbering claim was checked against the POC
 source (`extract_static.py` lines 29 and 132) and `depth_sweep.csv`; see
@@ -153,7 +153,7 @@ only); `evidence/tests/test_extract.py` (9 tests); the self-test Maven project
 cases); `docs/04-Implementation/evidence-collector.md`; the README, iteration-plan,
 members, demo-plan and register updates.
 
-**What I changed:** *fill after review.*
+**What I changed:** No edits to the generated code or tests; what was merged is the handed-over patch unchanged (checked on 2026-10-11 by comparing each patch with the merged diff). My part: the specification above (static fields and constant-key properties, JUnit 4/3 lifecycle, `<clinit>`, inherited methods) and asking for my own self-test class with offsets cross-checked against `javap -c -p`; I applied, committed and pushed it in PR #9.
 
 **How it was verified:** see `docs/evidence-m1.md` Phase 2: the four acceptance offsets
 cross-checked by hand against JDK 8 `javap -c -p`; 9 tests OK on JDK 8 and JDK 21 javap; a
@@ -184,7 +184,7 @@ measure what each depth adds on the fixture (real numbers only).
 root); `follow_call` with `VIRTUAL_DISPATCH`, `DEPTH_LIMIT` and `UNRESOLVED_CALL`;
 `IMPLICIT_CLINIT` also on `new`; 5 new tests; `evidence/tools/measure_depth.py`; doc updates.
 
-**What I changed:** *fill after review.*
+**What I changed:** No edits to the generated code, tests or script; what was merged is the handed-over patch unchanged (checked on 2026-10-11 by comparing each patch with the merged diff). My part: the specification above (`--depth` with default 2, project calls only, cycles, `call_path`, virtual dispatch and reflection reported, real measurements only); I applied, committed and pushed it in PR #12.
 
 **How it was verified:** expected paths and offsets read by hand from JDK 8 javap
 (`evidence/javap-dumps/phase3-depth-selftest.txt`); 15 tests OK on JDK 8 and JDK 21 javap;
@@ -213,7 +213,7 @@ never claim "no dependency".
 limitations), `report_fields` (contract projection into Member 3's three fields; extra edges and
 locations named in `limitations`), pair-mode CLI with clear input errors, 11 new tests (26 total).
 
-**What I changed:** *fill after review.*
+**What I changed:** No edits to the generated code or tests; what was merged is the handed-over patch unchanged (checked on 2026-10-11 by comparing each patch with the merged diff). My part: the rules above (never invent an edge, never claim "no dependency", empty list plus `no_supported_resource_evidence`); I applied, committed and pushed it in PR #15.
 
 **How it was verified:** see `docs/evidence-m1.md` Phase 4. The fixture pairs F1/F2/F3 and two
 no-resource pairs were run with JDK 8 javap, and the F3 offsets were checked by hand. 26 tests OK
@@ -238,7 +238,7 @@ Member 2's CI question.
 found" skips into failures (the same name Member 2's runner job uses); `analyse_test` now defaults
 to depth 2 like the CLI; 1 new test (27 total).
 
-**What I changed:** *fill after review.*
+**What I changed:** No edits to the generated helper or test; what was merged is the handed-over patch unchanged (checked on 2026-10-11 by comparing each patch with the merged diff). My part: asking for Member 2's CI job to be unable to pass by skipping; I applied, committed and pushed it in PR #16.
 
 **How it was verified:** skip, fail and pass behaviour each run for real; see `docs/evidence-m1.md`.
 
@@ -262,7 +262,7 @@ CI command.
 **What was retained:** the contract status and open-question answers; the "Calling it from another
 component" notes (run from the repo root or import in-process); ticks on ADR-001 to ADR-004.
 
-**What I changed:** *fill after review.*
+**What I changed:** The decisions are mine: confirm the contract, the first-edge projection, the CLI call and exit codes, and my ticks on ADR-001 to ADR-004. No edits to the drafted wording; what was merged is the handed-over patch unchanged (checked on 2026-10-11 by comparing each patch with the merged diff). Committed and pushed in PR #17.
 
 **How it was verified:** see `docs/evidence-m1.md` (API names checked against main, example and
 anchors validated).
@@ -285,7 +285,7 @@ automatically.
 **What was retained:** `GroundTruthTest` (3 tests): exact set of edge pairs over all 156 ordered
 pairs, resource per edge, no edge for N1/N2 from any test.
 
-**What I changed:** *fill after review.*
+**What I changed:** I chose to compare against Member 3's `ground_truth.json` directly instead of copying its values into the test. No edits to the generated test class; what was merged is the handed-over patch unchanged (checked on 2026-10-11 by comparing each patch with the merged diff). Applied, committed and pushed in PR #23.
 
 **How it was verified:** see `docs/evidence-m1.md`. 30 tests OK on javap 21; fixture tests OK on
 JDK 8 javap; a mutation check showed the tests fail when depth is 1 or the ground truth is altered.
@@ -309,7 +309,7 @@ extractor code changed. The evidence write-up and javap excerpt were drafted by 
 **What was retained:** the run results, the javap excerpt
 (`evidence/javap-dumps/phase5-fastjson.txt`), the evidence entry and claims-ledger rows E10/E11.
 
-**What I changed:** *fill after review.*
+**What I changed:** No edits to the generated write-up or javap excerpt; what was merged is the handed-over patch unchanged (checked on 2026-10-11 by comparing each patch with the merged diff). My part: the brief (run FJ-01 at depths 1 and 2, settle `defaultTimeZone` vs `defaultLocale`). My brief named the wrong FJ-01 polluter and resource (see Errors found). Applied, committed and pushed in PR #24.
 
 **How it was verified:** real runs only, see `docs/evidence-m1.md`. CLI and in-process API agree.
 JDK 8 and JDK 21 javap agree. Every offset on the depth-4 path was checked against the JDK 8 javap
@@ -341,7 +341,7 @@ chose the option.
 "auto-deepen": accept 1–5, keep default 2, and have pair mode go deeper only when there is no
 edge and the walk was cut off.
 
-**What I changed:** *fill after review.*
+**What I changed:** I chose the option: auto-deepening, range 1–5, default kept at 2, deepening only when there is no edge and the walk was cut off. No edits to the generated ADR text or tables; what was merged is the handed-over patch unchanged (checked on 2026-10-11 by comparing each patch with the merged diff). I asked Member 2 and Member 3 to review it and committed it in PR #28.
 
 **How it was verified:** real exploration runs over every POC candidate for FJ-01 (72) and
 FJ-02 (722) at depths 1–5, and the fixture matrix at depths 2–5. See `docs/evidence-m1.md`.
@@ -366,7 +366,7 @@ Ownership checkpoint: you need to understand and verify this implementation befo
 polluter side of an edge), one CLI test (unknown victim in pair mode exits 2), and
 `M1ClinitReaderSelfTest.java`.
 
-**What I changed:** *fill after review.*
+**What I changed:** No edits to the generated tests or self-test class; what was merged is the handed-over patch unchanged (checked on 2026-10-11 by comparing each patch with the merged diff). My part: the required-test list from my brief; applied, committed and pushed in PR #28.
 
 **How it was verified:** 33 tests OK on javap 21 and JDK 8 javap; expected offsets read by hand
 from JDK 8 javap; mutation check. See `docs/evidence-m1.md`.
@@ -392,7 +392,7 @@ agreed ADR.
 - The contract edit exactly as the ADR proposed; README, implementation note, demo plan and ADR
   status updated.
 
-**What I changed:** *fill after review.*
+**What I changed:** No edits to the generated code, tests or contract text; what was merged is the handed-over patch unchanged (checked on 2026-10-11 by comparing each patch with the merged diff). My part: starting the implementation only after Member 2 and Member 3 had agreed to ADR-006 (PRs #29, #33); applied, committed and pushed in PR #34.
 
 **How it was verified:**
 - 39 tests OK on JDK 21 and JDK 8 javap.
@@ -423,7 +423,7 @@ panel action A6 (a note on minimisation), and set ADR-001's status.
 - New note `docs/01-Literature/minimisation-ddmin-vs-one-by-one.md`; A6 `COMPLETE`.
 - Claim E10 and the W8 line updated from 156 to 240 pairs.
 
-**What I changed:** *fill after review.*
+**What I changed:** I resolved the merge conflict with Member 2's PR #49 in `genai-register.md` myself, keeping both sides' rows. I left two marker lines in by mistake and removed them in PR #51. Otherwise the merged content is the handed-over patch unchanged (checked by comparing the patch with the merged diff). Committed and pushed in PR #50.
 
 **How it was verified:** evidence 39 OK on main `9dcd439` and on PR #49; M2's and M3's suites OK;
 real F4 and F3 runs (see `docs/evidence-m1.md`). Each literature statement in the note was checked
@@ -436,3 +436,25 @@ note on iFixFlakies says that of cleaner discovery. Corrected before handing ove
 member to open before the report cites them.
 
 Ownership checkpoint: you need to understand and verify this before claiming it as your contribution.
+
+## 2026-10-11 — GenAI disclosures and ADR-002 status
+
+**Assistance level:** L1 (Supportive): the assistant drafted the 13 "What I changed" lines and the
+10 register cells from the repository record; I read and confirmed each before committing.
+
+**What I asked:** fill in my GenAI disclosures, mark ADR-002 accepted and update my members row,
+and tick the source check in the A6 note after I had opened [4] and [11].
+
+**What was retained:** the disclosure lines, ADR-002 `ACCEPTED` (PRs #17, #20, #54), the members row.
+
+**What I changed:** Read every disclosure line against my PRs before committing; corrected any
+line that did not match what I did.
+
+**How it was verified:** each handed-over patch was compared with what was merged in the matching
+PR. Every PR's merged content came from the patches, except the two leftover conflict lines in
+PR #50 (removed in #51). Recorded choices were checked against the ADR agreement rows.
+
+**Errors found:** a stray pager file had been committed in PR #8 and was removed in `b2d72b9`;
+it is now named in that entry.
+
+**Rejections:** claiming edits or checks that the record does not show.

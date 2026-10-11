@@ -18,7 +18,7 @@ post-defence action plan's two-student split is superseded by the three-member s
 
 | Member | Current task | Branch | State | Blocked by |
 | --- | --- | --- | --- | --- |
-| 1 | Static-field + system-property extraction for F1/F2 | `m1/adr006-deepen` | W8 complete: Phases 2–6 and ADR-006 (depth 1–5, pair-mode auto-deepening; fastjson FJ-01/FJ-02 at `depth_used` 4/5); report chapters next | M2 and M3 switch their calls to `analyse_pair` |
+| 1 | Mid report: chapters 1–2 and 5, own chapter 6 section, worksheet individual section; GenAI disclosures | `main` (all code merged, last PR #51) | Code complete: W8 and ADR-006 (depth 1–5, auto-deepening), used by M2's CLI and M3's integration through `analyse_pair`; ADR-001/002 accepted, I2 answered, panel action A6 complete; report drafts are files, not yet in the template | — |
 | 2 | Mid packaging: report ch. 5–6, demo rehearsal, tag `mid-eval-v1` (W11–W13) | `main` | All runner work merged (W6, W7, W9, W10, W14/ADR-008 in PR #49); docs synced | Tag waits for every Mid PR to merge |
 | 3 | ADR-008 crash-count follow-ups merged (PR #52); closed remaining Mid-Eval loose ends, merged (PR #54: ADR-002 tick, C6/C7 depth wording, B11 baseline rerun, stale register rows); `eval/reports/` now has all 7 real reports (F1–F4, N1–N3, PR pending); report ch. 4 and 7–8 per `08-MidEval/README`'s Form 3 table next | `main` | Phases 0–5 done; real `VERIFIED`/`UNRESOLVED` reports produced and committed for all 7 fixture cases; random-order baseline run for real on F1–F4, not just F1 (see `docs/evidence-m3.md`) | Report chapters need a refresh against current state; worksheet and tag (W12) not started |
 
@@ -26,7 +26,7 @@ post-defence action plan's two-student split is superseded by the three-member s
 
 | Member | Evidence log | GenAI log |
 | --- | --- | --- |
-| 1 | `docs/evidence-m1.md` *(create on first run)* | `docs/genai-log-m1.md` *(create)* |
+| 1 | `docs/evidence-m1.md` | `docs/genai-log-m1.md` |
 | 2 | `docs/evidence-m2.md` | `docs/genai-log-m2.md` |
 | 3 | [[evidence-m3]] | [[genai-log-m3]] |
 
