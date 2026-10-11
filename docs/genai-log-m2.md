@@ -16,7 +16,7 @@ the post-defence and Mid Eval stage.
 `CONTRIBUTING.md`, PR template, CODEOWNERS, `.github/workflows/ci.yml`,
 `docs/contracts/interfaces.md`, `docs/08-MidEval/*`, `docs/09-Team/*`, ADR-001, folder READMEs.
 
-**What I changed:** *fill after reviewing the PR with the team.*
+**What I changed:** Reviewed the restructure with Zoya and Zarpash; left the GitHub-organisation question deferred because it was unclear; had M1 and M3 confirm their member rows.
 
 **How it was verified:**
 - Python CI steps run locally: 55 unit tests pass; `yield_report.py` runs on the real manifest.
@@ -57,7 +57,7 @@ commit is not.
 **How it was verified:** read through the changed files; section numbers and cross-references
 checked (`grep` for `§` in `CLAUDE.md`). No code changed, so no tests apply.
 
-**What I changed:** *fill after review.*
+**What I changed:** Asked for the "agents never commit" rule myself after spotting Zoya's commits authored as "Claude" and my own commits under the wrong email; applied this change and committed it myself, the first use of the rule.
 
 **Note:** this change was handed to me as a patch to apply and commit myself — the first use
 of the new rule.
@@ -84,7 +84,7 @@ victim FAIL `java.lang.AssertionError`; reversed order PASS.
 works on both JDK 8 and 21, so the ADR was corrected. Maven was not installed on my laptop —
 installed 3.10.0 and added to user PATH.
 
-**What I changed:** *fill after reviewing the ADR.*
+**What I changed:** Chose option A (Python + JUnitCore harness) over Maven Surefire and an all-Java runner; installed Maven 3.10.0 and added it to PATH.
 
 ## 2026-10-09 — W6 hand-over 1: harness + F1 proof
 
@@ -106,7 +106,7 @@ empty — fixture source untouched.
 and every reference updated. During the merge of `main`, a local merge commit kept conflict
 markers in `genai-register.md`; fixed by taking the clean GitHub resolution.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Read the diff and accepted it as written; confirmed the fixture source was untouched.
 
 ## 2026-10-09 — W6 hand-over 2: every test always reported
 
@@ -127,7 +127,7 @@ change: `py -m unittest -v runner.tests.test_order_runner` → 17 tests OK.
 **Errors found:** none in the code. Gap stated honestly: a real JVM crash and a real `@Ignore`
 are only tested through hand-written result lines, because the fixture has no such test.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Accepted; agreed to state openly that real JVM crashes and `@Ignore` are only tested with hand-written lines.
 
 ## 2026-10-09 — W6 hand-over 3: runner tests in CI
 
@@ -146,7 +146,7 @@ which needs a signed-in account; Claude read the job/step status from the public
 
 **Errors found:** none. Noted for Member 1: `evidence/tests/` is not yet run by CI.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Copied the CI result line (`Ran 17 tests ... OK`) from the GitHub job log myself, since Claude could not read it.
 
 ## 2026-10-09 — W6 final review and fixes
 
@@ -163,7 +163,7 @@ asset; reworded docs for 4.
 
 **How it was verified:** 3 new tests failed before the fix, as predicted; 22 tests OK after.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Accepted the fixes for the three important findings and the doc rewording; agreed to defer the five minors.
 
 ## 2026-10-09 — W7 design: ADR-004 and implementation plan
 
@@ -187,7 +187,7 @@ the ADR computed with `eval.stats.wilson_interval`.
 **Errors found:** I first assumed N2 fails ~50% of the time; measured 18/60 on Windows
 (`System.nanoTime()` has 100-ns steps there). The N2 test uses n = 40 so it cannot flake.
 
-**What I changed:** *fill after reviewing the ADR.*
+**What I changed:** Chose discovered order with an override, one-by-one search with a priority hook, n = 20, and small single-purpose modules.
 
 ## 2026-10-09 — W7 Task 1: source-integrity check
 
@@ -205,7 +205,7 @@ the plan, which was tested in the design spike).
 **Errors found:** none. Limitation noted: only the top-level `target/` is excluded (multi-module
 projects).
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Read the diff; accepted.
 
 ## 2026-10-09 — W7 Task 2: execution record
 
@@ -220,7 +220,7 @@ projects).
 
 **Errors found:** none.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Read the diff; accepted.
 
 ## 2026-10-09 — W7 Task 3: discover the original order
 
@@ -238,7 +238,7 @@ class's methods through a new `FtHarness --list` mode.
 **Errors found:** none; noted that JUnit's method order inside a class is neither source nor
 alphabetical.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Read the diff; accepted; noted that JUnit's method order is not alphabetical.
 
 ## 2026-10-09 — W7 Task 4: reproduce, polluter search, repeat
 
@@ -254,7 +254,7 @@ on the "a crash is never the reference" rule made its test fail, restored → OK
 
 **Errors found:** none.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Read the diff; accepted.
 
 ## 2026-10-09 — W7 Task 5: diagnose() end to end
 
@@ -275,7 +275,7 @@ was wrong, not the code; the test now checks that no polluter is blamed. Also fo
 documented: a rarely-failing flaky victim can produce a spurious polluter (exposed by low
 verify counts).
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Accepted rewriting the N2 test after it failed 0/80 on my Windows laptop (timer precision).
 
 ## 2026-10-09 — W7 final review and fixes
 
@@ -293,7 +293,7 @@ code; CI run `37971869749` recorded.
 **How it was verified:** the record-folder test failed before the guard and passed after; full
 runner suite 57 OK.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Accepted the `record_dir` guard and wording fixes; agreed to defer seven minors.
 
 ## 2026-10-10 — CI job for Member 1's evidence tests
 
@@ -315,7 +315,7 @@ makes `execution_record_reference` absolute; it does not (`runner/diagnose.py:10
 duplicates Member 1's `find_edges`/`report_fields`. Claim E1 as rewritten in PR #18 says Surefire
 is used for compiling, which is wrong. Raised with the members, not edited (not M2's folders).
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Added the job exactly as Member 1 specified; ticked ADR-001 and ADR-002; raised three problems in M1's and M3's areas with them instead of editing their folders.
 
 ## 2026-10-10 — N2 test back to `VICTIM_FAILS_ALONE`
 
@@ -333,7 +333,7 @@ passed; a mutation of the alone rule made it fail (`POLLUTER_FOUND`); full runne
 which CLAUDE.md forbids agents to run. It discarded only the agent's own one-line edit; reported
 to the member at the time.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Accepted; was told the agent had run a forbidden `git checkout`, and confirmed it only undid its own one-line edit.
 
 ## 2026-10-10 — W9 CLI design (ADR-005)
 
@@ -353,7 +353,7 @@ needing `eval/requirements.txt`.
 launch method is not, but behaviour is; a proper install needs a team-wide package rename and the
 container decision, so it is recorded as deferred with its constraints.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Chose one victim per run, exit code 3 when no report can be built, and `py -m runner` now with the install later; questioned whether `py -m runner` counts as "production".
 
 ## 2026-10-10 — W9 Task 1: the diagnose command
 
@@ -367,7 +367,7 @@ install step, as planned.
 **How it was verified:** tests failed first (module missing), then 11 OK; mutation of the evidence
 condition made the report tests fail; full runner suite 68 OK.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Read the diff; accepted.
 
 ## 2026-10-10 — W9 Task 2: real runs and docs
 
@@ -385,7 +385,7 @@ suite 73 OK; F1 run by hand.
 **What was wrong:** a Python escape (`\2…` in a string) wrote a control character into the
 README's sample paths; found by reading the file back, fixed, and every edited file scanned.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Accepted; ran F1 through the new command by hand.
 
 ## 2026-10-10 — W9 final review and fix
 
@@ -400,7 +400,7 @@ that failed first on behaviour; ADR-005 and notes updated.
 **What was wrong:** another string-escape slip wrote a non-ASCII byte into a test; caught by the
 import error and fixed with `bytes([0xFF])`.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Accepted narrowing the error catching; then asked for every deferred minor to be fixed too.
 
 ## 2026-10-10 — W9 review minors fixed
 
@@ -432,7 +432,7 @@ scope-boundary wording, the README limitation line.
 **How it was verified:** a scratchpad probe first; the tests passed (existing behaviour); a reversed
 order made the pollution test fail; full runner suite 59 OK.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Used Member 1's suggested wording for E1; accepted the JUnit 3 test.
 
 ## 2026-10-10 — W10 design (ADR-007)
 
@@ -448,7 +448,7 @@ evidence for every polluter before `VERIFIED`.
 **What was retained:** ADR-007 — flow, `ddmin` rules, evidence rule, limitations (single-run
 checks, no budget, 1-minimal only), verification plan.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Chose a real F3 report, `ddmin` over bisection, reusing `POLLUTER_FOUND`, and evidence for every polluter before `VERIFIED`.
 
 ## 2026-10-10 — W10 Task 1: `ddmin`
 
@@ -464,7 +464,7 @@ step made 7 fail; full runner suite 91 OK.
 **What was wrong:** the brainstorming estimate of 10–15 runs for F3's shape was low; the real count
 on the fake is 25 (recorded, not the guess).
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Read the diff; accepted; noted the real run count (25) was higher than the estimate.
 
 ## 2026-10-10 — W10 Task 2: minimise in `run_steps`
 
@@ -481,7 +481,7 @@ polluters (9 minimise runs); full suite 93 OK.
 **What was wrong:** the plan updated the CLI's F3 test only in Task 3, so Task 2 broke it; caught by
 predicting the full-suite result, fixed in Task 2 (ruling in the ledger).
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Accepted fixing the CLI's F3 test in this task instead of the next.
 
 ## 2026-10-10 — W10 Task 3: several polluters in the report
 
@@ -495,7 +495,7 @@ tests, the F3 report checks, docs and claim E14 (first numbered E13).
 **How it was verified:** tests failed first; the real F3 command is `VERIFIED` with `flagB` in
 `limitations`; evidence for the first polluter only made the F3 test fail; full suite 97 OK.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Read the diff; accepted.
 
 ## 2026-10-10 — W10 final review and fixes
 
@@ -514,7 +514,7 @@ four tests that failed first; ADR-007, E14 and the note corrected; the exit-3 me
 **What was wrong (session):** one long shell command with a quote in its text failed to parse; nothing
 was applied, checked with grep, redone from a script file.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Rejected changing M3's limitation line in `eval/`; raised it with M3 instead.
 
 ## 2026-10-10 — W10: `analyse_pair` per polluter
 
@@ -529,7 +529,7 @@ for the product, then switch the command to `analyse_pair` (ADR-006 follow-up).
 **What was rejected:** Member 1's suggested one-line swap as written: it predates W10's several
 polluters and would have let a deep edge on a second polluter go unmarked in the report.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Rejected Member 1's one-line swap as written, because it would hide a deep edge on a second polluter.
 
 ## 2026-10-10 — W10 follow-up: minimisation in the summary
 
@@ -554,7 +554,7 @@ header check, all failing first; two mutation checks.
 
 **What was rejected:** recording a dummy seed or container — neither exists, so the docs say so.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Rejected recording a fake seed or container; the docs say they do not exist yet.
 
 ## 2026-10-10 — Panel actions A1, A3, A4, A7 marked complete
 
@@ -570,7 +570,7 @@ A6 (Member 1) left open — not ours to close.
 **How it was verified:** every cited test, file and PR checked to exist; A7 marked complete only after
 the commit and OS were really recorded (previous commit).
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Left A5 and A6 open because they belong to M3 and M1.
 
 ## 2026-10-10 — ADR-008 design (NOT_REPRODUCED and order search)
 
@@ -589,7 +589,7 @@ proposal for Member 3, fixture requests F4/N3, order of work.
 **What was found while checking:** reference [12] (the 31-order figure) studies Python projects; the
 ADR states its transfer to JUnit as an assumption instead of a finding.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Asked for a research-based design, not the simplest one; chose `--order` plus shuffled orders, 31 shuffles over 10 or 20, and one diagnosis flow; accepted labelling the Python-study figure as an assumption.
 
 ## 2026-10-10 — Record agreed ADRs (I1, I3, I4, E14, ADR-007 wording)
 
@@ -604,7 +604,7 @@ ADR states its transfer to JUnit as an assumption instead of a finding.
 **How it was verified:** every ADR's agreement table read on `main`; the quoted Wilson bounds recomputed
 (20/20 → 0.839, 19/20 → 0.764); the ADR links resolve.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Left I2 for Member 1 to answer.
 
 ## 2026-10-11 — Runner tests independent of the fixture's size
 
@@ -621,7 +621,7 @@ stray `git checkout --` with no path (forbidden for agents by CLAUDE.md; it chan
 modified files proved the edits were intact). (3) Restoring `runner/discovery.py` after a mutation wrote
 LF endings; content was identical (empty diff) and the CRLF endings were put back.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Accepted; checked that the agent's stray `git checkout` changed nothing.
 
 ## 2026-10-11 — ADR-008 Task 1: shuffled orders
 
@@ -637,7 +637,7 @@ comparison with the same meaning (ruling in the plan ledger).
 **How it was verified:** tests failed first; flat shuffling made the class-grouping test fail; full suite
 117 OK.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Read the diff; accepted.
 
 ## 2026-10-11 — ADR-008 Task 2: diagnosis tries shuffled orders
 
@@ -651,7 +651,7 @@ and N3 runs.
 
 **How it was verified:** two mutation checks failed the right tests; full suite 127 OK.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Read the diff; accepted.
 
 ## 2026-10-11 — ADR-008 Task 3: command options and F4/N3 reports
 
@@ -666,7 +666,7 @@ real F4 and N3 through the command); docs, demo plan step 6b, W14, claim E15 (OP
 reading the real N3 output, fixed test-first; (2) a generated test contained a real BOM character
 instead of the `\ufeff` escape — replaced with the visible escape.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Accepted; the "given" vs "discovered" wording fix came from reading the real N3 output.
 
 ## 2026-10-11 — ADR-008 final review and fixes
 
@@ -681,7 +681,7 @@ as a shuffle, "(all possible)" claimed without proof, a never-failing order repo
 **What was wrong (session):** generated test code again turned `\r\n` escapes and `\` line
 continuations into real line breaks; found by reading the file back and fixed before running.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Agreed to treat three minors as important for honesty; deferred one minor.
 
 ## 2026-10-11 — Quadratic duplicate check in `read_order`
 
@@ -694,7 +694,7 @@ continuations into real line breaks; found by reading the file back and fixed be
 **What was wrong:** the agent had called the minor "fine even for thousands of lines"; the new test
 measured 33 s for 20,001 lines. After the fix: 0.094 s.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Asked for the deferred minor to be fixed; the new test showed 33 s, so it was not cosmetic.
 ## 2026-10-11 — Docs sync after ADR-008 merged
 
 **Tool:** Claude Opus 5.5 · **Level:** L1
@@ -707,7 +707,7 @@ demo-plan, members and architecture status text matched to the merged code; F4 a
 **What was wrong:** panel action A7 said the seed was "not applicable — the runner never shuffles", false since PR #49;
 the architecture status line still said the runner, collector, minimiser and CLI were not implemented.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Ran both merges with M3's PRs (#52, #54) myself and agreed which version of each row to keep; asked Zarpash to review.
 
 ## 2026-10-11 — CDR wording audit (claim E6)
 
@@ -724,4 +724,17 @@ outside the repo.
 **What was wrong:** nothing found wrong in the audit itself; the proposal, Rev 2 and the original deck could
 not be checked because they are not in the repo.
 
-**What I changed:** *fill after reading the diff.*
+**What I changed:** Decided to drop "held-out projects" from the CDR gate so the roadmap holds; asked Zarpash to confirm.
+
+## 2026-10-11 — "What I changed" lines filled
+
+**Tool:** Claude Opus 5.5 · **Level:** L2
+
+**What was asked:** suggest a "What I changed" line for every entry, based only on what this log and the
+repository record, then write them in.
+
+**What was retained:** all 39 lines and 34 register cells, as suggested; one unconfirmed clause (whether I
+changed my git email) left out.
+
+**What I changed:** read all 39 suggested lines and confirmed each matches what I did before allowing them
+to be written in.
