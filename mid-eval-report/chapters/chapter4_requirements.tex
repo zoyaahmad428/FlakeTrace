@@ -110,10 +110,58 @@ FR-7 & Provide a CLI with CI-compatible exit codes, installable on clean Linux f
 \end{longtable}
 
 \section{Non-Functional Requirements}\label{ch4:sec:nfr}
+
 \subsection{Reliability}
-\subsection{Usability}
-\subsection{Performance}
-\subsection{Security}
+A \textbf{Verified} certificate requires $\geq 18$ of 20 matching clean replays \emph{and} a
+Wilson 95\% lower bound $\geq 0.70$ on the reproduction rate --- both figures are stated in
+\texttt{docs/03-Design/certificate-contract.md} and implemented as the literal default
+threshold in \texttt{eval/outcome.py} (\texttt{DEFAULT\_LOWER\_BOUND\_THRESHOLD = 0.70}). The
+Wilson estimator itself is tested against \texttt{statsmodels} (\texttt{eval/tests/
+test\_stats.py}), not just asserted. We never report a single numeric confidence score ---
+reliability is always \emph{matching failures out of $N$ replays plus an interval}, per the
+certificate contract.
+
+The \textbf{non-perturbation control} (execute the passing and failing order, each
+uninstrumented and instrumented, requiring all four outcomes to match before any measurement is
+accepted) is \textbf{not yet implemented as a dedicated, automated check} in Iteration 1. It
+remains a committed requirement, not a dropped one: our own N2 timezone-sensitivity defect
+(\texttt{docs/evidence-m3.md}) is exactly the kind of self-inflicted-failure risk this control
+exists to catch, found instead by manual cross-platform re-measurement.
+
+\subsection{Instrumentation Overhead (NFR-1)}
+\todo{M3: no overhead threshold exists yet, deliberately -- \texttt{non-functional.md} states
+this explicitly rather than inventing a number before it is measured. Iteration 1's evidence
+collection is static-only (\texttt{javap} bytecode reads, no code is instrumented or executed
+differently because of FlakeTrace), so there is no runtime overhead to measure yet: this NFR
+becomes testable once Iteration 2 adds runtime instrumentation, if static evidence proves
+insufficient (\texttt{docs/03-Design/decisions/ADR-001-iteration1-evidence-without-
+instrumentation.md}). The envelope from stakeholder interviews (5--15 min PR-CI tolerance,
+SH1; 30 min opt-in, SH3) is recorded as context, not a current measurement.}
+
+\subsection{Security and Usability}
+\textbf{Security.} \texttt{non-functional.md}'s security requirements (rootless containers, no
+network during test execution, resource limits, redaction) describe the \textbf{committed,
+containerised Iteration-1-and-beyond runtime} --- checked against the real code
+(\texttt{grep -rn "redact\textbackslash{}|rootless\textbackslash{}|sandbox" runner/ evidence/
+eval/}), none of it exists yet: Iteration 1 runs tests as a native JVM process
+(\texttt{runner/order\_runner.py}), not inside any container. This is a real, stated gap, not a
+silent one: every real diagnosis still runs real project code locally, so the committed
+sandboxing work is squarely FYP-2 scope, named on the cut list in
+\texttt{docs/02-Requirements/scope-boundary.md} if the team is behind at Final-1.
+
+\textbf{Usability.} The proposal's brief described four generic abstention reasons (unsupported
+resource, budget exhausted, unstable build, inconsistent outcomes --- \texttt{docs/03-Design/
+certificate-contract.md}). What Iteration 1 actually built in \texttt{eval/outcome.py} is a
+\textbf{richer, different} typed-reason enum with six reasons the decision table can actually
+emit (\texttt{VICTIM\_FAILS\_ALONE}, \texttt{NOT\_REPRODUCED}, \texttt{SIGNATURE\_MISMATCH},
+\texttt{INFRASTRUCTURE\_FAILURE}, \texttt{NO\_SUPPORTED\_RESOURCE\_EVIDENCE},
+\texttt{SOURCE\_INTEGRITY\_FAILED}) plus one reserved for forward compatibility
+(\texttt{BELOW\_CONFIDENCE\_THRESHOLD}, never emitted --- \texttt{CANDIDATE} is used instead,
+a team decision recorded in \texttt{docs/contracts/report-schema.md}). This is a deliberate
+scope change from the proposal, not a drift we are hiding: every reason still maps to a
+different, concrete next action for the developer, which was the brief's actual usability
+requirement.
+
 \section{Acceptance Criteria}
 Define objective acceptance checks for important requirements.
 \section{Requirements Traceability}\label{ch4:sec:traceability}
