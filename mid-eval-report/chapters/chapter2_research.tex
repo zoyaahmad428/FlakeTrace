@@ -40,8 +40,67 @@ project's documentation folder, so every claim in this chapter can be traced bac
   Four targets, all in fastjson, reproduced; 2,606 test orders were executed in total. The
   result is discussed in Section~\ref{ch2:sec:challenges}.
 \end{enumerate}
-\section{Existing Solutions / Products}
-Review relevant existing solutions.
+\section{Existing Solutions / Products}\label{ch2:sec:existing}
+Six research systems, three commercial products and three earlier FYPs are close to FlakeTrace.
+For each one, this section states what its publication or documentation describes, using the
+team's notes in \nolinkurl{docs/01-Literature/per-paper/}.
+
+\paragraph{Detection: iDFlakies.} iDFlakies \cite{lam2019idflakies} is a Maven plugin for JUnit
+projects that detects flaky tests by rerunning them, both in the original order and in random or
+reversed orders, and then partly classifies each one as order-dependent or not. Its dataset of 422
+flaky tests is 50.5\% order-dependent. It also sets two rules for valid shuffled orders: methods of
+different test classes are never mixed, because JUnit never runs them that way, and classes are
+shuffled before the methods inside each class. It does not say which earlier test causes a
+failure.
+
+\paragraph{Polluter search and repair: iFixFlakies.} iFixFlakies \cite{shi2019ifixflakies}
+introduced the vocabulary this report uses: a \emph{victim} passes alone but fails after a
+\emph{polluter}; a \emph{brittle} test fails alone and needs a \emph{state-setter} to run first; a
+\emph{cleaner} run in between undoes the pollution. A test's type is decided by running it alone.
+Its Minimizer applies delta debugging \cite{zeller2002ddmin} to the tests that ran before the
+order-dependent test to find its polluters or state-setters, and its Patcher builds a fix from the
+code of existing helper tests: cleaners for victims, state-setters for brittle tests. The result of delta debugging is 1-minimal: removing any single test
+stops the failure, but a smaller set may exist.
+
+\paragraph{Ranking: RankF.} RankF \cite{rahman2025rankf} orders the candidate tests so that a
+responsible one is confirmed sooner. RankFL learns from the test code; RankFO scores candidates
+from the outcomes of previously observed test orders. On 155 order-dependent tests from 24 projects
+it found the first responsible test in a median of 9.4--14.1\,s, against 34.2--118.5\,s for the
+baselines. It leaves out failures that need several tests together, and RankFO needs earlier test
+orders to learn from.
+
+\paragraph{Explanation: Takuan.} Takuan \cite{levin2025takuan} compares dynamic invariants recorded
+during a passing order with those from a failing order. An invariant that holds only in the
+passing order can show the ``clean'' value of the shared state. It can also search for methods
+that reset that state, and it handles external state such as files. Its evaluation is explicitly
+preliminary: 13 tests, with correct invariants produced for 6.
+
+\paragraph{State-pollution detection: PolDet and ElectricTest.} PolDet \cite{gyori2015poldet}
+compares the shared heap and the file system before a test's setup and after its teardown, and
+reports an access path or a file name as evidence. On 26 projects and 6,105 tests it reported 324
+polluting tests, of which manual inspection judged 194 to be relevant. ElectricTest
+\cite{bell2015electrictest} monitors test execution and reports the code, with a stack trace, that
+creates a dependency between tests; detecting dependencies soundly slowed execution by about 20
+times on average.
+
+\paragraph{Repair: ODRepair and FlakyDoctor.} When no cleaner exists, ODRepair
+\cite{li2022odrepair} generates the cleaning code instead. FlakyDoctor \cite{chen2024flakydoctor}
+combines a language model with program analysis and repaired 57\% of 332 order-dependent tests.
+Both start from an order-dependent test whose polluter is already known: they work after
+diagnosis, not instead of it.
+
+\paragraph{Commercial products.} Trunk Flaky Tests, Tuist and Gradle Develocity detect, track,
+retry and quarantine flaky tests. None of the product documentation we reviewed describes
+returning a verified, replayable order together with a resource-level explanation for one
+order-dependent failure. We claim only that their published documentation does not describe
+this, not that the products cannot do it.
+
+\paragraph{Previous FYPs.} Three earlier FAST projects are structurally comparable.
+F22-032-D-ETesting generates exploratory tests; F22-033-D-WebSPLAT reuses functional tests across
+variants of a web product line; S25-049-D-TestML uses machine learning for test generation,
+optimisation and defect prediction. All three create or reuse tests, while FlakeTrace diagnoses an
+interaction between tests inside an existing suite. This check covers the repository summaries
+only; it cannot rule out an internal module of another project.
 \section{Comparison of Existing Solutions}
 Compare solutions using project-relevant criteria.
 \section{Limitations and Gaps}
