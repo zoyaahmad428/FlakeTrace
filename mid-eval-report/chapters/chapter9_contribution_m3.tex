@@ -5,4 +5,40 @@
 % Rules: mid-eval-report/CLAUDE.md. Do not edit a file you do not own.
 % ===========================================================================
 \subsection{Member 3: Zarpash Nasim}
-\todo{M3: what you built, your PRs and reviews, one decision you made, one limitation of your module}
+\textbf{What I built.} I own \path{eval/} and \path{fixtures/od-fixture}, and the evaluation
+infrastructure spanning every functional requirement (\path{functional.md}'s own traceability
+table). I built the Wilson interval statistics (\path{stats.py}), the outcome decision table
+(\path{outcome.py}), report assembly and schema validation (\path{report.py},
+\path{schema\_validator.py}), the random-order baseline (\path{baseline.py}, claim B11), and the
+benchmark yield report (W1--W4). I wrote the seven-case fixture suite and its pre-registered
+ground truth, including F4 and N3 (ADR-008's order-search and honest-abstention cases), and the
+Phase 3 outcome decision table all three members agreed on 8 October 2026. On \texttt{main}
+that is 35 commits and 21 merged pull requests as of Table~\ref{ch9:tab:git}; Section
+\ref{ch6:sec:m3} describes the module.
+
+\textbf{Reviews.} I reviewed every pull request touching a shared contract or my own area
+before approving it, not on trust: PR \pr{49} (Member 2's ADR-008 runner side) only after
+reading the real diff against \path{runner/diagnose.py} and \path{verify.py} to confirm the new
+\texttt{DiagnosisRuns} fields matched what my own \path{eval/report.py} would consume. When
+Member 1 asked me to settle a wording question on claims C6/C7 (the POC's ``two hops down''
+versus our extractor's real depth), I checked it against claim E11's own already-recorded
+measurement rather than trusting either side's number, and found the POC's hand count had
+genuinely undercounted the real call chain (depth 5, not the depth 3 the stated hop-to-depth
+conversion would predict) --- not just a numbering-convention mismatch.
+
+\textbf{One decision: combining crash counts in one place (ADR-008).} When Member 2's runner
+gained three separate crash/timeout counters (one each for the given order, shuffled orders and
+the alone check), the report needed one combined total for \texttt{decide()} and for the
+\texttt{order\_exploration} field. I decided to compute that sum exactly once, in
+\texttt{assemble\_report}, and pass the same value to both, rather than letting
+\texttt{eval.outcome.decide()} and the report-building code each total the three counters
+independently. Two call sites computing the same number separately can silently disagree after
+either one changes; one computation passed to both cannot.
+
+\textbf{One limitation of my module.} The random-order baseline (claim B11) has run for real,
+but only against my own implementation: F1--F4 on the seeded fixture, found in every trial.
+Published comparator tools (iFixFlakies, iDFlakies) are not integrated, so the project's own
+success criterion --- at least 25\% fewer test-method invocations than a published baseline on
+the overlapping solvable subset --- cannot be measured yet (Table~\ref{ch4:tab:acceptance}).
+Closing it needs real baseline-tool integration against a real project, not the small fixture,
+which is Final-1 scope.
