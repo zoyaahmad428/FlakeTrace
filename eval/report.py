@@ -65,10 +65,15 @@ class UnhandledStatus(Exception):
     """Raised for a DiagnosisRuns.status this module does not yet turn into a report."""
 
 
-def _order_exploration(diagnosis: DiagnosisRuns) -> Optional[dict]:
+def _order_exploration(diagnosis: DiagnosisRuns, infrastructure_failures: int) -> Optional[dict]:
     """ADR-008's optional order_exploration report field, built only once Member 2's
-    diagnose() actually tracks it (DiagnosisRuns gaining all five fields below). Until then
-    this returns None and the key is omitted entirely -- the schema allows that."""
+    diagnose() actually tracks it (DiagnosisRuns gaining all five order fields below). Until
+    then this returns None and the key is omitted entirely -- the schema allows that.
+    `infrastructure_failures` is the already-combined total (every phase: given/discovered
+    order, shuffles, alone check) that assemble_report also feeds to decide() -- not
+    recomputed here, so the report and the outcome always agree. Reported whenever the order
+    fields are present, regardless of status: a shuffle that found the reproduction (e.g. F4,
+    VERIFIED) is exactly as worth reporting as one that never did (NOT_REPRODUCED)."""
     if not all(hasattr(diagnosis, f) for f in _ORDER_EXPLORATION_FIELDS):
         return None
     return {
@@ -77,6 +82,7 @@ def _order_exploration(diagnosis: DiagnosisRuns) -> Optional[dict]:
         "orders_exhausted": diagnosis.orders_exhausted,
         "seed_base": diagnosis.shuffle_seed_base,
         "reproducing_seed": diagnosis.reproducing_seed,
+        "infrastructure_failures": infrastructure_failures,
     }
 
 
@@ -113,7 +119,15 @@ def assemble_report(
     fields = resource_fields if diagnosis.status == POLLUTER_FOUND else None
     edge_found = bool(fields and fields["shared_resource"] is not None)
     any_edge_found = fields.get("any_edge_found", edge_found) if fields else False
-    infrastructure_failures = getattr(diagnosis, "infrastructure_failures", 0)
+    # Combined across every phase (given/discovered order, shuffles, alone check) -- matches
+    # runner.cli's own `crashes` total (ADR-008) and eval.outcome.decide()'s new semantics for
+    # this field (see eval/outcome.py's module docstring, row 3b). getattr defaults keep this
+    # 0 for any DiagnosisRuns that predates these fields.
+    infrastructure_failures = (
+        getattr(diagnosis, "infrastructure_failures", 0)
+        + getattr(diagnosis, "shuffle_infrastructure_failures", 0)
+        + getattr(diagnosis, "alone_infrastructure_failures", 0)
+    )
 
     decision_input = DecisionInput(
         source_integrity_passed=diagnosis.source_integrity.passed,
@@ -145,20 +159,37 @@ def assemble_report(
             limitations += fields["limitations"]
         if not any_edge_found:
             limitations.append("No polluter-write/victim-read resource edge was found by static analysis.")
-    elif decision.unresolved_reason == "NOT_REPRODUCED":
-        limitations.append(
-            f"Not reproduced: {diagnosis.sequence_n} runs of the given order, "
-            f"{diagnosis.alone_n} runs alone. In the given order the failure rate is below "
-            f"{decision.sequence_interval[1]:.3f} with {confidence:.0%} confidence (Wilson). "
-            "This is not evidence that the test is reliable: flaky tests have been found only "
-            "after thousands of reruns."
-        )
-    elif decision.unresolved_reason == "INFRASTRUCTURE_FAILURE":
-        limitations.append(
-            f"Every one of {diagnosis.sequence_any_failures} failing run(s) of {diagnosis.sequence_n} "
-            "crashed or timed out; none produced a real exception, so there is no failure signature "
-            "to report. This is a tooling/infrastructure problem, not evidence of a different bug."
-        )
+    elif decision.unresolved_reason in ("NOT_REPRODUCED", "INFRASTRUCTURE_FAILURE"):
+        # order_given defaults True (pre-ADR-008 callers only ever ran the given order) and
+        # shuffled_orders 0, so this reads correctly for a DiagnosisRuns that predates ADR-008
+        # too. Flagged by Member 2: the old text always said "given order" even when the order
+        # that was actually run came from a shuffle (ADR-008 has no "given" order at all for
+        # some victims -- only discovered, possibly-shuffled orders).
+        order_desc = "given" if getattr(diagnosis, "order_given", True) else "discovered"
+        shuffled_orders = getattr(diagnosis, "shuffled_orders", 0)
+        shuffle_note = f" (plus {shuffled_orders} shuffled order(s))" if shuffled_orders else ""
+        if decision.unresolved_reason == "NOT_REPRODUCED":
+            limitations.append(
+                f"Not reproduced: {diagnosis.sequence_n} runs of the {order_desc} order{shuffle_note}, "
+                f"{diagnosis.alone_n} runs alone. In the {order_desc} order the failure rate is below "
+                f"{decision.sequence_interval[1]:.3f} with {confidence:.0%} confidence (Wilson). "
+                "This is not evidence that the test is reliable: flaky tests have been found only "
+                "after thousands of reruns."
+            )
+        elif diagnosis.sequence_any_failures > 0:
+            limitations.append(
+                f"Every one of {diagnosis.sequence_any_failures} failing run(s) of {diagnosis.sequence_n} "
+                f"({order_desc} order{shuffle_note}) crashed or timed out; none produced a real "
+                "exception, so there is no failure signature to report. This is a tooling/"
+                "infrastructure problem, not evidence of a different bug."
+            )
+        else:
+            limitations.append(
+                f"The {order_desc} order never failed in {diagnosis.sequence_n} runs{shuffle_note}, "
+                f"but {infrastructure_failures} run(s) elsewhere (e.g. the alone check) only crashed "
+                "or timed out, never a real exception -- a tooling problem, not evidence this victim "
+                "is reliable."
+            )
 
     report = {
         "victim": diagnosis.victim.to_dict(),
@@ -190,7 +221,7 @@ def assemble_report(
         "unresolved_reason": decision.unresolved_reason,
         "limitations": limitations,
     }
-    order_exploration = _order_exploration(diagnosis)
+    order_exploration = _order_exploration(diagnosis, infrastructure_failures)
     if order_exploration is not None:
         report["order_exploration"] = order_exploration
     validate_report(report)

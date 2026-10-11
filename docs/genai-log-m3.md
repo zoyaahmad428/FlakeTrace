@@ -901,3 +901,46 @@ Ownership checkpoint: be able to say, without checking anything, which of the or
 work packages this session was responsible for (W1-W4, half of W9) are genuinely done versus
 which still need action (the report chapters) — the iteration plan's own W9-W13 rows are now
 the accurate source for this.
+
+## 2026-10-11 — ADR-008 crash-count follow-ups from Member 2's PR #49 review
+
+**What I asked:** Relayed Member 2's message after PR #49 (ADR-008 runner side) merged,
+flagging two gaps in my own `eval/report.py`/`eval/outcome.py`: wrong "given order" wording
+once ADR-008 can discover/shuffle the order instead, and `shuffle_infrastructure_failures`/
+`alone_infrastructure_failures` missing from the report JSON even though `runner.cli`'s own
+summary already totals them.
+
+**What was kept:** The combined-total design for `infrastructure_failures` (summing all three
+DiagnosisRuns crash fields in one place, `assemble_report`, rather than letting
+`_order_exploration` and `decide()` each compute it separately and risk disagreeing) — my own
+design choice, not dictated by Member 2's message, which only named the symptom. Also kept
+`order_exploration` unscoped by status (not gated to NOT_REPRODUCED as I'd planned mid-session
+in an earlier note): F4 is now `VERIFIED` via a shuffle, so hiding `order_exploration` from
+non-NOT_REPRODUCED reports would have thrown away the one fact (`reproducing_seed=1`) that
+explains *how* F4 was found.
+
+**What I changed from the model's first draft:** Initially wrote the INFRASTRUCTURE_FAILURE
+limitation text as one unconditional sentence; rewrote it to branch on
+`sequence_any_failures > 0` after realising the original wording ("every failing run... crashed")
+reads as nonsense when the sequence itself never failed at all (the new row 3b case) and the
+crashes happened only in the alone check.
+
+**How it was verified:** `py -m unittest eval.tests.test_stats eval.tests.test_outcome
+eval.tests.test_schema_validator eval.tests.test_examples eval.tests.test_baseline
+eval.tests.test_yield_report eval.tests.test_report` → 84/84 passed. Mutation check on the new
+`decide()` branch (flipped its condition to `False`, confirmed `test_row3b_infrastructure_
+failure_elsewhere` fails with the expected wrong reason, then reverted and re-ran clean)
+to confirm the new test isn't a vacuous pass.
+
+**Errors found:** A pre-existing test (`test_order_exploration_is_optional_but_validated_
+when_present` in `eval/tests/test_schema_validator.py`, written before the
+`infrastructure_failures` schema field existed) had a literal `order_exploration` fixture
+missing that now-required key — caught by running the full suite, not told by anyone.
+
+**Rejections:** None — all three of Member 2's specific asks (wording, shuffle count, crash
+totals) were implemented as described.
+
+Ownership checkpoint: be able to explain, without re-reading the code, why
+`infrastructure_failures` had to stop being bounded by `sequence_failures_any` (it's now a
+total across phases that don't all share the same `_n` denominator) and why `order_exploration`
+is reported for every outcome, not just NOT_REPRODUCED.

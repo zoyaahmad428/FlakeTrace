@@ -213,13 +213,12 @@ class TestAssembleReport(unittest.TestCase):
             assemble_report(diagnosis)
 
     def test_not_reproduced_with_isolation_data_gives_unresolved(self):
-        """ADR-008's intended shape, once Member 2's diagnose() always runs the alone check:
-        alone_n > 0 even though nothing ever reproduced. Hand-built ahead of that real
-        dependency landing, per this project's established testing convention."""
+        """ADR-008's real shape, now that Member 2's diagnose() always runs the alone check:
+        alone_n > 0 even though nothing ever reproduced."""
         diagnosis = _diagnosis(
             NOT_REPRODUCED, polluters=[], sequence=[POLLUTER, VICTIM], reference_signature=None,
             sequence_n=20, sequence_successes=0, sequence_any_failures=0,
-            alone_n=20, alone_successes=0,
+            alone_n=20, alone_successes=0, order_given=True,
         )
         report = assemble_report(diagnosis)
         self.assertEqual(report["outcome"], "UNRESOLVED")
@@ -227,35 +226,62 @@ class TestAssembleReport(unittest.TestCase):
         self.assertIsNone(report["failure_signature"])
         self.assertIsNone(report["shared_resource"])
         self.assertEqual(report["polluters"], [])
-        self.assertTrue(any("Not reproduced:" in line for line in report["limitations"]))
+        self.assertTrue(any("Not reproduced: 20 runs of the given order," in line
+                            for line in report["limitations"]))
+        self.assertEqual(report["order_exploration"]["infrastructure_failures"], 0)
         validate_report(report)
 
-    def test_infrastructure_failure_gives_unresolved_with_null_signature(self):
-        """Hand-built DiagnosisRuns with infrastructure_failures set, simulating Member 2's
-        diagnose() once it tracks crash/timeout-only sequences separately (ADR-008). Not yet
-        real: DiagnosisRuns has no such field today, so assemble_report's getattr(...,
-        default 0) is exercised instead via a plain object standing in for it."""
-        class _WithInfraFailures:
-            """Minimal stand-in: real attribute access, not a dict -- not a fake of
-            DiagnosisRuns, just adding the one field it doesn't have yet."""
-            def __init__(self, base, infrastructure_failures):
-                self._base = base
-                self.infrastructure_failures = infrastructure_failures
+    def test_not_reproduced_names_discovered_order_and_shuffle_count(self):
+        """Member 2 flagged (item 1): the old text always said "given order" even when ADR-008
+        discovered the order itself (order_given=False) and tried shuffles first -- fix the
+        wording and surface the shuffle count."""
+        diagnosis = _diagnosis(
+            NOT_REPRODUCED, polluters=[], sequence=[POLLUTER, VICTIM], reference_signature=None,
+            sequence_n=20, sequence_successes=0, sequence_any_failures=0,
+            alone_n=20, alone_successes=0,
+            order_given=False, shuffled_orders=3, orders_exhausted=True,
+        )
+        report = assemble_report(diagnosis)
+        self.assertTrue(any(
+            "Not reproduced: 20 runs of the discovered order (plus 3 shuffled order(s))," in line
+            for line in report["limitations"]
+        ))
+        self.assertEqual(report["order_exploration"]["shuffled_orders_tried"], 3)
+        validate_report(report)
 
-            def __getattr__(self, name):
-                return getattr(self._base, name)
-
-        base = _diagnosis(
+    def test_infrastructure_failure_within_sequence_gives_unresolved_with_null_signature(self):
+        """ADR-008: the sequence itself failed, but every failure was a crash/timeout, no real
+        exception."""
+        diagnosis = _diagnosis(
             NOT_REPRODUCED, polluters=[], sequence=[POLLUTER, VICTIM], reference_signature=None,
             sequence_n=20, sequence_successes=0, sequence_any_failures=5,
-            alone_n=20, alone_successes=0,
+            alone_n=20, alone_successes=0, infrastructure_failures=5,
         )
-        diagnosis = _WithInfraFailures(base, infrastructure_failures=5)
         report = assemble_report(diagnosis)
         self.assertEqual(report["outcome"], "UNRESOLVED")
         self.assertEqual(report["unresolved_reason"], "INFRASTRUCTURE_FAILURE")
         self.assertIsNone(report["failure_signature"])
         self.assertTrue(any("crashed or timed out" in line for line in report["limitations"]))
+        self.assertEqual(report["order_exploration"]["infrastructure_failures"], 5)
+        validate_report(report)
+
+    def test_infrastructure_failure_elsewhere_gives_unresolved_with_null_signature(self):
+        """ADR-008 (2026-10-11), row 3b: the sequence itself never failed at all, but the alone
+        check only crashed/timed out -- still INFRASTRUCTURE_FAILURE, combining
+        alone_infrastructure_failures into the report, not just the sequence's own field."""
+        diagnosis = _diagnosis(
+            NOT_REPRODUCED, polluters=[], sequence=[POLLUTER, VICTIM], reference_signature=None,
+            sequence_n=20, sequence_successes=0, sequence_any_failures=0,
+            alone_n=20, alone_successes=0, alone_infrastructure_failures=4,
+        )
+        report = assemble_report(diagnosis)
+        self.assertEqual(report["outcome"], "UNRESOLVED")
+        self.assertEqual(report["unresolved_reason"], "INFRASTRUCTURE_FAILURE")
+        self.assertIsNone(report["failure_signature"])
+        self.assertTrue(any(
+            "never failed in 20 runs, but 4 run(s) elsewhere" in line for line in report["limitations"]
+        ))
+        self.assertEqual(report["order_exploration"]["infrastructure_failures"], 4)
         validate_report(report)
 
     def test_no_single_polluter_is_unhandled(self):
