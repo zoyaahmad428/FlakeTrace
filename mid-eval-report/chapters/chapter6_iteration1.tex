@@ -6,9 +6,22 @@
 % Rules: mid-eval-report/CLAUDE.md. Do not edit a file you do not own.
 % ===========================================================================
 \chapter{Iteration 1: Design and Implementation}
-\section{Iteration Objectives}
-\section{Selected Use Cases / Features}
-\section{Design}
+\section{Iteration Objectives}\label{ch6:sec:objectives}
+The objective of Iteration 1, fixed in \path{docs/08-MidEval/iteration-plan.md} before the work began, was: on a seeded fixture and with no application logs, FlakeTrace shows the victim passing alone and failing after its polluter, minimises the order, names the shared resource from bytecode, reproduces the failure $n$ times with a confidence interval, and verifies that the source is unchanged; a negative control must be reported \texttt{UNRESOLVED}.
+
+The work was split into fourteen work packages. Member 3 built the fixture, statistics, outcome decision and baselines (W1--W4); Member 1 built the static extractor (W8); Member 2 built the repository and CI, the order runner, the diagnosis runs, minimisation and the order search (W5--W7, W10, W14); Members 2 and 3 joined the parts into one command (W9); the report, the tag and the rehearsed demo are shared (W11--W13).
+
+\section{Selected Use Cases / Features}\label{ch6:sec:features}
+The use cases marked \guillemotleft iteration 1\guillemotright{} in Figure~\ref{ch4:fig:usecases} (UC1--UC7) form one flow: a developer diagnoses one failing test with one command and receives a report. The flow is exercised on seven cases in the seeded Maven project \path{fixtures/od-fixture}, whose expected outcomes Member 3 wrote in \path{ground_truth.json} before any run:
+\begin{itemize}
+  \item \textbf{Normal cases.} F1: a polluter sets the static field \texttt{Config.mode} and never restores it. F2: a polluter sets the system property \texttt{odfixture.turbo}, which the victim reads one call below the test method.
+  \item \textbf{Edge cases.} F3: the victim fails only when \emph{both} \texttt{setFlagA} and \texttt{setFlagB} run before it, so no single test is the polluter. F4: the polluter's class sorts after the victim's, so the discovered order never fails and another order has to be found.
+  \item \textbf{Negative controls.} N1 fails alone every time; N2 fails at random, independent of order; N3 models a failure that depends on the environment and never reproduces locally. FlakeTrace must blame no test in any of them.
+\end{itemize}
+Each case maps to a step of the live demonstration (Section~\ref{ch6:sec:demo}).
+
+\section{Design}\label{ch6:sec:design}
+The design is described in Chapter~5: the components and their contracts in Figure~\ref{ch5:fig:arch}, one \texttt{diagnose} run in Figure~\ref{ch5:fig:diagnose-seq}, and the reproduce--search--minimise--verify logic in Figure~\ref{ch5:fig:search-activity}. This chapter describes how that design is implemented and how to run it.
 \section{Implementation}
 \section{Completed Features / Module}
 \section{Technical Implementation Details}
@@ -18,5 +31,5 @@ Describe important files, classes, functions, algorithms, configurations, and te
 \input{chapters/chapter6_module_m3}
 \section{Algorithms and Technical Decisions}
 \section{Tools, Frameworks and Technologies}
-\section{Demonstration Evidence}
+\section{Demonstration Evidence}\label{ch6:sec:demo}
 \section{Iteration Outcome}
