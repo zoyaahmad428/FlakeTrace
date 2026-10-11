@@ -1,8 +1,8 @@
 # runner/ — bounded search and verification (Member 2)
 
-**Owner:** Member 2 · **State:** W6 complete; W7 complete (2026-10-09) — `diagnose()` on all five fixture cases
-locally (JDK 21) and in CI (JDK 8, run `37971869749`). W10 `ddmin` finds several polluters (F3, 2026-10-10, ADR-007). W9 command `py -m runner diagnose` built (2026-10-10,
-ADR-005); W10 (multi-polluter minimisation) next.
+**Owner:** Member 2 · **State (2026-10-11):** W6, W7, W9, W10 and W14 complete and merged (PRs #10, #11, #26,
+#35/#40, #49). `py -m runner diagnose` runs all seven fixture cases end to end (F1–F4 `VERIFIED`, N1/N2
+`VICTIM_FAILS_ALONE`, N3 `NOT_REPRODUCED`); 144 runner tests pass locally (JDK 21) and in CI (JDK 8).
 
 Implements the `OrderRunner` interface in [`eval/baseline.py`](../eval/baseline.py) and
 everything built on it. Contract: [docs/contracts/interfaces.md](../docs/contracts/interfaces.md).
@@ -133,8 +133,9 @@ py -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVic
 | `--shuffles` | `31` | distinct class-first shuffled orders to try when the starting order never fails (Gruber et al. [12], a Python study — assumption for JUnit); `0` turns it off |
 | `--seed` | `0` | first shuffle seed; every seed tried is in the execution record |
 
-It runs `diagnose()`, Member 1's `find_edges`/`report_fields` at depth 2 when a polluter is found,
-and Member 3's `assemble_report()`, then writes `<record>.report.json` next to the record. Real
+It runs `diagnose()`, then — only when a polluter is found — Member 1's `analyse_pair` once per polluter
+(starts at depth 2, deepens to at most 5 only when needed, ADR-006) and `report_fields`, combined by
+`combine_fields`, and Member 3's `assemble_report()`, then writes `<record>.report.json` next to the record. Real
 output on F1 (local, JDK 21):
 
 ```
@@ -166,5 +167,5 @@ VERIFIED  odfixture.ConfigVictimTest#expectsDefaultMode
 | 7 | Execution record (JDK, order, timestamps) — **done (W7)** | `execution_record_reference` | Yes |
 | 8 | CLI entry point — **done (W9)**: `py -m runner diagnose` | the whole report | Yes |
 
-Test against `fixtures/od-fixture` (F1, F2, F3, N1, N2) — the expected outcomes are in
+Test against `fixtures/od-fixture` (F1–F4, N1–N3) — the expected outcomes are in
 `fixtures/od-fixture/ground_truth.json`, written before any run.

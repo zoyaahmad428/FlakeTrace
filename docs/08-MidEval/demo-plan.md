@@ -38,7 +38,7 @@ run and go into `docs/evidence-m2.md`.
 | Component | Implemented | Mocked/substituted | Plan to remove |
 | --- | --- | --- | --- |
 | Runner | Ordered single-JVM runner (W6) and `diagnose()` (W7): reproduce, victim-alone ×n, one-by-one polluter search, repeat ×n, source hash, execution record — real JVM runs on the fixture | None mocked. Report assembly (`eval/report.py`, W9) is done and wired to this for real, for F1/F2/N1/N2. The W9 command `py -m runner diagnose` runs the whole pipeline (real runs): F1, F2 `VERIFIED`, N1 `UNRESOLVED(VICTIM_FAILS_ALONE)`; F3 `VERIFIED` with two polluters found by `ddmin` (W10); F4 `VERIFIED` via a shuffled order, N3 `UNRESOLVED(NOT_REPRODUCED)` (W14, ADR-008). Nothing mocked or missing for the fixture | — |
-| Evidence extractor | Pair mode (`--polluter`/`--victim`) and single test, depth 1–5 (default 2, pair mode deepens only when needed, ADR-006); real javap on real classes; F1 edge `Config#mode` 1→1, F2 edge `odfixture.turbo` 4→`FeatureFlags.isTurboEnabled@2` | None mocked. Wired into Member 3's report assembly for real (`eval/report.py` calls `find_edges`/`report_fields` directly) | — |
+| Evidence extractor | Pair mode (`--polluter`/`--victim`) and single test, depth 1–5 (default 2, pair mode deepens only when needed, ADR-006); real javap on real classes; F1 edge `Config#mode` 1→1, F2 edge `odfixture.turbo` 4→`FeatureFlags.isTurboEnabled@2` | None mocked. Wired in for real: `runner/cli.py` calls `analyse_pair` once per polluter and `report_fields`, and passes the fields to Member 3's `eval/report.py`, which assembles the report | — |
 | Outcome + statistics | Yes (M3, tested) | None | — |
 | UI | Not part of Mid demo | POC UI uses recorded data | FYP-1 Final or later |
 
