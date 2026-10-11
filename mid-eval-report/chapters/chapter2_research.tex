@@ -6,19 +6,453 @@
 % Rules: mid-eval-report/CLAUDE.md. Do not edit a file you do not own.
 % ===========================================================================
 \chapter{Research and Existing Solutions}
-\section{Research Method / Approach}
-Describe how relevant technical and domain knowledge was investigated.
-\section{Existing Solutions / Products}
-Review relevant existing solutions.
-\section{Comparison of Existing Solutions}
-Compare solutions using project-relevant criteria.
-\section{Limitations and Gaps}
-Identify limitations and the gap motivating the proposed solution.
-\section{Proposed Solution}
-Explain how the proposed system addresses the identified gap.
-\section{Complex Computing Problem}
-Clearly identify and explain the complex computing problem addressed by the project.
-\section{Technical Challenges}
-Document major technical challenges anticipated or encountered.
-\section{Research Findings and Design Decisions}
-Explain how research findings influenced requirements, architecture, algorithms, tools, or other decisions.
+\section{Research Method / Approach}\label{ch2:sec:method}
+The research behind FlakeTrace used five sources of evidence. Each one is recorded in the
+project's documentation folder, so every claim in this chapter can be traced back to it.
+
+\begin{enumerate}
+\item \textbf{Literature review.} 41 sources on flaky and order-dependent tests, minimisation,
+  repair, statistics and benchmark reproducibility are listed in
+  \nolinkurl{docs/01-Literature/references.md}. Each of the closest research systems has its
+  own note recording what it does, what it leaves open and how FlakeTrace relates to it. A
+  separate note lists what we must never claim as our own, for example delta-debugging
+  minimisation and the polluter/victim vocabulary.
+\item \textbf{Product review.} The published documentation of three commercial flaky-test
+  products (Trunk Flaky Tests, Tuist and Gradle Develocity) was compared on the same questions
+  (\nolinkurl{docs/01-Literature/commercial-tools.md}).
+\item \textbf{Previous FYPs.} All 989 project records in the department's FYP repository from
+  Fall 2019 to Fall 2025 were searched for testing, flakiness, test-order, CI and debugging
+  terms, and the full record of every hit was read. Three projects were structurally comparable;
+  none deals with order dependence (\nolinkurl{docs/01-Literature/prior-fyp-comparison.md}).
+\item \textbf{Practitioner interviews.} Three developers from three companies answered 14
+  questions in 15--20 minutes each, about process and timing only; no source code or customer
+  data was collected (\nolinkurl{docs/00-Meta/stakeholder-evidence.md}). All three described the
+  same manual procedure for an order-dependent failure: rerun the failing test after smaller and
+  smaller groups of earlier tests until the culprit appears. None had a tool for it. Their
+  projects use Python, JavaScript and TypeScript, not Java, so the interviews support the shape
+  of the problem, not the claim that Java teams in particular have it.
+\item \textbf{Proof of concept (POC).} From 25 to 28 August 2026 the team tested the proposal's
+  central assumption before building anything (\nolinkurl{docs/05-Testing/poc/poc-log.md}).
+  The definitions and pass/fail gates were committed before any experiment ran. Cases came from
+  the Illinois Dataset of Flaky Tests \cite{idoft}: its 8,075 rows were filtered to 1,438
+  order-dependent rows, and then to 8 targets in two Java projects (json-iterator and fastjson)
+  built at fixed commits. The runs used clean JDK~8 containers with the network switched off.
+  Four targets, all in fastjson, reproduced; 2,606 test orders were executed in total. The
+  result is discussed in Section~\ref{ch2:sec:challenges}.
+\end{enumerate}
+\section{Existing Solutions / Products}\label{ch2:sec:existing}
+Six research systems, three commercial products and three earlier FYPs are close to FlakeTrace.
+For each one, this section states what its publication or documentation describes, using the
+team's notes in \nolinkurl{docs/01-Literature/per-paper/}.
+
+\paragraph{Detection: iDFlakies.} iDFlakies \cite{lam2019idflakies} is a Maven plugin for JUnit
+projects that detects flaky tests by rerunning them, both in the original order and in random or
+reversed orders, and then partly classifies each one as order-dependent or not. Its dataset of 422
+flaky tests is 50.5\% order-dependent. It also sets two rules for valid shuffled orders: methods of
+different test classes are never mixed, because JUnit never runs them that way, and classes are
+shuffled before the methods inside each class. It does not say which earlier test causes a
+failure.
+
+\paragraph{Polluter search and repair: iFixFlakies.} iFixFlakies \cite{shi2019ifixflakies}
+introduced the vocabulary this report uses: a \emph{victim} passes alone but fails after a
+\emph{polluter}; a \emph{brittle} test fails alone and needs a \emph{state-setter} to run first; a
+\emph{cleaner} run in between undoes the pollution. A test's type is decided by running it alone.
+Its Minimizer applies delta debugging \cite{zeller2002ddmin} to the tests that ran before the
+order-dependent test to find its polluters or state-setters, and its Patcher builds a fix from the
+code of existing helper tests: cleaners for victims, state-setters for brittle tests. The result of delta debugging is 1-minimal: removing any single test
+stops the failure, but a smaller set may exist.
+
+\paragraph{Ranking: RankF.} RankF \cite{rahman2025rankf} orders the candidate tests so that a
+responsible one is confirmed sooner. RankFL learns from the test code; RankFO scores candidates
+from the outcomes of previously observed test orders. On 155 order-dependent tests from 24 projects
+it found the first responsible test in a median of 9.4--14.1\,s, against 34.2--118.5\,s for the
+baselines. It leaves out failures that need several tests together, and RankFO needs earlier test
+orders to learn from.
+
+\paragraph{Explanation: Takuan.} Takuan \cite{levin2025takuan} compares dynamic invariants recorded
+during a passing order with those from a failing order. An invariant that holds only in the
+passing order can show the ``clean'' value of the shared state. It can also search for methods
+that reset that state, and it handles external state such as files. Its evaluation is explicitly
+preliminary: 13 tests, with correct invariants produced for 6.
+
+\paragraph{State-pollution detection: PolDet and ElectricTest.} PolDet \cite{gyori2015poldet}
+compares the shared heap and the file system before a test's setup and after its teardown, and
+reports an access path or a file name as evidence. On 26 projects and 6,105 tests it reported 324
+polluting tests, of which manual inspection judged 194 to be relevant. ElectricTest
+\cite{bell2015electrictest} monitors test execution and reports the code, with a stack trace, that
+creates a dependency between tests; detecting dependencies soundly slowed execution by about 20
+times on average.
+
+\paragraph{Repair: ODRepair and FlakyDoctor.} When no cleaner exists, ODRepair
+\cite{li2022odrepair} generates the cleaning code instead. FlakyDoctor \cite{chen2024flakydoctor}
+combines a language model with program analysis and repaired 57\% of 332 order-dependent tests.
+Both start from an order-dependent test whose polluter is already known: they work after
+diagnosis, not instead of it.
+
+\paragraph{Commercial products.} Trunk Flaky Tests, Tuist and Gradle Develocity detect, track,
+retry and quarantine flaky tests. None of the product documentation we reviewed describes
+returning a verified, replayable order together with a resource-level explanation for one
+order-dependent failure. We claim only that their published documentation does not describe
+this, not that the products cannot do it.
+
+\paragraph{Previous FYPs.} Three earlier FAST projects are structurally comparable.
+F22-032-D-ETesting generates exploratory tests; F22-033-D-WebSPLAT reuses functional tests across
+variants of a web product line; S25-049-D-TestML uses machine learning for test generation,
+optimisation and defect prediction. All three create or reuse tests, while FlakeTrace diagnoses an
+interaction between tests inside an existing suite. This check covers the repository summaries
+only; it cannot rule out an internal module of another project.
+\section{Comparison of Existing Solutions}\label{ch2:sec:comparison}
+Table~\ref{ch2:tab:comparison} compares the systems of Section~\ref{ch2:sec:existing} on what a
+developer needs in order to act on one order-dependent failure: is the failure detected, is the
+responsible test found, is the reproducing order reduced, is the shared state explained, is it
+said how reliably the failure reproduces, and does the tool say clearly when it cannot conclude.
+A dash means the publication or documentation does not describe it; it is not a claim that the
+system cannot do it.
+
+\begin{table}[H]\centering\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.19\textwidth}*{6}{>{\centering\arraybackslash}p{0.115\textwidth}}}
+\toprule
+System & Detects & Finds the polluter & Reduced order & Explains the state & Repro\-duction rate & Says ``cannot conclude'' \\
+\midrule
+iDFlakies \cite{lam2019idflakies} & yes & -- & -- & -- & -- & -- \\
+iFixFlakies \cite{shi2019ifixflakies} & -- & yes & 1-minimal & -- & -- & -- \\
+RankF \cite{rahman2025rankf} & -- & ranks them & -- & -- & -- & -- \\
+Takuan \cite{levin2025takuan} & -- & -- & -- & preliminary & -- & -- \\
+PolDet \cite{gyori2015poldet}, ElectricTest \cite{bell2015electrictest} & yes & partly & -- & yes & -- & -- \\
+ODRepair \cite{li2022odrepair}, FlakyDoctor \cite{chen2024flakydoctor} & -- & -- & -- & -- & -- & -- \\
+Commercial products & yes & -- & -- & -- & -- & -- \\
+\midrule
+\textbf{FlakeTrace} (Iteration 1) & --\textsuperscript{a} & yes & 1-minimal & yes\textsuperscript{b} & yes\textsuperscript{c} & yes \\
+\bottomrule
+\end{tabular}
+\caption{What each system's publication or documentation describes}\label{ch2:tab:comparison}
+\end{table}
+{\footnotesize \textsuperscript{a}FlakeTrace starts from a failure that has already been seen; it
+does not search a suite for flaky tests. \textsuperscript{b}Static fields and system properties
+with a constant key, found in the compiled bytecode. \textsuperscript{c}Repeated runs ($n = 20$) with a
+95\% Wilson interval.\par}
+
+\medskip
+No column in our row is new on its own: every one is covered by at least one earlier system.
+ODRepair and FlakyDoctor have no marks because they repair a test whose polluter is already
+known, which is a later step than diagnosis. What the table shows is that no single system
+covers the last four columns together. Section~\ref{ch2:sec:gaps} explains why that combination
+matters. Two items from the proposal are not in our row because they are not built yet: ranking
+the candidate tests before the search (RankF is the baseline it will be measured against) and an
+explicit execution budget. Both are planned for FYP-2.
+\section{Limitations and Gaps}\label{ch2:sec:gaps}
+Each part of diagnosing an order-dependent failure has already been solved by someone. Reducing a
+failing order is solved by delta debugging \cite{zeller2002ddmin} as used in iFixFlakies
+\cite{shi2019ifixflakies}. Ranking the likely responsible tests is solved for single polluters by
+RankF \cite{rahman2025rankf}. Explaining the shared state has been shown at a preliminary scale by
+Takuan \cite{levin2025takuan} and PolDet \cite{gyori2015poldet}. FlakeTrace claims none of these
+techniques, nor the victim and polluter vocabulary, as its own.
+
+The limits the papers themselves report are what leave room for this project:
+\begin{itemize}
+\item \textbf{iFixFlakies} returns a reduced order without saying how reliably it reproduces the
+  failure or which shared state connects the tests, and, as the authors of ODRepair point out \cite{li2022odrepair}, its repair depends on a
+  cleaner test already existing.
+\item \textbf{RankF} leaves out failures that need several earlier tests together, and its
+  history-based variant needs previously observed test orders.
+\item \textbf{Takuan}'s evaluation covers 13 tests.
+\item \textbf{Shared state alone is not proof.} PolDet reported 324 polluting tests, but manual
+  inspection judged only 194 of them relevant \cite{gyori2015poldet}. A tool that blames a test
+  only because it touches the same state as the victim will often be wrong.
+\item \textbf{Watching execution is costly and can change the result.} ElectricTest's sound
+  detection slowed execution by about 20 times \cite{bell2015electrictest}, and Luo et al.
+  found that 85\% of their asynchronous-wait flaky failures appeared when a single time delay was
+  added \cite{luo2014empirical}. Instrumentation heavy enough to change timing can therefore
+  change the failure it is meant to explain.
+\end{itemize}
+
+\paragraph{The gap.} No system reviewed here produces a single result for one order-dependent
+failure that does all of the following:
+\begin{enumerate}
+\item names the responsible test or tests through controlled reruns, not through state overlap
+  alone;
+\item states how reliably the reduced order reproduces the failure, with a statistical interval;
+\item links polluter, shared resource and victim to exact code locations;
+\item says clearly, with a typed reason, when the evidence does not support a conclusion;
+\item spends no more than a declared execution budget.
+\end{enumerate}
+Iteration~1 of FlakeTrace covers points 1--4; the execution budget (point 5) is planned for FYP-2
+(Section~\ref{ch2:sec:proposed}). For commercial tools the gap is narrower: their published
+documentation describes detecting and quarantining flaky tests, not diagnosing a single
+failure in this way.
+\section{Proposed Solution}\label{ch2:sec:proposed}
+FlakeTrace combines established techniques into one workflow that ends either in a result anyone
+can check or in a clearly stated refusal. Given a Maven project and one failing test, it:
+\begin{enumerate}
+\item \textbf{reproduces} the failure in the given or discovered order, and if that fails, in up
+  to 31 valid shuffled orders, and records the failure's signature;
+\item \textbf{runs the victim alone}, so that a test which fails by itself is never blamed on
+  another test;
+\item \textbf{finds the polluter or polluters}, first one at a time and, when no single test is
+  enough, by delta debugging to a 1-minimal set;
+\item \textbf{repeats} the reduced order 20 times and gives a 95\% Wilson interval for how often
+  it reproduces the failure;
+\item \textbf{names the shared resource} and the exact bytecode locations where the polluter
+  writes it and the victim reads it, from the compiled classes, without running or changing the
+  code;
+\item \textbf{decides} \texttt{VERIFIED}, \texttt{CANDIDATE}, or \texttt{UNRESOLVED} with a
+  typed reason.
+\end{enumerate}
+The project's files are hashed before and after every diagnosis to show that nothing was changed.
+Chapter~5 gives the design.
+
+Iteration~1 runs this whole path from one command on the team's fixture project. Fixture cases
+F1--F4 are \texttt{VERIFIED}: each failure reproduced 20 times out of 20 and never alone. N1 and
+N2 are \texttt{UNRESOLVED} because the victim fails alone, and N3 is \texttt{UNRESOLVED} because
+the failure never reproduced, not even in 31 shuffled orders (Table~\ref{ch8:tab:fixture-results}).
+These are the cases the design was built to handle; they do not yet show how the tool performs
+on real projects.
+
+This answers the first four points of the gap in Section~\ref{ch2:sec:gaps}: the culprit is found
+by controlled reruns, the reproduction rate comes with an interval, the evidence names exact code
+locations, and an inconclusive case gets a typed reason instead of a guess. The remaining parts of
+the approved scope are not built yet and are planned for FYP-2:
+\begin{itemize}
+\item an explicit execution budget and the ranking of candidate tests before the search;
+\item filesystem paths as a third resource family;
+\item running diagnoses inside a locked-down container;
+\item runtime evidence, kept as a fallback for cases static analysis cannot explain (ADR-001);
+\item evaluation against published baselines, including iFixFlakies and RankF, on a frozen
+  benchmark of real projects.
+\end{itemize}
+\section{Complex Computing Problem}\label{ch2:sec:ccp}
+The problem FlakeTrace addresses is stated in one sentence in the team's project summary:
+\begin{quote}
+Allocating a finite execution budget across competing diagnostic actions under uncertainty, and
+knowing when the evidence does not justify a claim.
+\end{quote}
+In full, the tool must produce evidence that can be reproduced on another machine, is minimal under
+a declared rule, is supported by an observed shared-resource interaction and comes with a
+statistical measure of reliability. At the same time the search is bounded, the analysis must not
+change the behaviour it studies, and the tool must refuse to answer rather than answer wrongly.
+These are not separate requirements that can be met one after another: each one limits the others.
+
+The team claims seven of the nine Seoul Accord characteristics of a complex computing problem.
+Table~\ref{ch2:tab:ccp} gives the evidence for each and states how much of it Iteration~1 already
+shows; parts that depend on the execution budget are planned for FYP-2.
+
+\begin{table}[tbp]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\caption{Seoul Accord characteristics claimed by FlakeTrace}\label{ch2:tab:ccp}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.45\textwidth}>{\raggedright\arraybackslash}p{0.32\textwidth}@{}}
+\toprule
+\textbf{Characteristic} & \textbf{Why it applies} & \textbf{Evidence in Iteration~1} \\
+\midrule
+Conflicting requirements &
+More resource coverage and more repeated runs give stronger evidence but cost more analysis and CI
+time, and a fixed budget must be split between searching and verifying. &
+Partly. Deeper static analysis explains more real cases but costs more per pair and adds false
+edges (ADR-006). The budget split is FYP-2. \\
+\addlinespace
+Depth of analysis &
+The possible test orders form a large search space; the failure can need several polluters
+together and may not appear in every run. &
+Shown. F3 needs two polluters together, found by delta debugging; N3 did not reproduce in 31
+shuffled orders. \\
+\addlinespace
+Depth of knowledge &
+Program analysis, software testing, delta debugging, statistical estimation, sequential
+decision-making and secure execution are all needed. &
+Partly. Bytecode analysis, delta debugging and Wilson intervals are built; planning and the
+locked-down container are FYP-2. \\
+\addlinespace
+Beyond standard practice &
+Retrying, dashboards and quarantining do not produce a checkable explanation of one failure. &
+Shown on fixtures: the report names polluter, resource and code locations with a reproduction
+interval. \\
+\addlinespace
+Significant consequences &
+A wrong diagnosis wastes engineering effort, or leads a team to ignore a real regression. &
+Shown in the design: the victim-alone check and typed \texttt{UNRESOLVED} reasons (N1--N3). \\
+\addlinespace
+Interdependence &
+Evidence quality changes candidate ranking, ranking changes execution cost, and execution results
+change verification and the decision to abstain. &
+Partly. The polluters found by reruns decide which pairs are analysed, and \texttt{VERIFIED} needs
+both a resource edge and the interval. The ranking loop is FYP-2. \\
+\addlinespace
+Ill-defined cause &
+At the start, the responsible test, the shared resource and the conditions that reproduce the
+failure are all unknown. &
+Shown. Each fixture case starts from the victim's name only. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The conflict between depth of analysis and its cost has already been measured. On the fastjson
+case FJ-01, static analysis at depths 1--3 found none of the 42 tests that really affect the
+victim; at depth~4 it found all 42, plus one false edge among the 30 tests that do not. That false
+edge comes from a test that writes the shared time-zone field but restores it afterwards, which the
+static analysis does not model. One pair took about 3--6~s to analyse at depth~2, but 7.5~s for
+FJ-01 at depth~4 and 26.3~s for FJ-02 at depth~5 (ADR-006). FlakeTrace therefore starts at depth~2
+and goes deeper only when no edge is found.
+
+Two characteristics are not claimed. \textbf{Diverse stakeholders} would hold only if interviews
+showed that developers, QA engineers and CI maintainers need materially different things, and that
+those differences shape the requirements. The three practitioner interviews done so far (a chief
+executive, an engineering lead and a full-stack engineer) describe overlapping needs rather than
+conflicting ones. \textbf{Unfamiliar issues} is not claimed because
+using an unfamiliar framework does not count; the team has not yet set out which new computing
+knowledge the problem itself demands.
+\section{Technical Challenges}\label{ch2:sec:challenges}
+This section describes the main technical challenges met so far, in the proof of concept and in
+Iteration~1, and how each was handled. Open challenges are listed at the end.
+
+\paragraph{Running tests in an exact order without touching the project.} Every experiment depends
+on running a chosen list of tests in exactly that order, each list in a fresh JVM, with every test
+reported, a crash counted as a failure, and nothing added to or written into the analysed
+project. It also has to work on Windows, WSL and the Ubuntu CI runners with JDK~8. The order
+runner starts a small Java harness for each run that calls JUnit's own \texttt{JUnitCore} on one
+test method at a time and writes the results to a file, so that a test printing to the console
+cannot corrupt them (ADR-003). The project's files are hashed before and after every diagnosis;
+a mismatch ends the diagnosis as \texttt{UNRESOLVED}.
+
+\paragraph{The test harness can create or hide the failure.} The proof of concept showed this
+twice. On jsoniter, running test methods without the suite classes that the project's build
+normally uses made 182 of 210 candidate tests ``fail'' with the same \texttt{LinkageError}; once
+the suite context was reproduced, the count fell to zero. On fastjson, an earlier version of the
+harness set the time zone to make two failing tests pass alone, which erased the very dependence
+being measured. Both were found and corrected. The lesson carried into the design is that the tool
+must show it did not cause a result before it reports one, and that a test which fails alone is a
+finding to classify, not an environment problem to fix.
+
+\paragraph{Failures that need more than one polluter.} Trying each earlier test on its own finds a
+single polluter, but fixture case F3 fails only when two tests have both run before the victim. On
+F3, the one-by-one search ends with no single polluter after 12 runs. FlakeTrace then runs delta
+debugging \cite{zeller2002ddmin} over the earlier tests (ADR-007). Delta debugging returns a
+\emph{1-minimal} set, one from which no single test can be removed, and may miss other
+combinations, so the report never calls the result ``minimum''.
+
+\paragraph{Failures that do not reproduce.} The order FlakeTrace discovers may not be the order
+the CI server ran, so repeating it can never show a failure that needs another order. FlakeTrace
+therefore tries up to 31 valid shuffled orders before it gives up (ADR-008). If none reproduces
+the failure, the result is \texttt{UNRESOLVED} with the reason \texttt{NOT\_REPRODUCED} and a
+record of what was tried. It never says the test is reliable, because no number of reruns can
+prove that.
+
+\paragraph{Finding the shared resource from compiled code.} At the depths first agreed (1--3),
+static analysis explained none of the real fastjson cases, because the victims reach the shared
+field only inside constructors four or five calls deep. A fixed depth of 5 would make every pair
+pay the highest cost and the most over-approximation. FlakeTrace starts at depth~2 and deepens one
+level at a time, up to 5, only when no edge has been found and the depth limit was hit (ADR-006).
+One known false edge remains: a test that changes the shared field but restores it afterwards,
+because the analysis does not model the values written (Section~\ref{ch2:sec:ccp}).
+
+\paragraph{Static analysis or a runtime agent.} At the proposal defence the panel asked whether
+trace code would be injected and whether the analysed code would be modified. The team's
+post-defence plan named a runtime Java agent as the preferred way to observe shared state, while the team's report contract fixes the evidence level at
+static-only for Iteration~1. ADR-001 resolved this: Iteration~1 uses controlled reruns and static
+bytecode analysis with no instrumentation, and a runtime agent is kept as the FYP-2 fallback for
+cases static analysis cannot explain.
+
+\paragraph{Open challenges.}
+\begin{itemize}
+\item The overhead of runtime evidence collection has no measured value yet; it will be measured
+  before any threshold is set.
+\item The real-project evidence so far comes from one project, fastjson, which relies heavily on
+  global static configuration and is therefore favourable to static analysis.
+\item The published baseline tools, including iFixFlakies and RankF, have not been run yet; only
+  the team's own baseline has been run, on fixture cases F1--F4.
+\end{itemize}
+\section{Research Findings and Design Decisions}\label{ch2:sec:decisions}
+Most of FlakeTrace's design choices and constants come from a published finding. Where the
+literature does not settle a value, the value is the team's own policy, and it is labelled as such.
+Table~\ref{ch2:tab:decisions} links each finding to the decision it led to and to where that
+decision is recorded.
+
+{\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.38\textwidth}>{\raggedright\arraybackslash}p{0.35\textwidth}>{\raggedright\arraybackslash}p{0.21\textwidth}@{}}
+\caption{Research findings and the design decisions they led to}\label{ch2:tab:decisions}\\
+\toprule
+\textbf{Finding} & \textbf{Decision in FlakeTrace} & \textbf{Recorded in} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Finding} & \textbf{Decision in FlakeTrace} & \textbf{Recorded in} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+A victim is a test that passes when run alone and fails after another test; a brittle test fails
+alone \cite{shi2019ifixflakies}. &
+Run the victim alone before searching; if it fails alone, stop with \texttt{VICTIM\_FAILS\_ALONE}
+instead of blaming another test. &
+Ch.~5; cases N1, N2 \\
+\addlinespace
+Valid random orders shuffle the test classes first and never interleave methods of different
+classes, because JUnit never runs tests that way \cite{lam2019idflakies}. &
+Order search uses only such class-first shuffles. &
+ADR-008 \\
+\addlinespace
+About 31 random-order runs give 95\% confidence that a test is not order-dependent, in a study of
+Python projects \cite{gruber2021flaky}. &
+Try up to 31 shuffled orders before reporting \texttt{NOT\_REPRODUCED}. That the figure carries
+over to Java is an assumption, and is stated as one. &
+ADR-008; option \texttt{-{}-shuffles} \\
+\addlinespace
+Delta debugging returns a 1-minimal result \cite{zeller2002ddmin}; iFixFlakies applies it to the
+tests before the victim \cite{shi2019ifixflakies}. &
+Use delta debugging when no single polluter is found, and always call the result ``1-minimal'',
+never ``minimum''. &
+ADR-007 \\
+\addlinespace
+82\% of dependent tests can be revealed by at most two tests, so the rest need more
+\cite{zhang2014independence}; RankF leaves multi-test cases out \cite{rahman2025rankf}. &
+Keep failures that need several polluters instead of excluding them (fixture case F3). &
+ADR-007 \\
+\addlinespace
+Of 324 polluting tests PolDet reported, manual inspection judged 194 relevant
+\cite{gyori2015poldet}. &
+Shared state supports a conclusion but never makes one: \texttt{VERIFIED} needs controlled reruns
+\emph{and} a resource edge. &
+\texttt{eval/\allowbreak outcome.py} \\
+\addlinespace
+Sound dependency detection slowed execution by about 20 times \cite{bell2015electrictest}; a
+single added delay exposed 85\% of asynchronous-wait failures \cite{luo2014empirical}. &
+Iteration~1 adds no instrumentation: reruns plus static bytecode analysis; a runtime agent is the
+FYP-2 fallback. &
+ADR-001 \\
+\addlinespace
+Static fields and the filesystem are among the common root causes \cite{zhang2014independence};
+PolDet monitors heap state and the filesystem \cite{gyori2015poldet}. &
+Static fields and system properties in Iteration~1; filesystem paths in FYP-2. &
+\texttt{resource-\allowbreak evidence.md} \\
+\addlinespace
+The Wald interval's coverage is erratic for small samples; the Wilson interval is recommended
+instead \cite{brown2001interval}. &
+Report every reproduction rate with a 95\% Wilson interval; verification uses only 20 runs, so the
+small-sample case applies. &
+\texttt{eval/\allowbreak stats.py} \\
+\addlinespace
+Two interviewed practitioners said a clearly stated unknown is more useful than a confident
+wrong answer (stakeholder interviews). &
+Every inconclusive result is \texttt{UNRESOLVED} with a typed reason. &
+\texttt{report-\allowbreak schema.md} \\
+\addlinespace
+\emph{Policy, not a published finding.} &
+20 verification runs, 95\% confidence, and a Wilson lower bound of at least 0.70 for
+\texttt{VERIFIED}. Fixed before evaluation; changing them after seeing results would invalidate
+it. &
+\texttt{parameter-\allowbreak provenance.md} \\
+\end{longtable}
+}
+
+The proof of concept also changed the design directly (Section~\ref{ch2:sec:challenges}). Its
+null result at depth~1 led to a configurable analysis depth starting at~2. Its time-zone mistake
+led to the rule that a test failing alone is classified, never ``fixed'' by changing the
+environment. Its fake polluters led to the rule that the runner must reproduce the project's own
+execution context.
+
+Two questions remain open for FYP-2. Evaluation will use the metrics RankF reports, such as the
+rank of the first true polluter, so that results can be compared directly with it
+\cite{rahman2025rankf}. No paper reviewed gives a ratio for splitting a fixed budget between
+searching and verifying, so the split is project policy, and running without a verification
+reserve will be tested as an ablation.
