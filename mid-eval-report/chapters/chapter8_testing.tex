@@ -6,13 +6,238 @@
 % Rules: mid-eval-report/CLAUDE.md. Do not edit a file you do not own.
 % ===========================================================================
 \chapter{Testing and Early Validation}
+
 \section{Testing Strategy}
-\section{Test Levels and Techniques}
-\section{Test Cases}
+The evaluation plan (\texttt{docs/05-Testing/evaluation-plan.md}) treats testing, evaluation and
+acceptance as three different questions, and this chapter only answers the first:
+\textbf{testing} asks whether the implementation meets its own requirements (unit, integration
+and system checks); \textbf{evaluation} asks whether the approach is better under stated budgets
+(baseline comparisons, ablations); \textbf{acceptance} asks whether the intended users would
+actually use it (named-participant tasks). Evaluation is partly covered in Chapter 4's
+Acceptance Criteria (Table \ref{ch4:tab:acceptance}) via claim B11's baseline work; full
+acceptance testing is genuinely not started (Section \ref{ch8:sec:acceptance}).
+
+Strategy, concretely: every component is unit-tested in isolation with real, scriptable fakes
+confined to \texttt{*/tests/} (never imported by production code --- CLAUDE.md \S4); the fixture
+project (\texttt{fixtures/od-fixture}) then exercises the whole pipeline end to end against
+seven cases with pre-registered, before-any-run ground truth
+(\texttt{fixtures/od-fixture/ground\_truth.json}); and every one of those checks runs in CI on
+every push and pull request, not only locally.
+
+\section{Test Levels and Techniques}\label{ch8:sec:levels}
+Table \ref{ch8:tab:ci} lists the five real CI jobs (\texttt{.github/workflows/ci.yml}), each
+testing a different level, all green on the current \texttt{main} tip.
+
+\begin{table}[H]\centering
+\caption{CI jobs and what they test}\label{ch8:tab:ci}
+\begin{tabular}{p{2.6cm}p{4.0cm}p{6.5cm}}
+\toprule
+\textbf{Job} & \textbf{Level} & \textbf{What it checks} \\
+\midrule
+\texttt{python-eval} & Unit (M3) & Every \texttt{eval/tests/test\_*.py} (85 tests), plus the
+  yield report actually runs against the real benchmark manifest \\
+\texttt{fixture-build} & Integration (fixture) & The fixture compiles; victims pass alone;
+  victims fail after their real polluter; the N1 negative control fails alone --- catches a
+  fixture change that would silently invalidate ground truth \\
+\texttt{runner} & Unit + real JVM (M2) & Every \texttt{runner/tests/test\_*.py} (144 tests), with
+  \texttt{FLAKETRACE\_REQUIRE\_JVM=1} so a missing JDK/Maven fails the job instead of silently
+  skipping real-JVM tests \\
+\texttt{evidence} & Unit + real \texttt{javap} (M1) & Every \texttt{evidence/tests/test\_*.py}
+  (39 tests), against real compiled bytecode, same JVM-required discipline \\
+\texttt{build-report} & Build & This document itself compiles (\texttt{latexmk -pdf main.tex}) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent All 268 unit tests (85 + 144 + 39) and the fixture/report builds pass on the current
+\texttt{main} tip (CI run \texttt{38146685651}, all 5 jobs green --- see Appendix
+\ref{appc:sec:ci}), confirmed by re-running the three suites locally while drafting this
+chapter, not taken from a possibly-stale prior log. A project-wide discipline backs every one of them:
+\texttt{eval/tests/fake\_runner.py}'s \texttt{FakeOrderRunner} and similar scriptable fakes live
+\emph{only} under \texttt{*/tests/} and are never imported by production code (checked by
+\texttt{grep}, not just asserted --- see \texttt{docs/evidence-m3.md}'s Phase 4 entry).
+\section{Test Cases}\label{ch8:sec:cases}
+Table \ref{ch8:tab:cases} lists all seven real cases in \texttt{fixtures/od-fixture}, each with
+ground truth pre-registered in \texttt{ground\_truth.json} \textbf{before} any run against it
+(\texttt{authored\_before\_any\_run: true} in the file itself) --- so a case's expected outcome
+was never adjusted after seeing what the pipeline actually produced.
+
+\begin{longtable}{p{0.8cm}p{2.1cm}p{8.0cm}p{2.3cm}}
+\caption{The seven real fixture cases}\label{ch8:tab:cases}\\
+\toprule
+\textbf{Case} & \textbf{Category} & \textbf{What it tests} & \textbf{Expected} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Case} & \textbf{Category} & \textbf{What it tests} & \textbf{Expected} \\
+\midrule
+\endhead
+F1 & Single static-field polluter & A direct \texttt{getstatic}/\texttt{putstatic} write-read
+  pair --- the baseline case & \texttt{VERIFIED} \\
+F2 & System-property polluter & The victim reads the property \emph{inside a one-level helper
+  call} (\texttt{FeatureFlags.isTurboEnabled()}), not its own test method --- tests that depth-2
+  resolution finds evidence a depth-1 walk would miss & \texttt{VERIFIED} \\
+F3 & Two required polluters & The victim fails only when \emph{both} predecessors have run;
+  removing either alone makes it pass again --- tests \texttt{ddmin} minimisation, since a
+  one-by-one search alone cannot find either polluter in isolation & \texttt{VERIFIED} \\
+F4 & Order needs reshuffling & The polluter's class name sorts alphabetically \emph{after} the
+  victim's, so the module's natural discovered order can never reproduce the bug --- tests
+  ADR-008's shuffled-order search, the only path that can find this case at all &
+  \texttt{VERIFIED} (via a shuffle) \\
+N1 & Fails alone, deterministic & Always fails with no polluter run first --- must never be
+  attributed to order dependence & \texttt{UNRESOLVED} (\texttt{VICTIM\_FAILS\_ALONE}) \\
+N2 & Fails alone, intermittent & Fails \emph{sometimes} even when run alone, independent of any
+  shared resource --- tests that the isolation check catches a recurring signature before
+  reproduction counting is even consulted, distinguishing this from \texttt{NOT\_REPRODUCED} &
+  \texttt{UNRESOLVED} (\texttt{VICTIM\_FAILS\_ALONE}) \\
+N3 & Externally caused & Models a real bug whose actual cause (an environment variable
+  FlakeTrace does not control) is outside anything the tool observes --- tests that the pipeline
+  honestly reports it never reproduced the failure, rather than inventing a polluter or claiming
+  the test is reliable & \texttt{UNRESOLVED} (\texttt{NOT\_REPRODUCED}) \\
+\bottomrule
+\end{longtable}
+
+\textbf{A disclosed gap between the plan and what was built.}
+\texttt{docs/05-Testing/fixture-suite.md} still describes an earlier, more ambitious ten-case
+plan (F1--F10: reflection pollution, filesystem-path pollution, a nondeterministic victim, a
+misleading failure signature, budget exhaustion, a non-OD control) that is \textbf{not} what
+exists today. The suite that actually got built evolved differently during implementation ---
+simpler on static/system-property coverage, but it gained F4 and N3 specifically to exercise
+ADR-008's order-search and honest-non-reproduction paths, which the original ten-case plan never
+anticipated. This is stated here rather than left as a silent mismatch between a planning
+document and the real repository: the seven real cases are what Chapter 7's results and the
+acceptance criteria in Chapter 4 are measured against, not the ten-case plan.
+
 \section{Test Results}
+Table \ref{ch8:tab:fixture-results} is generated directly from the seven real reports in
+\texttt{eval/reports/*.json} by \texttt{scripts/json\_to\_tex.py} --- every number in it was
+produced by actually running \texttt{runner.diagnose()} end to end, never typed by hand. It was
+regenerated while drafting this chapter and confirmed byte-identical to what was already
+committed, so it is current.
+
 % Generated from eval/reports/*.json — run: python3 mid-eval-report/scripts/json_to_tex.py
 \IfFileExists{tables/generated/fixture_results.tex}{\input{tables/generated/fixture_results}}{\todo{run scripts/json\_to\_tex.py}}
-\section{Acceptance Testing / Validation}
+
+\noindent All four positive cases reach \texttt{VERIFIED} at 20/20 reproduced, 0/20 alone, with
+a real resource edge each --- F4 only because the shuffled-order search (ADR-008) finds it,
+never the natural discovered order. All three negative controls abstain correctly: N1 and N2
+both land on \texttt{VICTIM\_FAILS\_ALONE} (N1 deterministically 20/20 alone-failures, N2
+intermittently --- 9/20 in the committed run, which varies run to run by the mechanism's own
+design), and N3 is honestly \texttt{NOT\_REPRODUCED} after exhausting 31 shuffled orders, never
+blaming a polluter for a failure the pipeline never actually observed.
+
+\section{Acceptance Testing / Validation}\label{ch8:sec:acceptance}
+Acceptance asks a different question from testing: not ``does the implementation meet its
+requirements'', but ``would the people it is for actually use it'' (\texttt{docs/05-Testing/
+evaluation-plan.md}, Q74). The plan defines a five-step task for a real participant: run
+FlakeTrace on a prepared project and read the outcome (Verified/Candidate/Unresolved); replay
+the returned order on a clean environment; identify the suspected predecessor, shared resource,
+evidence strength and remaining limitation; choose the next engineering action and explain why;
+then compare that experience against doing the same work from raw logs and a conventional
+flaky-test history view. It would be measured by task completion, whether the chosen action was
+correct, time, errors, assistance needed, and a recorded accept/reject decision.
+
+\todo{M3: acceptance testing has \textbf{not been run} in Iteration 1. One named participant is
+secured (SH1, Mahad Sheikh, Inspirovix, who agreed during the proposal-stage interviews to
+review results and give practitioner feedback --- \texttt{docs/00-Meta/stakeholder-evidence.md}),
+but no session has been scheduled or conducted, and a substitute plan for the other two
+stakeholders does not yet exist. This is Final-1/FYP-2 scope per the evaluation plan, not an
+Iteration-1 deliverable -- stated here as genuinely not started, not filled with a plausible
+account of a task that did not happen.}
 \section{Edge and Failure Cases}
+Section \ref{ch8:sec:cases}'s N1--N3 are the fixture's own edge cases (fails alone,
+intermittent, externally caused). This section covers failure modes in the \textbf{harness
+itself} --- what happens when a run does not behave cleanly, not just when a victim does not.
+
+\textbf{A crashed or timed-out JVM is reported, never silently dropped.}
+\texttt{runner/order\_runner.py}'s \texttt{OrderRunner} gives every test in the requested order
+a result: if the JVM exits early or exceeds \texttt{timeout\_s}, every test that did not report
+is marked failed with \texttt{flaketrace.JvmCrash} or \texttt{flaketrace.Timeout} rather than
+being left out of the count. \texttt{eval.outcome.decide()} then keeps these
+\texttt{infrastructure\_failures} distinct from a real signature mismatch (ADR-008, row 3b/3c in
+Figure \ref{ch5:fig:outcome}) --- a crash is a tooling problem, never silently counted as
+evidence of a different bug.
+
+\textbf{A source change mid-diagnosis voids everything else.}
+The project's source is SHA-256 hashed before and after every diagnosis; a mismatch forces
+\texttt{UNRESOLVED(SOURCE\_INTEGRITY\_FAILED)} regardless of what every other check found ---
+the first row \texttt{decide()} evaluates, before even the isolation check.
+
+\textbf{When no single test explains the failure and minimisation cannot either, the pipeline
+refuses to report rather than guess.} \texttt{NO\_SINGLE\_POLLUTER} is the one
+\texttt{DiagnosisRuns} status \texttt{eval.report.assemble\_report()} deliberately does
+\textbf{not} handle --- it raises \texttt{UnhandledStatus}, which \texttt{runner/cli.py} turns
+into exit code 3 and a plain-text explanation (``the victim failed in the original order but not
+again \ldots likely flaky'') rather than a schema-shaped report with an invented verdict. This is
+a real, currently-open design question (there is no \texttt{unresolved\_reason} enum value for
+it yet), not an oversight --- see Table \ref{ch4:tab:fr}'s FR-6 gap and
+\texttt{eval/report.py}'s own module docstring.
+
+\textbf{Malformed input and missing tools fail fast, before any test runs.} A \texttt{--victim}
+that is not \texttt{Class\#method}, or a \texttt{--project} without a \texttt{pom.xml}, exits 2
+immediately. A missing \texttt{java}/\texttt{mvn}/\texttt{javap} on \texttt{PATH} exits 1 with
+the tool's name named, not a generic stack trace.
 \section{Defects and Corrective Actions}
+Six real defects from this iteration, each with how it was found, the fix, and how the fix was
+verified (not just asserted) --- a deliberate mix of defects a teammate's review caught and
+defects found independently, since the strongest evidence of real testing is catching your own
+mistakes, not only the ones someone else names.
+
+\begin{longtable}{p{3.2cm}p{2.3cm}p{4.3cm}p{3.8cm}}
+\caption{Real defects found and fixed}\\
+\toprule
+\textbf{Defect} & \textbf{Found by} & \textbf{Fix} & \textbf{Verified by} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Defect} & \textbf{Found by} & \textbf{Fix} & \textbf{Verified by} \\
+\midrule
+\endhead
+N2's flakiness mechanism (\texttt{System.nanoTime()}'s lowest bit) was deterministically even on
+  some hardware, making the ``intermittent'' negative control pass 100\% of the time on that
+  machine --- the opposite of its purpose & Self-found, cross-platform measurement &
+  Replaced with \texttt{java.util.Random().nextBoolean()}, mixing \texttt{nanoTime()} through a
+  full LCG & Re-measured both platforms: 45\% (Windows/JDK24), 50\% (Linux/JDK8) --- genuinely
+  balanced on both \\
+A generic ``no resource edge found'' line in multi-polluter reports contradicted the
+  per-polluter lines right above it that \emph{did} name an edge & Member 2's review (W10,
+  PR \#35) & New optional \texttt{any\_edge\_found} key lets a caller suppress the generic line
+  when it would contradict specific ones & Mutation check: reverted the fix, the exact
+  contradiction Member 2 described reproduced verbatim \\
+A doc wrongly attributed an absolute execution-record path to \texttt{diagnose()} itself &
+  Member 2's review (PR \#13) & Corrected to the calling script's own \texttt{RECORD\_DIR} &
+  Read \texttt{runner/diagnose.py:103} directly rather than trusting the original claim \\
+\texttt{assemble\_report} could raise a bare, uncaught \texttt{ValueError} on today's real
+  \texttt{NOT\_REPRODUCED} shape (\texttt{alone\_n == 0}), crashing instead of the CLI's
+  designed ``exit 3, no report yet'' path & Member 2's review (PR \#45) & Guard raising
+  \texttt{UnhandledStatus} for that specific shape, safe for either merge order & Mutation
+  check: disabled the guard, reproduced the exact real traceback Member 2 described \\
+A baseline-run log claimed a 7-test candidate pool (5 noise tests); the fixture's real
+  \texttt{benign\_noise\_tests} has only 4, giving a pool of 6 & Self-found while writing a new
+  baseline run's own pool description & Corrected in \texttt{eval/README.md}, old entry kept
+  as an honest historical record, not silently edited & Re-ran F1: result byte-identical to the
+  original (1, 1, 3, 2 shuffles), confirming the candidate set never actually changed \\
+\texttt{DecisionInput.infrastructure\_failures} validation (\texttt{0 <= x <=
+  sequence\_failures\_any}) rejected a real, valid shape: a clean sequence with crashes only in
+  the alone check & Self-found while implementing combined cross-phase crash counts & Relaxed
+  to \texttt{x >= 0} --- the field is a total across phases with different \texttt{\_n}
+  denominators, not bounded by one of them & New test for the previously-rejected shape; full
+  suite re-run green \\
+\bottomrule
+\end{longtable}
 \section{Current Validation Status}
+\textbf{Validated now:} all 7 real fixture cases match their pre-registered ground truth exactly
+(Table \ref{ch8:tab:cases}, Table \ref{ch8:tab:fixture-results}); all 268 unit tests across the
+three members' suites pass; CI is green on all 5 jobs on the current \texttt{main} tip, including
+the build of this document itself; the Verified threshold, deletion-check and explanation
+acceptance criteria are met \emph{by construction}, not just by observation (Table
+\ref{ch4:tab:acceptance}).
+
+\textbf{Genuinely open, not validated yet:} published-tool baseline comparison (claim B11,
+\texttt{docs/07-Defense/claims-ledger.md} --- only our own random-order baseline has run for
+real); the user acceptance tasks (Section \ref{ch8:sec:acceptance}); the instrumentation
+overhead threshold (NFR-1); the non-perturbation control as an automated check; and any
+real-world project (the \texttt{idoft} benchmark cases remain metadata-only, not cloned or
+built). None of these are claimed as done anywhere in this report --- each is named here, in
+the claims ledger, or flagged in its own section above, consistent with the rule that an open
+item stated plainly costs far less than one discovered later.
