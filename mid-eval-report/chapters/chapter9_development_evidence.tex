@@ -94,7 +94,7 @@ All three members used generative AI, and this section discloses it per artefact
 Two rules applied to all assisted work: the member, not the AI, makes every commit after reading the change (\path{CLAUDE.md}, \path{CONTRIBUTING.md}), and no result is written down unless a command was actually run. Table~\ref{ch9:tab:genai} gives the disclosure per artefact; the counts are rows in the register on 11 October 2026.
 
 {\small
-\begin{longtable}{>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.30\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}}
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.28\textwidth}>{\raggedright\arraybackslash}p{0.18\textwidth}}
 \caption{GenAI use per artefact}\label{ch9:tab:genai}\\
 \toprule
 Artefact (member) & Tool & Level & What the member did; an AI output rejected or corrected & Verification\\
@@ -116,7 +116,69 @@ Report text and diagrams (M3) & \todo{M3: tool} & \todo{M3: level} & \todo{M3: w
 \end{longtable}}
 
 By team decision, report-writing sessions are not logged one by one in the GenAI logs (\path{mid-eval-report/CLAUDE.md}, section 7); this table is their disclosure. Citations in the report were added only after a member had opened the original paper. At the evaluation the supervisor may ask each member to explain and change their own module without AI.
-\section{External Components and Dependencies}
-\section{Risks and Mitigation}
-\section{Security and Privacy Considerations}
-\section{Current Limitations}
+\section{External Components and Dependencies}\label{ch9:sec:external}
+FlakeTrace's own code is written by the team; Table~\ref{ch9:tab:external} lists everything it relies on but did not write. No third-party code is copied into the repository's packages: the proof-of-concept extractor was used only as a reference for Member 1's new implementation (ADR-002).
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.28\textwidth}>{\raggedright\arraybackslash}p{0.60\textwidth}}
+\caption{External components}\label{ch9:tab:external}\\
+\toprule
+Component & How it is used\\
+\midrule
+\endfirsthead
+\toprule
+Component & How it is used\\
+\midrule
+\endhead
+JDK (\texttt{java}, \texttt{javac}, \texttt{javap}) & Runs the tests, compiles the harness once, reads bytecode; must be installed by the user\\
+Apache Maven & Compiles the analysed project and lists its test classpath; downloads that project's own dependencies if they are not cached\\
+JUnit 4 & Taken from the analysed project's own dependencies to run its tests; FlakeTrace adds no library to the project\\
+\texttt{jsonschema} 4.26.0 & The only Python package FlakeTrace installs (\path{eval/requirements.txt}); validates every report\\
+GitHub Actions: \texttt{checkout}, \texttt{setup-java}, \texttt{setup-python}, \texttt{upload-artifact}, \texttt{xu-cheng/latex-action} & CI for the code and the report PDF\\
+fastjson (Apache-2.0) and json-iterator (MIT) & Open-source projects used as real subjects in the proof of concept and in Member 1's depth measurements (claims ledger C1); analysed, not included in FlakeTrace\\
+\bottomrule
+\end{longtable}}
+
+\section{Risks and Mitigation}\label{ch9:sec:risks}
+The project's risk register (\path{docs/00-Meta/risk-register.md}) gives each risk a mitigation and a trigger that would force a change of plan. Table~\ref{ch9:tab:risks} gives the risks that matter most after Iteration 1, with their status today.
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}}
+\caption{Main risks and their status on 11 October 2026}\label{ch9:tab:risks}\\
+\toprule
+Risk & Mitigation (register) & Trigger for change & Status now\\
+\midrule
+\endfirsthead
+\toprule
+Risk & Mitigation (register) & Trigger for change & Status now\\
+\midrule
+\endhead
+Historical build rot: real projects may not build in time & Frozen versions; report yield and exclusions honestly & Too few reproducing cases & Open: no real project has been diagnosed end to end yet; first one planned for FYP-1 Final\\
+Invisible resources: polluter or explanation missed & Bound the resource families; abstain when evidence is missing & Any false confident certificate & No false \texttt{VERIFIED} on the fixture: all three negative controls are \texttt{UNRESOLVED}; on fastjson the extractor found 1 false edge among 728 candidates (ADR-001)\\
+Multi-predecessor cases: a pairwise search cannot find them & 1-minimal wording; multi-test candidates kept; fixture F3 & Deletion checks contradict the certificate & Mitigated: \texttt{ddmin} finds both of F3's polluters (Section~\ref{ch6:sec:ddmin})\\
+Scope inflation & Written tiers with gates & FYP-1 lacks an end-to-end certificate or a measured baseline & Not triggered: real reports exist for seven cases and the random-order baseline was run on F1--F4 (\pr{54})\\
+Three-person overload: integration cost & Contracts frozen early; CDR gated & FYP-1 milestones slip & Partly triggered: the container, the graph and the threat model slipped (Table~\ref{ch3:tab:deviations})\\
+Secret leakage: paths or credentials in logs & Redaction; offline flag & Any secret found in an artefact & Open: execution records store the analysed project's absolute path and the operating system, unredacted; they stay local and are git-ignored\\
+\bottomrule
+\end{longtable}}
+
+\section{Security and Privacy Considerations}\label{ch9:sec:security}
+FlakeTrace runs other people's tests, so it executes code it did not write. At Iteration 1:
+\begin{itemize}
+  \item \textbf{No sandbox.} Tests run as ordinary processes with the user's permissions, with a 120\,s timeout and nothing else. The required rootless container with no network, resource limits and verified cleanup (\path{docs/02-Requirements/non-functional.md}) is not built. Until it is, FlakeTrace should only be used on projects the user trusts, which is the risk register's own fallback.
+  \item \textbf{Network.} FlakeTrace's own code makes no network calls. Maven may download the analysed project's dependencies, and the project's tests may use the network themselves.
+  \item \textbf{The analysed source is not changed.} Every file except \path{target/} and \path{.git/} is hashed before and after a diagnosis, and the record folder may not be inside the project (Section~\ref{ch5:sec:arch}).
+  \item \textbf{Data stays local.} Reports and execution records are written to \texttt{flaketrace-\allowbreak records/}, which git ignores. They contain test names, failure messages with numbers and paths masked, the project's absolute path, its git commit and the operating system; nothing is redacted further and nothing is sent anywhere.
+  \item \textbf{AI in the product.} None: generative AI was used to develop FlakeTrace (Section~\ref{ch9:sec:genai}), not inside it.
+\end{itemize}
+
+\section{Current Limitations}\label{ch9:sec:limitations}
+Each module's limitations are in its own section of Chapter~6. Across the system:
+\begin{itemize}
+  \item evidence is static only, for two resource families (static fields and system properties);
+  \item JUnit 3 and 4 only, run through Maven projects;
+  \item a report shows one shared resource; with several polluters the others are named in its limitations;
+  \item no diagnosis has yet run end to end on a real project;
+  \item no sandbox (Section~\ref{ch9:sec:security});
+  \item the budget of 31 shuffled orders is taken from a study of Python projects~\cite{gruber2021flaky}.
+\end{itemize}
