@@ -6,25 +6,498 @@
 % Rules: mid-eval-report/CLAUDE.md. Do not edit a file you do not own.
 % ===========================================================================
 \chapter{Introduction and Project Vision}
-\section{Project Overview}
-Describe the product/application/system and its intended purpose.
-\section{Problem Statement}
-Clearly formulate the problem being addressed.
-\section{Problem Context and Motivation}
-Explain the context, stakeholders, motivation, and significance.
-\section{Project Vision}
-State what the project intends to achieve.
-\section{Project Objectives}
-List measurable project objectives.
-\section{Project Scope}
-Define included and excluded functionality.
-\section{Project Modules}
-Describe the major modules and their responsibilities.
-\section{Stakeholders and User Classes}
-Identify users, stakeholders, and their characteristics.
-\section{Success Criteria}
-Define measurable criteria that will indicate project success.
-\section{Constraints and Assumptions}
-Document relevant constraints and assumptions.
-\section{Ethical, Legal and DEI Considerations}
-Document relevant ethical, legal, accessibility, privacy, or diversity considerations where applicable.
+\section{Project Overview}\label{ch1:sec:overview}
+FlakeTrace is a self-hosted command-line tool that diagnoses \emph{order-dependent} test failures
+in Java projects built with Maven and tested with JUnit~4 (including JUnit~3 test classes). An
+order-dependent failure happens when a test passes on its own but fails after certain other tests
+have run, because those tests left shared state behind.
+
+The developer gives FlakeTrace the project folder and the name of the failing test. In
+Iteration~1 this is one command:
+\begin{center}
+\texttt{py -m runner diagnose -{}-project <folder> -{}-victim <Class\#method>}
+\end{center}
+FlakeTrace then runs controlled test orders, each in a fresh JVM, and writes two files: an
+execution record of every run, and a JSON report that follows the team's report schema
+(Figure~\ref{ch5:fig:datamodel}). The report gives one of three outcomes:
+\begin{itemize}
+\item \texttt{VERIFIED}: the tests responsible (the \emph{polluters}), a reduced order that
+  reproduces the failure, how often it reproduced with a 95\% Wilson interval, and the shared
+  resource with the exact code locations where it is written and read;
+\item \texttt{CANDIDATE}: a reproducing order with a supporting resource, but a reproduction rate
+  below the confidence threshold;
+\item \texttt{UNRESOLVED}: no conclusion, with a typed reason such as \texttt{VICTIM\_FAILS\_ALONE}
+  or \texttt{NOT\_REPRODUCED}.
+\end{itemize}
+FlakeTrace never changes the project it analyses: it reads the compiled classes, runs the tests
+as they are, and hashes the project's files before and after every diagnosis to show this.
+
+Its purpose is to replace the manual search developers do today, rerunning subsets of the suite
+until the culprit appears, with a bounded diagnosis whose result anyone can check. It does not
+detect flaky tests in general and does not repair them. Section~\ref{ch1:sec:scope} separates
+what Iteration~1 has built from what is planned for later iterations.
+\section{Problem Statement}\label{ch1:sec:problem}
+\begin{quote}
+When a Java test passes in isolation but fails after other tests have run, developers can usually
+detect that the instability exists but still have no bounded, reproducible, evidence-producing way
+to identify which earlier test interaction caused it and decide what to inspect next.
+\end{quote}
+Stated precisely: a test suite runs in some order, and one test, the \emph{victim}, fails in that
+order but passes when run alone. The problem is to find the smallest set of earlier tests, the
+\emph{polluters}, whose running before the victim makes it fail; to show how reliably that reduced
+order reproduces the same failure; to name the shared state that links the polluters to the
+victim, at the exact places in the code where it is written and read; and, when the evidence does
+not support an answer, to say so with a reason instead of guessing.
+
+Three consequences follow from this statement and shape the whole project:
+\begin{itemize}
+\item \textbf{The input is a known failure.} FlakeTrace starts from a failing test the developer
+  already has; finding flaky tests in the first place is not part of the problem.
+\item \textbf{The output is evidence, not a fix.} The result tells the developer what to inspect;
+  changing the code stays with the developer.
+\item \textbf{The process is bounded.} An unbounded search is what developers already do by hand.
+  Iteration~1 bounds the number of orders and repeats; an explicit execution budget is planned
+  for a later iteration.
+\end{itemize}
+\section{Problem Context and Motivation}\label{ch1:sec:context}
+\paragraph{How common the problem is.} Order dependence is a major source of flaky tests in Java:
+of the 422 flaky tests iDFlakies found, 50.5\% were order-dependent \cite{lam2019idflakies}. Most
+order-dependent tests are victims, the case FlakeTrace starts from: Shi et al.\ found 100 victims
+against 10 brittle tests \cite{shi2019ifixflakies}, and the 155 cases in RankF's evaluation are 135
+victims and 20 brittle tests \cite{rahman2025rankf}.
+
+\paragraph{How developers handle it today.} Before the proposal, the team interviewed three
+practitioners: the chief executive of Inspirovix, an engineering lead at Trillet~AI and a
+full-stack engineer at Learnsignal. All three described the same procedure: notice that one test
+fails after others, run it alone, then rerun it after smaller and smaller groups of earlier tests
+until the culprit appears. One called it ``manual binary search'' with ``no tooling support for
+it''. They reported 15~minutes to an hour per incident, and up to a full working day for the worst
+cases. One team saw flaky failures a few times a week but investigated the cause only once or
+twice a month, because the work competes with other priorities. Their existing tools show
+\emph{what} failed, not that one test changed shared state that broke another one later.
+
+\paragraph{Why it matters.} A failure that nobody explains is usually retried, ignored or
+quarantined. That wastes time, and it also hides real regressions behind ``it's just flaky''. The
+practitioners also said that a tool that guesses is worse than none: in their words, ``a clearly
+stated unknown is more useful than a confident but incorrect diagnosis''. FlakeTrace is designed
+around that requirement.
+
+\paragraph{Where the project started.} FlakeTrace is a Stream~B (application-derived) project: it
+began from this workflow failure, not from a paper. Research tools such as iFixFlakies and RankF
+are baselines it will be compared against, not its starting point (Section~\ref{ch2:sec:comparison}).
+
+\paragraph{A limit in the evidence.} None of the three interviewed teams uses Java, Maven or JUnit;
+their stacks are Python and TypeScript, and their shared state is mostly database records. The
+interviews show that the \emph{workflow problem} is real. That Java teams face it rests on the
+published Java studies above. An interview with a Java developer is planned after the Mid
+evaluation.
+\section{Project Vision}\label{ch1:sec:vision}
+FlakeTrace aims to turn ``this test is flaky'' into a result a developer can check and act on: which
+earlier tests break the failing test, through which shared state, how reliably that happens, and,
+when this cannot be established, an honest statement of why.
+
+The team's contribution statement places this against existing work:
+\begin{quote}
+Existing products mainly detect, track or quarantine flaky tests, while research tools separately
+detect and classify order dependence, minimise relevant test orders, rank order-dependent relevant
+tests or compare dynamic invariants. FlakeTrace contributes a self-hosted, budget-aware
+active-diagnosis pipeline that combines bounded resource-event evidence with controlled
+interventions and returns a statistically verified replay certificate or an explicit abstention,
+evaluated against current research baselines on a frozen, project-separated Java benchmark.
+\end{quote}
+The project does not claim a new algorithm, and it does not claim to fix flaky tests. It defends
+three properties of the complete product:
+\begin{enumerate}
+\item \textbf{Typed abstention:} when the evidence is insufficient, the result is a named reason,
+  never a guess. Built in Iteration~1.
+\item \textbf{Intervention-backed evidence:} the polluters are confirmed by controlled reruns, not
+  only inferred from the code; the shared resource is supporting evidence. Built in Iteration~1.
+\item \textbf{Budget as a first-class input:} the tool spends a declared number of test
+  executions and then stops. Planned for a later iteration.
+\end{enumerate}
+The evaluation named in the statement is also later work: real benchmark projects start in
+Iteration~2, and the frozen held-out evaluation is in FYP-2.
+\section{Project Objectives}\label{ch1:sec:objectives}
+Each objective below has a measure that can be checked, and a status. Iteration~1 results are from
+the seven committed fixture reports in \texttt{eval/reports/} (Table~\ref{ch8:tab:fixture-results});
+the requirements behind each objective are in Table~\ref{ch4:tab:fr}.
+
+{\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.05\textwidth}>{\raggedright\arraybackslash}p{0.31\textwidth}>{\raggedright\arraybackslash}p{0.30\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}@{}}
+\caption{Project objectives, their measures and status}\label{ch1:tab:objectives}\\
+\toprule
+\textbf{ID} & \textbf{Objective} & \textbf{Measure} & \textbf{Status} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{ID} & \textbf{Objective} & \textbf{Measure} & \textbf{Status} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+O1 & Find the polluter or polluters of a known order-dependent failure from one command. &
+Every seeded order-dependent fixture case ends \texttt{VERIFIED} with its true polluters. &
+Met on fixtures: F1--F4 \texttt{VERIFIED}, including F3's two polluters. Real projects: from Iteration~2. \\
+\addlinespace
+O2 & Never give a confident diagnosis that is not supported. &
+No \texttt{VERIFIED} result on any negative control. &
+Met on fixtures: N1--N3 all \texttt{UNRESOLVED} with a typed reason. \\
+\addlinespace
+O3 & Report how reliably the failure reproduces. &
+Every report gives the count out of 20 runs and a 95\% Wilson interval; \texttt{VERIFIED} needs a
+lower bound of at least 0.70, which means at least 19 of 20. &
+Built: F1--F4 reproduced 20/20 (interval 0.84--1.00). \\
+\addlinespace
+O4 & Explain the failure through shared state. &
+Every \texttt{VERIFIED} report names the resource and the bytecode locations of the polluter's
+write and the victim's read. &
+Met on fixtures for static fields and system properties; filesystem paths in FYP-2. \\
+\addlinespace
+O5 & Leave the analysed project unchanged. &
+File hashes before and after every diagnosis are equal. &
+Met: integrity check passed in all seven fixture reports. \\
+\addlinespace
+O6 & Diagnose at lower cost than existing approaches. &
+At least 25\% fewer test executions (median) than the strongest baseline, losing at most 5
+percentage points of success at the same budget. &
+Later iterations: needs the execution budget, candidate ranking and published baselines. \\
+\addlinespace
+O7 & Make results reproducible by others. &
+A frozen benchmark of real projects with yield and exclusions published, and a clean Linux
+install from the documentation. &
+FYP-2. \\
+\end{longtable}
+}
+\section{Project Scope}\label{ch1:sec:scope}
+The scope is the approved proposal's scope after the narrowing described below. It is kept in
+\texttt{docs/02-Requirements/scope-boundary.md}; Table~\ref{ch1:tab:scope} adds what Iteration~1
+has actually built. Everything outside the three supported resource families (databases, network,
+caches, services, threads, timing) is recorded as unsupported evidence, never diagnosed.
+
+{\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.79\textwidth}@{}}
+\caption{FlakeTrace scope by status}\label{ch1:tab:scope}\\
+\toprule
+\textbf{Status} & \textbf{Functionality} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Status} & \textbf{Functionality} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\textbf{Built in Iteration~1} &
+Maven project input and test discovery; environment recorded in every execution record; JUnit~4
+and JUnit~3 tests run through JUnitCore, one fresh JVM per order; reproduction in the given or
+discovered order, then up to 31 valid shuffled orders; victim-alone check; one-by-one polluter
+search, then delta debugging to a 1-minimal set; failure-signature normalisation; 20 repeated
+runs with 95\% Wilson intervals; static bytecode extraction of static fields and system
+properties, including set-up, tear-down and static initialisers, at depth 1--5 with
+auto-deepening; outcome decision with typed reasons; schema-validated JSON report and execution
+record; source-integrity hashing; command-line tool with CI exit codes; seeded fixture suite with
+written ground truth; CI on every pull request. \\
+\addlinespace
+\textbf{Committed, not yet built} &
+Containerised runner (rootless, network disabled, resource limits, redaction of paths and
+credentials); execution budget with a reserved verification share; candidate ranking and a
+cost-aware search policy; filesystem paths as the third resource family; test--resource graph;
+runtime evidence as a fallback where static analysis cannot explain a case (ADR-001); fidelity
+to projects whose build runs suite classes; a runnable replay command in the report; frozen
+benchmark of real projects with yield and exclusions; published baselines (iFixFlakies, RankF);
+ablations including the depth sweep; statistics layer; reproducibility bundle; clean Linux
+install from the documentation. Iteration~2 (November--January, ending at the FYP-1 Final evaluation) is committed to ranking and the adaptive policy, runtime evidence, the graph, the ablation harness, one real benchmark project end to end and a first container deployment; the rest follows in FYP-2 (Section~\ref{ch3:sec:it2}). \\
+\addlinespace
+\textbf{Supporting, if time allows} &
+HTML report, explanation chain with evidence labels, plain-language explanation mode,
+resource-coverage reporting, caching. \\
+\addlinespace
+\textbf{Gated} &
+Certificate-Driven Remediation: for a \texttt{VERIFIED} result only, propose a patch, check it on a
+disposable copy and hand the diff to a developer, who decides. Enabled only after the core meets
+its Final-1 exit criteria (the FYP-1 Final evaluation). Also gated: JUnit~5, Gradle, GitHub Checks, database and network
+adapters. \\
+\addlinespace
+\textbf{Excluded} &
+Flaky-test detection as the contribution; other languages and build systems; claims of definitive
+causality; automatic repair applied by the tool; hosted dashboards, team inboxes, IDE plugins,
+natural-language queries, cross-project correlation; broad database or network tracing;
+safe multi-tenant execution. \\
+\end{longtable}
+}
+
+\paragraph{How the scope was narrowed.} Four recorded decisions shaped the table:
+\begin{itemize}
+\item \textbf{Proof of concept, NARROW (28 August 2026).} At depth~1, static analysis found no
+  write/read overlap for any candidate in any case, and pre-registered gates failed, including a
+  0\% execution saving against a 30\% target. The team kept the approach but changed the resource
+  scope.
+\item \textbf{Configurable analysis depth.} Depth became a committed, reported parameter instead
+  of a fixed value of 1. It now starts at 2 and deepens to 5 when needed (ADR-006).
+\item \textbf{Three resource families.} Static fields, system properties and filesystem paths are
+  diagnosed; everything else is opaque.
+\item \textbf{No instrumentation in Iteration~1.} After the proposal defence (approved with minor
+  modifications), ADR-001 fixed Iteration~1 to controlled reruns plus static analysis, with a
+  runtime agent as the Iteration~2 fallback.
+\end{itemize}
+Certificate-Driven Remediation was added as a gated module, not committed scope, so that the
+exclusion of automatic repair still holds.
+
+\paragraph{If the team falls behind.} The recorded cut order is: remediation first, then filesystem
+evidence (reduced to unsupported evidence), then the adaptive search policy (ranked one-by-one
+remains the default). The end-to-end diagnosis path is cut last. Any cut needs the supervisor's
+approval before it is made.
+\section{Project Modules}\label{ch1:sec:modules}
+FlakeTrace is built as three modules, one per team member, each in its own folder. The modules meet
+only through written contracts in \texttt{docs/contracts/}: the report schema and the component
+interfaces. Table~\ref{ch1:tab:modules} summarises them; Chapter~5 gives the architecture
+(Section~\ref{ch5:sec:arch}) and Chapter~6 the implementation.
+
+{\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.43\textwidth}>{\raggedright\arraybackslash}p{0.34\textwidth}@{}}
+\caption{FlakeTrace modules}\label{ch1:tab:modules}\\
+\toprule
+\textbf{Module} & \textbf{Responsibility (built in Iteration~1)} & \textbf{Gives to the other modules} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Module} & \textbf{Responsibility (built in Iteration~1)} & \textbf{Gives to the other modules} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\textbf{Bounded search and verification} (M2, \texttt{runner/}) &
+Runs tests in a given order in a fresh JVM; reproduces the failure, including shuffled orders;
+checks the victim alone; finds the polluters one by one or by delta debugging; repeats the reduced
+order; hashes the project; writes the execution record; provides the \texttt{diagnose} command. &
+Victim, polluters, reduced order, raw run counts, failure signature, integrity result, path of the
+execution record. \\
+\addlinespace
+\textbf{Resource evidence} (M1, \texttt{evidence/}) &
+Reads the compiled classes with \texttt{javap}; finds static-field and system-property reads and
+writes reachable from each test, including set-up and tear-down; matches the polluter's writes to
+the victim's reads. &
+The shared resource and the code locations of the polluter's write and the victim's read, or
+\texttt{null} when no edge is found, plus the evidence limitations. \\
+\addlinespace
+\textbf{Evaluation} (M3, \texttt{eval/}, \texttt{fixtures/}) &
+Computes Wilson intervals; decides the outcome and the typed reason; assembles the report and
+validates it against the schema; maintains the seeded fixture suite with written ground truth and
+the team's own random-order baseline. &
+The final, schema-validated report; ground truth and baseline results to check the other two
+modules against. \\
+\end{longtable}
+}
+
+The modules depend on each other in one direction per diagnosis: the runner's polluters decide
+which test pairs the evidence module analyses, and the evaluation module needs both the run counts
+and the evidence before it can decide the outcome. Later iterations add the planned components of
+the proposal's architecture to these modules: a project adapter and sandboxed runner, a
+test--resource graph, a planner that ranks candidates within a budget, and a certificate generator,
+with Certificate-Driven Remediation as a gated extension. In that design the dependency becomes a
+loop: the planner's budget decisions change what the evidence module observes, which changes the
+graph and so the planner's next decision.
+\section{Stakeholders and User Classes}\label{ch1:sec:stakeholders}
+FlakeTrace has three user classes. Chapter~4 models two of them as system actors: the
+\emph{Developer}, who runs the tool, and the \emph{CI Pipeline}, which a CI maintainer configures
+to run it (Figure~\ref{ch4:fig:usecases}). Table~\ref{ch1:tab:users} describes each class. The
+people interviewed so far were a chief executive, an engineering lead and a full-stack engineer;
+no dedicated QA engineer or CI maintainer has been interviewed yet, so those two rows describe the
+roles rather than interview findings.
+
+{\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.14\textwidth}>{\raggedright\arraybackslash}p{0.26\textwidth}>{\raggedright\arraybackslash}p{0.28\textwidth}>{\raggedright\arraybackslash}p{0.26\textwidth}@{}}
+\caption{User classes}\label{ch1:tab:users}\\
+\toprule
+\textbf{User class} & \textbf{Characteristics} & \textbf{Needs} & \textbf{What FlakeTrace gives} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{User class} & \textbf{Characteristics} & \textbf{Needs} & \textbf{What FlakeTrace gives} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Developer (primary) &
+Writes and maintains the tests; has a failing test in front of them; knows the code but not which
+earlier test broke it. &
+The culprit and the shared state, quickly; enough evidence to check the answer; no guess when the
+tool is unsure. &
+Polluters, reduced order, resource and code locations, or a typed \texttt{UNRESOLVED} reason. \\
+\addlinespace
+QA engineer &
+Triages failing CI runs across a team; decides what is retried, skipped or investigated. &
+To tell a real regression from a test-order problem, and a result to hand to the right
+developer. &
+A report with the reproduction rate and its interval, and a record of every run. \\
+\addlinespace
+CI maintainer &
+Owns the pipeline and its time budget; must approve any tool that touches the code. &
+Runs on the team's own machines; predictable cost; machine-readable results. &
+Self-hosted command with CI exit codes and JSON output; run on demand, not on every build. \\
+\end{longtable}
+}
+
+\paragraph{What the interviews added.} The three practitioner interviews
+(Section~\ref{ch1:sec:context}) turned several design choices into stakeholder requirements:
+\begin{itemize}
+\item \textbf{Self-hosting.} One interviewee said sending the repository to an external service
+  was ``out of the question''; another said a tool that runs inside their own infrastructure
+  would be easier to approve. FlakeTrace needs no cloud service, GPU or paid API.
+\item \textbf{On-demand use.} One team found 5~extra minutes on every pull request already caused
+  pushback, but 30~minutes acceptable when run on request. FlakeTrace is therefore run for a known
+  failing test, not on every build.
+\item \textbf{Typed abstention.} Two interviewees said independently that a wrong
+  answer is worse than an honest refusal.
+\end{itemize}
+One request was deliberately not taken up: an interviewee asked for flaky tests to be
+\emph{classified} by cause (environment, order or randomness). FlakeTrace starts from a failure
+already known to be order-dependent, so classification stays out of scope.
+
+\paragraph{Other stakeholders.} The project supervisor and the evaluation panel judge the work;
+one interviewee agreed to review FlakeTrace's results later and give practitioner feedback.
+Because the three user classes want overlapping things, the team does not claim ``diverse
+stakeholders'' as a complex-problem characteristic (Section~\ref{ch2:sec:ccp}).
+\section{Success Criteria}\label{ch1:sec:success}
+Table~\ref{ch1:tab:success} gives the criteria by which the finished project will be judged, from
+\texttt{docs/02-Requirements/non-functional.md}. The \emph{Basis} column says where each target comes
+from: a published finding, the team's own policy, or a project-set target, which must be defended as
+a choice. The current status of each criterion is in Table~\ref{ch4:tab:acceptance}.
+
+{\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.40\textwidth}>{\raggedright\arraybackslash}p{0.32\textwidth}@{}}
+\caption{Success criteria}\label{ch1:tab:success}\\
+\toprule
+\textbf{Criterion} & \textbf{Target} & \textbf{Basis} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Criterion} & \textbf{Target} & \textbf{Basis} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Verified result &
+Wilson 95\% lower bound of at least 0.70 over 20 clean replays, which in practice means at least
+19 of 20. &
+Team policy; the Wilson estimator is from the literature \cite{brown2001interval}. \\
+\addlinespace
+Minimality &
+Every \texttt{VERIFIED} reduced order passes the 1-minimality deletion checks. &
+Delta debugging \cite{zeller2002ddmin}. \\
+\addlinespace
+Explanation &
+Every \texttt{VERIFIED} result names a polluter $\to$ resource $\to$ victim path in a supported
+resource family. &
+Design rule: shared state alone is not proof \cite{gyori2015poldet}. \\
+\addlinespace
+No false confidence &
+No \texttt{VERIFIED} result on any negative control. &
+Design rule. \\
+\addlinespace
+Cost &
+At least 25\% fewer test executions (median) than iFixFlakies or unguided minimisation, at the same
+isolation success, on the cases both can solve. &
+Project-set target. \\
+\addlinespace
+Success at budget &
+At most 5 percentage points below the strongest comparator, reported with paired confidence
+intervals. &
+Project-set target. \\
+\addlinespace
+Overhead &
+Runtime evidence collection below a threshold accepted by stakeholders. &
+No number yet, deliberately: it will be set from measurement, with the interview bounds as
+context (5--15 minutes per pull request, up to 30 minutes on request). \\
+\end{longtable}
+}
+
+\paragraph{How results will be judged.} The statistical rules are fixed before any results are
+seen: comparisons are paired by project, because tests within one project are not independent;
+results are reported with bootstrap confidence intervals and an effect size, not p-values alone;
+and excluded or timed-out cases stay in the yield and failure analysis instead of disappearing from
+the denominator. The thresholds above are frozen before the held-out evaluation, because changing
+them after seeing results would invalidate it.
+
+\paragraph{A note on the verification rule.} The project documents state the verified rule as
+``at least 18 of 20 replays and a Wilson lower bound of at least 0.70''. With the team's own
+\texttt{eval.stats.wilson\_interval}, 18 of 20 gives a lower bound of 0.699, 19 gives 0.764 and 20
+gives 0.839, so the lower-bound condition alone decides, and it needs 19. This report states the
+rule as it is implemented in \texttt{eval/outcome.py}.
+\section{Constraints and Assumptions}\label{ch1:sec:constraints}
+\paragraph{Constraints.}
+\begin{itemize}
+\item \textbf{Target projects:} Java projects built with Maven, with JUnit~4 tests or JUnit~3
+  test classes. Diagnosis runs use JUnit's own \texttt{JUnitCore} in one JVM per order, not
+  Maven Surefire (ADR-003).
+\item \textbf{Platform:} JDK~8 or newer and Python~3.11. CI runs on Ubuntu with JDK~8; development
+  is on Windows and WSL. The evidence module uses only the Python standard library and the JDK's
+  \texttt{javap}.
+\item \textbf{No changes to the analysed project:} FlakeTrace never writes to the project's source,
+  a promise made to the defence panel, and checks it by hashing.
+\item \textbf{No instrumentation in Iteration~1:} evidence is static only (ADR-001).
+\item \textbf{Limits of the static evidence,} stated in every report: calls into the JDK and
+  third-party libraries are not followed; reflection and virtual dispatch are not resolved; only
+  static fields and constant-key system properties are modelled; the values written are not
+  modelled, so a test that restores what it changed still counts as a writer; timing is not
+  modelled; and missing evidence is never taken as proof of independence.
+\item \textbf{Self-hosted and free to run:} no cloud service, GPU or paid API.
+\item \textbf{Team and time:} three members with fixed ownership of separate folders, integrated
+  only through the contracts; Iteration~1 had to be complete for the Mid evaluation on
+  16~October~2026.
+\end{itemize}
+
+\paragraph{Assumptions.} Each assumption below is believed but not yet shown, and is stated as such.
+\begin{itemize}
+\item \textbf{The 31-order figure holds for Java.} It comes from a study of Python projects
+  \cite{gruber2021flaky} (ADR-008). It will be checked on the real benchmark.
+\item \textbf{The supported resource families cover a useful share of real failures.} The
+  real-project evidence so far comes from one project, fastjson, which relies heavily on global
+  static configuration; this favours the assumption. The benchmark in later iterations tests it.
+\item \textbf{Static analysis to depth~5 is enough for most cases.} At depths~4--5 it found the
+  shared field in both fastjson cases measured (ADR-006), where the earlier test is a state-setter
+  for a brittle test, but that is two cases from one project. Where it is not
+  enough, runtime evidence is the planned fallback (ADR-001).
+\item \textbf{Victims are the main case.} The literature supports this (Section~\ref{ch1:sec:context}).
+  A brittle test fails alone, so FlakeTrace reports it as \texttt{VICTIM\_FAILS\_ALONE} instead of
+  diagnosing it.
+\item \textbf{Java teams face the same workflow problem as the interviewed teams.} The interviewed
+  teams do not use Java (Section~\ref{ch1:sec:context}); an interview with a Java developer is
+  planned after the Mid evaluation.
+\end{itemize}
+\section{Ethical, Legal and DEI Considerations}\label{ch1:sec:ethics}
+\paragraph{Legal.} Every project FlakeTrace is evaluated on is open source, and its licence is
+recorded: the proof of concept used json-iterator (MIT) and fastjson (Apache-2.0). Source code is
+fetched by script at a pinned commit and never redistributed; the team's evidence contains
+manifests, logs, results and its own code, not third-party source. The IDoFT catalogue
+\cite{idoft} is public research data with no personal information.
+
+\paragraph{Ethics.} Three issues apply.
+\begin{itemize}
+\item \textbf{Running other people's code.} Diagnosing a failure means executing the project's
+  tests. Iteration~1 runs them as an ordinary local JVM process, so it should only be used on code
+  the user already runs. The committed containerised runner (rootless, network disabled, resource
+  limits, redaction of paths and credentials) is planned for a later iteration
+  (Section~\ref{ch1:sec:scope}).
+\item \textbf{Handling code and test output.} Test output can contain proprietary details or
+  credentials. FlakeTrace is self-hosted, so nothing leaves the user's machine, and it never writes
+  to the analysed project.
+\item \textbf{Responsible claims.} A confident but wrong diagnosis can make a developer change
+  working code. FlakeTrace never claims definitive causality: it reports evidence, its limits and a
+  reproduction rate, and abstains with a typed reason when the evidence is insufficient.
+\end{itemize}
+The practitioner interviews were voluntary questionnaires about process and timing only; no
+source code, credentials or customer data were requested. Two participants are identified by role
+only until they confirm how they wish to be named. The team's use of generative AI is recorded in
+each member's log and in \texttt{docs/08-MidEval/genai-register.md}.
+
+\paragraph{Diversity and inclusion.} FlakeTrace is free to run and needs no cloud subscription, GPU
+or paid API, so teams and institutions with few resources can use it. Diagnosing order-dependent
+failures today depends on scarce senior expertise; a checkable report makes that diagnosis
+available to less experienced developers. A plain-language explanation mode, aimed at junior
+developers and non-native English speakers, is in the supporting scope but not yet built.
