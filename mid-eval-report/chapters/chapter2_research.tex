@@ -302,6 +302,64 @@ conflicting ones. \textbf{Unfamiliar issues} is not claimed because
 using an unfamiliar framework does not count; the team has not yet set out which new computing
 knowledge the problem itself demands.
 \section{Technical Challenges}\label{ch2:sec:challenges}
-Document major technical challenges anticipated or encountered.
+This section describes the main technical challenges met so far, in the proof of concept and in
+Iteration~1, and how each was handled. Open challenges are listed at the end.
+
+\paragraph{Running tests in an exact order without touching the project.} Every experiment depends
+on running a chosen list of tests in exactly that order, each list in a fresh JVM, with every test
+reported, a crash counted as a failure, and nothing added to or written into the analysed
+project. It also has to work on Windows, WSL and the Ubuntu CI runners with JDK~8. The order
+runner starts a small Java harness for each run that calls JUnit's own \texttt{JUnitCore} on one
+test method at a time and writes the results to a file, so that a test printing to the console
+cannot corrupt them (ADR-003). The project's files are hashed before and after every diagnosis;
+a mismatch ends the diagnosis as \texttt{UNRESOLVED}.
+
+\paragraph{The test harness can create or hide the failure.} The proof of concept showed this
+twice. On jsoniter, running test methods without the suite classes that the project's build
+normally uses made 182 of 210 candidate tests ``fail'' with the same \texttt{LinkageError}; once
+the suite context was reproduced, the count fell to zero. On fastjson, an earlier version of the
+harness set the time zone to make two failing tests pass alone, which erased the very dependence
+being measured. Both were found and corrected. The lesson carried into the design is that the tool
+must show it did not cause a result before it reports one, and that a test which fails alone is a
+finding to classify, not an environment problem to fix.
+
+\paragraph{Failures that need more than one polluter.} Trying each earlier test on its own finds a
+single polluter, but fixture case F3 fails only when two tests have both run before the victim. On
+F3, the one-by-one search ends with no single polluter after 12 runs. FlakeTrace then runs delta
+debugging \cite{zeller2002ddmin} over the earlier tests (ADR-007). Delta debugging returns a
+\emph{1-minimal} set, one from which no single test can be removed, and may miss other
+combinations, so the report never calls the result ``minimum''.
+
+\paragraph{Failures that do not reproduce.} The order FlakeTrace discovers may not be the order
+the CI server ran, so repeating it can never show a failure that needs another order. FlakeTrace
+therefore tries up to 31 valid shuffled orders before it gives up (ADR-008). If none reproduces
+the failure, the result is \texttt{UNRESOLVED} with the reason \texttt{NOT\_REPRODUCED} and a
+record of what was tried. It never says the test is reliable, because no number of reruns can
+prove that.
+
+\paragraph{Finding the shared resource from compiled code.} At the depths first agreed (1--3),
+static analysis explained none of the real fastjson cases, because the victims reach the shared
+field only inside constructors four or five calls deep. A fixed depth of 5 would make every pair
+pay the highest cost and the most over-approximation. FlakeTrace starts at depth~2 and deepens one
+level at a time, up to 5, only when no edge has been found and the depth limit was hit (ADR-006).
+One known false edge remains: a test that changes the shared field but restores it afterwards,
+because the analysis does not model the values written (Section~\ref{ch2:sec:ccp}).
+
+\paragraph{Static analysis or a runtime agent.} At the proposal defence the panel asked whether
+trace code would be injected and whether the analysed code would be modified. The team's
+post-defence plan named a runtime Java agent as the preferred way to observe shared state, while the team's report contract fixes the evidence level at
+static-only for Iteration~1. ADR-001 resolved this: Iteration~1 uses controlled reruns and static
+bytecode analysis with no instrumentation, and a runtime agent is kept as the FYP-2 fallback for
+cases static analysis cannot explain.
+
+\paragraph{Open challenges.}
+\begin{itemize}
+\item The overhead of runtime evidence collection has no measured value yet; it will be measured
+  before any threshold is set.
+\item The real-project evidence so far comes from one project, fastjson, which relies heavily on
+  global static configuration and is therefore favourable to static analysis.
+\item The published baseline tools, including iFixFlakies and RankF, have not been run yet; only
+  the team's own baseline has been run, on fixture cases F1--F4.
+\end{itemize}
 \section{Research Findings and Design Decisions}
 Explain how research findings influenced requirements, architecture, algorithms, tools, or other decisions.
