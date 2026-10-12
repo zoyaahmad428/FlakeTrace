@@ -2,8 +2,9 @@
 ' FlakeTrace use case diagram -- whole committed project (FR-1..FR-7).
 ' Source: docs/02-Requirements/functional.md, non-functional.md, scope-boundary.md.
 ' <<iteration 1>> marks a use case FlakeTrace delivers today, on main. Unmarked
-' use cases/notes are committed scope for FYP-2 -- never invented, never the
-' GATED/STRETCH tier (CDR, JUnit 5, Gradle, etc. are out of this diagram entirely).
+' use cases/notes are committed scope for a later iteration (docs/00-Meta/roadmap.md;
+' Chapter 10) -- never invented, never the GATED/STRETCH tier (CDR, JUnit 5, Gradle,
+' etc. are out of this diagram entirely).
 skinparam dpi 200
 skinparam nodesep 40
 skinparam ranksep 50
@@ -36,14 +37,15 @@ UC5 ..> UC6 : <<include>>
 note right of UC2
   FR-2 commits to a **sandboxed container**;
   Iteration 1 runs one fresh JVM natively
-  (no container yet) -- **planned, FYP-2**.
+  (no container yet) -- **planned, a later
+  iteration (Chapter 10)**.
 end note
 
 note right of UC3
   FR-3 commits to 3 resource families.
   Iteration 1: static fields + system
   properties only. Filesystem paths
-  -- **planned, FYP-2**.
+  -- **planned, a later iteration (Ch. 10)**.
 end note
 
 note right of UC4
@@ -51,19 +53,19 @@ note right of UC4
   Iteration 1 ships ranked one-by-one
   (+ delta-debugging minimisation).
   Cost-aware adaptive policy
-  -- **planned, FYP-2**.
+  -- **planned, a later iteration (Ch. 10)**.
 end note
 
 note right of UC7
   NFR-2's "install on clean Linux
   from documentation, third party
   verifies" is a stated **Final-2
-  (FYP-2) exit requirement**, not
+  exit requirement**, not
   claimed for Iteration 1.
 end note
 
 legend right
   <<iteration 1>>  delivered on main today
-  plain note       committed scope, not yet built (FYP-2)
+  plain note       committed scope, not yet built (a later iteration, Ch. 10)
 endlegend
 @enduml

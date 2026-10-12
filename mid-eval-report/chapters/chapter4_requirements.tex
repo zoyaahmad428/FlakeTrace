@@ -23,8 +23,9 @@ every successful build. Both actors drive the same seven use cases (Figure
 Figure \ref{ch4:fig:usecases} shows the whole committed project, not only what Iteration 1
 delivers: every use case carries the \texttt{<<iteration 1>>} stereotype because all seven are
 implemented on \texttt{main} today, but the attached notes mark exactly which part of each
-FR's full commitment is still FYP-2 work (container sandboxing, the filesystem resource
-family, the cost-aware adaptive search policy, and NFR-2's clean-machine deployment check) ---
+FR's full commitment is still a later iteration's work (container sandboxing, the filesystem
+resource family, the cost-aware adaptive search policy, and NFR-2's clean-machine deployment
+check --- Chapter 10) ---
 checked against the real code (\texttt{runner/}, \texttt{evidence/}) while drawing this
 diagram, not assumed from the proposal.
 \section{Detailed Use Cases}
@@ -84,16 +85,16 @@ FR-1 & Accept a pinned commit, module, target test and budget; validate the proj
 FR-2 & Execute declared test orders in a sandboxed container, one fresh JVM per order & Outcomes
   normalised to a failure signature; budgets/timeouts enforced; cleanup verified &
   \textbf{Partial.} One fresh JVM per order: done, tested. Sandboxed container: \textbf{not
-  built} --- planned FYP-2. \\
+  built} --- planned, a later iteration (Ch. 10). \\
 FR-3 & Collect bounded resource events for the three committed resource families, attributed to
   test boundaries, at configurable analysis depth & Every reported event names the resource
   identifier and bytecode offset; events outside a test boundary are recorded as such &
   \textbf{Partial.} Static fields + system properties, depth 1--5 (auto-deepening): done,
-  tested. Filesystem paths: \textbf{not built} --- planned FYP-2. \\
+  tested. Filesystem paths: \textbf{not built} --- planned, a later iteration (Ch. 10). \\
 FR-4 & Rank candidates and select the next experiment by expected information gain per unit
   cost & Two policies implemented: ranked one-by-one and cost-aware adaptive. Both evaluated &
   \textbf{Partial.} Ranked one-by-one + delta-debugging minimisation: done, tested. Cost-aware
-  adaptive policy: \textbf{not built} --- planned FYP-2. \\
+  adaptive policy: \textbf{not built} --- planned, a later iteration (Ch. 10). \\
 FR-5 & Minimise the reproducing order with 1-minimality deletion checks, then verify by repeated
   clean replay with a Wilson interval & Deletion-minimality rate measured; multi-test candidates
   preserved rather than discarded & \textbf{Done.} \\
@@ -105,21 +106,28 @@ FR-6 & Emit Verified / Candidate / Unresolved with a typed reason, a human-reada
   but nothing serialises it into a runnable command string. \\
 FR-7 & Provide a CLI with CI-compatible exit codes, installable on clean Linux from documentation
   & See NFR-2 & \textbf{Partial.} CLI + exit codes: done, tested. Clean-Linux install verified by
-  a third party (NFR-2): \textbf{not attempted} --- a stated Final-2 (FYP-2) exit requirement. \\
+  a third party (NFR-2): \textbf{not attempted} --- a stated Final-2 exit requirement. \\
 \bottomrule
 \end{longtable}
 
 \section{Non-Functional Requirements}\label{ch4:sec:nfr}
 
 \subsection{Reliability}
-A \textbf{Verified} certificate requires $\geq 18$ of 20 matching clean replays \emph{and} a
-Wilson 95\% lower bound $\geq 0.70$ on the reproduction rate --- both figures are stated in
-\texttt{docs/03-Design/certificate-contract.md} and implemented as the literal default
-threshold in \texttt{eval/outcome.py} (\texttt{DEFAULT\_LOWER\_BOUND\_THRESHOLD = 0.70}). The
-Wilson estimator itself is tested against \texttt{statsmodels} (\texttt{eval/tests/
-test\_stats.py}), not just asserted. We never report a single numeric confidence score ---
-reliability is always \emph{matching failures out of $N$ replays plus an interval}, per the
-certificate contract.
+A \textbf{Verified} certificate requires a Wilson 95\% lower bound $\geq 0.70$ on the
+reproduction rate out of 20 replays --- the only check \texttt{eval.outcome.decide()} actually
+makes (\texttt{sequence\_interval[0] >= lower\_bound\_threshold}, default 0.70); there is no
+separate raw-count check. At $n=20$ that threshold is cleared by \textbf{19 or 20} matching
+replays, not 18: \texttt{wilson\_interval(18, 20, 0.95)} gives a lower bound of 0.6990, strictly
+below 0.70, while 19/20 gives 0.7639 and 20/20 gives 0.8389 (checked directly against the real
+\texttt{eval/stats.py} while drafting this paragraph). An earlier draft of this requirement, and
+of \texttt{docs/03-Design/certificate-contract.md}, stated the threshold as ``$\geq 18$ of 20'';
+that number never actually passed under the implemented rule, so this chapter states the rule
+that is implemented. The 0.70 figure itself is unchanged and remains \textbf{project policy},
+not a published finding --- what changed is only the description of which raw counts satisfy
+it, not the policy. The Wilson estimator itself is tested against \texttt{statsmodels}
+(\texttt{eval/tests/test\_stats.py}), not just asserted. We never report a single numeric
+confidence score --- reliability is always \emph{matching failures out of $N$ replays plus an
+interval}, per the certificate contract.
 
 The \textbf{non-perturbation control} (execute the passing and failing order, each
 uninstrumented and instrumented, requiring all four outcomes to match before any measurement is
@@ -146,7 +154,8 @@ containerised Iteration-1-and-beyond runtime} --- checked against the real code
 eval/}), none of it exists yet: Iteration 1 runs tests as a native JVM process
 (\texttt{runner/order\_runner.py}), not inside any container. This is a real, stated gap, not a
 silent one: every real diagnosis still runs real project code locally, so the committed
-sandboxing work is squarely FYP-2 scope, named on the cut list in
+sandboxing work is squarely a later iteration's scope (\texttt{docs/00-Meta/roadmap.md} places
+container/CI security in Iteration 3, Feb--Apr --- Chapter 10), named on the cut list in
 \texttt{docs/02-Requirements/scope-boundary.md} if the team is behind at Final-1.
 
 \textbf{Usability.} The proposal's brief described four generic abstention reasons (unsupported
@@ -178,9 +187,9 @@ unmeasured yet.
 \textbf{Criterion} & \textbf{Target} & \textbf{Iteration-1 Status} \\
 \midrule
 \endhead
-Verified threshold & $\geq 18/20$ replays, Wilson lower bound $\geq 0.70$ & \textbf{Met by
-  construction.} \texttt{decide()} cannot reach \texttt{VERIFIED} any other way; tested in
-  \texttt{eval/tests/test\_outcome.py}. \\
+Verified threshold & Wilson lower bound $\geq 0.70$ (cleared by $\geq 19/20$ replays at
+  $n=20$, not 18 --- Section~\ref{ch4:sec:nfr}) & \textbf{Met by construction.} \texttt{decide()}
+  cannot reach \texttt{VERIFIED} any other way; tested in \texttt{eval/tests/test\_outcome.py}. \\
 Deletion checks & Every Verified sequence passes 1-minimality & \textbf{Met.} \texttt{ddmin}
   (ADR-007) guarantees this for every multi-polluter case; real F3 case confirms it. \\
 Explanation & Every Verified explanation includes a test$\to$resource$\to$test path &
@@ -239,6 +248,6 @@ FR-7 & CLI / CI adapter (M2) & \texttt{runner/cli.py} & \texttt{test\_cli.py} & 
 \bottomrule
 \end{longtable}
 
-\noindent Full acceptance-check wording and the specific FYP-2 gap behind every \textbf{Partial}
+\noindent Full acceptance-check wording and the specific later-iteration gap behind every \textbf{Partial}
 is in Table \ref{ch4:tab:fr}; this table exists to let a reader (or the supervisor) go straight
 from a requirement to the code and test that back it, without re-deriving the mapping.

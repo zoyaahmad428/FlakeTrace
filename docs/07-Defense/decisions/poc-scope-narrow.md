@@ -11,8 +11,14 @@
 ## What prompted it
 
 The POC's central hypothesis returned a clean negative: zero static-field write/read overlap
-at one-hop analysis depth, every candidate, every case. Two of five pre-registered gates
-missed outright (ranking quality, execution saving at 0% against a 30% gate).
+at one-hop analysis depth, every candidate, every case. **Three of five pre-registered gates
+missed outright** (`POC/decision/decision_record.md`, §2): ranking quality and execution
+saving (0% against a 30% gate) --- both caused by the depth-1 scope, the mechanism this
+document is about --- and reproduction yield (fastjson 4/4, jsoniter 0/4), a **separate**
+structural failure explained in the decision record §3(c) (a Surefire suite-context artefact,
+unrelated to analysis depth). Corrected 2026-10-12: an earlier revision of this file said
+"two of five," omitting the yield gate; the decision record's own pre-registered gate table
+has always shown three `BELOW` verdicts.
 
 ## The three options and why NARROW was chosen
 
@@ -68,6 +74,16 @@ refuted premise.
 Decision record, pre-registered gates, raw logs and failure analysis: the POC evidence bundle
 (cite the path/commit on the day). Summary: [[05-Testing/poc/poc-log]],
 [[05-Testing/poc/raw-numbers]].
+
+**This NARROW decision (2026-08-28) is a historical record and stands unchanged** --- it is not
+retracted or overwritten by later work. The scope changes it committed to (depth as a
+configurable parameter, order-outcome history as a ranking signal, the controlled fixture
+suite) were acted on, and a later, separate held-out validation
+(`POC/decision/decision_record_v3.md`, 2026-09-04, pre-registered protocols `definitions_v2.md`
+and `prereg_heldout2.md`) re-ran all five gates under the corrected scope against fresh,
+previously-unseen fastjson cases and passed all five. That later result does not change what
+happened on 28 August or why NARROW was the correct call under the rules in force that day ---
+it is the evidence that NARROW's bet paid off, not a correction to this record.
 
 ## The panel answer
 
