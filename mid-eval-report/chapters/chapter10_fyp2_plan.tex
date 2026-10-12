@@ -34,10 +34,24 @@ overlap-set size); build the held-out evaluation split (development / validation
 projects, never split randomly by test); run the five user-acceptance tasks with the named
 participant (SH1) and a substitute plan for the other two.
 
-\todo{M1: please confirm --- from \path{docs/00-Meta/roadmap.md}'s FYP-I-end and FYP-II-early
-phases, your remaining work is: the filesystem resource family; the test--resource graph beyond
-pairwise edges; dynamic/runtime evidence collection if static evidence proves insufficient
-(Iteration 2, ADR-001); the depth matrix and over-approximation measurement at full scale.}
+\textbf{Resource evidence (M1).} Iteration~1 extracts static-field and system-property evidence
+for each polluter after the search has found it (Section~\ref{ch6:sec:m1}). What remains:
+\begin{itemize}
+\item \textbf{Evidence before the search.} To let Member~2 try evidence-backed candidates first
+  (FR-4), the module must analyse every earlier test against the victim before the search, not
+  only the polluters after it. On fastjson FJ-02 this took 148.3~s for all 722 candidates at
+  depth~2 (\path{docs/evidence-m1.md}).
+\item \textbf{The depth matrix at real scale}: depth used, false edges and time per pair on the
+  benchmark projects, not only on two fastjson cases.
+\item \textbf{Runtime evidence} as the fallback where static analysis cannot explain a case: an
+  agent run on a temporary copy, only for the already reduced order (ADR-001).
+\item \textbf{Filesystem paths} as the third resource family, with paths canonicalised so the
+  same file is one resource, as the team's resource-family decision requires
+  (\path{resource-family-boundaries.md} in \path{docs/07-Defense/decisions/}).
+\item \textbf{The test--resource graph} beyond single polluter--victim pairs, and an explanation
+  that can show more than the first edge when one test writes several fields, as with fastjson's
+  time zone and locale.
+\end{itemize}
 
 \textbf{Search, verification and CLI (M2).} Iteration 1's polluter search runs in the original
 order with no ranking: \texttt{find\_polluter} accepts a \texttt{priority} list, but the command
@@ -94,8 +108,13 @@ through the \texttt{priority} hook with Member 1's evidence; (4) the human-reada
 and replay command; (5) the installable command and the NFR-2 check, a Final-2 requirement.
 Step (1) also gives Member 3 the real-project data the held-out evaluation needs.
 
-\todo{M1: please add your own near-term implementation order here, or confirm the evaluation and
-runner work above does not block yours.}
+Member~1's near-term order: (1) the evidence-backed candidate order for Member~2's
+\texttt{priority} hook, first, because Member~2's ranking step needs it; (2) the extractor on the
+real benchmark project that Member~2 runs end to end, recording the depth matrix there; (3) runtime
+evidence only for the cases step~2 shows static analysis cannot explain; (4) the filesystem family,
+which the roadmap places in FYP-II's first phase; (5) the test--resource graph. Steps (1) and (2)
+depend on Member~2's real-project run, and Member~3's held-out split decides which projects may be
+used for development and which are kept for the final evaluation.
 
 \section{Testing and Validation Plan}
 The evaluation plan (\path{docs/05-Testing/evaluation-plan.md}) already defines what remains to
