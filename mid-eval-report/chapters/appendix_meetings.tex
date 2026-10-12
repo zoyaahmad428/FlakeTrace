@@ -4,5 +4,70 @@
 % DRAW FROM: docs/06-Meetings/*
 % Rules: mid-eval-report/CLAUDE.md. Do not edit a file you do not own.
 % ===========================================================================
-\chapter{Meeting and Progress Evidence}
-Include relevant meeting records, progress evidence, or supervisory records where required.
+\chapter{Meeting and Progress Evidence}\label{app:meetings}
+\section*{Supervisor meetings}
+As stated by the team, the team met the supervisor every week, on Mondays at 8:30~AM.
+No minutes of these meetings are kept in the repository, so this report does not describe what was
+discussed in them; decisions that came out of them appear only where they were recorded elsewhere,
+for example in an ADR or the proposal action register (Appendix~\ref{app:action-register}). The
+proposal defence on 11~September~2026 (approved with minor modifications) is likewise recorded only
+as stated by the team (\path{docs/00-Meta/stream-and-status.md}). Keeping short minutes of each
+supervisor meeting in \path{docs/06-Meetings/} from now on is an action for the team.
+
+\section*{Minuted meetings}
+Two meetings are minuted in \path{docs/06-Meetings/}, which also holds the template for new records.
+Decisions taken in a meeting are moved into the document that governs them (an ADR, a contract or
+\path{CONTRIBUTING.md}), and the minutes say where.
+
+\paragraph{8 September 2026: vault set-up and defence preparation} (working session, Member~1;
+\path{2026-09-08-vault-setup.md}). The team's documents were moved into one Obsidian vault. Findings
+recorded: all three stakeholder interviews were complete; none of the three interviewees uses Java,
+Maven or JUnit (claim A9, open); two interviewees independently said that a guess is worse than a
+refusal; and the proof-of-concept write-up was internally inconsistent (claim C13, open). Decisions:
+every claim carries a status (settled, open, assumption, policy or frozen), and the policy values
+(18 of 20 replays, the 0.70 bound, the 25\% target, the budget split) are defended as policy, not as
+published findings. Eleven actions were assigned, including the depth sweep and per-case cause
+classification (Member~1), reconciling the C13 wording (Member~3) and confirming the naming consent
+of two interviewees (joint).
+
+\paragraph{9 October 2026: post-defence kick-off for the Mid evaluation} (team meeting, all three
+members; \path{2026-10-09-post-defence-kickoff.md}). Decisions: one repository, with the vault as
+\path{docs/}; every change through a pull request that passes CI and is approved by another member;
+Iteration~1 evidence static only, with no instrumentation (proposed, later accepted as ADR-001); and
+the three-member ownership agreed at the defence. Actions: approve the restructure, set branch
+protection on \texttt{main}, start the order runner (W6, Member~2) and the static extractor (W8,
+Member~1), and start the report chapters.
+
+\section*{Follow-up of the minuted actions}
+Table~\ref{app:tab:meeting-actions} gives each traceable action and what the repository shows.
+Actions with no trace in the repository are not listed as done.
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.38\textwidth}>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.42\textwidth}}
+\caption{Minuted actions and their outcome}\label{app:tab:meeting-actions}\\
+\toprule
+Action (meeting) & Owner & What the repository shows\\
+\midrule
+\endfirsthead
+\toprule
+Action (meeting) & Owner & What the repository shows\\
+\midrule
+\endhead
+Approve the restructure into one repository (9 Oct) & M1, M3 & Merged the same day, \pr{1}\\
+Start the order runner, W6 (9 Oct) & M2 & Merged the same day, \pr{10}\\
+Start the static extractor, W8 (9 Oct) & M1 & Merged the same day, \pr{9}\\
+Agree ADR-001, no instrumentation in Iteration~1 (9 Oct) & M1, M2 & Accepted by all three members (\pr{17}, \pr{18}, \pr{20})\\
+Set branch protection on \texttt{main} (9 Oct) & M1, M2 & Enforced; settings in Appendix~\ref{app:repository} (12 October)\\
+Start the report chapters (9 Oct) & M3 & Report skeleton \pr{60}; chapters merged from \pr{61} onwards\\
+Reconcile the C13 wording (8 Sep) & M3 & Still open in the claims ledger\\
+Find a Java or Maven practitioner to interview (8 Sep) & Joint & Still open (claim A9); planned after the Mid evaluation\\
+Confirm naming consent of two interviewees (8 Sep) & Joint & No record; they are still named by role only\\
+\bottomrule
+\end{longtable}}
+
+\section*{Other progress evidence}
+The week-by-week record of the work is in the repository itself: the milestones and pull requests
+in Section~\ref{ch9:sec:milestones} and Appendix~\ref{app:repository}, the proposal action register
+(Appendix~\ref{app:action-register}), and each member's evidence log
+(\path{docs/evidence-m1.md}, \path{-m2.md}, \path{-m3.md}), which records every command run and its
+real result.
