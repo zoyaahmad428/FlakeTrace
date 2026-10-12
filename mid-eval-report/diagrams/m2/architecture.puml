@@ -25,20 +25,20 @@ package "runner/  (Member 2)" as RUN {
   component "recording.py\nRecordingRunner" as rec
   component "order_runner.py\nOrderRunner / maven_test_classpath" as orun
   component "harness/FtHarness.java\nJUnitCore + Request.method" as harness
-  component "Diagnosis planner\nranks candidates, picks next experiment,\nreserves verification budget" <<planned, FYP-2>> as planner #F4F4F4;line:999999;line.dashed;text:666666
-  component "Container sandbox + budgets" <<planned, FYP-2>> as sandbox #F4F4F4;line:999999;line.dashed;text:666666
-  component "CI adapter" <<planned, FYP-2>> as ci #F4F4F4;line:999999;line.dashed;text:666666
-  component "Certificate renderer\nhuman-readable report, replay command" <<planned, FYP-2>> as renderer #F4F4F4;line:999999;line.dashed;text:666666
+  component "Diagnosis planner\nranks candidates, picks next experiment,\nreserves verification budget" <<planned, Iteration 2>> as planner #F4F4F4;line:999999;line.dashed;text:666666
+  component "Container sandbox + budgets" <<planned, Iteration 2-3>> as sandbox #F4F4F4;line:999999;line.dashed;text:666666
+  component "CI adapter" <<planned, Iteration 3>> as ci #F4F4F4;line:999999;line.dashed;text:666666
+  component "Certificate renderer\nhuman-readable report, replay command" <<planned, Iteration 3>> as renderer #F4F4F4;line:999999;line.dashed;text:666666
 }
 
 package "evidence/  (Member 1)" as EVI {
   component "extract.py\nProject / analyse_pair (depth 2..5)\nreport_fields" as extract
-  component "Dynamic evidence collector\nruntime instrumentation" <<planned, FYP-2>> as dynamic #F4F4F4;line:999999;line.dashed;text:666666
-  component "Evidence store /\ntest-resource graph" <<planned, FYP-2>> as store #F4F4F4;line:999999;line.dashed;text:666666
+  component "Dynamic evidence collector\nruntime instrumentation" <<planned, Iteration 2>> as dynamic #F4F4F4;line:999999;line.dashed;text:666666
+  component "Evidence store /\ntest-resource graph" <<planned, Iteration 2>> as store #F4F4F4;line:999999;line.dashed;text:666666
 }
 note bottom of extract #F4F4F4;line:999999;line.dashed;text:666666
   built: static-field, system-property
-  planned (FYP-2): filesystem paths
+  planned (Iteration 3): filesystem paths
 end note
 
 package "eval/  (Member 3)" as EVAL {
@@ -48,7 +48,7 @@ package "eval/  (Member 3)" as EVAL {
   component "schema_validator.py\nvalidate_report\n+ schema/report.schema.json" as schema
   interface "baseline.py: OrderRunner Protocol\nTestIdentifier, FailureSignature, RunOutcome" as proto
   component "baseline.py\nrun_random_order_baseline\n(via tools/run_baseline_real.py)" as baseline
-  component "Ablation harness\ndepth / policy sweeps, replayed offline" <<planned, FYP-2>> as ablation #F4F4F4;line:999999;line.dashed;text:666666
+  component "Ablation harness\ndepth / policy sweeps, replayed offline" <<planned, Iteration 2>> as ablation #F4F4F4;line:999999;line.dashed;text:666666
 }
 
 package "CDR (gated, FYP-2)" as CDR #F9F9F9;line:999999;line.dashed;text:666666 {
@@ -126,7 +126,7 @@ cdrver -[#999999,dashed]-> patch
 legend right
   |= Style |= Meaning |
   | solid box | implemented on main (Mid evaluation) |
-  | <color:#666666>dashed grey box</color> | planned for FYP-2, not built |
+  | <color:#666666>dashed grey box</color> | planned, not built; its label names the iteration (roadmap.md) |
   | dashed arrow | type import, interface, or planned link |
 endlegend
 
