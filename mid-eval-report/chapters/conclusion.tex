@@ -4,5 +4,53 @@
 % DRAW FROM: finished chapters only - no new claims here
 % Rules: mid-eval-report/CLAUDE.md. Do not edit a file you do not own.
 % ===========================================================================
-\chapter{Conclusion}
-Summarize the problem, research findings, requirements, design, implementation completed so far, testing/validation status, risks, and planned continuation into FYP-2.
+\chapter{Conclusion}\label{ch:conclusion}
+\paragraph{Problem.} When a Java test passes alone but fails after other tests, developers can see
+that something is unstable but have no bounded, checkable way to find which earlier test caused it,
+through which shared state, and how reliably (Section~\ref{ch1:sec:problem}). The three interviewed
+practitioners do this by hand, and two of them said that an honest ``unknown'' is worth more than a
+confident wrong answer.
+
+\paragraph{Research findings.} Each part of the diagnosis has been solved on its own: delta
+debugging reduces a failing order, RankF ranks likely polluters, and Takuan and PolDet explain
+shared state. No system reviewed combines controlled reruns, a statistical reproduction rate,
+code-level evidence and a typed refusal for one failure (Section~\ref{ch2:sec:gaps}). Shared state
+alone is not proof: PolDet's own inspection judged 194 of its 324 reported polluters relevant
+\cite{gyori2015poldet}. These findings fixed many of the design's rules and constants
+(Table~\ref{ch2:tab:decisions}).
+
+\paragraph{Requirements and design.} Seven functional requirements and the success criteria
+(Section~\ref{ch1:sec:success}, Table~\ref{ch4:tab:fr}) define the product. A result is
+\texttt{VERIFIED} only with a resource edge \emph{and} a Wilson lower bound of at least 0.70, which
+takes at least 19 of 20 replays. The design is three modules joined by written contracts and one
+report schema (Chapter~5). Four decisions shaped Iteration~1: static evidence with no
+instrumentation (ADR-001), analysis depth that deepens only when needed (ADR-006), delta debugging
+when no single polluter is found (ADR-007), and shuffled orders before declaring a failure not
+reproduced (ADR-008).
+
+\paragraph{Implementation and validation.} One command, \texttt{py -m runner diagnose}, now takes a
+failing test through reproduction, the victim-alone check, polluter search, minimisation, repeated
+verification, bytecode evidence and the outcome decision to a schema-validated report
+(Chapter~6). On the seeded fixture, the four order-dependent cases are \texttt{VERIFIED}, each
+reproducing 20 of 20 times and never alone, with the ground-truth polluters and resource; the three
+negative controls end \texttt{UNRESOLVED} with a typed reason
+(Table~\ref{ch8:tab:fixture-results}). 268 tests run in CI on every pull request
+(Section~\ref{ch6:sec:m3}). These results come from hand-made fixture cases; FlakeTrace's own code
+has been run on one real project, fastjson, and user acceptance testing has not yet been run
+(Section~\ref{ch8:sec:acceptance}).
+
+\paragraph{Risks.} The main open risks are stated in the chapters they belong to: evidence from one
+real project and a library that favours static analysis; no measured overhead for runtime evidence;
+published baselines not yet run; no container yet, so diagnosis runs the project's tests as a local
+process; and interviewed practitioners who do not use Java (Sections~\ref{ch2:sec:challenges}
+and~\ref{ch1:sec:constraints}).
+
+\paragraph{Continuation.} Iteration~2, before the FYP-1 Final evaluation, runs one real benchmark
+project end to end, ranks candidates using the evidence module, makes a first container
+deployment and adds runtime evidence where static evidence is not enough. Later iterations add the
+execution budget, and FYP-2 adds filesystem evidence and the held-out evaluation against published
+baselines (Section~\ref{ch3:sec:it2} and the Remaining FYP Plan).
+
+Iteration~1 already shows the core of FlakeTrace's contribution on its fixture: for a known
+order-dependent failure it returns either a result anyone can check (which tests, which shared
+state, where in the code, how reliably) or a clear statement of why it cannot conclude.
