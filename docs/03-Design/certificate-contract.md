@@ -80,8 +80,8 @@ machine-readable JSON
 
 | Requirement | Value | Basis |
 | --- | --- | --- |
-| Matching failures | **≥ 18 of 20** clean replays | ⚠ **PROJECT POLICY**, frozen after POC/validation, before held-out run |
-| Wilson 95% lower bound | **≥ 0.70** | ⚠ **PROJECT POLICY** — the *estimator* is literature-mandated, the *threshold* is ours |
+| Wilson 95% lower bound | **≥ 0.70** on 20 clean replays | ⚠ **PROJECT POLICY** — the *estimator* is literature-mandated, the *threshold* is ours. `eval.outcome.decide()` checks only this bound, nothing else — there is no separate raw-count rule |
+| Matching failures (for reference) | Cleared by **≥ 19 of 20**, not 18 — `wilson_interval(18, 20, 0.95)` gives 0.6990, below 0.70; 19/20 gives 0.7639 | Corrected 2026-10-12: an earlier draft said "≥ 18 of 20", which the implemented 0.70 bound never actually satisfies. The 0.70 policy is unchanged; only this description of which counts clear it was wrong |
 | Deletion checks | Every Verified sequence passes | — |
 | Explanation | Every Verified explanation includes a test→resource→test path in a supported family | — |
 | Controls | **No false confident diagnosis on non-OD controls** | — |

@@ -1,6 +1,6 @@
 @startuml outcome_decision
 ' Outcome decision table, exactly as implemented in eval/outcome.py's decide()
-' on main today (2026-10-11) -- built only, no FYP-2 branches invented.
+' on main today (2026-10-11) -- built only, no future-iteration branches invented.
 ' First match wins, top to bottom.
 skinparam dpi 200
 

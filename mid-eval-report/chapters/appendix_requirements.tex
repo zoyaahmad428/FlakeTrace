@@ -181,7 +181,8 @@ Every row below describes the \textbf{committed} execution environment for the p
 whole, not what Iteration 1 runs today. Checked by grepping \texttt{runner/}, \texttt{evidence/}
 and \texttt{eval/} for container, sandbox and redaction code: \textbf{none exists yet}.
 Iteration 1 runs the analysed project's real tests as a native JVM process on the host machine
-(\texttt{runner/order\_runner.py}) --- every row except Audit is therefore FYP-2 scope, stated
+(\texttt{runner/order\_runner.py}) --- every row except Audit is therefore a later iteration's
+scope (\texttt{docs/00-Meta/roadmap.md} places container/CI security in Iteration 3), stated
 plainly rather than implied as already satisfied.
 
 \begin{longtable}{p{2.2cm}p{8.0cm}p{3.5cm}}
@@ -195,19 +196,21 @@ plainly rather than implied as already satisfied.
 \midrule
 \endhead
 Container & Rootless; no Docker socket mounted; Linux capabilities dropped; no privileged mode &
-  Not built --- FYP-2 \\
+  Not built --- a later iteration \\
 Network & Disabled by default; allowlisted dependency-fetch stage separated from test execution
-  & Not built --- FYP-2 \\
+  & Not built --- a later iteration \\
 Limits & CPU, memory, PID, file-size and wall-time; process-group termination; verified cleanup
   & Partial: a per-run timeout exists (\texttt{runner/order\_runner.py}'s
-  \texttt{timeout\_s}); resource/PID limits and verified cleanup --- not built, FYP-2 \\
+  \texttt{timeout\_s}); resource/PID limits and verified cleanup --- not built, a later
+  iteration \\
 Filesystem & Read-only base; isolated writable workspace; no host home-directory mount & Not
-  built --- FYP-2 \\
+  built --- a later iteration \\
 Secrets & No CI secrets, SSH agents or cloud credentials in the execution environment & Not
   applicable yet: no network access exists to leak them over, but the stated boundary itself is
-  not enforced --- FYP-2 \\
+  not enforced --- a later iteration \\
 Data & Path and log redaction; configurable retention; source and artifacts remain self-hosted &
-  Self-hosted: true today (no component sends data anywhere). Redaction: not built --- FYP-2 \\
+  Self-hosted: true today (no component sends data anywhere). Redaction: not built --- a later
+  iteration \\
 Audit & Every command, image digest, input commit and environment variable & \textbf{Partial.}
   Every execution record already captures the analysed project's git commit, whether it had
   uncommitted changes, JDK version and OS (\texttt{runner/recording.py},
@@ -215,8 +218,8 @@ Audit & Every command, image digest, input commit and environment variable & \te
   full environment-variable audit: not built. \\
 CDR additions & Only certificate-directed code slices may leave the machine, after redaction;
   an on-premises disable flag; prompts/responses logged in full & Not applicable: CDR itself is
-  a gated FYP-2 module (\texttt{docs/07-Defense/decisions/cdr-gated-module.md}) that has not
-  started \\
+  a \textbf{gated} module (\texttt{docs/07-Defense/decisions/cdr-gated-module.md}) --- it only
+  starts once the committed core reaches its Final-1 exit criteria --- and has not started \\
 \bottomrule
 \end{longtable}
 
