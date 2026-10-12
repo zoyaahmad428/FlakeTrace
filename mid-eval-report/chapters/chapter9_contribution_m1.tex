@@ -5,4 +5,43 @@
 % Rules: mid-eval-report/CLAUDE.md. Do not edit a file you do not own.
 % ===========================================================================
 \subsection{Member 1: Zoya Ahmad}
-\todo{M1: what you built, your PRs and reviews, one decision you made, one limitation of your module}
+\textbf{What I built.} I own the \path{evidence/} package: the static resource-evidence extractor
+that names the shared resource a polluter writes and a victim reads, with the exact bytecode
+locations (W8). I wrote its contract (\path{docs/contracts/resource-evidence.md}, \pr{8}), then built
+it in phases: lifecycle attribution at depth~1 (\pr{9}), configurable call depth (\pr{12}),
+polluter-to-victim edges (\pr{15}), an automatic check against the fixture's ground truth
+(\pr{23}), the first real-project run on fastjson (\pr{24}), lifecycle writes as polluter edges
+(\pr{28}) and auto-deepening (\pr{34}). I proposed ADR-002 and ADR-006 and wrote the panel-action
+note comparing one-by-one search with delta debugging (A6, \pr{50}). For this report I wrote
+Chapters~1 and~2, Sections~5.6--5.8 with their three diagrams, and my module section
+(Section~\ref{ch6:sec:m1}). On \texttt{main} on 12 October 2026 that is 23 merged pull requests and
+56 commits under my name.
+
+\textbf{Reviews.} I reviewed 36 pull requests written by Member~2 or Member~3. My review comments on
+GitHub are short approvals; the checks behind them are in \path{docs/evidence-m1.md}. For example,
+before approving Member~2's \pr{49} (the runner side of ADR-008), I ran all three test suites on its
+commit \texttt{fa621af} (evidence 39, evaluation 80 and runner 144 tests, all passing), confirmed
+that it did not change how \path{runner/cli.py} calls my \texttt{analyse\_pair} and
+\texttt{report\_fields}, and ran the real \texttt{diagnose} command on fixture case F4, which ended
+\texttt{VERIFIED} with my module's edge on \texttt{LateFlag.isSet}.
+
+\textbf{One decision: deepen only when needed (ADR-006).} ADR-002 fixed the analysis depth at 2,
+with at most 3. When I measured the two real fastjson cases, depths 1--3 found none of the 42 tests
+that really affect FJ-01's victim; depth~4 found all 42, and FJ-02 needed depth~5
+(Table~\ref{ch6:tab:m1-depth}). I considered keeping 1--3 (honest, but the tool explains neither
+real case), raising the default to~5 (every pair pays the deepest cost, 26.3~s for one FJ-02 pair,
+and the most over-approximation), and allowing 1--5 with deeper analysis only on request (but the
+\texttt{diagnose} command always uses the default, so it would still find nothing). I chose
+auto-deepening with the range 1--5: start at~2 and go one level deeper only when no edge was found
+and the walk was cut off. Because this changed the contract, Members~2 and~3 had to agree, and they
+did (\pr{29}, \pr{33}). The cost is a repeated analysis for each extra level, and a limitation line
+in the report whenever the evidence is deeper than the default.
+
+\textbf{One limitation of my module.} The extractor sees \emph{that} a test writes a field, not
+\emph{what} it writes. A test that changes a value and restores it in \texttt{tearDown} still
+counts as a writer: on FJ-01 this produced one false edge, \texttt{DateTest2\#test\_date}. For the
+same reason it cannot tell which of two written fields causes a failure, as with fastjson's time
+zone and locale. FlakeTrace never blames a test on such an edge alone, because the polluter must
+also be confirmed by reruns, but the explanation can still name the wrong field. Fixing it needs
+runtime evidence on the already-reduced order, the fallback planned in ADR-001; I have not built it
+yet.
