@@ -584,3 +584,26 @@ cases and M2's runner side leave this component correct. No change to `evidence/
   + 9 `ddmin`), verify 20, alone 20.
 - **Limitations:** all runs on javap 21 here; CI's evidence job runs the suite on JDK 8 for each PR.
   The F4 end-to-end run used PR #49 before review and merge.
+
+## Mid Report chapter 6 (module section): test suite and F2 command re-run (2026-10-12)
+
+**Requirement:** the module section of the Mid Report (`chapter6_module_m1.tex`) must give a setup
+that can be reproduced and a real result for it. No change to `evidence/`.
+
+- **Where:** run with Claude in the team's cloud environment, not on Member 1's own machine
+  (Linux 6.18, Apache Maven 3.9.11, OpenJDK and javap 21.0.12.1, Python 3.13.16), on main `82df9fa`.
+  Member 1's Windows machine did not have Maven on `PATH` at the time, so the run could not be
+  repeated there yet.
+- **Commands and results:**
+  - `mvn -B -q -f fixtures/od-fixture/pom.xml test-compile` → exit 0.
+  - `mvn -B -q -f evidence/tests/resources/m1-selftest/pom.xml test-compile` → exit 0.
+  - `FLAKETRACE_REQUIRE_JVM=1 python3 -m unittest -v evidence.tests.test_extract`
+    → `Ran 39 tests in 60.392s … OK` (exit 0), all seven test classes passing.
+  - `python3 -m evidence.extract --classes fixtures/od-fixture/target/classes --test-classes
+    fixtures/od-fixture/target/test-classes --polluter odfixture.FeaturePolluterTest#enableTurbo
+    --victim odfixture.FeatureVictimTest#expectsTurboDisabled` → exit 0; `pair` has one edge,
+    `sysprop:odfixture.turbo`, write `FeaturePolluterTest.enableTurbo@4` (depth 1), read
+    `FeatureFlags.isTurboEnabled@2` (depth 2), `depth_used` 2. Same as Phase 5 part 1 and
+    `eval/reports/f2.json`.
+- **Limitation:** javap 21 only; CI's `evidence` job runs the same suite on JDK 8 for each PR. A
+  run on Member 1's own machine is still to be done once Maven is installed there.

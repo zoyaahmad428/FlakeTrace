@@ -4,5 +4,238 @@
 % DRAW FROM: evidence/README.md, evidence/extract.py, docs/04-Implementation/evidence-collector.md, docs/evidence-m1.md, ADR-002, ADR-006
 % Rules: mid-eval-report/CLAUDE.md. Do not edit a file you do not own.
 % ===========================================================================
-\subsection{Resource Evidence Extraction (Member 1)}
-\todo{M1: files, main functions, depth/auto-deepening, limitations, real results from evidence-m1.md}
+\subsection{Resource Evidence Extraction (Member 1)}\label{ch6:sec:m1}
+Member 1's module is the \path{evidence/} package. Given a polluter and a victim found by
+Member 2's runner, it names the shared resource the polluter writes and the victim reads, and the
+exact bytecode locations of that write and read. It works only from the project's compiled
+classes, read with the JDK's \texttt{javap}: it runs no tests, adds no instrumentation and never
+writes to the project (ADR-001, ADR-002). It is 716 lines of Python in one file, using only the
+standard library, with 505 lines of tests (\texttt{wc -l}, 12 October 2026). Figure~\ref{ch5:fig:evidence-dfd}
+shows its data flow.
+
+\subsubsection{Files and main functions}
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.27\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.54\textwidth}}
+\caption{Files of the resource evidence module}\label{ch6:tab:m1-files}\\
+\toprule
+File & Lines & Job\\
+\midrule
+\endfirsthead
+\toprule
+File & Lines & Job\\
+\midrule
+\endhead
+\path{extract.py} & 716 & The extractor and its command line; main functions below\\
+\path{tests/test_extract.py} & 505 & 39 \texttt{unittest} tests in seven classes, run on real
+  \texttt{javap} output\\
+\path{tests/resources/m1-selftest/} & -- & A small Maven project of ten Java files written as test
+  input (lifecycle methods, call depth, JUnit~3, unsupported cases); not part of the fixture\\
+\path{tools/measure_depth.py} & 70 & Measures accesses, unsupported observations, \texttt{javap}
+  calls and time per depth; produced the depth data behind ADR-006\\
+\path{javap-dumps/} & -- & Saved \texttt{javap} output quoted as evidence in
+  \path{docs/evidence-m1.md}\\
+\bottomrule
+\end{longtable}}
+
+The main functions in \path{extract.py}, in the order a pair is analysed:
+\begin{itemize}
+\item \texttt{Project.load}: runs \texttt{javap -v -p -c} on one class and parses it into
+  \texttt{ClassInfo}, \texttt{Method} and \texttt{Instruction} objects, cached per class.
+\item \texttt{find\_roots}: the test method plus its lifecycle methods (\texttt{@Before},
+  \texttt{@After}, \texttt{@BeforeClass}, \texttt{@AfterClass}, JUnit~3 \texttt{setUp} and
+  \texttt{tearDown}) and static initialisers, collected from the test class and its project
+  superclasses; a method overridden in a subclass is skipped, because it never runs.
+\item \texttt{walk\_root}, \texttt{scan\_method}, \texttt{scan\_call}, \texttt{follow\_call}: a
+  breadth-first walk from each root that classifies each instruction and follows calls into
+  project classes up to the depth limit.
+\item \texttt{analyse\_test}: all accesses, unsupported observations and library calls not
+  followed, for one test.
+\item \texttt{find\_edges}: the resources the polluter writes and the victim reads.
+\item \texttt{analyse\_pair}: both tests and their edges, deepening when needed.
+\item \texttt{report\_fields}: turns a pair into the three report fields and the limitations.
+\item \texttt{main}: the command line, \texttt{python3 -m evidence.extract}, which prints JSON and
+  exits 0 (done), 1 (\texttt{javap} missing or failed) or 2 (input error).
+\end{itemize}
+
+\subsubsection{How extraction works}
+For each root, \texttt{walk\_root} scans the method's bytecode one instruction at a time and queues
+the project methods it calls, breadth-first, so every access is reported at the shortest call depth
+at which it can be reached. Each method is scanned at most once per root, which also stops recursion
+and call cycles. Listing~\ref{ch6:lst:m1-scan} shows the core of the scan.
+
+\begin{lstlisting}[language=Python,basicstyle=\footnotesize\ttfamily,columns=fullflexible,keepspaces=true,caption={Core of \texttt{scan\_method}, abridged (\texttt{evidence/extract.py})},label=ch6:lst:m1-scan]
+for index, ins in enumerate(method.instructions):
+    owner = ins.owner or info.name
+    if ins.opcode in ("getstatic", "putstatic"):
+        declaring = project.declaring_class(owner, ins.name)
+        resource = {"kind": "static-field",
+                    "class": declaring, "field": ins.name}
+        access = "READ" if ins.opcode == "getstatic" else "WRITE"
+        result["accesses"].append(make_access(
+            "static-field", resource, access, walk["via"],
+            info, method, ins.offset, walk["path"]))
+    elif ins.opcode == "invokedynamic":
+        result["unsupported"].append(observation(
+            "INVOKEDYNAMIC", info, method, ins, ...))
+    elif ins.opcode.startswith("invoke"):
+        scan_call(project, chain_names, info, method,
+                  index, owner, walk, result)
+\end{lstlisting}
+
+Each instruction is classified as follows:
+\begin{itemize}
+\item \texttt{getstatic} and \texttt{putstatic} are a READ and a WRITE of a static field. The field is
+  named by the class that \emph{declares} it, so a field reached through a subclass is still one
+  resource.
+\item A call to \texttt{System.getProperty}, \texttt{Integer.getInteger}, \texttt{Long.getLong} or
+  \texttt{Boolean.getBoolean} is a READ of a system property. A call to
+  \texttt{System.setProperty} or \texttt{clearProperty} is a WRITE, but only when every argument is pushed by one simple instruction
+  right before the call and the first is a constant string (\texttt{constant\_key}); otherwise
+  the call is reported as unsupported.
+\item A call into a project class is followed one level deeper (\texttt{follow\_call}). A call into
+  the JDK or a library is listed in \texttt{external\_calls\_not\_followed}.
+\item Anything the extractor cannot model becomes a typed \emph{unsupported observation} with its
+  location, never a guess: \texttt{REFLECTION}, \texttt{INVOKEDYNAMIC},
+  \texttt{VIRTUAL\_\allowbreak DISPATCH} (only the named target is followed, not subclass overrides),
+  \texttt{UNRESOLVED\_\allowbreak CALL}, \texttt{SYSPROP\_\allowbreak NON\_\allowbreak CONSTANT\_\allowbreak KEY},
+  \texttt{SYSPROP\_\allowbreak BULK}, \texttt{IMPLICIT\_\allowbreak CLINIT} (a static initialiser
+  that may run on first use), \texttt{DEPTH\_\allowbreak LIMIT} and
+  \texttt{JUNIT\_\allowbreak RULE\_\allowbreak OR\_\allowbreak RUNNER}.
+\end{itemize}
+Every access records the resource, READ or WRITE, the class, method and bytecode offset, the root
+it was reached from (\texttt{via}, for example \texttt{TEST\_METHOD} or \texttt{BEFORE}) and the call
+path. \texttt{find\_edges} then keeps each resource the polluter writes and the victim reads, with
+every write and read location. Writes made by the victim itself are not edges.
+
+\subsubsection{Call depth and auto-deepening}\label{ch6:sec:m1-depth}
+The depth is how many calls deep the walk follows from a root: depth~1 scans only the root's own
+bytecode, depth~2 also the project methods it calls, and so on. Each extra level finds more but costs
+more time and adds more code that is reachable but may never run. The team first fixed the default at
+2 with a maximum of 3 (ADR-002). Measurements on the two real fastjson cases from the proof of concept
+showed that this was not enough (Table~\ref{ch6:tab:m1-depth}): the victims reach the shared field
+only inside constructors, four or five calls deep.
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.12\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.18\textwidth}}
+\caption{Edges found per depth on fastjson (\texttt{docs/evidence-m1.md}, 10 October 2026)}\label{ch6:tab:m1-depth}\\
+\toprule
+Case & Depth & Real candidates with an edge & Other candidates with an edge & Seconds, all candidates\\
+\midrule
+\endfirsthead
+\toprule
+Case & Depth & Real candidates with an edge & Other candidates with an edge & Seconds, all candidates\\
+\midrule
+\endhead
+FJ-01 & 1--3 & 0 of 42 & 0 of 30 & 22.4--30.2\\
+FJ-01 & 4 & 42 of 42 & 1 of 30 & 34.8\\
+FJ-01 & 5 & 42 of 42 & 1 of 30 & 45.8\\
+FJ-02 & 1--3 & 0 of 24 & 0 of 698 & 143.3--156.1\\
+FJ-02 & 4 & 1 of 24 & 0 of 698 & 163.2\\
+FJ-02 & 5 & 24 of 24 & 0 of 698 & 180.7\\
+\bottomrule
+\end{longtable}}
+
+A ``real'' candidate is one that changed the victim's result when the proof of concept ran it first.
+Raising the fixed depth to~5 would make every pair pay the deepest cost: one pair took 3--6~s at
+depth~2, but 7.5~s for FJ-01 at depth~4 and 26.3~s for FJ-02 at depth~5 (ADR-006). The team therefore
+adopted \emph{auto-deepening} (ADR-006), implemented in \texttt{analyse\_pair}:
+\begin{enumerate}
+\item analyse both tests at the requested depth (default~2);
+\item if there is no edge \emph{and} a walk stopped at the depth limit (\texttt{DEPTH\_LIMIT}),
+  repeat one level deeper;
+\item stop at the first depth with an edge, when nothing was cut off, or at depth~5.
+\end{enumerate}
+The pair records \texttt{depth\_requested} and \texttt{depth\_used}, and when the reported evidence
+is deeper than the default, \texttt{report\_fields} adds a limitation saying that deeper evidence is
+more likely to be code that never runs. On the fixture, every ground-truth edge is found at depth~2
+without deepening.
+
+\subsubsection{How the runner uses the module}
+Member 2's \texttt{diagnose} command calls the module once the polluters are known
+(\texttt{resource\_fields} in \path{runner/cli.py}): it runs \texttt{analyse\_pair} once for each
+polluter with the victim, and \texttt{combine\_fields} joins the results. With one polluter the
+report holds \texttt{report\_fields} unchanged. With several, it shows the first polluter's edge and
+names the others in \texttt{limitations}, but only if \emph{every} polluter has an edge; otherwise the
+three resource fields are \texttt{null}, so that a \texttt{VERIFIED} result always means every
+blamed test has a found mechanism. The report holds one resource and one location per side, so
+\texttt{report\_fields} shows the first edge and its first write and read, and lists any other edges
+and locations in \texttt{limitations}. The module can also be run on its own, for example on F2:
+\begin{lstlisting}[basicstyle=\footnotesize\ttfamily,columns=fullflexible,keepspaces=true,breaklines=true]
+python3 -m evidence.extract --classes fixtures/od-fixture/target/classes \
+    --test-classes fixtures/od-fixture/target/test-classes \
+    --polluter odfixture.FeaturePolluterTest#enableTurbo \
+    --victim odfixture.FeatureVictimTest#expectsTurboDisabled
+\end{lstlisting}
+Run on 12 October 2026 (main \texttt{82df9fa}), it exited 0 and its \texttt{pair} section reported
+one edge, \texttt{sysprop:odfixture.turbo}: written at \texttt{FeaturePolluterTest.enableTurbo}
+offset~4 and read at \texttt{FeatureFlags.isTurboEnabled} offset~2, a method the victim calls, so
+the read is at depth~2 (\texttt{depth\_used}~2).
+
+\subsubsection{Setup and running}
+The module needs Python~3 and a JDK~8 or newer with \texttt{javap} on the path (or
+\texttt{FLAKETRACE\_JAVAP} set to another \texttt{javap}); it has no other dependencies. Its tests
+need the fixture and the self-test project compiled first. From the repository root:
+\begin{lstlisting}[basicstyle=\footnotesize\ttfamily,columns=fullflexible,keepspaces=true,breaklines=true]
+mvn -B -q -f fixtures/od-fixture/pom.xml test-compile
+mvn -B -q -f evidence/tests/resources/m1-selftest/pom.xml test-compile
+FLAKETRACE_REQUIRE_JVM=1 python3 -m unittest -v evidence.tests.test_extract
+\end{lstlisting}
+\texttt{FLAKETRACE\_REQUIRE\_JVM=1} turns a missing \texttt{javap} into a failure instead of skipped
+tests. On Windows Command Prompt the variable is set with \texttt{set FLAKETRACE\_REQUIRE\_JVM=1} and
+Python is started with \texttt{py}. These are the same commands as the \texttt{evidence} job in
+\path{.github/workflows/ci.yml}, which runs them on Ubuntu with JDK~8 for every pull request.
+
+On 12 October 2026, on main \texttt{82df9fa}, both builds exited 0 and the suite reported
+\texttt{Ran 39 tests in 60.392s \ldots{} OK}. This run was made with Claude in the team's cloud
+environment (Linux, Maven 3.9.11, OpenJDK and \texttt{javap} 21.0.12.1, Python 3.13.16), not on a
+member's own machine; it is recorded in \path{docs/evidence-m1.md}.
+
+\subsubsection{Results}
+All results are recorded in \path{docs/evidence-m1.md}.
+\begin{itemize}
+\item \textbf{Fixture against its ground truth.} Every fixture test is tried as polluter against
+  every other as victim: 240 ordered pairs over 16 tests. Edges appear for exactly the ground-truth
+  pairs, each on the ground-truth resource, at the default depth without deepening: F1
+  (\texttt{Config.mode}), F2 (\texttt{odfixture.turbo}, read at depth~2), F3 (\texttt{Toggles.flagA}
+  and \texttt{flagB}, one per polluter) and F4 (\texttt{LateFlag.isSet}). No test gets an edge to N1,
+  N2 or N3. The ground truth was written by Member~3 before any run.
+\item \textbf{End to end.} The same edges appear in the reports of Table~\ref{ch8:tab:fixture-results},
+  where all four order-dependent cases are \texttt{VERIFIED}.
+\item \textbf{A real project.} On fastjson at the proof of concept's pinned commit, built unmodified,
+  the edges for FJ-01 and FJ-02 appear at depths~4 and~5 (Table~\ref{ch6:tab:m1-depth}), on the
+  fields \texttt{JSON.defaultTimeZone} and \texttt{JSON.defaultLocale}; the offsets on FJ-01's read path were checked
+  against the saved \texttt{javap} output (\path{evidence/javap-dumps/phase5-fastjson.txt}). Both cases are brittle tests whose earlier test is a state-setter,
+  which the module treats the same way: one test writes, the other reads.
+\end{itemize}
+
+\subsubsection{Testing}
+The 39 tests in \path{evidence/tests/test_extract.py} run the real extractor on real
+\texttt{javap} output; nothing is mocked. They are grouped in seven classes:
+\texttt{DepthOneExtractionTest} (the exact accesses and offsets, JUnit~3 and~4 lifecycle
+attribution, unsupported cases reported, not guessed), \texttt{CallDepthTest} (what each depth adds,
+the depth limit, recursion), \texttt{PairSelfTest} (edge rules, including writes in \texttt{setUp} and
+static initialisers), \texttt{DeepeningTest}, \texttt{FixturePairTest} (F1--F3 and the report-field
+shape), \texttt{GroundTruthTest} (the 240-pair check above) and \texttt{CommandLineTest} (output and
+exit codes). When the ground-truth check was added, it was itself checked: forcing depth~1 made it
+fail on the missing F2 pair, and altering the ground truth in memory made it fail as well.
+
+\subsubsection{Limitations and a failure case}
+Every report carries the module's seven fixed limitations (Section~\ref{ch1:sec:constraints}). Three
+matter most in practice:
+\begin{itemize}
+\item \textbf{A false edge.} On FJ-01 at depths~4 and~5, one of the 30 candidates that did not affect
+  the victim still gets an edge: \texttt{DateTest2\#test\_date} writes \texttt{JSON.defaultTimeZone},
+  but sets it and restores the old value in \texttt{tearDown}. The extractor sees a WRITE because it
+  does not model the values written. This is why an edge alone never makes a result
+  \texttt{VERIFIED}: the polluter must also be confirmed by reruns.
+\item \textbf{Two edges, one cause.} On both fastjson cases the state-setter's \texttt{setUp} writes
+  both \texttt{defaultTimeZone} and \texttt{defaultLocale}, and the victim reads both, so both are
+  edges. Static analysis cannot say which one causes the failure; from the test's own constants it
+  is the time zone, but that has not been confirmed by a run. The report shows the first edge and
+  names the other in \texttt{limitations}.
+\item \textbf{Evidence from one real project.} Two real cases from fastjson, a library built around
+  global static configuration, are favourable to this kind of analysis. Whether depth~5 is enough
+  elsewhere is not yet known; where static analysis finds nothing, the result is
+  \texttt{UNRESOLVED} with \texttt{NO\_SUPPORTED\_RESOURCE\_EVIDENCE}, never ``independent'', and
+  runtime evidence is the planned fallback (ADR-001).
+\end{itemize}
