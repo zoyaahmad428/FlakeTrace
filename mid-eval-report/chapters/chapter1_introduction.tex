@@ -233,7 +233,9 @@ safe multi-tenant execution. \\
 \item \textbf{Proof of concept, NARROW (28 August 2026).} At depth~1, static analysis found no
   write/read overlap for any candidate in any case, and three of five pre-registered gates failed:
   reproduction yield, ranking quality, and execution saving (0\% against a 30\% target). The team
-  kept the approach but changed the resource scope.
+  kept the approach but changed the resource scope. A later pre-registered run under the corrected
+  scope (4~September) passed all five gates, on held-out cases from one project
+  (Section~\ref{ch2:sec:method}).
 \item \textbf{Configurable analysis depth.} Depth became a committed, reported parameter instead
   of a fixed value of 1. It now starts at 2 and deepens to 5 when needed (ADR-006).
 \item \textbf{Three resource families.} Static fields, system properties and filesystem paths are

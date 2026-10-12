@@ -37,8 +37,14 @@ project's documentation folder, so every claim in this chapter can be traced bac
   the Illinois Dataset of Flaky Tests \cite{idoft}: its 8,075 rows were filtered to 1,438
   order-dependent rows, and then to 8 targets in two Java projects (json-iterator and fastjson)
   built at fixed commits. The runs used clean JDK~8 containers with the network switched off.
-  Four targets, all in fastjson, reproduced; 2,606 test orders were executed in total. The
-  result is discussed in Section~\ref{ch2:sec:challenges}.
+  Four targets, all in fastjson, reproduced; 2,606 test orders were executed in total. Three of
+  the five pre-registered gates failed, and the team narrowed the resource scope (the result is
+  discussed in Section~\ref{ch2:sec:challenges}). A second run on 4~September, under the corrected
+  scope and with its own protocols committed before the data was analysed, reproduced 18 of 23 cases
+  across three projects and passed all five gates, including a 39.3\% median saving against
+  one-by-one search on held-out cases (\nolinkurl{POC/decision/decision_record_v3.md}). All of
+  those held-out cases were from fastjson, so whether the ranking carries over to other projects is
+  still unproven.
 \end{enumerate}
 \section{Existing Solutions / Products}\label{ch2:sec:existing}
 Six research systems, three commercial products and three earlier FYPs are close to FlakeTrace.
