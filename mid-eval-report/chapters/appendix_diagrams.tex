@@ -4,5 +4,60 @@
 % DRAW FROM: diagrams/ and figures/
 % Rules: mid-eval-report/CLAUDE.md. Do not edit a file you do not own.
 % ===========================================================================
-\chapter{Additional Design Diagrams}
-Include large or supplementary diagrams referenced in the main report.
+\chapter{Additional Design Diagrams}\label{app:diagrams}
+This appendix holds full-page versions of design diagrams that are too dense to read at text size
+in the main chapters, and an index of all design diagrams. It adds no new diagrams: any figure here
+is the same image as in the main text. Every diagram drawn for this report is written in PlantUML,
+kept in
+\path{mid-eval-report/diagrams/m<N>/} beside its rendered image in \path{figures/m<N>/}, so its
+history is in the repository like the code's.
+
+\section*{Index of design diagrams}
+Table~\ref{app:tab:diagrams} lists every design diagram in the report, its owner, its source, and
+what it was drawn from. Behaviour and data diagrams show only what is built on \texttt{main};
+the architecture, use-case and schedule diagrams show the whole project, with planned parts marked.
+
+{\small
+\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.27\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}>{\raggedright\arraybackslash}p{0.33\textwidth}@{}}
+\caption{Design diagrams in this report}\label{app:tab:diagrams}\\
+\toprule
+Figure & Owner & Source & Drawn from\\
+\midrule
+\endfirsthead
+\toprule
+Figure & Owner & Source & Drawn from\\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Schedule, planned versus actual (Fig.~\ref{ch3:fig:gantt}) & M2 & \path{m2/gantt.puml} &
+  \path{docs/08-MidEval/iteration-plan.md}\\
+Use cases (Fig.~\ref{ch4:fig:usecases}) & M3 & \path{m3/use_cases.puml} &
+  \path{docs/02-Requirements/}: functional, non-functional and scope boundary\\
+Proposal block diagram (Fig.~\ref{ch5:fig:proposal-arch}) & -- & \path{figures/shared/} (image) &
+  As presented at the proposal defence; kept for comparison\\
+Architecture (Fig.~\ref{ch5:fig:arch}) & M2 & \path{m2/architecture.puml} &
+  \path{docs/contracts/interfaces.md} and the three code folders\\
+Domain model (Fig.~\ref{ch5:fig:domain}) & M1 & \path{m1/domain_model.puml} &
+  The contracts in \path{docs/contracts/}, \path{eval/baseline.py}, \path{runner/diagnose.py},
+  \path{runner/integrity.py}, \path{runner/recording.py}\\
+Report data model (Fig.~\ref{ch5:fig:datamodel}) & M1 & \path{m1/report_data_model.puml} &
+  \path{eval/schema/report.schema.json}; producers from \path{report-schema.md}\\
+\texttt{diagnose} sequence (Fig.~\ref{ch5:fig:diagnose-seq}) & M2 & \path{m2/diagnose_sequence.puml} &
+  \path{runner/cli.py}, \path{runner/diagnose.py}\\
+Search activity (Fig.~\ref{ch5:fig:search-activity}) & M2 & \path{m2/search_activity.puml} &
+  \path{runner/search.py}, \path{minimise.py}, \path{verify.py}\\
+Evidence extraction data flow (Fig.~\ref{ch5:fig:evidence-dfd}) & M1 & \path{m1/evidence_dataflow.puml} &
+  \path{evidence/extract.py}, \path{docs/contracts/resource-evidence.md}\\
+Outcome decision (Fig.~\ref{ch5:fig:outcome}) & M3 & \path{m3/outcome_decision.puml} &
+  \texttt{decide()} in \path{eval/outcome.py}\\
+\end{longtable}}
+
+The sources for Member~1's and Member~3's diagrams are stated in a comment at the top of each
+\texttt{.puml} file; the sources for Member~2's are those assigned to each diagram in
+\path{mid-eval-report/CLAUDE.md}.
+
+Member~1's three diagrams print at a size that can be read in the main text: the report data model
+is already rotated to a full page, and the domain model and the evidence data flow fill the text
+width and most of the page height respectively, so none is repeated here.
