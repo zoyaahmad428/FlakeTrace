@@ -80,7 +80,7 @@ machine-readable JSON
 
 | Requirement | Value | Basis |
 | --- | --- | --- |
-| Matching failures | **≥ 18 of 20** clean replays | ⚠ **PROJECT POLICY**, frozen after POC/validation, before held-out run |
+| Matching failures | **≥ 19 of 20** clean replays (the 0.70 bound below; 18/20 gives 0.699, 19/20 gives 0.764) | ⚠ **PROJECT POLICY**, frozen after POC/validation, before held-out run |
 | Wilson 95% lower bound | **≥ 0.70** | ⚠ **PROJECT POLICY** — the *estimator* is literature-mandated, the *threshold* is ours |
 | Deletion checks | Every Verified sequence passes | — |
 | Explanation | Every Verified explanation includes a test→resource→test path in a supported family | — |

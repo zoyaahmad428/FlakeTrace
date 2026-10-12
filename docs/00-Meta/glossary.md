@@ -282,7 +282,8 @@ Emerging Results, publishing early work with smaller evaluations — relevant be
    watch the failure vanish. *This makes victim/polluter/shared state permanent knowledge
    rather than vocabulary.*
 3. **Learn confidence intervals for proportions**, then specifically Wilson. **Compute one by
-   hand for 18/20.** This is the most commonly probed weak point.
+   hand for 18/20.** This is the most commonly probed weak point. (It gives 0.699, just under
+   0.70, which is why the effective rule is at least 19 of 20.)
 4. **Learn baselines, ablations, controls, held-out sets and leakage.**
 5. **Skim the RankF paper** for problem, method, dataset and metrics only. You must be able to
    describe your nearest competitor accurately in one minute.

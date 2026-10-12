@@ -171,7 +171,7 @@ interpretability is what makes it useful.
 | --- | --- | --- |
 | Q69 research questions | ✅ | RQ1–RQ6 committed, RQ7–RQ8 gated |
 | Q70 all your baselines | ✅ | Random (seeded), OBO, iFixFlakies minimiser, RankFO/RankFL, Takuan on overlapping subset, oracle ceiling |
-| Q71 success criteria numbers | ✅ | ≥25% lower median invocations; ≤5pp success-at-budget loss; 18/20 + Wilson ≥0.70. **Overhead has no number, deliberately** |
+| Q71 success criteria numbers | ✅ | ≥25% lower median invocations; ≤5pp success-at-budget loss; Wilson ≥0.70 at n = 20 = at least 19/20 (18/20 gives 0.699). **Overhead has no number, deliberately** |
 | Q72 measurable NFR | ✅ | Median/p95 instrumentation overhead + clean-machine deployment |
 | Q73 statistics, chosen before or after | ✅ | **Before.** Project-wise paired comparisons, bootstrap intervals, effect size |
 | Q74 testing vs evaluation vs acceptance | ✅ | Three different things — know the distinction cold |

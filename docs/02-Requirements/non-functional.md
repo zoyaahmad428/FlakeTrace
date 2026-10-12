@@ -97,7 +97,7 @@ months later resolves the same artifacts.
 | --- | --- | --- |
 | Median test-method invocations vs iFixFlakies / unguided minimisation, at same isolation-success level | **≥ 25% lower** on the overlapping solvable subset | ⚠ **PROJECT-SET** |
 | Success-at-budget vs strongest feasible comparator | **≤ 5 percentage points lower**, reported with **paired confidence intervals** rather than averages | ⚠ **PROJECT-SET** |
-| Verified certificate | ≥ 18 matching failures in 20 clean replays, Wilson 95% lower bound ≥ 0.70 | ⚠ **PROJECT POLICY**, estimator is literature-mandated |
+| Verified certificate | Wilson 95% lower bound ≥ 0.70 over 20 clean replays, i.e. ≥ 19 matching failures (18/20 gives 0.699) | ⚠ **PROJECT POLICY**, estimator is literature-mandated |
 | Deletion checks | Every Verified sequence passes | — |
 | Explanation | Every Verified explanation includes a test→resource→test path in a supported family | — |
 | Controls | **No false confident diagnosis on non-OD controls** | — |
