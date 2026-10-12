@@ -1,34 +1,30 @@
-@startuml search_activity
+' run_steps in runner/diagnose.py, drawn as two halves joined side by side by
+' scripts/join_activity.py (one figure, readable at text width).
+@startuml search_activity_a
 skinparam dpi 200
 skinparam defaultFontName Helvetica
 skinparam defaultFontSize 11
 skinparam shadowing false
 skinparam ActivityBackgroundColor #F7F7F7
 skinparam ActivityBorderColor #333333
+skinparam PartitionBorderColor #999999
 
-title run_steps(runner, order, victim, n, shuffles, seed)  (runner/diagnose.py)
-
+title (a) Reproduce, shuffle, alone check
 start
-:order = tests up to and including the victim;
-
+:order = tests up to the victim;
 partition "Reproduce (search.py)" {
   :run order up to n times,
-  stop at the first real failure;
-  note right
-    real = exception type not flaketrace.*
-    (crash, timeout, skip never count)
-  end note
+  stop at first real failure
+  (not a crash, timeout, skip);
 }
-
-if (reference signature found?) then (no)
+if (failed?) then (no)
   if (shuffles > 0?) then (yes)
-    partition "Order exploration (orders.py, ADR-008)" {
-      :build up to ~--shuffles (default 31) distinct
-      class-first shuffled orders, cut at the victim;
-      :run each once, seed recorded;
-      if (a real failure?) then (yes)
-        :order = that shuffled order
-        reference = its signature;
+    partition "Shuffle (orders.py)" {
+      :up to ~--shuffles (31)
+      class-first shuffled
+      orders, each once;
+      if (real failure?) then (yes)
+        :order = that order;
       else (no)
       endif
     }
@@ -36,12 +32,10 @@ if (reference signature found?) then (no)
   endif
 else (yes)
 endif
-
 partition "Alone check (verify.py)" {
-  if (reference signature found?) then (no)
-    :run the victim alone n times
-    (repeat_without_reference);
-    if (a real failure alone?) then (yes)
+  if (reference failure?) then (no)
+    :victim alone n times;
+    if (real failure?) then (yes)
       #DDDDDD:VICTIM_FAILS_ALONE;
       stop
     else (no)
@@ -49,75 +43,61 @@ partition "Alone check (verify.py)" {
       stop
     endif
   else (yes)
-    :run [victim] n times
-    (repeat with the reference);
-    if (>= 1 matching failure?) then (yes)
+    :victim alone n times;
+    if (>= 1 match?) then (yes)
       #DDDDDD:VICTIM_FAILS_ALONE;
       stop
     else (no)
     endif
   endif
 }
+(B)
+detach
+@enduml
 
-partition "Polluter search (search.py)" {
-  :for each earlier test (priority first, CLI passes none):
-  run [candidate, victim] once;
-  if (victim fails with the reference?) then (yes)
-    :polluters = [candidate] (first match wins);
-  else (no candidate does)
+@startuml search_activity_b
+skinparam dpi 200
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 11
+skinparam shadowing false
+skinparam ActivityBackgroundColor #F7F7F7
+skinparam ActivityBorderColor #333333
+skinparam PartitionBorderColor #999999
+
+title (b) Search, minimise, verify
+(B)
+partition "Search (search.py)" {
+  :run [test, victim] once
+  per earlier test (priority
+  hook first; CLI passes none);
+  if (fails with reference?) then (yes)
+    :polluters = [test];
+  else (none)
     :polluters = [];
   endif
 }
-
-if (polluters empty and more than 2 tests in order?) then (yes)
-  partition "Minimise (minimise.py, ADR-007)" {
-    :run the full order once more;
-    note right
-      so a one-off flaky failure
-      never blames every earlier test
-    end note
-    if (fails with the reference?) then (yes)
-      :current = tests before the victim, k = 2;
-      while (size of current > 1?) is (yes)
-        :split current into k chunks;
-        if (some chunk + victim fails?) then (yes)
-          :current = that chunk, k = 2;
-        elseif (some complement + victim fails?) then (yes)
-          :current = that complement
-          k = max(k - 1, 2);
-        elseif (k >= size of current?) then (yes)
-          break
-        else (no)
-          :k = min(2k, size of current);
-        endif
-      endwhile (no)
-      :polluters = current;
-      note right
-        each subset runs at most once (cache);
-        only the reference signature counts;
-        result is 1-minimal, not minimum
-      end note
+if (none and > 2 tests?) then (yes)
+  partition "Minimise (minimise.py)" {
+    :run full order once more;
+    if (fails with reference?) then (yes)
+      :ddmin over earlier tests
+      (1-minimal, not minimum);
+      :polluters = result;
     else (no)
     endif
   }
 else (no)
 endif
-
 partition "Verify (verify.py)" {
-  if (polluters found?) then (yes)
-    :sequence = polluters + [victim];
-  else (no)
-    :sequence = the failing order;
-  endif
-  :run sequence n times (repeat):
-  count matching and any-signature failures;
+  :sequence = polluters + victim,
+  else the failing order;
+  :run it n times, count
+  matching failures;
 }
-
-if (polluters found?) then (yes)
+if (polluters?) then (yes)
   #DDDDDD:POLLUTER_FOUND;
 else (no)
   #DDDDDD:NO_SINGLE_POLLUTER;
 endif
 stop
-
 @enduml
