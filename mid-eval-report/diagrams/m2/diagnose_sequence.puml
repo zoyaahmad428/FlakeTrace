@@ -4,81 +4,60 @@ skinparam defaultFontName Helvetica
 skinparam defaultFontSize 11
 skinparam shadowing false
 skinparam sequenceMessageAlign left
-skinparam responseMessageBelowArrow true
+skinparam ParticipantPadding 2
+skinparam BoxPadding 2
+hide footbox
 autonumber
 
-actor Developer as dev
-participant "cli.py\nrun_diagnose" as cli
-participant "diagnose.py\ndiagnose" as diag
-participant "integrity.py" as integ
-participant "RecordingRunner" as rec
-participant "OrderRunner" as orun
-participant "JVM\nFtHarness" as jvm
-participant "evidence.extract" as ext
-participant "eval.report\nassemble_report" as rep
-database "flaketrace-records/" as files
+participant "cli.py" as cli
+participant "eval.report" as rep
+participant "evidence" as ext
+participant "diagnose.py" as diag
+participant "Recording\nRunner" as rec
+participant "Order\nRunner" as orun
+participant "JVM" as jvm
 
-dev -> cli : py -m runner diagnose ~--project ~--victim\n[~--order ~--n ~--shuffles ~--seed]
-cli -> cli : check victim is Class#method, pom.xml exists,\nshuffles >= 0, read ~--order file
-note right of cli : any failure here: exit 2
+[-> cli : diagnose
+cli -> diag : diagnose()\nbad input: exit 2
+diag -> diag : integrity snapshot
+diag -> orun ** : new:\nmvn, javac
+diag -> orun : list_methods
+orun -> jvm : ~--list
+jvm --> orun : IDs
+orun --> diag : order
+diag -> rec ** : new: header
 
-cli -> diag : diagnose(project, victim, n, records, order, shuffles, seed)
-diag -> diag : check n, shuffles, no duplicate tests,\nrecords folder outside the project
-note right of diag : DiagnoseInputError: exit 2
-
-diag -> integ : snapshot(project)
-integ --> diag : before (SHA-256 per file)
-
-diag -> orun ** : OrderRunner(maven_test_classpath(project))
-note right of orun : mvn test-compile dependency:build-classpath;\njavac compiles FtHarness once
-diag -> orun : discover_order -> list_methods(test classes)
-orun -> jvm ** : java FtHarness ~--list
-jvm --> orun : Class#method lines
-orun --> diag : discovered order (not recorded)
-diag -> diag : given order only known tests,\nvictim in order
-note right of diag : DiagnoseInputError: exit 2
-
-diag -> rec ** : RecordingRunner(runner, record, header)
-rec -> files : header line: victim, n, java_version,\nproject_commit, project_dirty, os
-
-group run_steps(recorder, order, victim, n, shuffles, seed): reproduce, shuffle, alone, search, ddmin, verify (decisions: activity diagram)
-  loop every run_ordered call made by a step
-    diag -> rec : run_ordered(order)
-    rec -> orun : run_ordered(order)
-    orun -> jvm ** : fresh JVM, order on stdin
-    jvm --> orun : result file: PASS / FAIL / SKIP per test
-    orun --> rec : {test: RunOutcome(passed, failure_signature)}
-    rec -> files : append one run line (step, order, outcomes, seconds)
-    rec --> diag : outcomes
-  end
+loop run_steps, each run (activity diagram)
+  diag -> rec : run_ordered
+  rec -> orun : run_ordered
+  orun -> jvm : fresh JVM
+  jvm --> orun : results
+  orun --> rec : outcomes
+  rec -> rec : log run
+  rec --> diag : outcomes
 end
 
-diag -> integ : compare(before, snapshot(project))
-integ --> diag : SourceIntegrity(passed, details)
-diag --> cli : DiagnosisRuns(status, counts, polluters,\nsequence, source_integrity, execution_record)
-note right of cli : mvn / java failed or timed out, ToolError: exit 1
+diag -> diag : integrity compare
+diag --> cli : DiagnosisRuns\nMaven/Java failed: exit 1
 
-alt status = POLLUTER_FOUND
-  loop once per polluter
-    cli -> ext : analyse_pair(project, polluter, victim)
-    note right of ext : depth 2, deepens to at most 5\nonly if nothing found and a walk was cut off
-    ext --> cli : pair (edges, limitations)
+alt POLLUTER_FOUND
+  loop each polluter
+    cli -> ext : analyse_pair\ndepth 2 (deeper\nonly if none)
+    ext --> cli : pair
   end
-  cli -> ext : report_fields(pair), then combine_fields
-  ext --> cli : shared_resource, write / read locations, limitations
-  note right of cli : ExtractError: exit 1
+  cli -> ext : report_fields\nper pair
+  ext --> cli : fields\nerror: exit 1
 end
 
-cli -> rep : assemble_report(runs, fields)
-
-alt status = NO_SINGLE_POLLUTER
-  rep --> cli : raise UnhandledStatus (before any decision)
-  cli --> dev : "No report: ..." and record path\nexit 3
-else POLLUTER_FOUND, VICTIM_FAILS_ALONE, NOT_REPRODUCED
-  rep -> rep : decide() with Wilson intervals,\nvalidate_report() against the schema
-  rep --> cli : report (outcome, unresolved_reason, ...)
-  cli -> files : write <record>.report.json
-  cli --> dev : summary (outcome, polluter, resource,\nreproduced k/n, alone k/n, paths)\nexit 0
+cli -> rep : assemble_report
+alt NO_SINGLE_POLLUTER
+  rep --> cli : UnhandledStatus
+  [<-- cli : no report, exit 3
+else other statuses
+  rep -> rep : decide, validate
+  rep --> cli : report
+  cli -> cli : write .report.json
+  [<-- cli : summary, exit 0
 end
 
 @enduml

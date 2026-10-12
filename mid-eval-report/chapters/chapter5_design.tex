@@ -7,7 +7,7 @@
 % ===========================================================================
 \chapter{System Design}
 \section{System Architecture}\label{ch5:sec:arch}
-FlakeTrace is three Python packages, one per member: \texttt{runner/} (Member 2), \texttt{evidence/} (Member 1) and \texttt{eval/} (Member 3). They meet only through the contracts in \texttt{docs/contracts/}: \texttt{interfaces.md} (who calls whom), \texttt{report-schema.md} (the report every part feeds) and \texttt{resource-evidence.md} (the evidence format). Figure~\ref{ch5:fig:arch} shows every module and call as it is on \texttt{main}; solid boxes are implemented, dashed grey boxes are planned for FYP-2.
+FlakeTrace is three Python packages, one per member: \texttt{runner/} (Member 2), \texttt{evidence/} (Member 1) and \texttt{eval/} (Member 3). They meet only through the contracts in \texttt{docs/contracts/}: \texttt{interfaces.md} (who calls whom), \texttt{report-schema.md} (the report every part feeds) and \texttt{resource-evidence.md} (the evidence format). Figure~\ref{ch5:fig:arch} shows every module and call as it is on \texttt{main}; solid boxes are implemented, dashed grey boxes are planned, each labelled with the iteration the roadmap gives it (\path{docs/00-Meta/roadmap.md}). Iteration 2 ends at the FYP-1 Final evaluation; only the gated CDR module is FYP-2 alone.
 
 One command, \texttt{py -m runner diagnose -{}-project DIR -{}-victim Class\#method}, starts a diagnosis. \texttt{runner/cli.py} is the only place that calls all three packages, in five layers:
 \begin{enumerate}
@@ -22,7 +22,7 @@ The analysed project is only read. Maven compiles it into its own \texttt{target
 
 \begin{figure}[p]\centering
   \includegraphics[width=0.92\textheight,angle=90]{figures/m2/architecture}
-  \caption{FlakeTrace architecture: implemented at Iteration 1 (solid) and planned for FYP-2 (dashed grey)}\label{ch5:fig:arch}
+  \caption{FlakeTrace architecture: implemented at Iteration 1 (solid) and planned for later iterations (dashed grey)}\label{ch5:fig:arch}
 \end{figure}
 \section{Architectural Components}\label{ch5:sec:components}
 Table~\ref{ch5:tab:components} maps each component of the proposal's architecture (\path{docs/03-Design/architecture.md}) to the code that implements it at Iteration 1. ``Partial'' means part of the component's responsibility exists and the rest is named.
@@ -42,13 +42,13 @@ Project adapter & \texttt{runner/discovery.py}, \texttt{order\_runner.py} (\text
 Sandbox runner & \texttt{runner/order\_runner.py}, \texttt{harness/FtHarness.java} & M2 & Partial: one fresh JVM per order, 120\,s timeout; no container, no budget beyond the timeout\\
 Outcome normaliser & \texttt{eval/baseline.py} (\texttt{FailureSignature}), \texttt{runner/order\_runner.py} & M3, M2 & Built: exception type plus stack trace cut at the first JUnit/reflection frame; message masked\\
 Evidence collector & \texttt{evidence/extract.py} & M1 & Partial: static-only (\texttt{javap}), static fields and system properties, depth 2 deepening to 5; no filesystem paths, no runtime collection\\
-Evidence store / graph & --- & M1 & Planned (FYP-2); pair mode per found polluter instead\\
-Diagnosis planner & \texttt{runner/search.py} (\texttt{priority} argument only) & M2 & Planned (FYP-2); the CLI passes no priority\\
+Evidence store / graph & --- & M1 & Planned (Iteration 2); pair mode per found polluter instead\\
+Diagnosis planner & \texttt{runner/search.py} (\texttt{priority} argument only) & M2 & Planned (Iteration 2); the CLI passes no priority\\
 Minimiser / verifier & \texttt{runner/search.py}, \texttt{orders.py}, \texttt{minimise.py}, \texttt{verify.py}; \texttt{eval/stats.py} & M2, M3 & Built: single-polluter search, \texttt{ddmin} to a 1-minimal set, $n$ repeated runs, Wilson interval\\
 Certificate generator & \texttt{eval/report.py}, \texttt{outcome.py}, \texttt{schema\_validator.py}; \texttt{runner/cli.py} (summary) & M3, M2 & Partial: schema-validated JSON and console summary; no human-readable renderer or replay command; no report for \texttt{NO\_SINGLE\_POLLUTER}\\
 CLI / CI adapter & \texttt{runner/cli.py}; \path{.github/workflows/ci.yml} & M2 & Partial: \texttt{py -m runner diagnose} built; CI tests FlakeTrace itself, no adapter for a user's pipeline\\
 Source integrity, execution record & \texttt{runner/integrity.py}, \texttt{recording.py} & M2 & Built: report fields \texttt{source\_integrity} and \texttt{execution\_\allowbreak record\_\allowbreak reference}\\
-CDR (gated) & --- & M3 & Planned (FYP-2), only for \texttt{VERIFIED} reports\\
+CDR (gated) & --- & M3 & Planned (gated, FYP-2), only for \texttt{VERIFIED} reports\\
 \bottomrule
 \end{longtable}}
 
