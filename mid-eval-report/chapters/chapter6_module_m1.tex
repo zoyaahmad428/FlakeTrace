@@ -106,3 +106,67 @@ Every access records the resource, READ or WRITE, the class, method and bytecode
 it was reached from (\texttt{via}, for example \texttt{TEST\_METHOD} or \texttt{BEFORE}) and the call
 path. \texttt{find\_edges} then keeps each resource the polluter writes and the victim reads, with
 every write and read location. Writes made by the victim itself are not edges.
+
+\subsubsection{Call depth and auto-deepening}\label{ch6:sec:m1-depth}
+The depth is how many calls deep the walk follows from a root: depth~1 scans only the root's own
+bytecode, depth~2 also the project methods it calls, and so on. Each extra level finds more but costs
+more time and adds more code that is reachable but may never run. The team first fixed the default at
+2 with a maximum of 3 (ADR-002). Measurements on the two real fastjson cases from the proof of concept
+showed that this was not enough (Table~\ref{ch6:tab:m1-depth}): the victims reach the shared field
+only inside constructors, four or five calls deep.
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.12\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.18\textwidth}}
+\caption{Edges found per depth on fastjson (\texttt{docs/evidence-m1.md}, 10 October 2026)}\label{ch6:tab:m1-depth}\\
+\toprule
+Case & Depth & Real candidates with an edge & Other candidates with an edge & Seconds, all candidates\\
+\midrule
+\endfirsthead
+\toprule
+Case & Depth & Real candidates with an edge & Other candidates with an edge & Seconds, all candidates\\
+\midrule
+\endhead
+FJ-01 & 1--3 & 0 of 42 & 0 of 30 & 22.4--30.2\\
+FJ-01 & 4 & 42 of 42 & 1 of 30 & 34.8\\
+FJ-01 & 5 & 42 of 42 & 1 of 30 & 45.8\\
+FJ-02 & 1--3 & 0 of 24 & 0 of 698 & 143.3--156.1\\
+FJ-02 & 4 & 1 of 24 & 0 of 698 & 163.2\\
+FJ-02 & 5 & 24 of 24 & 0 of 698 & 180.7\\
+\bottomrule
+\end{longtable}}
+
+A ``real'' candidate is one that changed the victim's result when the proof of concept ran it first.
+Raising the fixed depth to~5 would make every pair pay the deepest cost: one pair took 3--6~s at
+depth~2, but 7.5~s for FJ-01 at depth~4 and 26.3~s for FJ-02 at depth~5 (ADR-006). The team therefore
+adopted \emph{auto-deepening} (ADR-006), implemented in \texttt{analyse\_pair}:
+\begin{enumerate}
+\item analyse both tests at the requested depth (default~2);
+\item if there is no edge \emph{and} a walk stopped at the depth limit (\texttt{DEPTH\_LIMIT}),
+  repeat one level deeper;
+\item stop at the first depth with an edge, when nothing was cut off, or at depth~5.
+\end{enumerate}
+The pair records \texttt{depth\_requested} and \texttt{depth\_used}, and when the reported evidence
+is deeper than the default, \texttt{report\_fields} adds a limitation saying that deeper evidence is
+more likely to be code that never runs. On the fixture, every ground-truth edge is found at depth~2
+without deepening.
+
+\subsubsection{How the runner uses the module}
+Member 2's \texttt{diagnose} command calls the module once the polluters are known
+(\texttt{resource\_fields} in \path{runner/cli.py}): it runs \texttt{analyse\_pair} once for each
+polluter with the victim, and \texttt{combine\_fields} joins the results. With one polluter the
+report holds \texttt{report\_fields} unchanged. With several, it shows the first polluter's edge and
+names the others in \texttt{limitations}, but only if \emph{every} polluter has an edge; otherwise the
+three resource fields are \texttt{null}, so that a \texttt{VERIFIED} result always means every
+blamed test has a found mechanism. The report holds one resource and one location per side, so
+\texttt{report\_fields} shows the first edge and its first write and read, and lists any other edges
+and locations in \texttt{limitations}. The module can also be run on its own, for example on F2:
+\begin{lstlisting}[basicstyle=\footnotesize\ttfamily,columns=fullflexible,keepspaces=true,breaklines=true]
+python3 -m evidence.extract --classes fixtures/od-fixture/target/classes \
+    --test-classes fixtures/od-fixture/target/test-classes \
+    --polluter odfixture.FeaturePolluterTest#enableTurbo \
+    --victim odfixture.FeatureVictimTest#expectsTurboDisabled
+\end{lstlisting}
+Run on 12 October 2026 (main \texttt{82df9fa}), it exited 0 and its \texttt{pair} section reported
+one edge, \texttt{sysprop:odfixture.turbo}: written at \texttt{FeaturePolluterTest.enableTurbo}
+offset~4 and read at \texttt{FeatureFlags.isTurboEnabled} offset~2, a method the victim calls, so
+the read is at depth~2 (\texttt{depth\_used}~2).
