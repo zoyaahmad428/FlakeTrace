@@ -12,7 +12,16 @@
 \section*{Branch protection}
 Rule in \path{CONTRIBUTING.md}: \texttt{main} accepts no direct pushes; a pull request needs passing CI and one approval from another member. Since the restructure (\pr{1}), \texttt{main} has no direct commits: all 62 later changes arrived as merged pull requests (\texttt{git log -{}-first-parent}, 11 October 2026).
 
-\todo{M2: screenshot of GitHub Settings, Branches, showing the protection rule on main}
+GitHub enforces this with a branch-protection rule on \texttt{main} (Figure~\ref{app:fig:branch-protection}, GitHub Settings, Branches, 12 October 2026). A pull request needs one approval, the four CI jobs \texttt{python-eval}, \texttt{fixture-build}, \texttt{runner} and \texttt{evidence} must pass, and every review conversation must be resolved; nobody, administrators included, can bypass these settings, force-push or delete \texttt{main}. Not required: review by the code owner, dismissal of approvals after new commits, branches up to date with \texttt{main}, signed commits and linear history. The report build (\texttt{build-report}) is deliberately not a required check, because it only runs on pull requests that touch the report and would block every other one.
+
+While writing this appendix we found that the rule had ``require status checks'' turned on but no check selected, so CI ran on every pull request but did not block a merge. The four checks were added on 12 October 2026. Every pull request merged before that had passed CI anyway, but until then it was a team habit, not a GitHub rule.
+
+\begin{figure}[p]\centering
+  \includegraphics[width=0.72\textwidth]{figures/m2/branch_protection_1}\par\medskip
+  \includegraphics[width=0.72\textwidth]{figures/m2/branch_protection_2}\par\medskip
+  \includegraphics[width=0.72\textwidth]{figures/m2/branch_protection_3}
+  \caption{Branch-protection rule on \texttt{main} (GitHub Settings, Branches; cropped to the rule, top to bottom)}\label{app:fig:branch-protection}
+\end{figure}
 
 \section*{Continuous integration}
 \path{.github/workflows/ci.yml} runs four jobs on every pull request and push to \texttt{main}, on Linux with Temurin JDK 8 and Python 3.11: evaluation tests and the benchmark yield report; the fixture's premises (it compiles, victims pass alone, F1 and F2 fail after their polluters, N1 fails alone); the runner tests with \texttt{FLAKETRACE\_REQUIRE\_JVM} set, so a missing JVM fails instead of skipping; and the evidence tests. \path{.github/workflows/report.yml} checks that the generated results table matches \path{eval/reports/}, builds this report's PDF and uploads it. \path{.github/CODEOWNERS} requests the owning member's review for changes in their folder, and \path{.github/pull_request_template.md} asks every pull request for its member and area, its verification, its contract impact, and its evidence and GenAI logs.
