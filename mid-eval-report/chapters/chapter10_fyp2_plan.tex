@@ -39,11 +39,18 @@ phases, your remaining work is: the filesystem resource family; the test--resour
 pairwise edges; dynamic/runtime evidence collection if static evidence proves insufficient
 (Iteration 2, ADR-001); the depth matrix and over-approximation measurement at full scale.}
 
-\todo{M2: please confirm --- from the same roadmap phases, your remaining work is: the
-cost-aware adaptive search policy (ranked one-by-one is the Iteration-1 default); container
-sandboxing and the full security posture (rootless, network-disabled, resource limits,
-redaction, audit); the verification-and-abstention hardening the roadmap calls out for
-FYP-II-early; CI/CD packaging and the clean-install deployment check (NFR-2).}
+\textbf{Search, verification and CLI (M2).} Iteration 1's polluter search runs in the original
+order with no ranking: \texttt{find\_polluter} accepts a \texttt{priority} list, but the command
+never passes one. What remains: ranking through that hook, trying Member 1's evidence-backed
+candidates first (FR-4), and then the cost-aware adaptive policy (\path{docs/00-Meta/roadmap.md},
+Iteration 2); the container sandbox, rootless with the network disabled, resource limits,
+verified cleanup and budgets beyond the 120\,s timeout (\path{docs/02-Requirements/
+non-functional.md}); a human-readable certificate with the replay command, which closes the FR-6
+gap recorded in Table~\ref{ch4:tab:fr}; a report for \texttt{NO\_SINGLE\_POLLUTER}, which needs a new schema reason
+agreed with Member 3; running each test class's methods in one JUnit request, so
+\texttt{@BeforeClass} runs once per class as under Surefire; and an installable
+\texttt{flaketrace} command, which needs the packages renamed and the harness shipped as package
+data (ADR-005), followed by the NFR-2 clean-install check.
 
 \section{Remaining Iterations}
 Table~\ref{ch10:tab:iterations} maps the roadmap's own iteration plan
@@ -79,9 +86,16 @@ commit used as an algorithm input cannot also be the oracle that judges it); (4)
 acceptance tasks last, since they need a stable, demonstrable pipeline rather than one still
 changing week to week.
 
-\todo{M1/M2: please add your own near-term implementation order here, or confirm mine does not
-block yours --- the evaluation work above can start independently of the filesystem family or
-the adaptive policy, but the held-out real-project work benefits from both being closer to done.}
+Member 2's near-term order: (1) run one real project from the benchmark manifest end to end
+through \texttt{py -m runner diagnose}, the FYP-1 Final outcome in \path{docs/08-MidEval/
+iteration-plan.md}, first, because it will expose runner problems the seeded fixture cannot;
+(2) the first deployment attempt in a container, the other part of that outcome; (3) ranking
+through the \texttt{priority} hook with Member 1's evidence; (4) the human-readable certificate
+and replay command; (5) the installable command and the NFR-2 check, a Final-2 requirement.
+Step (1) also gives Member 3 the real-project data the held-out evaluation needs.
+
+\todo{M1: please add your own near-term implementation order here, or confirm the evaluation and
+runner work above does not block yours.}
 
 \section{Testing and Validation Plan}
 The evaluation plan (\path{docs/05-Testing/evaluation-plan.md}) already defines what remains to
@@ -94,12 +108,15 @@ evaluation (is the approach better under budget) and acceptance (would the inten
 it) are what remain, and neither is started yet, stated plainly rather than implied as done.
 
 \section{Deployment Plan}
-\todo{M2: please confirm --- NFR-2 commits to: a third party installs on clean Linux from
-documentation, runs one frozen benchmark case, obtains the same certificate class, replays the
-returned order, and removes all created containers and workspaces, with the two-phase network
-model (a networked dependency-fetch stage, then a disabled-network test-execution stage as a
-separate container invocation) keeping test code itself never network-reachable even though the
-build was. This is explicitly a Final-2 exit requirement, not attempted in Iteration 1.}
+Deployment is defined by NFR-2 (\path{docs/02-Requirements/non-functional.md}; claim E7 in
+\path{docs/07-Defense/claims-ledger.md}): a third party installs FlakeTrace on a clean Linux
+machine from the documentation, runs one frozen benchmark case, obtains the same certificate
+class, replays the returned order, and removes every container and workspace it created. Tests
+run under a two-phase network model: a networked dependency-fetch stage, then a test-execution
+stage with the network disabled, as a separate container invocation, so test code is never
+network-reachable even though the build was. This is a Final-2 exit requirement and was not
+attempted in Iteration 1; the first step towards it, a deployment attempt in a container, is
+part of the FYP-1 Final outcome.
 
 \section{Tentative Timeline}
 Table~\ref{ch10:tab:gates} gives the remaining gates from \path{docs/00-Meta/roadmap.md}, each
