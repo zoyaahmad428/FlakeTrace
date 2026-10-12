@@ -4,5 +4,55 @@
 % DRAW FROM: evidence/README.md, evidence/extract.py, docs/04-Implementation/evidence-collector.md, docs/evidence-m1.md, ADR-002, ADR-006
 % Rules: mid-eval-report/CLAUDE.md. Do not edit a file you do not own.
 % ===========================================================================
-\subsection{Resource Evidence Extraction (Member 1)}
-\todo{M1: files, main functions, depth/auto-deepening, limitations, real results from evidence-m1.md}
+\subsection{Resource Evidence Extraction (Member 1)}\label{ch6:sec:m1}
+Member 1's module is the \path{evidence/} package. Given a polluter and a victim found by
+Member 2's runner, it names the shared resource the polluter writes and the victim reads, and the
+exact bytecode locations of that write and read. It works only from the project's compiled
+classes, read with the JDK's \texttt{javap}: it runs no tests, adds no instrumentation and never
+writes to the project (ADR-001, ADR-002). It is 716 lines of Python in one file, using only the
+standard library, with 505 lines of tests (\texttt{wc -l}, 12 October 2026). Figure~\ref{ch5:fig:evidence-dfd}
+shows its data flow.
+
+\subsubsection{Files and main functions}
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.27\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.54\textwidth}}
+\caption{Files of the resource evidence module}\label{ch6:tab:m1-files}\\
+\toprule
+File & Lines & Job\\
+\midrule
+\endfirsthead
+\toprule
+File & Lines & Job\\
+\midrule
+\endhead
+\path{extract.py} & 716 & The extractor and its command line; main functions below\\
+\path{tests/test_extract.py} & 505 & 39 \texttt{unittest} tests in seven classes, run on real
+  \texttt{javap} output\\
+\path{tests/resources/m1-selftest/} & -- & A small Maven project of ten Java files written as test
+  input (lifecycle methods, call depth, JUnit~3, unsupported cases); not part of the fixture\\
+\path{tools/measure_depth.py} & 70 & Measures accesses, unsupported observations, \texttt{javap}
+  calls and time per depth; produced the depth data behind ADR-006\\
+\path{javap-dumps/} & -- & Saved \texttt{javap} output quoted as evidence in
+  \path{docs/evidence-m1.md}\\
+\bottomrule
+\end{longtable}}
+
+The main functions in \path{extract.py}, in the order a pair is analysed:
+\begin{itemize}
+\item \texttt{Project.load}: runs \texttt{javap -v -p -c} on one class and parses it into
+  \texttt{ClassInfo}, \texttt{Method} and \texttt{Instruction} objects, cached per class.
+\item \texttt{find\_roots}: the test method plus its lifecycle methods (\texttt{@Before},
+  \texttt{@After}, \texttt{@BeforeClass}, \texttt{@AfterClass}, JUnit~3 \texttt{setUp} and
+  \texttt{tearDown}) and static initialisers, collected from the test class and its project
+  superclasses; a method overridden in a subclass is skipped, because it never runs.
+\item \texttt{walk\_root}, \texttt{scan\_method}, \texttt{scan\_call}, \texttt{follow\_call}: a
+  breadth-first walk from each root that classifies each instruction and follows calls into
+  project classes up to the depth limit.
+\item \texttt{analyse\_test}: all accesses, unsupported observations and library calls not
+  followed, for one test.
+\item \texttt{find\_edges}: the resources the polluter writes and the victim reads.
+\item \texttt{analyse\_pair}: both tests and their edges, deepening when needed.
+\item \texttt{report\_fields}: turns a pair into the three report fields and the limitations.
+\item \texttt{main}: the command line, \texttt{python3 -m evidence.extract}, which prints JSON and
+  exits 0 (done), 1 (\texttt{javap} missing or failed) or 2 (input error).
+\end{itemize}
