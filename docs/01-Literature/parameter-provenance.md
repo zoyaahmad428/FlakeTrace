@@ -62,6 +62,12 @@ questioning.** Blurring this distinction is punished; naming it is respected.
 > contract, frozen before the held-out run. **Adjusting them after seeing results would
 > invalidate the evaluation**, which the guide treats as a change requiring recorded approval.
 
+**Clarified 2026-10-12, not changed:** 18 of 20 gives a Wilson lower bound of 0.699, below 0.70,
+so the two thresholds together always meant at least 19 of 20. `eval.outcome.decide()` checks only
+the 0.70 bound, as ADR-004 and `contracts/interfaces.md` I3 record (19/20 → 0.764, 20/20 → 0.839).
+The policy, the code and every reported outcome are unchanged: no report in `eval/reports/` has 18
+or 19 matching failures.
+
 ### 2. The 25% cost-reduction and 5-percentage-point success-loss targets
 
 - The **baselines** (OBO, delta debugging, RankFO) and their published cost figures are

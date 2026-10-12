@@ -65,9 +65,9 @@ to a point, **which would be a false statement.**
 ### What the interval means — and what it does NOT (Q47)
 
 > It is a 95% Wilson score interval on **the probability that the returned order reproduces the
-> matching failure signature in a clean container.** For a Verified certificate we require at
-> least 18 matching failures in 20 independent clean replays and a Wilson lower bound of at
-> least 0.70.
+> matching failure signature in a clean container.** For a Verified certificate we require a
+> Wilson lower bound of at least 0.70 over 20 independent clean replays, which means at least
+> 19 matching failures (18 of 20 gives 0.699).
 >
 > **The interval describes replay reliability under our harness. It is NOT a probability that
 > the diagnosis is correct, and we do not present it as one.**
@@ -79,7 +79,7 @@ to a point, **which would be a false statement.**
 > study and are not planning one in committed scope, so we say **repeated replay rate with an
 > interval**. The word *calibrated* is reserved for a held-out calibration evaluation.
 
-⚠ **Thresholds are POLICY, estimator is literature.** The 18/20 and 0.70 constants are our
+⚠ **Thresholds are POLICY, estimator is literature.** The n = 20 and 0.70 constants are our
 acceptance policy, frozen after the POC and validation baselines but **before the held-out
 run**. Adjusting them after seeing results would invalidate the evaluation.
 
