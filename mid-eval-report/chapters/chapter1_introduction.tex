@@ -231,9 +231,11 @@ safe multi-tenant execution. \\
 \paragraph{How the scope was narrowed.} Four recorded decisions shaped the table:
 \begin{itemize}
 \item \textbf{Proof of concept, NARROW (28 August 2026).} At depth~1, static analysis found no
-  write/read overlap for any candidate in any case, and pre-registered gates failed, including a
-  0\% execution saving against a 30\% target. The team kept the approach but changed the resource
-  scope.
+  write/read overlap for any candidate in any case, and three of five pre-registered gates failed:
+  reproduction yield, ranking quality, and execution saving (0\% against a 30\% target). The team
+  kept the approach but changed the resource scope. A later pre-registered run under the corrected
+  scope (4~September) passed all five gates, on held-out cases from one project
+  (Section~\ref{ch2:sec:method}).
 \item \textbf{Configurable analysis depth.} Depth became a committed, reported parameter instead
   of a fixed value of 1. It now starts at 2 and deepens to 5 when needed (ADR-006).
 \item \textbf{Three resource families.} Static fields, system properties and filesystem paths are
@@ -424,11 +426,11 @@ and excluded or timed-out cases stay in the yield and failure analysis instead o
 the denominator. The thresholds above are frozen before the held-out evaluation, because changing
 them after seeing results would invalidate it.
 
-\paragraph{A note on the verification rule.} The project documents state the verified rule as
-``at least 18 of 20 replays and a Wilson lower bound of at least 0.70''. With the team's own
-\texttt{eval.stats.wilson\_interval}, 18 of 20 gives a lower bound of 0.699, 19 gives 0.764 and 20
-gives 0.839, so the lower-bound condition alone decides, and it needs 19. This report states the
-rule as it is implemented in \texttt{eval/outcome.py}.
+\paragraph{A note on the verification rule.} The rule implemented in \texttt{eval/outcome.py} is
+the lower bound alone. With the team's own \texttt{eval.stats.wilson\_interval}, 18 of 20 gives a
+lower bound of 0.699, 19 gives 0.764 and 20 gives 0.839, so at least 19 of 20 are needed. An earlier
+statement of the rule as ``at least 18 of 20'' was corrected in the certificate contract on
+12~October~2026.
 \section{Constraints and Assumptions}\label{ch1:sec:constraints}
 \paragraph{Constraints.}
 \begin{itemize}
@@ -456,8 +458,8 @@ rule as it is implemented in \texttt{eval/outcome.py}.
 \begin{itemize}
 \item \textbf{The 31-order figure holds for Java.} It comes from a study of Python projects
   \cite{gruber2021flaky} (ADR-008). It will be checked on the real benchmark.
-\item \textbf{The supported resource families cover a useful share of real failures.} The
-  real-project evidence so far comes from one project, fastjson, which relies heavily on global
+\item \textbf{The supported resource families cover a useful share of real failures.} FlakeTrace's
+  own extractor has so far been run on one real project, fastjson, which relies heavily on global
   static configuration; this favours the assumption. The benchmark in later iterations tests it.
 \item \textbf{Static analysis to depth~5 is enough for most cases.} At depths~4--5 it found the
   shared field in both fastjson cases measured (ADR-006), where the earlier test is a state-setter
