@@ -170,3 +170,72 @@ Run on 12 October 2026 (main \texttt{82df9fa}), it exited 0 and its \texttt{pair
 one edge, \texttt{sysprop:odfixture.turbo}: written at \texttt{FeaturePolluterTest.enableTurbo}
 offset~4 and read at \texttt{FeatureFlags.isTurboEnabled} offset~2, a method the victim calls, so
 the read is at depth~2 (\texttt{depth\_used}~2).
+
+\subsubsection{Setup and running}
+The module needs Python~3 and a JDK~8 or newer with \texttt{javap} on the path (or
+\texttt{FLAKETRACE\_JAVAP} set to another \texttt{javap}); it has no other dependencies. Its tests
+need the fixture and the self-test project compiled first. From the repository root:
+\begin{lstlisting}[basicstyle=\footnotesize\ttfamily,columns=fullflexible,keepspaces=true,breaklines=true]
+mvn -B -q -f fixtures/od-fixture/pom.xml test-compile
+mvn -B -q -f evidence/tests/resources/m1-selftest/pom.xml test-compile
+FLAKETRACE_REQUIRE_JVM=1 python3 -m unittest -v evidence.tests.test_extract
+\end{lstlisting}
+\texttt{FLAKETRACE\_REQUIRE\_JVM=1} turns a missing \texttt{javap} into a failure instead of skipped
+tests. On Windows Command Prompt the variable is set with \texttt{set FLAKETRACE\_REQUIRE\_JVM=1} and
+Python is started with \texttt{py}. These are the same commands as the \texttt{evidence} job in
+\path{.github/workflows/ci.yml}, which runs them on Ubuntu with JDK~8 for every pull request.
+
+On 12 October 2026, on main \texttt{82df9fa}, both builds exited 0 and the suite reported
+\texttt{Ran 39 tests in 60.392s \ldots{} OK}. This run was made with Claude in the team's cloud
+environment (Linux, Maven 3.9.11, OpenJDK and \texttt{javap} 21.0.12.1, Python 3.13.16), not on a
+member's own machine; it is recorded in \path{docs/evidence-m1.md}.
+
+\subsubsection{Results}
+All results are recorded in \path{docs/evidence-m1.md}.
+\begin{itemize}
+\item \textbf{Fixture against its ground truth.} Every fixture test is tried as polluter against
+  every other as victim: 240 ordered pairs over 16 tests. Edges appear for exactly the ground-truth
+  pairs, each on the ground-truth resource, at the default depth without deepening: F1
+  (\texttt{Config.mode}), F2 (\texttt{odfixture.turbo}, read at depth~2), F3 (\texttt{Toggles.flagA}
+  and \texttt{flagB}, one per polluter) and F4 (\texttt{LateFlag.isSet}). No test gets an edge to N1,
+  N2 or N3. The ground truth was written by Member~3 before any run.
+\item \textbf{End to end.} The same edges appear in the reports of Table~\ref{ch8:tab:fixture-results},
+  where all four order-dependent cases are \texttt{VERIFIED}.
+\item \textbf{A real project.} On fastjson at the proof of concept's pinned commit, built unmodified,
+  the edges for FJ-01 and FJ-02 appear at depths~4 and~5 (Table~\ref{ch6:tab:m1-depth}), on the
+  fields \texttt{JSON.defaultTimeZone} and \texttt{JSON.defaultLocale}; the offsets on FJ-01's read path were checked
+  against the saved \texttt{javap} output (\path{evidence/javap-dumps/phase5-fastjson.txt}). Both cases are brittle tests whose earlier test is a state-setter,
+  which the module treats the same way: one test writes, the other reads.
+\end{itemize}
+
+\subsubsection{Testing}
+The 39 tests in \path{evidence/tests/test_extract.py} run the real extractor on real
+\texttt{javap} output; nothing is mocked. They are grouped in seven classes:
+\texttt{DepthOneExtractionTest} (the exact accesses and offsets, JUnit~3 and~4 lifecycle
+attribution, unsupported cases reported, not guessed), \texttt{CallDepthTest} (what each depth adds,
+the depth limit, recursion), \texttt{PairSelfTest} (edge rules, including writes in \texttt{setUp} and
+static initialisers), \texttt{DeepeningTest}, \texttt{FixturePairTest} (F1--F3 and the report-field
+shape), \texttt{GroundTruthTest} (the 240-pair check above) and \texttt{CommandLineTest} (output and
+exit codes). When the ground-truth check was added, it was itself checked: forcing depth~1 made it
+fail on the missing F2 pair, and altering the ground truth in memory made it fail as well.
+
+\subsubsection{Limitations and a failure case}
+Every report carries the module's seven fixed limitations (Section~\ref{ch1:sec:constraints}). Three
+matter most in practice:
+\begin{itemize}
+\item \textbf{A false edge.} On FJ-01 at depths~4 and~5, one of the 30 candidates that did not affect
+  the victim still gets an edge: \texttt{DateTest2\#test\_date} writes \texttt{JSON.defaultTimeZone},
+  but sets it and restores the old value in \texttt{tearDown}. The extractor sees a WRITE because it
+  does not model the values written. This is why an edge alone never makes a result
+  \texttt{VERIFIED}: the polluter must also be confirmed by reruns.
+\item \textbf{Two edges, one cause.} On both fastjson cases the state-setter's \texttt{setUp} writes
+  both \texttt{defaultTimeZone} and \texttt{defaultLocale}, and the victim reads both, so both are
+  edges. Static analysis cannot say which one causes the failure; from the test's own constants it
+  is the time zone, but that has not been confirmed by a run. The report shows the first edge and
+  names the other in \texttt{limitations}.
+\item \textbf{Evidence from one real project.} Two real cases from fastjson, a library built around
+  global static configuration, are favourable to this kind of analysis. Whether depth~5 is enough
+  elsewhere is not yet known; where static analysis finds nothing, the result is
+  \texttt{UNRESOLVED} with \texttt{NO\_SUPPORTED\_RESOURCE\_EVIDENCE}, never ``independent'', and
+  runtime evidence is the planned fallback (ADR-001).
+\end{itemize}
