@@ -56,3 +56,53 @@ The main functions in \path{extract.py}, in the order a pair is analysed:
 \item \texttt{main}: the command line, \texttt{python3 -m evidence.extract}, which prints JSON and
   exits 0 (done), 1 (\texttt{javap} missing or failed) or 2 (input error).
 \end{itemize}
+
+\subsubsection{How extraction works}
+For each root, \texttt{walk\_root} scans the method's bytecode one instruction at a time and queues
+the project methods it calls, breadth-first, so every access is reported at the shortest call depth
+at which it can be reached. Each method is scanned at most once per root, which also stops recursion
+and call cycles. Listing~\ref{ch6:lst:m1-scan} shows the core of the scan.
+
+\begin{lstlisting}[language=Python,basicstyle=\footnotesize\ttfamily,columns=fullflexible,keepspaces=true,caption={Core of \texttt{scan\_method}, abridged (\texttt{evidence/extract.py})},label=ch6:lst:m1-scan]
+for index, ins in enumerate(method.instructions):
+    owner = ins.owner or info.name
+    if ins.opcode in ("getstatic", "putstatic"):
+        declaring = project.declaring_class(owner, ins.name)
+        resource = {"kind": "static-field",
+                    "class": declaring, "field": ins.name}
+        access = "READ" if ins.opcode == "getstatic" else "WRITE"
+        result["accesses"].append(make_access(
+            "static-field", resource, access, walk["via"],
+            info, method, ins.offset, walk["path"]))
+    elif ins.opcode == "invokedynamic":
+        result["unsupported"].append(observation(
+            "INVOKEDYNAMIC", info, method, ins, ...))
+    elif ins.opcode.startswith("invoke"):
+        scan_call(project, chain_names, info, method,
+                  index, owner, walk, result)
+\end{lstlisting}
+
+Each instruction is classified as follows:
+\begin{itemize}
+\item \texttt{getstatic} and \texttt{putstatic} are a READ and a WRITE of a static field. The field is
+  named by the class that \emph{declares} it, so a field reached through a subclass is still one
+  resource.
+\item A call to \texttt{System.getProperty}, \texttt{Integer.getInteger}, \texttt{Long.getLong} or
+  \texttt{Boolean.getBoolean} is a READ of a system property. A call to
+  \texttt{System.setProperty} or \texttt{clearProperty} is a WRITE, but only when every argument is pushed by one simple instruction
+  right before the call and the first is a constant string (\texttt{constant\_key}); otherwise
+  the call is reported as unsupported.
+\item A call into a project class is followed one level deeper (\texttt{follow\_call}). A call into
+  the JDK or a library is listed in \texttt{external\_calls\_not\_followed}.
+\item Anything the extractor cannot model becomes a typed \emph{unsupported observation} with its
+  location, never a guess: \texttt{REFLECTION}, \texttt{INVOKEDYNAMIC},
+  \texttt{VIRTUAL\_\allowbreak DISPATCH} (only the named target is followed, not subclass overrides),
+  \texttt{UNRESOLVED\_\allowbreak CALL}, \texttt{SYSPROP\_\allowbreak NON\_\allowbreak CONSTANT\_\allowbreak KEY},
+  \texttt{SYSPROP\_\allowbreak BULK}, \texttt{IMPLICIT\_\allowbreak CLINIT} (a static initialiser
+  that may run on first use), \texttt{DEPTH\_\allowbreak LIMIT} and
+  \texttt{JUNIT\_\allowbreak RULE\_\allowbreak OR\_\allowbreak RUNNER}.
+\end{itemize}
+Every access records the resource, READ or WRITE, the class, method and bytecode offset, the root
+it was reached from (\texttt{via}, for example \texttt{TEST\_METHOD} or \texttt{BEFORE}) and the call
+path. \texttt{find\_edges} then keeps each resource the polluter writes and the victim reads, with
+every write and read location. Writes made by the victim itself are not edges.
