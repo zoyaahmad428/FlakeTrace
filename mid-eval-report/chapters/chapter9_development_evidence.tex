@@ -33,11 +33,11 @@ The working rules are in \path{CONTRIBUTING.md}:
 
 Reviews found real problems, and the code records them. Two examples from Member 2's reviews of Member 3's report assembly: a merge order in which the command would have crashed with a stack trace instead of exiting with code 3, and report text that said ``given order'' when no order had been given (both noted ``flagged by Member 2'' in \path{eval/report.py}).
 
-Table~\ref{ch9:tab:git} counts the history on \texttt{main} on 11 October 2026 (\texttt{git shortlog} and the merge commits). A pull request is credited to the member who wrote most of its commits.
+Table~\ref{ch9:tab:git} counts the history on \texttt{main} at commit \texttt{4bc3fde} (13 October 2026), before this table was updated (\texttt{git shortlog} and the merge commits). Member 2's commits include three made on 9 October under a second e-mail address. A pull request is credited to the member who wrote most of its commits.
 
 {\small
 \begin{longtable}{>{\raggedright\arraybackslash}p{0.34\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}}
-\caption{Commits and merged pull requests on \texttt{main} (11 October 2026)}\label{ch9:tab:git}\\
+\caption{Commits and merged pull requests on \texttt{main} (13 October 2026)}\label{ch9:tab:git}\\
 \toprule
 Member & Commits (excluding merges) & Merged pull requests\\
 \midrule
@@ -46,15 +46,16 @@ Member & Commits (excluding merges) & Merged pull requests\\
 Member & Commits (excluding merges) & Merged pull requests\\
 \midrule
 \endhead
-M1: Zoya Ahmad & 32 & 20\\
-M2: Abdul Raffay & 78 & 22\\
-M3: Zarpash Nasim & 35 & 21\\
+M1: Zoya Ahmad & 66 & 32\\
+M2: Abdul Raffay & 105 & 33\\
+M3: Zarpash Nasim & 49 & 27\\
 \bottomrule
 \end{longtable}}
 
 Commit counts measure activity, not size or value: Member 2's count includes the repository restructure, CI and the report, and the three members' code packages differ in kind.
 
 \section{Milestones and Commit Evidence}\label{ch9:sec:milestones}
+Table~\ref{ch9:tab:milestones} dates each Iteration~1 milestone by the merge of its pull request into \texttt{main}.
 {\small
 \begin{longtable}{>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.47\textwidth}>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.16\textwidth}}
 \caption{Iteration 1 milestones on \texttt{main}}\label{ch9:tab:milestones}\\
