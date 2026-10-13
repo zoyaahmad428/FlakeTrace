@@ -81,7 +81,11 @@ the file(s) and test(s) that back it.
 \endhead
 FR-1 & Accept a pinned commit, module, target test and budget; validate the project, discover
   tests, record the environment & A frozen, reproducible case identity is emitted and stored &
-  \textbf{Done.} Environment (commit, JDK, OS) recorded in every execution record. \\
+  \textbf{Partial.} \texttt{--project}/\texttt{--victim} accepted and validated; whatever
+  commit happens to be checked out is \emph{recorded} in the execution record (commit, JDK,
+  OS), done, tested. A pinned commit, a separate module identifier and an execution budget are
+  not accepted as inputs --- the CLI operates on whatever is on disk, with a fixed repeat count
+  (\texttt{--n}) rather than a cost/time budget. \textbf{Not built} --- a later iteration. \\
 FR-2 & Execute declared test orders in a sandboxed container, one fresh JVM per order & Outcomes
   normalised to a failure signature; budgets/timeouts enforced; cleanup verified &
   \textbf{Partial.} One fresh JVM per order: done, tested. Sandboxed container: \textbf{not
@@ -93,8 +97,10 @@ FR-3 & Collect bounded resource events for the three committed resource families
   tested. Filesystem paths: \textbf{not built} --- planned, a later iteration (Ch. 10). \\
 FR-4 & Rank candidates and select the next experiment by expected information gain per unit
   cost & Two policies implemented: ranked one-by-one and cost-aware adaptive. Both evaluated &
-  \textbf{Partial.} Ranked one-by-one + delta-debugging minimisation: done, tested. Cost-aware
-  adaptive policy: \textbf{not built} --- planned, a later iteration (Ch. 10). \\
+  \textbf{Partial.} One-by-one search in original order + delta-debugging minimisation: done,
+  tested --- but \textbf{not ranked}: \texttt{find\_polluter} accepts a \texttt{priority} list,
+  the CLI never passes one (checked directly in \texttt{runner/cli.py}). Ranking itself, and
+  the cost-aware adaptive policy: \textbf{not built} --- planned, a later iteration (Ch. 10). \\
 FR-5 & Minimise the reproducing order with 1-minimality deletion checks, then verify by repeated
   clean replay with a Wilson interval & Deletion-minimality rate measured; multi-test candidates
   preserved rather than discarded & \textbf{Done.} \\
@@ -137,14 +143,14 @@ remains a committed requirement, not a dropped one: our own N2 timezone-sensitiv
 exists to catch, found instead by manual cross-platform re-measurement.
 
 \subsection{Instrumentation Overhead (NFR-1)}
-\todo{M3: no overhead threshold exists yet, deliberately -- \texttt{non-functional.md} states
-this explicitly rather than inventing a number before it is measured. Iteration 1's evidence
+No overhead threshold exists yet, deliberately --- \texttt{non-functional.md} states this
+explicitly rather than inventing a number before it is measured. Iteration 1's evidence
 collection is static-only (\texttt{javap} bytecode reads, no code is instrumented or executed
 differently because of FlakeTrace), so there is no runtime overhead to measure yet: this NFR
 becomes testable once Iteration 2 adds runtime instrumentation, if static evidence proves
 insufficient (\texttt{docs/03-Design/decisions/ADR-001-iteration1-evidence-without-
 instrumentation.md}). The envelope from stakeholder interviews (5--15 min PR-CI tolerance,
-SH1; 30 min opt-in, SH3) is recorded as context, not a current measurement.}
+SH1; 30 min opt-in, SH3) is recorded as context, not a current measurement.
 
 \subsection{Security and Usability}
 \textbf{Security.} \texttt{non-functional.md}'s security requirements (rootless containers, no

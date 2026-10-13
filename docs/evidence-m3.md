@@ -702,7 +702,10 @@ Windows/JDK 21 machine (0/40 failures, alone and in the full order), contradicti
   timer bit.
 - Command: `mvn -q -Dtest=odfixture.NegativeFlakyTest#sometimesFails test`, run 20 times in a
   loop, **on native Windows (JDK 24.0.2, where the old mechanism gave 0/40)**.
-- Result: **11/20 failures (45%)** — genuinely balanced, real data.
+- Result: **11/20 failures (55%)** — genuinely balanced, real data. (Corrected 2026-10-13: this
+  entry originally said 45%, which is arithmetically wrong for 11/20 — flagged by Member 2 while
+  reviewing the report. The raw count, 11/20, was always correct; only the stated percentage was
+  wrong, here and in `ground_truth.json`'s copy of this same result.)
 - Command: the same 20-repetition loop, independently, **inside
   `maven:3.9-eclipse-temurin-8` (JDK 8, Linux, Docker)**, run in parallel with the Windows
   check.

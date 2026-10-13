@@ -3,8 +3,9 @@
 FakeOrderRunner never launches a JVM and never runs real Maven/JUnit; it
 decides outcomes purely from a caller-supplied function. It exists so
 eval/tests/test_baseline.py can exercise eval.baseline.run_random_order_baseline
-deterministically without Member 2's real runner, which does not exist in
-this repo yet (see eval/README.md).
+deterministically and fast, without a JVM, independent of whether Member 2's
+real runner (runner.order_runner.OrderRunner, real since W6/PR #10 -- see
+eval/README.md) is available in the test environment.
 
 This module must live ONLY under eval/tests/. eval/baseline.py and any real
 CLI must never import it -- importing a fake runner from production code
