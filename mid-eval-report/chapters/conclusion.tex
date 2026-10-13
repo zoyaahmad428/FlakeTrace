@@ -35,8 +35,9 @@ verification, bytecode evidence and the outcome decision to a schema-validated r
 reproducing 20 of 20 times and never alone, with the ground-truth polluters and resource; the three
 negative controls end \texttt{UNRESOLVED} with a typed reason
 (Table~\ref{ch8:tab:fixture-results}). 268 tests run in CI on every pull request
-(Section~\ref{ch6:sec:m3}). These results come from hand-made fixture cases; FlakeTrace's own code
-has been run on one real project, fastjson, and user acceptance testing has not yet been run
+(Section~\ref{ch6:sec:m3}). These results come from hand-made fixture cases; on one real project, fastjson,
+only the evidence extractor has been run (static analysis of its compiled classes; no fastjson
+test has been run through the full tool), and user acceptance testing has not yet been run
 (Section~\ref{ch8:sec:acceptance}).
 
 \paragraph{Risks.} The main open risks are stated in the chapters they belong to: evidence from one
