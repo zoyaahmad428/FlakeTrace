@@ -6,4 +6,60 @@
 % ===========================================================================
 \chapter*{Executive Summary}
 \addcontentsline{toc}{chapter}{Executive Summary}
-Provide a one- to two-page overview of the project, motivation, scope, research findings, current implementation, validation status, risks, and remaining work.
+\paragraph{The project.} FlakeTrace (F26-214) is a self-hosted command-line tool for one of the
+most common kinds of flaky test in Java: a test that passes on its own but fails after certain
+other tests have run, because they left shared state behind. Given a Maven project and the failing
+test, FlakeTrace returns either a result anyone can check, naming which tests cause the failure,
+through which shared state, at which code locations and how reliably, or a clear refusal with a
+typed reason. It never changes the project it analyses.
+
+\paragraph{Motivation.} Order dependence accounts for half of the flaky tests in the iDFlakies
+study (Section~\ref{ch1:sec:context}). The three practitioners interviewed all find the culprit by
+hand, rerunning smaller and smaller groups of earlier tests, which takes from 15~minutes to a full
+working day per incident. Two of them said a tool that guesses is worse than one that says it does
+not know. The project is application-driven (Stream~B): it started from this workflow problem, not
+from a paper.
+
+\paragraph{Scope.} The approved scope, narrowed after the proof of concept and the proposal
+defence, is set out in Table~\ref{ch1:tab:scope}: what Iteration~1 has built, what is committed but
+not yet built, what is gated (Certificate-Driven Remediation, JUnit~5, Gradle) and what is excluded
+(general flaky-test detection, other languages, automatic repair, claims of definitive causality).
+Iteration~1 targets Maven projects with JUnit~4 and JUnit~3 tests, and static fields and system
+properties as shared resources.
+
+\paragraph{Research findings.} Every part of the diagnosis has been solved separately: delta
+debugging reduces failing orders, RankF ranks likely polluters, and Takuan and PolDet explain
+shared state. What no reviewed system does is combine controlled reruns, a reproduction rate with a
+statistical interval, code-level evidence and a typed refusal for one failure
+(Section~\ref{ch2:sec:gaps}). The literature also set the design's rules: valid shuffled orders,
+1-minimal results, Wilson intervals, and never treating shared state alone as proof
+(Table~\ref{ch2:tab:decisions}). The proof of concept failed three of its five pre-registered gates
+in August and led the team to narrow the resource scope; a later pre-registered run under the
+corrected scope passed all five, on held-out cases from one project.
+
+\paragraph{Current implementation.} The three members' modules (search and verification,
+resource evidence, evaluation) meet only through written contracts and one report schema
+(Chapter~5). One command, \texttt{py -m runner diagnose}, runs the whole path: reproduction in the
+given, discovered or shuffled order; the victim-alone check; polluter search, with delta debugging
+when several tests are needed; 20 repeated runs with a Wilson interval; static bytecode evidence
+with auto-deepening; and the outcome decision, producing a schema-validated report and a record of
+every run (Chapter~6).
+
+\paragraph{Validation status.} On the team's seeded fixture, whose ground truth was written before
+any run, the four order-dependent cases are \texttt{VERIFIED}, each reproducing 20 of 20 times and
+never alone, with the correct polluters and resource; the three negative controls end
+\texttt{UNRESOLVED} with a typed reason (Table~\ref{ch8:tab:fixture-results}). 268 tests run in CI
+on every pull request. These are hand-made cases built to have known answers; the evidence
+extractor has also run on one real project, fastjson, and user acceptance testing has not yet been
+run.
+
+\paragraph{Risks.} Real-project evidence comes from one project, a library that favours static
+analysis; the overhead of runtime evidence has no measured value yet; published baselines have not
+been run; diagnosis does not yet run inside a container; and none of the interviewed practitioners
+uses Java (Sections~\ref{ch2:sec:challenges} and~\ref{ch1:sec:constraints}).
+
+\paragraph{Remaining work.} Iteration~2, before the FYP-1 Final evaluation, runs one real benchmark
+project end to end, ranks candidates using the evidence module, makes a first container deployment
+and adds runtime evidence where static evidence is not enough. Later iterations add the execution
+budget, and FYP-2 adds filesystem evidence and the held-out evaluation against published
+baselines (Section~\ref{ch3:sec:it2} and the Remaining FYP Plan).
