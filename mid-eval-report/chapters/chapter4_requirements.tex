@@ -117,6 +117,30 @@ FR-7 & Provide a CLI with CI-compatible exit codes, installable on clean Linux f
 \end{longtable}
 
 \section{Non-Functional Requirements}\label{ch4:sec:nfr}
+Table~\ref{ch4:tab:nfr} gives each non-functional requirement with the check that verifies it
+and its status; the subsections below explain each one. Only NFR-1 and NFR-2 carry identifiers in
+\path{docs/02-Requirements/non-functional.md}; the other rows are named as they are there.
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.20\textwidth}>{\raggedright\arraybackslash}p{0.42\textwidth}>{\raggedright\arraybackslash}p{0.30\textwidth}}
+\caption{Non-functional requirements, acceptance checks and Iteration-1 status}\label{ch4:tab:nfr}\\
+\toprule
+\textbf{Requirement} & \textbf{Acceptance check} & \textbf{Iteration-1 status}\\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Requirement} & \textbf{Acceptance check} & \textbf{Iteration-1 status}\\
+\midrule
+\endhead
+Reliability of a Verified result & Wilson 95\% lower bound $\geq 0.70$ over 20 replays (19 or 20 matching), checked by \texttt{eval.outcome.decide()} & \textbf{Met by construction}; tested in \path{eval/tests/test_outcome.py}\\
+NFR-1 Instrumentation overhead & Median and p95 runtime overhead against uninstrumented execution stay below a stakeholder-accepted threshold; exceeding it switches to a lighter collection mode & \textbf{Open}: no threshold yet; Iteration~1 evidence is static, so there is no runtime overhead to measure\\
+NFR-2 Clean-machine deployment & A third party installs on clean Linux from the documentation, runs one frozen case, gets the same certificate class, replays the order and removes all containers and workspaces & \textbf{Not attempted}; a Final-2 exit requirement\\
+Non-perturbation control & Passing and failing order, each uninstrumented and instrumented: all four outcomes match the expected signature before a measurement is accepted & \textbf{Not built} as an automated check\\
+Security for untrusted tests & Rootless container, network off during test execution, resource limits and verified cleanup, tested adversarially (Table~\ref{appb:tab:security}) & \textbf{Not built}: tests run as a native JVM process; planned for a later iteration\\
+Usability of abstentions & Every \texttt{UNRESOLVED} report names one typed reason, each mapped to a different next action & \textbf{Met}: six emitted reasons in \path{eval/outcome.py}\\
+\bottomrule
+\end{longtable}}
+
 
 \subsection{Reliability}
 A \textbf{Verified} certificate requires a Wilson 95\% lower bound $\geq 0.70$ on the
