@@ -24,10 +24,10 @@ table does not have room for, all read directly from the committed reports in
 \endhead
 F1 & \texttt{assertEquals(0, Config.mode)} --- fails when the polluter has set it to 1 & 20/20
   reproduced (Wilson 0.84--1.00), 0/20 alone; original order 3 tests, minimised to 2 \\
-F2 & \texttt{assertFalse(FeatureFlags.isTurboEnabled())} --- the helper reads
+F2 & \texttt{assertFalse(FeatureFlags.\allowbreak{}isTurboEnabled())} --- the helper reads
   \texttt{odfixture.turbo} internally, not the test method itself & 20/20 reproduced (Wilson
   0.84--1.00), 0/20 alone; original order 6 tests, minimised to 2 \\
-F3 & \texttt{assertFalse(Toggles.flagA \&\& Toggles.flagB)} --- true only once \emph{both}
+F3 & \texttt{assertFalse(Toggles.flagA \&\&\allowbreak{} Toggles.flagB)} --- true only once \emph{both}
   polluters have run & 20/20 reproduced (Wilson 0.84--1.00), 0/20 alone; original order 15
   tests, minimised to 3 (both polluters + victim) \\
 F4 & \texttt{assertFalse(LateFlag.isSet)} --- the polluter class \texttt{ZzzLatePolluterTest}

@@ -97,8 +97,9 @@ evaluates it; this is not an error, it is a legitimate, typed outcome.
 \textbf{Main Flow:}
 \begin{enumerate}
   \item \texttt{find\_polluter()} (\texttt{runner/search.py}) tries each candidate test
-    one-by-one, immediately before the victim, stopping at the first that reproduces the
-    reference signature (ranked one-by-one policy, FR-4).
+    one-by-one, in whatever order discovery or \texttt{--order} gives (not ranked --- the CLI
+    never passes \texttt{find\_polluter}'s optional \texttt{priority} list, FR-4), immediately
+    before the victim, stopping at the first that reproduces the reference signature.
   \item If none reproduces it alone, the run is \texttt{NO\_SINGLE\_POLLUTER} and control passes
     to UC5's minimisation step instead.
 \end{enumerate}
@@ -244,7 +245,8 @@ Cost reduction vs.\ baseline & $\geq 25\%$ lower median invocations, overlapping
 Success-at-budget & $\leq 5$pp lower than the strongest feasible comparator, paired CIs &
   \textbf{Project-set}, reported with paired confidence intervals rather than averages (project
   statistical policy) \\
-Verified certificate & $\geq 18/20$ clean replays, Wilson 95\% lower bound $\geq 0.70$ &
+Verified certificate & Wilson 95\% lower bound $\geq 0.70$ (cleared by $\geq 19/20$ clean
+  replays at $n=20$, not 18 --- Section~\ref{ch4:sec:nfr}) &
   \textbf{Project policy}; the Wilson \emph{estimator} is literature-mandated (Brown, Cai \&
   DasGupta --- Wald intervals' coverage is ``chaotic'' for small $n$), the \emph{threshold} is
   ours, frozen before any held-out run \\

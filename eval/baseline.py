@@ -72,7 +72,9 @@ class OrderRunner(Protocol):
 
     This is a structural (duck-typed) interface via typing.Protocol -- any
     object with a matching run_ordered method satisfies it, no inheritance
-    required. No implementation of this protocol exists in this repo yet.
+    required. `runner.order_runner.OrderRunner` is the real implementation
+    (satisfies this structurally, no inheritance); `eval.tests.fake_runner.
+    FakeOrderRunner` is the scriptable test double, confined to eval/tests/.
     """
 
     def run_ordered(self, order: List[TestIdentifier]) -> Dict[TestIdentifier, RunOutcome]:

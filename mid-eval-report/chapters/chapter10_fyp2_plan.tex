@@ -11,7 +11,10 @@ Scope was baselined at the proposal and has not been reopened; what remains is w
 committed but not yet built, plus two explicitly gated tiers (\path{docs/02-Requirements/
 scope-boundary.md}). \textbf{Committed, not yet built:} the filesystem resource-event family
 (static fields and system properties are built; filesystem is not); the cost-aware adaptive
-search policy (ranked one-by-one ships now); rootless container sandboxing and the rest of the
+search policy and, in fact, \textbf{any ranking at all} --- \texttt{find\_polluter} accepts a
+\texttt{priority} list but the CLI never passes one, so Iteration 1 searches one-by-one in
+whatever order discovery or \texttt{--order} gives it, not a ranked order; rootless container
+sandboxing and the rest of the
 security posture (Chapter 4's Table~\ref{ch4:tab:fr} and Appendix B's Table~\ref{appb:tab:security}
 list exactly what is and is not built today); the test--resource graph beyond pairwise
 edges; and NFR-2's clean-machine deployment check by a third party. \textbf{Gated, conditional
@@ -21,9 +24,9 @@ acceptance threshold on the development benchmark (\path{docs/07-Defense/decisio
 cdr-gated-module.md}) --- and the other optional tier (JUnit 5, Gradle, GitHub Checks,
 issue-tracker export, a history dashboard, database/network resource adapters), each gated the
 same way. If the team is behind at Final-1, the recorded cut order is CDR first, then
-filesystem evidence (reduced to an opaque event), then the adaptive policy (ranked one-by-one
-stays default); \textbf{the committed core end-to-end path is cut last, because it is the
-project.}
+filesystem evidence (reduced to an opaque event), then the adaptive policy (one-by-one in
+original order stays default); \textbf{the committed core end-to-end path is cut last, because
+it is the project.}
 
 \section{Remaining Modules and Features}
 \textbf{Evaluation (M3, confident --- this is my own module).} Integrate at least one published
