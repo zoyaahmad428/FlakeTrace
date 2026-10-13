@@ -11,4 +11,6 @@
 *.toc
 *.synctex.gz
 main.pdf
+# Members' signature images: added locally for the submitted PDF, never committed
+figures/signatures/
 # NOT ignored on purpose: tables/generated/*.tex (committed so Overleaf can build without Python)
