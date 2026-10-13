@@ -27,6 +27,8 @@
 % Code names in narrow table cells: \path may break at any character, \texttt after an underscore.
 \usepackage{xurl}
 \renewcommand{\_}{\textunderscore\allowbreak}
+% When a figure moves to the next page, leave the gap at the bottom instead of stretching the text apart.
+\raggedbottom
 % The class loads natbib in author-year mode; IEEEtran is numeric, so citations fail without this.
 \setcitestyle{numbers,square}
 % \pr{49} prints a clickable "#49" linking to that pull request.

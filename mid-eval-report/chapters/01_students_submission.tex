@@ -7,9 +7,16 @@
 \chapter*{Students' Submission}
 \addcontentsline{toc}{chapter}{Students' Submission}
 We certify that this report is submitted as the FYP-1 mid-report for the project titled \textit{\projecttitle}.
-\vspace{1cm}
-\begin{tabular}{p{0.45\textwidth}p{0.45\textwidth}}
-Student 1: \studentone & Signature: \rule{0.25\textwidth}{0.4pt}\\[1cm]
-Student 2: \studenttwo & Signature: \rule{0.25\textwidth}{0.4pt}\\[1cm]
-Student 3: \studentthree & Signature: \rule{0.25\textwidth}{0.4pt}
+
+\vspace{1.5cm}
+% Signature images stay out of git (.gitignore); without the file the line is left blank to sign by hand.
+\newcommand{\signature}[1]{\begin{tabular}[b]{@{}c@{}}%
+  \IfFileExists{figures/signatures/#1.png}%
+    {\includegraphics[height=1.2cm,width=5cm,keepaspectratio]{figures/signatures/#1.png}}%
+    {\rule{0pt}{1.2cm}}\\[-2pt]
+  \rule{5cm}{0.4pt}\end{tabular}}
+\noindent\begin{tabular}{@{}p{0.5\textwidth}l@{}}
+Student 1: \studentone & \signature{m1}\\[1.2cm]
+Student 2: \studenttwo & \signature{m2}\\[1.2cm]
+Student 3: \studentthree & \signature{m3}
 \end{tabular}
