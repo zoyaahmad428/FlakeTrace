@@ -24,6 +24,9 @@
 \usepackage{listings}
 % Long \texttt file names cannot hyphenate; let LaTeX stretch spaces instead of overflowing the margin.
 \setlength{\emergencystretch}{3em}
+% Code names in narrow table cells: \path may break at any character, \texttt after an underscore.
+\usepackage{xurl}
+\renewcommand{\_}{\textunderscore\allowbreak}
 % The class loads natbib in author-year mode; IEEEtran is numeric, so citations fail without this.
 \setcitestyle{numbers,square}
 % \pr{49} prints a clickable "#49" linking to that pull request.
@@ -86,9 +89,6 @@
 \input{chapters/04_abstract}
 \input{chapters/05_acknowledgments}
 \input{chapters/06_executive_summary}
-\tableofcontents
-\listoffigures
-\listoftables
 \input{chapters/07_abbreviations}
 
 \cleardoublepage
