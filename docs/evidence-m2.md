@@ -853,3 +853,20 @@ two-order suite, victim-first shuffle, `--shuffles 0`, seeds in the record).
 - Timing: the single real F1 run took about 50 s here, longer than the 23.3 s recorded for F1 on 2026-10-09; the
   UI's "about 20–40 seconds" wording is to be checked against the Task 7 live run.
 - CI job not yet run on GitHub (runs on the final PR).
+
+## UI web: scaffold and report mapping (Task 5)
+
+- Requirement: spec sections 5 and 7 — every screen value comes from a real report; every null field gets a stated
+  reason; unbuilt parts carry the exact approved label; no POC simulated or recorded data.
+- Copied from `POC/POC/flaketrace-ui` only the look: `package.json`, lock file, `tsconfig.json`, `index.html`,
+  favicon, `index.css`, the lockup image, `components/ui.tsx`, `components/Trace.tsx` (link label "writes, never
+  restores" changed to "writes": the extractor does not check restoring). New: `src/lib/format.ts`, `report.ts`,
+  `labels.ts`, three test files. Vitest 5.0.4 with vite 8.3.0 (no peer conflict).
+- Before the code: `npm test` -> `Cannot find module './labels'` and `'./report'`; `nosim.test.ts` passed.
+- The no-simulation test can fail: with the POC's `sim.ts` copied into `src/lib/`, both of its checks failed
+  (`lib/sim.ts: expected true to be false`); file removed again.
+- After: `npm test` -> `Test Files 3 passed (3), Tests 26 passed (26)`; `npm run typecheck` -> no errors. The
+  expected values for all seven reports (outcome, polluters, order length, reduced length, reproduction, alone)
+  are the spec's table, read from `eval/reports/*.json`.
+- `npm audit` flagged one high-severity build-time package inherited from the POC lock file (`source-map-js`,
+  GHSA-68fv-2mgg-jv7q); `npm audit fix` updated it to 1.2.2 -> `found 0 vulnerabilities`; tests re-run, 26 passed.
