@@ -13,7 +13,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from unittest import mock
 
-from ui.server import job_result
+from ui.server import Busy, Jobs, check_diagnose_request, job_result
 
 REPO = Path(__file__).resolve().parents[2]
 F1_REPORT = REPO / "eval" / "reports" / "f1.json"
@@ -64,6 +64,102 @@ class TestJobResult(unittest.TestCase):
         result = job_result(1, "", "Traceback (most recent call last):\nKeyError: 'x'\n", self.records)
         self.assertEqual(result["message"], "the CLI exited with code 1")
         self.assertIn("KeyError", result["output_tail"])
+
+
+FAKE_CLI = Path(__file__).resolve().parent / "fake_cli.py"
+
+
+def fake_jobs(mode, timeout_s=60):
+    return Jobs(runner=[sys.executable, str(FAKE_CLI), mode], timeout_s=timeout_s)
+
+
+def wait(jobs, job_id, limit_s=60):
+    deadline = time.monotonic() + limit_s
+    while time.monotonic() < deadline:
+        job = jobs.get(job_id)
+        if job["state"] != "running":
+            return job
+        time.sleep(0.1)
+    raise AssertionError(f"job {job_id} still running after {limit_s} s")
+
+
+def pid_alive(pid):
+    if os.name == "nt":
+        out = subprocess.run(["tasklist", "/FI", f"PID eq {pid}", "/NH"], capture_output=True, text=True).stdout
+        return str(pid) in out
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    return True
+
+
+class TestCheckRequest(unittest.TestCase):
+    def test_a_minimal_request_is_accepted(self):
+        self.assertIsNone(check_diagnose_request({"project": "p", "victim": "a.B#c"}))
+        self.assertIsNone(check_diagnose_request({"project": "p", "victim": "a.B#c", "n": 20, "order": ["a.B#c"]}))
+
+    def test_bad_requests_are_rejected(self):
+        for body in (None, [], {"victim": "a.B#c"}, {"project": " ", "victim": "a.B#c"}, {"project": "p"},
+                     {"project": "p", "victim": "a.B#c", "n": 0}, {"project": "p", "victim": "a.B#c", "n": True},
+                     {"project": "p", "victim": "a.B#c", "n": "20"}, {"project": "p", "victim": "a.B#c", "order": "a.B#c"},
+                     {"project": "p", "victim": "a.B#c", "order": ["a.B#c", ""]}):
+            with self.subTest(body=body):
+                self.assertIsNotNone(check_diagnose_request(body))
+
+
+class TestJobs(unittest.TestCase):
+    def test_a_report_run_ends_done(self):
+        jobs = fake_jobs("report")
+        job = jobs.start("proj", "a.B#c")
+        self.assertEqual(job["state"], "running")
+        self.assertIn("diagnose", job["command"])
+        done = wait(jobs, job["id"])
+        self.assertEqual(done["state"], "done")
+        self.assertEqual(done["report"]["outcome"], "VERIFIED")
+
+    def test_arguments_with_spaces_reach_the_cli_intact(self):
+        jobs = fake_jobs("args")
+        project = str(Path(tempfile.gettempdir()) / "a folder" / "with spaces")
+        done = wait(jobs, jobs.start(project, "a.B#c", 7, ["x.Y#z", "a.B#c"])["id"])
+        args = json.loads((Path(done["report_path"]).parent / "args.json").read_text(encoding="utf-8"))
+        self.assertEqual(args[args.index("--project") + 1], project)
+        self.assertEqual(args[args.index("--n") + 1], "7")
+        order_file = Path(args[args.index("--order") + 1])
+        self.assertEqual(order_file.read_text(encoding="utf-8").split(), ["x.Y#z", "a.B#c"])
+
+    def test_non_ascii_cli_output_is_kept(self):
+        jobs = fake_jobs("unicode-error")
+        done = wait(jobs, jobs.start("proj", "a.B#c")["id"])
+        self.assertEqual((done["kind"], done["message"]), ("tool", "café ✓ failed"))
+
+    def test_a_second_job_while_one_runs_is_busy(self):
+        jobs = fake_jobs("sleep", timeout_s=3)
+        first = jobs.start("proj", "a.B#c")
+        with self.assertRaises(Busy) as caught:
+            jobs.start("proj", "a.B#c")
+        self.assertEqual(caught.exception.job["id"], first["id"])
+        wait(jobs, first["id"])
+
+    def test_a_job_over_the_limit_is_stopped_and_the_next_may_start(self):
+        jobs = fake_jobs("sleep", timeout_s=1)
+        done = wait(jobs, jobs.start("proj", "a.B#c")["id"])
+        self.assertEqual((done["state"], done["kind"]), ("failed", "timeout"))
+        self.assertIn("timed out after 1 s", done["message"])
+        wait(jobs, jobs.start("proj", "a.B#c")["id"])
+
+    def test_timeout_also_stops_child_processes(self):
+        jobs = fake_jobs("spawn-sleep", timeout_s=3)
+        job = jobs.start("proj", "a.B#c")
+        wait(jobs, job["id"])
+        child = int((Path(job["records"]) / "child.pid").read_text(encoding="utf-8"))
+        deadline = time.monotonic() + 5
+        while pid_alive(child) and time.monotonic() < deadline:
+            time.sleep(0.2)
+        self.assertFalse(pid_alive(child), f"child process {child} still running after the timeout")
+
+    def test_an_unknown_job_is_none(self):
+        self.assertIsNone(fake_jobs("report").get("nope"))
 
 
 if __name__ == "__main__":

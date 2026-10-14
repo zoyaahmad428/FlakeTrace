@@ -816,3 +816,15 @@ two-order suite, victim-first shuffle, `--shuffles 0`, seeds in the record).
 - Before the code: `py -m unittest -v ui.tests.test_server` -> `ModuleNotFoundError: No module named 'ui.server'`.
 - After: `py -m unittest -v ui.tests.test_server` -> `Ran 7 tests in 0.097s — OK` (Windows 11, branch `m2/ui`).
 - Limitation: tested with hand-written CLI outputs; the real CLI is exercised in Task 4.
+
+## UI backend: jobs (Task 2)
+
+- Requirement: spec section 4 rules 1, 5, 6 — one job at a time (`busy`), a 10-minute limit that stops the run,
+  a new temp records folder per job; arguments (paths with spaces, `--order`) reach the CLI intact.
+- `ui/server.py` `Jobs`, `Busy`, `kill_tree`, `check_diagnose_request`; `ui/tests/fake_cli.py` (FakeCli, tests only).
+- Before the code: `py -m unittest -v ui.tests.test_server` -> `ImportError: cannot import name 'Busy'`.
+- After: `Ran 16 tests in 10.179s — OK` (Windows 11).
+- Mutation check: with the timeout killing only the CLI process (`process.kill()`) instead of the process tree,
+  `test_timeout_also_stops_child_processes` failed (`job ... still running after 60 s`): the orphaned child kept
+  the output pipe open, so the job never finished. Restored `kill_tree`; 16 OK again.
+- Limitation: the tree kill was checked on Windows (`taskkill /T`); the Linux path (`killpg`) runs in CI.
