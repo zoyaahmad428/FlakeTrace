@@ -757,3 +757,18 @@ labelled "NOT BUILT YET — PLANNED FOR X" or "NOT BUILT — NOT IN CURRENT PLAN
 
 **What I changed:** chose both modes, the backend option, keeping every screen with labels, and building it
 after the Mid; approved each of the five design sections and the written spec.
+
+## 2026-10-14 — UI backend (ADR-009, plan Tasks 1–4)
+
+**Tool:** Claude Opus 5.5 in Claude Code · **Level:** L3
+
+**What was asked:** build the backend in `docs/03-Design/plans/2026-10-14-ui-plan.md` Tasks 1–4, test first.
+
+**What was retained:** `ui/server.py` (job results from the CLI's exit code and report file only; one job at a
+time; process-tree kill on timeout; HTTP API on 127.0.0.1), `ui/tests/fake_cli.py`, `ui/tests/test_server.py`
+(27 tests, one real F1 run), the `ui` CI job.
+
+**What was wrong:** the spec credited a 37.0 s run to F1; it was F3 (corrected). The plan's "20–40 s" estimate for
+a live run was low: the real F1 run through the backend took about 50 s.
+
+**What I changed:** reviewed and committed each task (`1ff0cca`, `7ba9765`, `5433c0b`, and Task 4's commit).

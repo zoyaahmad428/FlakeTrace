@@ -260,5 +260,25 @@ class TestHttp(unittest.TestCase):
             self.assertEqual(call(base, "POST", "/api/nothing", {})[0], 404)
 
 
+class TestRealRunOnFixture(unittest.TestCase):
+    """One real diagnose through the backend: Maven, fresh JVMs, javap and report validation."""
+
+    @classmethod
+    def setUpClass(cls):
+        missing = [tool for tool in ("java", "javac", "javap", "mvn") if shutil.which(tool) is None]
+        if missing:
+            if os.environ.get("FLAKETRACE_REQUIRE_JVM"):
+                raise RuntimeError(f"FLAKETRACE_REQUIRE_JVM is set but {missing} not on PATH")
+            raise unittest.SkipTest(f"{missing} not on PATH")
+
+    def test_f1_is_verified_with_its_polluter(self):
+        jobs = Jobs()
+        job = jobs.start(str(FIXTURE), "odfixture.ConfigVictimTest#expectsDefaultMode")
+        done = wait(jobs, job["id"], limit_s=600)
+        self.assertEqual(done["state"], "done", done.get("message"))
+        self.assertEqual(done["report"]["outcome"], "VERIFIED")
+        self.assertEqual(done["report"]["polluters"], [{"class": "odfixture.ConfigPolluterTest", "method": "pollute"}])
+
+
 if __name__ == "__main__":
     unittest.main()

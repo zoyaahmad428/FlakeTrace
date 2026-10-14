@@ -839,3 +839,17 @@ two-order suite, victim-first shuffle, `--shuffles 0`, seeds in the record).
   `{"name": "f1", "victim": "odfixture.ConfigVictimTest#expectsDefaultMode", "outcome": "VERIFIED"}`;
   `/api/health` -> `missing: []` (JDK 21.0.9, Maven 3.10.0, Python 3.14.0 on this laptop).
 - `eval/reports/baseline_results.json` is not a report and is not listed (it fails the schema check).
+
+## UI backend: real F1 run (Task 4)
+
+- Requirement: spec section 7, backend test 7 — one real `POST`-equivalent diagnose of F1 through the backend ends
+  `done`, `VERIFIED`, polluter `ConfigPolluterTest#pollute`.
+- `ui/tests/test_server.py` `TestRealRunOnFixture` (skipped without JDK/Maven locally; required in CI via
+  `FLAKETRACE_REQUIRE_JVM`); new CI job `ui` in `.github/workflows/ci.yml`.
+- Seen failing first on purpose: expected polluter `polluteX` -> `AssertionError: Lists differ: [{... 'pollute'}] !=
+  [{... 'polluteX'}]` after a real run (`Ran 1 test in 50.552s`), so the run itself completed and was VERIFIED.
+- After restoring `pollute`: `py -m unittest -v ui.tests.test_server` -> `Ran 27 tests in 50.033s — OK`
+  (Windows 11, JDK 21.0.9, Maven 3.10.0).
+- Timing: the single real F1 run took about 50 s here, longer than the 23.3 s recorded for F1 on 2026-10-09; the
+  UI's "about 20–40 seconds" wording is to be checked against the Task 7 live run.
+- CI job not yet run on GitHub (runs on the final PR).
