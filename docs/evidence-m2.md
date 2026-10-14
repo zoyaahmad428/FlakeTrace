@@ -807,3 +807,12 @@ two-order suite, victim-first shuffle, `--shuffles 0`, seeds in the record).
   re-run), verify 20 = 65 JVM runs, 22.2 s of JVM time.
 - Size for the report: `wc -l` -> runner product code 1,119 lines (11 Python files + `FtHarness.java`), tests 1,488 lines.
 - `git status --short fixtures/` empty.
+
+## 2026-10-14 — UI backend: job results (ADR-009, Task 1)
+
+- Requirement: spec `docs/03-Design/specs/2026-10-14-ui-design.md` section 4 — a finished CLI run becomes a job
+  result from the CLI's exit code and the report file only (0 report, 1 tool failed, 2 bad input, 3 no report).
+- `ui/server.py` `job_result`, `load_valid_report`, `report_problem` (schema check via `eval.schema_validator`).
+- Before the code: `py -m unittest -v ui.tests.test_server` -> `ModuleNotFoundError: No module named 'ui.server'`.
+- After: `py -m unittest -v ui.tests.test_server` -> `Ran 7 tests in 0.097s — OK` (Windows 11, branch `m2/ui`).
+- Limitation: tested with hand-written CLI outputs; the real CLI is exercised in Task 4.
