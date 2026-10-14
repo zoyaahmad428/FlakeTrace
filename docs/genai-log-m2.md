@@ -738,3 +738,22 @@ changed my git email) left out.
 
 **What I changed:** read all 39 suggested lines and confirmed each matches what I did before allowing them
 to be written in.
+
+## 2026-10-14 — Design of a web UI over the CLI (Iteration 2)
+
+**Tool:** Claude Opus 5.5 in Claude Code · **Level:** L3
+
+**What was asked:** whether the proposal-stage UI in `POC/` can show the current project, what it can and
+cannot show screen by screen, and a design for connecting it to the real tool.
+
+**What was retained:** the spec [[03-Design/specs/2026-10-14-ui-design]] and
+[[03-Design/decisions/ADR-009-ui-over-cli]]: a Python backend that runs `py -m runner diagnose` and shows
+only the report file it writes; live and open-report modes; all nine POC screens kept, with unbuilt parts
+labelled "NOT BUILT YET — PLANNED FOR X" or "NOT BUILT — NOT IN CURRENT PLAN"; the POC's simulated data
+(`sim.ts`, `recorded.json`, `flakyReproduces`) to be deleted.
+
+**What was wrong:** Claude first said a live run takes minutes; the recorded timings in [[evidence-m2]] are
+20–40 s. One label cited report Chapter 9 where the wording is in the Conclusion.
+
+**What I changed:** chose both modes, the backend option, keeping every screen with labels, and building it
+after the Mid; approved each of the five design sections and the written spec.

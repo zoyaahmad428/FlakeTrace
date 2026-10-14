@@ -9,7 +9,7 @@ post-defence action plan's two-student split is superseded by the three-member s
 | # | Name | Reg. no. | GitHub | Owns | Folder |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Zoya Ahmad | 23i-0805 | `zoyaahmad428` | Resource evidence and explanation | `evidence/` |
-| 2 | Abdul Raffay | 23i-0587 | `abdulraffay-m` | Bounded search and verification · CLI · CI · integration | `runner/`, `.github/` |
+| 2 | Abdul Raffay | 23i-0587 | `abdulraffay-m` | Bounded search and verification · CLI · CI · integration · web UI over the CLI (from Iteration 2, ADR-009) | `runner/`, `.github/`, `ui/` |
 | 3 | Zarpash Nasim | 23i-0027 | `ZarpashNasim` | Evaluation infrastructure · fixtures · statistics · gated repair | `eval/`, `fixtures/` |
 
 **Joint:** contracts, architecture, the Mid report, the evidence worksheet, the deck.
@@ -19,7 +19,7 @@ post-defence action plan's two-student split is superseded by the three-member s
 | Member | Current task | Branch | State | Blocked by |
 | --- | --- | --- | --- | --- |
 | 1 | Mid report: chapters 1–2 and 5, own chapter 6 section, worksheet individual section; GenAI disclosures | `main` (all code merged, last PR #51) | Code complete: W8 and ADR-006 (depth 1–5, auto-deepening), used by M2's CLI and M3's integration through `analyse_pair`; ADR-001/002 accepted, I2 answered, panel action A6 complete; report drafts are files, not yet in the template | — |
-| 2 | Mid packaging: report ch. 5–6, demo rehearsal, tag `mid-eval-v1` (W11–W13) | `main` | All runner work merged (W6, W7, W9, W10, W14/ADR-008 in PR #49); docs synced | Tag waits for every Mid PR to merge |
+| 2 | Mid demo rehearsal; then Iteration 2 web UI over the CLI ([[03-Design/specs/2026-10-14-ui-design]]) | `docs/m2-ui-spec` | Report submitted; `mid-eval-v1` tagged on `86d8355` (13 Oct); UI spec approved, ADR-009 proposed | ADR-009 review by M1 and M3 |
 | 3 | ADR-008 crash-count follow-ups merged (PR #52); closed remaining Mid-Eval loose ends, merged (PR #54: ADR-002 tick, C6/C7 depth wording, B11 baseline rerun, stale register rows); `eval/reports/` now has all 7 real reports (F1–F4, N1–N3, merged, PR #57); report ch. 4 and 7–8 per `08-MidEval/README`'s Form 3 table next | `main` | Phases 0–5 done; real `VERIFIED`/`UNRESOLVED` reports produced and committed for all 7 fixture cases; random-order baseline run for real on F1–F4, not just F1 (see `docs/evidence-m3.md`) | Report chapters need a refresh against current state; worksheet and tag (W12) not started |
 
 ## Evidence files per member

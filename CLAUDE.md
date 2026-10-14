@@ -13,7 +13,7 @@ said. Ownership is in [docs/09-Team/members.md](docs/09-Team/members.md).
 | Member | Owns | Folders |
 | --- | --- | --- |
 | 1 | Resource evidence: static bytecode extraction, shared-resource edges, evidence path | `evidence/` |
-| 2 | Bounded search & verification: order runner, polluter search, minimisation, failure signatures, repeated-run verification, certificate generation, CLI, CI | `runner/`, `.github/` |
+| 2 | Bounded search & verification: order runner, polluter search, minimisation, failure signatures, repeated-run verification, certificate generation, CLI, CI; web UI over the CLI (ADR-009) | `runner/`, `.github/`, `ui/` |
 | 3 | Evaluation: fixtures, benchmark manifest, baselines, statistics, outcome decision | `eval/`, `fixtures/` |
 | Joint | Contracts, architecture, report, Mid Eval evidence | `docs/` |
 | Per chapter | The FYP-1 Mid Report — each `.tex` file has one owner | `mid-eval-report/` |
@@ -161,6 +161,7 @@ CLAUDE.md, CONTRIBUTING.md, README.md   rules and entry points
 runner/                                 Member 2 — order runner, search, minimiser, verifier
 evidence/                               Member 1 — static extraction, resource edges
 eval/  fixtures/                        Member 3 — evaluation, fixtures, statistics
+ui/                                     Member 2 — web UI and its backend, runs the runner CLI (ADR-009)
 POC/                                    proposal-defence proof of concept (legacy, read-only)
 mid-eval-report/                        FYP-1 Mid Report (LaTeX) — one owner per chapter file
 docs/                                   Obsidian vault — open this folder in Obsidian
