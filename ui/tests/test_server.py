@@ -13,7 +13,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from unittest import mock
 
-from ui.server import Busy, Jobs, check_diagnose_request, job_result
+from ui.server import Busy, Jobs, check_diagnose_request, job_result, make_server
 
 REPO = Path(__file__).resolve().parents[2]
 F1_REPORT = REPO / "eval" / "reports" / "f1.json"
@@ -160,6 +160,104 @@ class TestJobs(unittest.TestCase):
 
     def test_an_unknown_job_is_none(self):
         self.assertIsNone(fake_jobs("report").get("nope"))
+
+
+@contextmanager
+def serving(jobs):
+    server = make_server(0, jobs)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        yield server, f"http://127.0.0.1:{server.server_address[1]}"
+    finally:
+        server.shutdown()
+        server.server_close()
+
+
+def call(base, method, path, body=None, raw=None):
+    data = raw if raw is not None else (None if body is None else json.dumps(body).encode("utf-8"))
+    request = urllib.request.Request(base + path, data=data, method=method,
+                                     headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            return response.status, json.loads(response.read())
+    except urllib.error.HTTPError as error:
+        return error.code, json.loads(error.read())
+
+
+class TestHttp(unittest.TestCase):
+    def test_binds_localhost_only(self):
+        with serving(fake_jobs("report")) as (server, _):
+            self.assertEqual(server.server_address[0], "127.0.0.1")
+
+    def test_health_names_missing_tools(self):
+        with serving(fake_jobs("report")) as (_, base), \
+                mock.patch("shutil.which", lambda tool: None if tool == "mvn" else f"/bin/{tool}"):
+            status, body = call(base, "GET", "/api/health")
+        self.assertEqual(status, 200)
+        self.assertEqual(body["missing"], ["mvn"])
+        self.assertEqual(body["fixture"], str(FIXTURE))
+
+    def test_reports_lists_the_seven_committed_reports(self):
+        with serving(fake_jobs("report")) as (_, base):
+            status, body = call(base, "GET", "/api/reports")
+        self.assertEqual(status, 200)
+        self.assertEqual([entry["name"] for entry in body], ["f1", "f2", "f3", "f4", "n1", "n2", "n3"])
+        self.assertEqual(body[0]["victim"], "odfixture.ConfigVictimTest#expectsDefaultMode")
+
+    def test_one_report_and_names_outside_the_list(self):
+        with serving(fake_jobs("report")) as (_, base):
+            status, body = call(base, "GET", "/api/reports/n1")
+            self.assertEqual((status, body["unresolved_reason"]), (200, "VICTIM_FAILS_ALONE"))
+            for name in ("baseline_results", "README", "nope", "..%2Fschema%2Freport.schema"):
+                with self.subTest(name=name):
+                    self.assertEqual(call(base, "GET", f"/api/reports/{name}")[0], 404)
+
+    def test_diagnose_then_poll(self):
+        with serving(fake_jobs("report")) as (_, base):
+            status, body = call(base, "POST", "/api/diagnose", {"project": "p", "victim": "a.B#c"})
+            self.assertEqual(status, 202)
+            deadline = time.monotonic() + 30
+            while True:
+                status, job = call(base, "GET", f"/api/jobs/{body['job_id']}")
+                if job["state"] != "running" or time.monotonic() > deadline:
+                    break
+                time.sleep(0.1)
+        self.assertEqual((status, job["state"], job["report"]["outcome"]), (200, "done", "VERIFIED"))
+
+    def test_bad_diagnose_requests_are_400(self):
+        with serving(fake_jobs("report")) as (_, base):
+            self.assertEqual(call(base, "POST", "/api/diagnose", raw=b"not json")[0], 400)
+            status, body = call(base, "POST", "/api/diagnose", {"project": "p"})
+        self.assertEqual((status, body["error"]), (400, "bad_request"))
+
+    def test_busy_is_409(self):
+        with serving(fake_jobs("sleep", timeout_s=3)) as (server, base):
+            call(base, "POST", "/api/diagnose", {"project": "p", "victim": "a.B#c"})
+            status, body = call(base, "POST", "/api/diagnose", {"project": "p", "victim": "a.B#c"})
+            self.assertEqual((status, body["error"]), (409, "busy"))
+            self.assertRegex(body["started"], r"^\d\d:\d\d:\d\d$")
+            time.sleep(4)
+
+    def test_unknown_job_is_404_with_a_reason(self):
+        with serving(fake_jobs("report")) as (_, base):
+            status, body = call(base, "GET", "/api/jobs/abc123")
+        self.assertEqual(status, 404)
+        self.assertIn("restarted", body["message"])
+
+    def test_validate(self):
+        f1 = json.loads(F1_REPORT.read_text(encoding="utf-8"))
+        with serving(fake_jobs("report")) as (_, base):
+            self.assertEqual(call(base, "POST", "/api/validate", f1), (200, {"valid": True, "message": None}))
+            for bad in ({}, [], {"outcome": "VERIFIED"}):
+                with self.subTest(bad=bad):
+                    status, body = call(base, "POST", "/api/validate", bad)
+                    self.assertEqual((status, body["valid"]), (200, False))
+                    self.assertIn("not a valid FlakeTrace report", body["message"])
+
+    def test_unknown_path_is_404(self):
+        with serving(fake_jobs("report")) as (_, base):
+            self.assertEqual(call(base, "GET", "/api/nothing")[0], 404)
+            self.assertEqual(call(base, "POST", "/api/nothing", {})[0], 404)
 
 
 if __name__ == "__main__":

@@ -6,6 +6,8 @@ file the CLI writes, after checking it against eval/schema/report.schema.json. L
 """
 import json
 import os
+import re
+import shutil
 import signal
 import subprocess
 import sys
@@ -13,6 +15,7 @@ import tempfile
 import threading
 import uuid
 from datetime import datetime
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import List, Optional
 
@@ -175,3 +178,105 @@ class Jobs:
                     "message": f"timed out after {self.timeout_s:g} s; the run and its JVMs were stopped",
                     "output_tail": tail(stdout + "\n" + stderr)}
         return job_result(process.returncode, stdout, stderr, records)
+
+
+REPORT_PATH = re.compile(r"/api/reports/([\w-]+)")
+JOB_PATH = re.compile(r"/api/jobs/(\w+)")
+
+
+def health() -> dict:
+    tools = {tool: shutil.which(tool) for tool in TOOLS}
+    return {"tools": tools, "missing": [tool for tool, path in tools.items() if path is None],
+            "python": sys.version.split()[0], "fixture": str(FIXTURE)}
+
+
+def list_reports() -> list:
+    """The schema-valid reports in eval/reports/; other JSON there (baseline results) is skipped."""
+    entries = []
+    for path in sorted(REPORTS.glob("*.json")):
+        report, _ = load_valid_report(path)
+        if report is not None:
+            victim = report["victim"]
+            entries.append({"name": path.stem, "victim": f"{victim['class']}#{victim['method']}",
+                            "outcome": report["outcome"]})
+    return entries
+
+
+def get_report(name: str) -> Optional[dict]:
+    if name not in {entry["name"] for entry in list_reports()}:
+        return None
+    return load_valid_report(REPORTS / f"{name}.json")[0]
+
+
+class Handler(BaseHTTPRequestHandler):
+    def log_message(self, format, *args):  # keep the console for real errors
+        pass
+
+    def _send(self, status: int, body) -> None:
+        data = json.dumps(body).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
+    def do_GET(self):
+        path = self.path.split("?", 1)[0]
+        if path == "/api/health":
+            return self._send(200, health())
+        if path == "/api/reports":
+            return self._send(200, list_reports())
+        match = REPORT_PATH.fullmatch(path)
+        if match:
+            report = get_report(match.group(1))
+            return self._send(200, report) if report else self._send(404, {"error": "not_found"})
+        match = JOB_PATH.fullmatch(path)
+        if match:
+            job = self.server.jobs.get(match.group(1))
+            if job:
+                return self._send(200, job)
+            return self._send(404, {"error": "not_found", "message": "no such job; the backend may have restarted"})
+        self._send(404, {"error": "not_found"})
+
+    def do_POST(self):
+        path = self.path.split("?", 1)[0]
+        try:
+            body = json.loads(self.rfile.read(int(self.headers.get("Content-Length") or 0)) or b"null")
+        except ValueError:
+            return self._send(400, {"error": "bad_request", "message": "the body is not JSON"})
+        if path == "/api/diagnose":
+            problem = check_diagnose_request(body)
+            if problem:
+                return self._send(400, {"error": "bad_request", "message": problem})
+            try:
+                job = self.server.jobs.start(body["project"].strip(), body["victim"].strip(), body.get("n", 20),
+                                             body.get("order"))
+            except Busy as busy:
+                return self._send(409, {"error": "busy", "message": "a diagnosis is already running",
+                                        "started": busy.job["started"], "command": busy.job["command"]})
+            return self._send(202, {"job_id": job["id"]})
+        if path == "/api/validate":
+            problem = report_problem(body)
+            return self._send(200, {"valid": problem is None, "message": problem})
+        self._send(404, {"error": "not_found"})
+
+
+def make_server(port: int = PORT, jobs: Optional[Jobs] = None) -> ThreadingHTTPServer:
+    server = ThreadingHTTPServer((HOST, port), Handler)
+    server.jobs = jobs or Jobs()
+    return server
+
+
+def main() -> None:
+    server = make_server()
+    print(f"FlakeTrace UI backend on http://{HOST}:{PORT} (Ctrl+C to stop)")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
+
+
+if __name__ == "__main__":
+    main()

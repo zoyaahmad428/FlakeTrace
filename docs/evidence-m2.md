@@ -828,3 +828,14 @@ two-order suite, victim-first shuffle, `--shuffles 0`, seeds in the record).
   `test_timeout_also_stops_child_processes` failed (`job ... still running after 60 s`): the orphaned child kept
   the output pipe open, so the job never finished. Restored `kill_tree`; 16 OK again.
 - Limitation: the tree kill was checked on Windows (`taskkill /T`); the Linux path (`killpg`) runs in CI.
+
+## UI backend: HTTP API (Task 3)
+
+- Requirement: spec section 4 API table and rules 3 (validated reports) and 4 (local only).
+- `ui/server.py` `Handler`, `make_server`, `health`, `list_reports`, `get_report`; endpoints `GET /api/health`,
+  `/api/reports`, `/api/reports/<name>`, `/api/jobs/<id>`, `POST /api/diagnose` (400, 409), `/api/validate`.
+- Before the code: `ImportError: cannot import name 'make_server'`. After: `Ran 26 tests in 21.118s — OK`.
+- Smoke run: `py ui/server.py`, then `curl -s http://127.0.0.1:8765/api/reports` -> 7 entries starting
+  `{"name": "f1", "victim": "odfixture.ConfigVictimTest#expectsDefaultMode", "outcome": "VERIFIED"}`;
+  `/api/health` -> `missing: []` (JDK 21.0.9, Maven 3.10.0, Python 3.14.0 on this laptop).
+- `eval/reports/baseline_results.json` is not a report and is not listed (it fails the schema check).
