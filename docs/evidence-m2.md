@@ -870,3 +870,23 @@ two-order suite, victim-first shuffle, `--shuffles 0`, seeds in the record).
   are the spec's table, read from `eval/reports/*.json`.
 - `npm audit` flagged one high-severity build-time package inherited from the POC lock file (`source-map-js`,
   GHSA-68fv-2mgg-jv7q); `npm audit fix` updated it to 1.2.2 -> `found 0 vulnerabilities`; tests re-run, 26 passed.
+
+## UI web: screens (Task 6)
+
+- Requirement: spec sections 5 and 6 — nine POC screens on real reports; open-report and live mode; unbuilt parts
+  greyed and labelled; busy, input, tool, no-report, restart and backend-down states.
+- Copied unchanged from the POC: `App.tsx`, `main.tsx`, `components/StepRail.tsx`. New: `src/lib/api.ts`,
+  `src/state.tsx`, `components/Header.tsx`, `components/NotBuilt.tsx`, nine `screens/*.tsx`.
+- Before the code: `npm run typecheck` -> 19 errors (`Cannot find module './state'`, `./screens/Source`, ...).
+- After: `npm run typecheck` -> no errors; `npm test` -> `Tests 26 passed (26)`; `npm run build` -> `built in 2.05s`.
+- Found while checking: Vite bound `localhost` (IPv6 `::1` on this laptop), so `http://127.0.0.1:5174` did not
+  answer; `vite.config.ts` now sets `host: "127.0.0.1"` -> 200.
+- Live run through the web app's proxy (2026-10-15): `POST /api/diagnose` for
+  `odfixture.ConfigVictimTest#expectsDefaultMode` on `fixtures/od-fixture` -> `done` after 66 s, `VERIFIED`, polluter
+  `odfixture.ConfigPolluterTest#pollute`, 20/20, alone 0/20. The Target screen's estimate was changed from
+  "20–40 seconds" to "about one minute (50–66 s measured)".
+- Backend stopped: `GET /api/health` through the proxy -> `502` with an empty body, which `api.ts` reports as
+  "Backend not running".
+- Screens checked by M2 in the browser (2026-10-15): F3 (15 tests, 2 polluters, reduced 3, VERIFIED 20/20 vs 0/20,
+  `odfixture.Toggles.flagA` with the one-resource note), N1 (`UNRESOLVED(VICTIM_FAILS_ALONE)` and its reason, no shared
+  resource), Repair/Verify/EvoSuite (NOT BUILT card only) -> M2 reported "all OK".
