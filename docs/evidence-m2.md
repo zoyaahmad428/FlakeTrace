@@ -807,3 +807,118 @@ two-order suite, victim-first shuffle, `--shuffles 0`, seeds in the record).
   re-run), verify 20 = 65 JVM runs, 22.2 s of JVM time.
 - Size for the report: `wc -l` -> runner product code 1,119 lines (11 Python files + `FtHarness.java`), tests 1,488 lines.
 - `git status --short fixtures/` empty.
+
+## 2026-10-14 — UI backend: job results (ADR-009, Task 1)
+
+- Requirement: spec `docs/03-Design/specs/2026-10-14-ui-design.md` section 4 — a finished CLI run becomes a job
+  result from the CLI's exit code and the report file only (0 report, 1 tool failed, 2 bad input, 3 no report).
+- `ui/server.py` `job_result`, `load_valid_report`, `report_problem` (schema check via `eval.schema_validator`).
+- Before the code: `py -m unittest -v ui.tests.test_server` -> `ModuleNotFoundError: No module named 'ui.server'`.
+- After: `py -m unittest -v ui.tests.test_server` -> `Ran 7 tests in 0.097s — OK` (Windows 11, branch `m2/ui`).
+- Limitation: tested with hand-written CLI outputs; the real CLI is exercised in Task 4.
+
+## UI backend: jobs (Task 2)
+
+- Requirement: spec section 4 rules 1, 5, 6 — one job at a time (`busy`), a 10-minute limit that stops the run,
+  a new temp records folder per job; arguments (paths with spaces, `--order`) reach the CLI intact.
+- `ui/server.py` `Jobs`, `Busy`, `kill_tree`, `check_diagnose_request`; `ui/tests/fake_cli.py` (FakeCli, tests only).
+- Before the code: `py -m unittest -v ui.tests.test_server` -> `ImportError: cannot import name 'Busy'`.
+- After: `Ran 16 tests in 10.179s — OK` (Windows 11).
+- Mutation check: with the timeout killing only the CLI process (`process.kill()`) instead of the process tree,
+  `test_timeout_also_stops_child_processes` failed (`job ... still running after 60 s`): the orphaned child kept
+  the output pipe open, so the job never finished. Restored `kill_tree`; 16 OK again.
+- Limitation: the tree kill was checked on Windows (`taskkill /T`); the Linux path (`killpg`) runs in CI.
+
+## UI backend: HTTP API (Task 3)
+
+- Requirement: spec section 4 API table and rules 3 (validated reports) and 4 (local only).
+- `ui/server.py` `Handler`, `make_server`, `health`, `list_reports`, `get_report`; endpoints `GET /api/health`,
+  `/api/reports`, `/api/reports/<name>`, `/api/jobs/<id>`, `POST /api/diagnose` (400, 409), `/api/validate`.
+- Before the code: `ImportError: cannot import name 'make_server'`. After: `Ran 26 tests in 21.118s — OK`.
+- Smoke run: `py ui/server.py`, then `curl -s http://127.0.0.1:8765/api/reports` -> 7 entries starting
+  `{"name": "f1", "victim": "odfixture.ConfigVictimTest#expectsDefaultMode", "outcome": "VERIFIED"}`;
+  `/api/health` -> `missing: []` (JDK 21.0.9, Maven 3.10.0, Python 3.14.0 on this laptop).
+- `eval/reports/baseline_results.json` is not a report and is not listed (it fails the schema check).
+
+## UI backend: real F1 run (Task 4)
+
+- Requirement: spec section 7, backend test 7 — one real `POST`-equivalent diagnose of F1 through the backend ends
+  `done`, `VERIFIED`, polluter `ConfigPolluterTest#pollute`.
+- `ui/tests/test_server.py` `TestRealRunOnFixture` (skipped without JDK/Maven locally; required in CI via
+  `FLAKETRACE_REQUIRE_JVM`); new CI job `ui` in `.github/workflows/ci.yml`.
+- Seen failing first on purpose: expected polluter `polluteX` -> `AssertionError: Lists differ: [{... 'pollute'}] !=
+  [{... 'polluteX'}]` after a real run (`Ran 1 test in 50.552s`), so the run itself completed and was VERIFIED.
+- After restoring `pollute`: `py -m unittest -v ui.tests.test_server` -> `Ran 27 tests in 50.033s — OK`
+  (Windows 11, JDK 21.0.9, Maven 3.10.0).
+- Timing: the single real F1 run took about 50 s here, longer than the 23.3 s recorded for F1 on 2026-10-09; the
+  UI's "about 20–40 seconds" wording is to be checked against the Task 7 live run.
+- CI job not yet run on GitHub (runs on the final PR).
+
+## UI web: scaffold and report mapping (Task 5)
+
+- Requirement: spec sections 5 and 7 — every screen value comes from a real report; every null field gets a stated
+  reason; unbuilt parts carry the exact approved label; no POC simulated or recorded data.
+- Copied from `POC/POC/flaketrace-ui` only the look: `package.json`, lock file, `tsconfig.json`, `index.html`,
+  favicon, `index.css`, the lockup image, `components/ui.tsx`, `components/Trace.tsx` (link label "writes, never
+  restores" changed to "writes": the extractor does not check restoring). New: `src/lib/format.ts`, `report.ts`,
+  `labels.ts`, three test files. Vitest 5.0.4 with vite 8.3.0 (no peer conflict).
+- Before the code: `npm test` -> `Cannot find module './labels'` and `'./report'`; `nosim.test.ts` passed.
+- The no-simulation test can fail: with the POC's `sim.ts` copied into `src/lib/`, both of its checks failed
+  (`lib/sim.ts: expected true to be false`); file removed again.
+- After: `npm test` -> `Test Files 3 passed (3), Tests 26 passed (26)`; `npm run typecheck` -> no errors. The
+  expected values for all seven reports (outcome, polluters, order length, reduced length, reproduction, alone)
+  are the spec's table, read from `eval/reports/*.json`.
+- `npm audit` flagged one high-severity build-time package inherited from the POC lock file (`source-map-js`,
+  GHSA-68fv-2mgg-jv7q); `npm audit fix` updated it to 1.2.2 -> `found 0 vulnerabilities`; tests re-run, 26 passed.
+
+## UI web: screens (Task 6)
+
+- Requirement: spec sections 5 and 6 — nine POC screens on real reports; open-report and live mode; unbuilt parts
+  greyed and labelled; busy, input, tool, no-report, restart and backend-down states.
+- Copied unchanged from the POC: `App.tsx`, `main.tsx`, `components/StepRail.tsx`. New: `src/lib/api.ts`,
+  `src/state.tsx`, `components/Header.tsx`, `components/NotBuilt.tsx`, nine `screens/*.tsx`.
+- Before the code: `npm run typecheck` -> 19 errors (`Cannot find module './state'`, `./screens/Source`, ...).
+- After: `npm run typecheck` -> no errors; `npm test` -> `Tests 26 passed (26)`; `npm run build` -> `built in 2.05s`.
+- Found while checking: Vite bound `localhost` (IPv6 `::1` on this laptop), so `http://127.0.0.1:5174` did not
+  answer; `vite.config.ts` now sets `host: "127.0.0.1"` -> 200.
+- Live run through the web app's proxy (2026-10-15): `POST /api/diagnose` for
+  `odfixture.ConfigVictimTest#expectsDefaultMode` on `fixtures/od-fixture` -> `done` after 66 s, `VERIFIED`, polluter
+  `odfixture.ConfigPolluterTest#pollute`, 20/20, alone 0/20. The Target screen's estimate was changed from
+  "20–40 seconds" to "about one minute (50–66 s measured)".
+- Backend stopped: `GET /api/health` through the proxy -> `502` with an empty body, which `api.ts` reports as
+  "Backend not running".
+- Screens checked by M2 in the browser (2026-10-15): F3 (15 tests, 2 polluters, reduced 3, VERIFIED 20/20 vs 0/20,
+  `odfixture.Toggles.flagA` with the one-resource note), N1 (`UNRESOLVED(VICTIM_FAILS_ALONE)` and its reason, no shared
+  resource), Repair/Verify/EvoSuite (NOT BUILT card only) -> M2 reported "all OK".
+
+## UI: live end-to-end check (Task 7)
+
+- Requirement: spec section 7, manual check — start the UI with `ui\start.cmd`, run F1 live, check the busy and
+  bad-input states, open N1's report.
+- Run by M2 on 2026-10-15 (Windows 11, JDK 21.0.9, Maven 3.10.0), results as M2 reported them:
+  1. Source -> Use the seeded fixture; Target -> f1, n 20 -> Diagnose: running timer and command shown, then
+     Diagnosis with `ConfigPolluterTest#pollute`, Certificate `VERIFIED` 20/20 vs 0/20; about one minute.
+  2. Diagnose pressed twice: "A diagnosis is already running (started ...)".
+  3. Project folder `C:\Users\raffa\Desktop` -> Diagnose: "The runner rejected the input: no pom.xml in ...".
+  4. Source -> n1: `UNRESOLVED(VICTIM_FAILS_ALONE)`.
+  M2's summary: "all OK, F1 took about a minute".
+- Observed: right after `ui\start.cmd`, Vite logged `http proxy error ... ECONNREFUSED 127.0.0.1:8765` for the first
+  `/api/health` and `/api/reports` calls: the page asked before the backend window had started. `py server.py`
+  started and served normally when run on its own; the page needs "Check again" (or a reload) in that case.
+- Final runs: `py -m unittest -v ui.tests.test_server` -> `Ran 27 tests in 51.909s — OK`; `npm test` ->
+  `Tests 26 passed (26)`; `npm run typecheck` -> no errors; `npm run build` -> `built in 1.89s`.
+
+## UI: fixes from the final branch review
+
+- Review by a fresh reviewer agent (most capable model) of `m2/ui` 86d8355..ddcc8f7: 0 Critical, 2 Important, 8 Minor.
+- I1 (security): any website open in the browser could start a diagnosis — the backend accepted a `text/plain` POST
+  from any Host. Now: requests must have `Host` 127.0.0.1/localhost on the backend's port (else 403), POSTs must be
+  `application/json` (else 415), `Content-Length` must be 0..1 MiB (else 400/413); the Vite proxy uses
+  `changeOrigin` so the UI's own requests pass. Three tests failed first (`HTTPError not raised` x3, two
+  `TimeoutError` for a negative and a 10 MiB length); after: `py -m unittest -v ui.tests.test_server` ->
+  `Ran 30 tests in 69.648s — OK`. Live: proxy health 200, `Host: evil.example` 403, text/plain POST 415.
+- I2 (the startup race seen in the live check): the first health check is retried every 2 s, up to 8 attempts, while
+  the backend is unreachable. `retryWhileDown` tests (3) failed first (`retryWhileDown` missing); after: `npm test`
+  -> `Tests 29 passed (29)`; typecheck clean; build OK. Live: proxy answered 502 before the backend started and 200
+  after.
+- Eight Minor findings deferred and listed in the PR description.

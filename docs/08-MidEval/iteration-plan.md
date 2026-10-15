@@ -28,6 +28,7 @@ post-defence plan, §13.)*
 | W11 | Mid report (template) | All, chapter owners in [[08-MidEval/README]] | S | **In progress (M3):** chapters 4, 7, 8 drafted and sent to the member; not yet confirmed incorporated into the actual submission, and due for a refresh (drafted before F3/W10 and ADR-008 landed) | — |
 | W12 | Worksheet, GenAI register, tag `mid-eval-v1` | M2 (tag), all | S | Not started | — |
 | W13 | Deck + rehearsal on demo laptop | All | Meeting −1 | Not started | — |
+| W15 | Web UI over the CLI (ADR-009), Iteration 2 | M2 | After Mid | Built on branch `m2/ui` (plan Tasks 1–7); live F1 run VERIFIED through the UI; PR not yet opened | [[evidence-m2]] |
 
 *S = submission day (meeting − 48 h).*
 
