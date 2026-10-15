@@ -7,7 +7,8 @@ export default defineConfig({
   server: {
     host: "127.0.0.1",
     port: 5174,
-    proxy: { "/api": "http://127.0.0.1:8765" },
+    // changeOrigin: the backend accepts only Host 127.0.0.1:8765 (it refuses other sites).
+    proxy: { "/api": { target: "http://127.0.0.1:8765", changeOrigin: true } },
   },
   test: { environment: "node", include: ["src/**/*.test.ts"] },
 });

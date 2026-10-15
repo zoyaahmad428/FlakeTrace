@@ -31,6 +31,20 @@ export class ApiError extends Error {
 
 export const isBackendDown = (e: unknown) => e instanceof ApiError && e.status === 0;
 
+const pause = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+/** Repeats `call` while the backend is unreachable: ui\start.cmd opens the page before the backend window is up. */
+export async function retryWhileDown<T>(call: () => Promise<T>, attempts = 8, wait: () => Promise<void> = () => pause(2000)): Promise<T> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await call();
+    } catch (e) {
+      if (!isBackendDown(e) || attempt >= attempts) throw e;
+      await wait();
+    }
+  }
+}
+
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;
   try {

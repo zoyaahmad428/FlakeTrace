@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { api, ApiError, type DiagnoseRequest, type Health, type Job } from "./lib/api";
+import { api, ApiError, retryWhileDown, type DiagnoseRequest, type Health, type Job } from "./lib/api";
 import { outcomeText, resourceName, testName, type Report } from "./lib/report";
 import { plural, shortName } from "./lib/format";
 
@@ -100,8 +100,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const refreshHealth = useCallback(() => {
     set({ health: null, healthError: null });
-    api
-      .health()
+    retryWhileDown(api.health)
       .then((health) => set({ health, healthError: null }))
       .catch((e: Error) => set({ health: null, healthError: e.message }));
   }, [set]);

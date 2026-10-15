@@ -907,3 +907,18 @@ two-order suite, victim-first shuffle, `--shuffles 0`, seeds in the record).
   started and served normally when run on its own; the page needs "Check again" (or a reload) in that case.
 - Final runs: `py -m unittest -v ui.tests.test_server` -> `Ran 27 tests in 51.909s — OK`; `npm test` ->
   `Tests 26 passed (26)`; `npm run typecheck` -> no errors; `npm run build` -> `built in 1.89s`.
+
+## UI: fixes from the final branch review
+
+- Review by a fresh reviewer agent (most capable model) of `m2/ui` 86d8355..ddcc8f7: 0 Critical, 2 Important, 8 Minor.
+- I1 (security): any website open in the browser could start a diagnosis — the backend accepted a `text/plain` POST
+  from any Host. Now: requests must have `Host` 127.0.0.1/localhost on the backend's port (else 403), POSTs must be
+  `application/json` (else 415), `Content-Length` must be 0..1 MiB (else 400/413); the Vite proxy uses
+  `changeOrigin` so the UI's own requests pass. Three tests failed first (`HTTPError not raised` x3, two
+  `TimeoutError` for a negative and a 10 MiB length); after: `py -m unittest -v ui.tests.test_server` ->
+  `Ran 30 tests in 69.648s — OK`. Live: proxy health 200, `Host: evil.example` 403, text/plain POST 415.
+- I2 (the startup race seen in the live check): the first health check is retried every 2 s, up to 8 attempts, while
+  the backend is unreachable. `retryWhileDown` tests (3) failed first (`retryWhileDown` missing); after: `npm test`
+  -> `Tests 29 passed (29)`; typecheck clean; build OK. Live: proxy answered 502 before the backend started and 200
+  after.
+- Eight Minor findings deferred and listed in the PR description.

@@ -254,6 +254,40 @@ class TestHttp(unittest.TestCase):
                     self.assertEqual((status, body["valid"]), (200, False))
                     self.assertIn("not a valid FlakeTrace report", body["message"])
 
+    def test_a_post_that_is_not_json_is_refused_and_starts_nothing(self):
+        jobs = fake_jobs("report")
+        with serving(jobs) as (_, base):
+            request = urllib.request.Request(base + "/api/diagnose", method="POST",
+                                             data=json.dumps({"project": "p", "victim": "a.B#c"}).encode("utf-8"),
+                                             headers={"Content-Type": "text/plain"})
+            with self.assertRaises(urllib.error.HTTPError) as caught:
+                urllib.request.urlopen(request, timeout=10)
+        self.assertEqual(caught.exception.code, 415)
+        self.assertEqual(jobs._jobs, {})
+
+    def test_a_foreign_host_is_refused(self):
+        with serving(fake_jobs("report")) as (_, base):
+            for method, path, body in (("GET", "/api/health", None), ("POST", "/api/diagnose", b'{"project": "p", "victim": "a.B#c"}')):
+                with self.subTest(method=method):
+                    request = urllib.request.Request(base + path, method=method, data=body,
+                                                     headers={"Content-Type": "application/json", "Host": "evil.example"})
+                    with self.assertRaises(urllib.error.HTTPError) as caught:
+                        urllib.request.urlopen(request, timeout=10)
+                    self.assertEqual(caught.exception.code, 403)
+
+    def test_a_bad_content_length_is_refused_quickly(self):
+        import http.client
+        with serving(fake_jobs("report")) as (server, _):
+            for length, expected in (("-1", 400), (str(10 * 1024 * 1024), 413)):
+                with self.subTest(length=length):
+                    connection = http.client.HTTPConnection("127.0.0.1", server.server_address[1], timeout=5)
+                    connection.putrequest("POST", "/api/diagnose")
+                    connection.putheader("Content-Type", "application/json")
+                    connection.putheader("Content-Length", length)
+                    connection.endheaders()
+                    self.assertEqual(connection.getresponse().status, expected)
+                    connection.close()
+
     def test_unknown_path_is_404(self):
         with serving(fake_jobs("report")) as (_, base):
             self.assertEqual(call(base, "GET", "/api/nothing")[0], 404)

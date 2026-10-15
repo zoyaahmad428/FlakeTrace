@@ -34,6 +34,7 @@ RUNNER = [sys.executable, "-m", "runner"]
 JOB_TIMEOUT_S = 600
 TAIL_LINES = 20
 MAX_N = 1000
+MAX_BODY = 1024 * 1024
 
 
 def tail(text: str, lines: int = TAIL_LINES) -> str:
@@ -220,7 +221,17 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+    def _foreign_host(self) -> bool:
+        """A page on another site (or a DNS-rebinding name) must not drive or read the backend."""
+        port = self.server.server_address[1]
+        if self.headers.get("Host") in (f"127.0.0.1:{port}", f"localhost:{port}"):
+            return False
+        self._send(403, {"error": "forbidden", "message": "requests must come from this computer's UI"})
+        return True
+
     def do_GET(self):
+        if self._foreign_host():
+            return
         path = self.path.split("?", 1)[0]
         if path == "/api/health":
             return self._send(200, health())
@@ -239,9 +250,22 @@ class Handler(BaseHTTPRequestHandler):
         self._send(404, {"error": "not_found"})
 
     def do_POST(self):
+        if self._foreign_host():
+            return
+        # Browsers send a text/plain POST from any site without asking first; requiring JSON forces that check.
+        if self.headers.get("Content-Type", "").split(";")[0].strip() != "application/json":
+            return self._send(415, {"error": "unsupported_media_type", "message": "send application/json"})
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            length = -1
+        if length < 0:
+            return self._send(400, {"error": "bad_request", "message": "invalid Content-Length"})
+        if length > MAX_BODY:
+            return self._send(413, {"error": "too_large", "message": f"the body is over {MAX_BODY} bytes"})
         path = self.path.split("?", 1)[0]
         try:
-            body = json.loads(self.rfile.read(int(self.headers.get("Content-Length") or 0)) or b"null")
+            body = json.loads(self.rfile.read(length) or b"null")
         except ValueError:
             return self._send(400, {"error": "bad_request", "message": "the body is not JSON"})
         if path == "/api/diagnose":
