@@ -772,3 +772,21 @@ time; process-tree kill on timeout; HTTP API on 127.0.0.1), `ui/tests/fake_cli.p
 a live run was low: the real F1 run through the backend took about 50 s.
 
 **What I changed:** reviewed and committed each task (`1ff0cca`, `7ba9765`, `5433c0b`, and Task 4's commit).
+
+## 2026-10-15 — UI frontend and start script (ADR-009, plan Tasks 5–7)
+
+**Tool:** Claude Opus 5.5 in Claude Code · **Level:** L3
+
+**What was asked:** build the web app in `docs/03-Design/plans/2026-10-14-ui-plan.md` Tasks 5–7: the POC's look,
+the report-to-screen mapping, the nine screens with open-report and live mode, `ui\start.cmd` and the docs.
+
+**What was retained:** `ui/web/` (only the POC's styles and shared components copied; new state, API client and
+screens), `src/lib/report.ts`, `labels.ts`, 26 frontend tests, `ui/start.cmd`, `ui/README.md`, doc updates.
+
+**What was wrong:** the copied POC drawing said a polluter "writes, never restores", which the extractor does not
+check (changed to "writes"); Vite listened only on IPv6 `localhost`, so `127.0.0.1:5174` did not answer (now bound
+to 127.0.0.1); the "20–40 s" run estimate was low (50–66 s measured; text changed); `npm audit` flagged a build-time
+package inherited from the POC lock file (fixed with `npm audit fix`).
+
+**What I changed:** checked the screens in the browser (F3, N1, the NOT BUILT screens) and ran the live end-to-end
+check from `ui\start.cmd` (F1 VERIFIED in about a minute, busy and missing-pom messages, N1); committed each task.

@@ -890,3 +890,20 @@ two-order suite, victim-first shuffle, `--shuffles 0`, seeds in the record).
 - Screens checked by M2 in the browser (2026-10-15): F3 (15 tests, 2 polluters, reduced 3, VERIFIED 20/20 vs 0/20,
   `odfixture.Toggles.flagA` with the one-resource note), N1 (`UNRESOLVED(VICTIM_FAILS_ALONE)` and its reason, no shared
   resource), Repair/Verify/EvoSuite (NOT BUILT card only) -> M2 reported "all OK".
+
+## UI: live end-to-end check (Task 7)
+
+- Requirement: spec section 7, manual check — start the UI with `ui\start.cmd`, run F1 live, check the busy and
+  bad-input states, open N1's report.
+- Run by M2 on 2026-10-15 (Windows 11, JDK 21.0.9, Maven 3.10.0), results as M2 reported them:
+  1. Source -> Use the seeded fixture; Target -> f1, n 20 -> Diagnose: running timer and command shown, then
+     Diagnosis with `ConfigPolluterTest#pollute`, Certificate `VERIFIED` 20/20 vs 0/20; about one minute.
+  2. Diagnose pressed twice: "A diagnosis is already running (started ...)".
+  3. Project folder `C:\Users\raffa\Desktop` -> Diagnose: "The runner rejected the input: no pom.xml in ...".
+  4. Source -> n1: `UNRESOLVED(VICTIM_FAILS_ALONE)`.
+  M2's summary: "all OK, F1 took about a minute".
+- Observed: right after `ui\start.cmd`, Vite logged `http proxy error ... ECONNREFUSED 127.0.0.1:8765` for the first
+  `/api/health` and `/api/reports` calls: the page asked before the backend window had started. `py server.py`
+  started and served normally when run on its own; the page needs "Check again" (or a reload) in that case.
+- Final runs: `py -m unittest -v ui.tests.test_server` -> `Ran 27 tests in 51.909s — OK`; `npm test` ->
+  `Tests 26 passed (26)`; `npm run typecheck` -> no errors; `npm run build` -> `built in 1.89s`.

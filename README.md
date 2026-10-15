@@ -22,6 +22,7 @@ replays — without needing application logs and without modifying the project's
 | `evidence/` | Static bytecode extraction of shared-resource edges | Member 1 |
 | `eval/` | Statistics, outcome decision, report schema, baselines, benchmark manifest | Member 3 |
 | `fixtures/` | Seeded order-dependent Maven project with pre-registered ground truth | Member 3 |
+| `ui/` | Web UI and its backend; runs the runner CLI and shows its reports (ADR-009) | Member 2 |
 | `docs/` | Project knowledge base — **open this folder as an Obsidian vault** | Joint |
 | `POC/` | Proposal-defence proof of concept (legacy, not product code) | — |
 
@@ -58,6 +59,8 @@ py -m unittest -v eval.tests.test_baseline eval.tests.test_examples eval.tests.t
 mvn -B -f fixtures/od-fixture/pom.xml test-compile
 py -m unittest -v runner.tests.test_cli runner.tests.test_diagnose runner.tests.test_discovery runner.tests.test_integrity runner.tests.test_minimise runner.tests.test_order_runner runner.tests.test_orders runner.tests.test_recording runner.tests.test_search
 py -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode
+py -m unittest -v ui.tests.test_server
+ui\start.cmd                                   # web UI on http://127.0.0.1:5174
 mvn -B -q -f evidence/tests/resources/m1-selftest/pom.xml test-compile
 py -m unittest -v evidence.tests.test_extract
 ```

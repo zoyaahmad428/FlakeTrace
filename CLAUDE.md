@@ -181,6 +181,8 @@ python3 -m unittest -v runner.tests.test_order_runner   # needs JDK 8+ and Maven
 python3 -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode
 mvn -B -q -f evidence/tests/resources/m1-selftest/pom.xml test-compile
 python3 -m unittest -v evidence.tests.test_extract       # needs the two compiles above and javap
+python3 -m unittest -v ui.tests.test_server               # one real F1 run needs JDK 8+ and Maven
+(cd ui/web && npm ci && npm test && npm run build)        # needs Node.js 20+
 ```
 
 CI runs exactly what is in `.github/workflows/ci.yml`. If you add tests, add them there.
