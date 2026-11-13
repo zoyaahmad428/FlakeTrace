@@ -3,6 +3,24 @@
 *The product output. Every member must be able to list its contents and explain its three
 decision classes.*
 
+> **Read this first (2026-11-13).** The Mid review tested the built certificate against this
+> contract and found it claimed more than it had checked. The table below is the honest state.
+> The corrected rules are **proposed** in
+> [[03-Design/decisions/ADR-010-verdict-contract-v2]] and
+> [[03-Design/decisions/ADR-011-deletion-evidence]]; this file is rewritten to match them once
+> they are accepted. Until then, say what the right-hand column says.
+
+| This contract says | The Mid build (`mid-eval-v1`) does | Say today |
+| --- | --- | --- |
+| Verified: the victim passes alone | Counts only alone failures that **match the reference signature**. A victim failing alone with another exception is treated as passing (FT003) | "It never failed alone *with the same failure* in 20 runs. Other failures alone were not counted — a defect we are fixing" |
+| Verified: "sequence passed deletion checks" | `ddmin` tries each subset **once**; no deletion is repeated (FT004) | "Reduced by single-trial delta debugging. Not yet deletion-verified" |
+| Verified: "carries a resource path" | A static intersection of possible writes and reads; the first edge by depth and name is shown (FT005) | "A static overlap — a possible mechanism, not confirmed as the cause" |
+| Candidate: replays, but a requirement is unmet, "most often the resource path is missing" | No edge gives `UNRESOLVED(NO_SUPPORTED_RESOURCE_EVIDENCE)`; `CANDIDATE` only for a low replay bound (FT017) | Describe the code. ADR-010 proposes to follow this contract |
+| Unresolved always has a typed reason | One runner status produces no report at all (FT010) | "One status has no report yet" |
+| Four abstention reasons: unsupported resource, budget exhausted, unstable build, inconsistent outcomes | Seven different reasons exist; **budget exhausted** and **inconsistent outcomes** do not | ADR-010 adds both |
+| Contents: counterfactual checks, budget account, exact replay command, evidence bundle | None of the four exists | ADR-011, ADR-014, ADR-013 |
+| Checker: a third party re-running the replay command on a clean machine | No replay command; reports point at one machine's files (FT009) | ADR-013 |
+
 ---
 
 ## Why it is called a certificate

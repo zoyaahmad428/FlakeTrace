@@ -42,6 +42,31 @@ is isolated, and which scenarios apply. Tracked in [[08-MidEval/panel-action-reg
 
 ---
 
+## Mid Evaluation outcome — 16 October 2026
+
+**Supervisor's provisional verdict: Proceed with required corrections.** Official committee
+comments (received 13 November): *"An integrated core pipeline and substantial early testing are
+evident. Correct verification defects, and complete budget-aware planning alongside real-project
+validation."* and, on the report, *"restore the missing abstract and align the report properly with
+the template."* No marks have been given to us.
+
+Detail: [[10-Final1/mid-eval-outcome]]. Corrections: [[10-Final1/feedback-register]].
+
+| Area | Status after the Mid | What turns it green |
+| --- | --- | --- |
+| Integrated core pipeline | 🟢 built, reviewed, 268 tests | — |
+| Certification correctness | 🔴 two reports say `VERIFIED` wrongly (FT003, FT004) | ADR-010, ADR-011 implemented and independently reproduced |
+| Resource evidence claim | 🟡 static overlap presented too strongly (FT005) | Wording now; controls; intervention check if approved |
+| Auditable evidence | 🔴 reports point at one laptop (FT009) | Bundle, recount, a peer reproduction |
+| Budget-aware planning — the central contribution | 🔴 not built (FT007) | ADR-014: ledger, reserve, ranked against unranked |
+| Real-project validation | 🔴 extractor only (FT008) | One fastjson victim case through the whole pipeline |
+| Scope approval | 🟡 A10 and static-only refinement unconfirmed (FT011) | Supervisor's recorded decision |
+| Schedule | 🟡 contradictory dates (FT012) | One plan: [[00-Meta/roadmap]], [[10-Final1/iteration-2-plan]] |
+| Report and worksheet | 🟡 unsigned, GenAI levels inconsistent, a clipped table | [[10-Final1/report-v2-plan]] |
+| Individual ownership | 🟡 substantive work by all three, understanding not yet observed | [[10-Final1/ownership-prep]] |
+
+---
+
 ## Supervisor verdict on record (pre-defence)
 
 > **Revise, then Proceed.** The problem, CCP and per-student ownership are strong. The present
@@ -68,8 +93,8 @@ is isolated, and which scenarios apply. Tracked in [[08-MidEval/panel-action-reg
 | Ownership | 🟡 | Green once evaluation infrastructure is confirmed as Member 3's primary ownership **and the group change is approved** |
 | Repair module (CDR) | 🟡 | Only as a gated, ablatable, verification-bound module |
 
-> **Updated 2026-10-09:** the table above is the pre-defence status. Current status lives in
-> [[08-MidEval/iteration-plan]].
+> **Updated 2026-11-13:** the table above is the pre-defence status. Current status is the
+> "Mid Evaluation outcome" table further up and [[10-Final1/iteration-2-plan]].
 
 ## POC decision
 

@@ -1,5 +1,12 @@
 # Panel action register
 
+> **Record of what was submitted at the Mid (closed 2026-11-13). Do not update this file.**
+> The supervisor's review found that marking A1–A9 `COMPLETE` claimed closure too early: the work
+> is real, but certification gaps, missing portable evidence and unconfirmed approval still affect
+> every one of them (findings FT011, FT022). The statuses below are left as submitted. The
+> **corrected, live register** — in the handbook's Form 10 layout, with the Mid's own actions
+> added — is [[10-Final1/action-register]].
+
 **Decision:** Approved with Minor Modifications (proposal defence, F26-214).
 **Source:** `DefenseResult.txt` (claude.ai project) — comments copied exactly below.
 Supporting plan: *FlakeTrace – Post-Proposal-Defence Improvement and Execution Plan*

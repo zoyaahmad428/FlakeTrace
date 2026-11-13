@@ -29,6 +29,36 @@ contribution** — cannot be tested at all.
 
 > **F3, F4, F8, F9 and F10 test the abstention contract — which is our actual contribution.**
 
+## What was actually built, and what Iteration 2 adds (2026-11-13)
+
+The table above is the **plan from the proposal**. What exists in `fixtures/od-fixture` is seven
+cases with different labels, each with ground truth written before its first run:
+
+| Built | Condition | Ground truth |
+| --- | --- | --- |
+| F1 | Static field, one polluter | `VERIFIED` |
+| F2 | System property read one call down | `VERIFIED` |
+| F3 | Two polluters both required | `VERIFIED` (found by `ddmin`) |
+| F4 | Fails only in a shuffled order | `VERIFIED` |
+| N1 | Always fails alone | `UNRESOLVED(VICTIM_FAILS_ALONE)` |
+| N2 | Flaky on its own | `UNRESOLVED(VICTIM_FAILS_ALONE)` |
+| N3 | Fails only under an external condition | `UNRESOLVED(NOT_REPRODUCED)` |
+
+**Proposed for Iteration 2** — controls the Mid review asked for. Member 3 owns the fixture and
+its ground truth; the cases marked M2 or M1 live in that member's own test resources instead.
+
+| New | Condition | Expected | Tests | Home |
+| --- | --- | --- | --- | --- |
+| **N4** | Victim throws one exception alone and a different one after its polluter | `UNRESOLVED(VICTIM_FAILS_ALONE_DIFFERENTLY)` | FT003, integrated | fixture, M3 |
+| **R1** | Polluter writes a static field and **restores** it; the victim reads that field; the real cause is elsewhere | An edge is reported as *static overlap* and never as the cause | FT005 | evidence self-test, M1 |
+| **R2** | Polluter writes two resources the victim reads; only one matters | **Both** edges visible in the report | FT005 | evidence self-test, M1 |
+| **L1** | `@BeforeClass` counts its own calls; two tests assert it ran once | Passes under Surefire and class-grouped execution; fails under per-method execution | FT006 | runner test resources, M2 |
+| **B1** | Any existing case, run with a budget too small to finish | `UNRESOLVED(BUDGET_EXHAUSTED)` | FT007; the proposal's F9 | no new code |
+
+Still planned from the original ten and **not** built: reflection (F4 in the plan), filesystem
+(F6), misleading signature (F8). Stochastic deletion and the inconsistent search are tested with
+a scripted runner, because a real JVM cannot be made to fail on exactly its third run.
+
 ## What each one is really testing
 
 - **F2** validates the depth decision empirically, in a case we constructed and therefore know

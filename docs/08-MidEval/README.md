@@ -1,5 +1,9 @@
 # FYP-1 Mid Evaluation
 
+> **Closed record (2026-11-13).** The Mid Evaluation was held on 16 October 2026. This file is kept
+> as it was for that evaluation. The outcome is in [[10-Final1/mid-eval-outcome]] and the current
+> plan in [[10-Final1/README]].
+
 **Meeting:** Friday 16 October 2026, 8:30 AM
 **Submission deadline:** report + evidence worksheet **48 hours before the meeting — Wednesday 14 October, 8:30 AM**
 **Weight:** 20% of FYP-1 · supervisor-only · formative but graded

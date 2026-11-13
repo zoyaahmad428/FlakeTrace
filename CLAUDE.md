@@ -5,6 +5,24 @@ project **F26-214 FlakeTrace**). The supervisor grades this repository directly:
 history, branches, CI, tests, design documents and **each member's individual ownership**.
 Everything below exists to keep that evidence honest and the three members' work integrated.
 
+## 0. Where the project is — read this first
+
+**Iteration 2, between the FYP-1 Mid (held 16 October 2026) and the FYP-1 Final.** Before any
+task, read [docs/10-Final1/README.md](docs/10-Final1/README.md) and
+[docs/10-Final1/iteration-2-plan.md](docs/10-Final1/iteration-2-plan.md). Every task belongs to a
+work package (W16–W34) that closes a supervisor finding (FT003–FT022) in
+[docs/10-Final1/feedback-register.md](docs/10-Final1/feedback-register.md).
+
+Three rules specific to this iteration:
+
+1. **A defect is fixed test-first.** Write the regression, run it on the unfixed code, record the
+   failing output in the evidence log, then fix.
+2. **ADR-010 to ADR-015 are proposals until all three members have ticked them.** Do not build
+   against an unticked ADR; say so and stop.
+3. **Do not use the retired claims** — "passes alone" for the Mid build, "1-minimal" without
+   deletion evidence, "the cause" or "mechanism" for a static edge, "never modified",
+   "sandboxed". The exact replacements are in `docs/07-Defense/claims-ledger.md` section G.
+
 ## 1. Know who you are working for
 
 Ask the member which member they are (1, 2 or 3) at the start of the session if they have not
@@ -42,7 +60,8 @@ member's internals.
 - Never commit to `main`. Work on a branch named `m<N>/<short-topic>` (e.g. `m2/order-runner`),
   `docs/<topic>` or `chore/<topic>`.
 - Open a PR into `main`; CI must pass and **one other member** must approve.
-- Before the evaluation, the demonstrated version is tagged `mid-eval-v1`. Do not move tags.
+- Evaluation versions are tagged: `mid-eval-v1` (the Mid — the baseline every correction is
+  measured against) and `final1-v1` (the Final). Do not move tags.
 - Full rules: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ### HARD RULE — the member commits, never the agent
@@ -105,7 +124,7 @@ git push -u origin m2/order-runner
 2. **Never fake a component.** Fakes and stubs live only under a `tests/` folder and are
    named `Fake…`. Production code must never import them.
 3. **Mark mocked or hardcoded parts** explicitly in the code and in
-   [docs/08-MidEval/demo-plan.md](docs/08-MidEval/demo-plan.md).
+   [docs/10-Final1/demo-plan.md](docs/10-Final1/demo-plan.md).
 4. **Do not modify the code under analysis.** FlakeTrace must leave the analysed project's
    source unchanged — this is a promise made to the defence panel.
 5. **Citations:** do not add a reference to the report or docs unless a member has opened
@@ -121,9 +140,10 @@ not a later chore. Check this list each time:
 | Ran anything (tests, a build, the tool on a fixture) | `docs/evidence-m<N>.md` — requirement, command, real result, limitation |
 | Was materially AI-assisted | `docs/genai-log-m<N>.md` and a row in `docs/08-MidEval/genai-register.md` |
 | Changed a component's behaviour, inputs or outputs | That folder's `README.md`, and its four-point note in `docs/04-Implementation/` |
-| Progressed or finished a work package | Its row in `docs/08-MidEval/iteration-plan.md`, and your row in `docs/09-Team/members.md` |
-| Changed what the live demo can show | `docs/08-MidEval/demo-plan.md` (including what is mocked) |
-| Closed or advanced a panel action | Its status and evidence link in `docs/08-MidEval/panel-action-register.md` |
+| Progressed or finished a work package | Its row in `docs/10-Final1/iteration-2-plan.md`, and your row in `docs/09-Team/members.md` |
+| Changed what the live demo can show | `docs/10-Final1/demo-plan.md` (including what is mocked) |
+| Closed or advanced a supervisor finding or panel action | `docs/10-Final1/action-register.md` (status + one-line evidence) and the row in `docs/10-Final1/feedback-register.md`. Only when its "Closes when" evidence exists and another member has reproduced it |
+| Independently reproduced another member's work | Your own `docs/evidence-m<N>.md`: date, machine, commands, result, differences, unclear steps |
 | Needed a design decision | A new file in `docs/03-Design/decisions/` (ADR) — proposed, for the team to agree |
 | Created a claim someone will say to the supervisor | A row in `docs/07-Defense/claims-ledger.md` with its backing |
 | Needs a contract change | **Do not edit the contract.** Write the proposal in the PR description or an issue |
@@ -166,8 +186,9 @@ POC/                                    proposal-defence proof of concept (legac
 mid-eval-report/                        FYP-1 Mid Report (LaTeX) — one owner per chapter file
 docs/                                   Obsidian vault — open this folder in Obsidian
   contracts/                            integration contracts (joint)
-  08-MidEval/                           what the Mid Evaluation requires and our evidence
+  08-MidEval/                           the Mid Evaluation as submitted (closed record); GenAI register
   09-Team/                              working agreement, members, Claude guide
+  10-Final1/                            current plan: Mid outcome, corrections, Iteration 2, the Final
 ```
 
 ## 8. Commands

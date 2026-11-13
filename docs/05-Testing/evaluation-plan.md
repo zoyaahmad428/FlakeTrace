@@ -34,7 +34,13 @@ know the distinction cold.
 - **Takuan** on an overlapping explanation subset — research comparator, not product
 - **Oracle ceiling** — perfect-knowledge ranking, states what the prize is worth
 
-`STATUS: none run yet. Integration FYP-I early; measurement is a Final-1 exit condition.`
+`STATUS (2026-11-13):` our own random-order baseline has run on the four fixture cases — but it
+stops at the first failure, which is a **different endpoint** from a verified diagnosis (Mid
+review, FT008). No published tool has been run. The POC measured ranked against original order
+**offline** on stored scan tables with its own extractor (decision record v3); the product has
+not. For the Final: one-by-one and random at the **same endpoint** as the ranked policy, on the
+fixture and one real case — [[05-Testing/real-case-protocol]],
+[[03-Design/decisions/ADR-014-budget-ledger-and-ranked-search]]. Published comparators: FYP-2.
 
 ## Ablations
 

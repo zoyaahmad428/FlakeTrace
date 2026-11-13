@@ -13,8 +13,10 @@ inconsistent projects, and keep the GenAI disclosure honest without extra effort
 ## Starting a session — copy, fill in, paste
 
 ```
-I am Member <N> (<name>) on FlakeTrace. Read CLAUDE.md, docs/09-Team/members.md and
-docs/contracts/interfaces.md first.
+I am Member <N> (<name>) on FlakeTrace. Read CLAUDE.md, docs/10-Final1/README.md,
+docs/10-Final1/iteration-2-plan.md, docs/09-Team/members.md and docs/contracts/interfaces.md
+first. Then read the ADR for my work package and the rows of
+docs/10-Final1/feedback-register.md it closes.
 
 Today's task: <one concrete task, e.g. "implement OrderRunner.run_ordered for JUnit 4">
 Branch: m<N>/<topic>   (create it from an up-to-date main if it does not exist)
@@ -24,6 +26,17 @@ Rules: stay inside <my folder>; do not change contracts; do not invent any resul
 log what you ran in docs/evidence-m<N>.md and this session in docs/genai-log-m<N>.md.
 Ask me before any decision that another member would need to agree with.
 ```
+
+### Iteration 2 — three extra lines to add to that prompt
+
+```
+Work package: W<nn> (it closes FT<nnn>). Its "Done when" is the acceptance test.
+For a defect: write the failing test first, run it on main, keep the output, then fix.
+The ADRs dated 2026-11-13 are PROPOSED. If mine has no three ticks yet, stop and tell me.
+```
+
+If your task is to **verify** someone else's package: you reproduce it from the written
+instructions and record what happened, including every unclear step. You do not fix their code.
 
 ## During the session
 

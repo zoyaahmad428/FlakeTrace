@@ -1,5 +1,9 @@
 # Iteration 1 — plan to the Mid Evaluation
 
+> **Closed record (2026-11-13).** The Mid Evaluation was held on 16 October 2026. This file is kept
+> as it was for that evaluation. The outcome is in [[10-Final1/mid-eval-outcome]] and the current
+> plan in [[10-Final1/README]].
+
 **Iteration objective (due at Mid):** on the seeded fixture, with no application logs,
 FlakeTrace shows the victim passing alone, failing after its polluter, the order minimised,
 the shared resource named from bytecode, the failure reproduced N times with a confidence

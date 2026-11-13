@@ -10,6 +10,12 @@ this folder holds the four-point ownership note for each component.
 | Outcome decision, statistics, schema, baselines, manifest | `eval/` | M3 | see [[evidence-m3]] |
 | Seeded fixtures | `fixtures/` | M3 | [[05-Testing/fixture-suite]] |
 
+**Iteration 2 (planned, 2026-11-13).** Each new piece gets its four-point note here when it is
+built, not before: outcome tallies and verdict contract v2 (ADR-010), deletion checks (ADR-011),
+class-grouped harness and the execution contract (ADR-012), evidence bundle with recount and
+replay (ADR-013), budget ledger and ranked search (ADR-014). Plan:
+[[10-Final1/iteration-2-plan]].
+
 When it starts, one note per major component, mapped to the architecture in
 [[03-Design/architecture]]:
 
