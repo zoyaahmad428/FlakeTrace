@@ -7,9 +7,33 @@ Gantt: `attachments/GanttChart.jpeg`
 
 ---
 
-> **Now (2026-10-09):** FYP-I early → Mid-1 gate. Detailed plan: [[08-MidEval/iteration-plan]].
+> **Now (2026-11-13):** Iteration 2, between the Mid and the FYP-1 Final. Detailed plan:
+> [[10-Final1/iteration-2-plan]].
 
-## Phase table
+## The schedule of record
+
+*Written 2026-11-13 to answer the Mid review's finding FT012: our documents gave two incompatible
+timelines — essential integration in May–June in one place, a stable demonstration by mid-April in
+another. **This table replaces both.** Where an older table below disagrees, this one holds.*
+
+The gates are the handbook's (3rd Edition). Dates marked ≈ come from its week numbers and are
+**not confirmed** for our cohort.
+
+| Iteration | Period | Ends at | What exists at the end | Evaluated by |
+| --- | --- | --- | --- | --- |
+| 1 | Aug – 16 Oct 2026 | **FYP-1 Mid** — held 16 October | Integrated core on the seeded fixture: ordered runs, search, delta debugging, static evidence, typed reports, one command | Supervisor. Done |
+| 2 | 17 Oct – ≈ early Dec 2026 | **FYP-1 Final** ≈ 30 Nov – 4 Dec · poster ≈ 16–20 Nov | Truthful verdict contract · deletion evidence · evidence bundle with recount and replay · execution budget with a verification reserve · evidence-ranked search compared with unranked · one real fastjson case end to end | Panel + supervisor |
+| 3 | FYP-2 start – ≈ week 8 | **FYP-2 Mid / pre-job-fair** | Everything committed, **integrated**: brittle tests · resource intervention check if the spike says go · adaptive cost-aware policy with its ablations · filesystem family · published comparators · hardened container · evaluation running on the frozen benchmark | Panel + supervisor — the highest-weight gate |
+| 4 | ≈ week 8 – ≈ week 15 | **FYP-2 Final** | Held-out evaluation and failure analysis · user acceptance · clean-machine install by someone outside the team · final report. **No new scope** | Supervisor |
+
+**The rule that removes the old contradiction:** all essential development and integration is
+finished by the **FYP-2 Mid**. The handbook makes that the public-readiness gate, and a working
+system must be ready by week 12 for the job fair. Nothing essential is left for the last weeks.
+
+Open point: the proposal defence is dated 9 September in one record and 11 September in another.
+Asked in [[10-Final1/supervisor-agenda]] item 1; do not quote either as certain.
+
+## Phase table *(as planned before the defence — kept for the record)*
 
 | Phase            | Content                                                                                                                                           | **Exit evidence**                                                                                                                     |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
@@ -19,7 +43,7 @@ Gantt: `attachments/GanttChart.jpeg`
 | **FYP-II early** | Filesystem evidence · adaptive policy · verification and abstention · security hardening · certificate renderer · **CDR V1 if gates met**         | **Policy ablations, depth matrix, overhead measurement, threat-model tests, clean install**                                           |
 | **FYP-II final** | Held-out evaluation · failure analysis · CI packaging · user acceptance · deployment · **CDR V2/V3 if V1 gates met**                              | **Frozen results, acceptance decision, deployed release, reproducibility bundle**                                                     |
 
-## Iteration mapping (from the Gantt)
+## Iteration mapping (from the Gantt) *(superseded by "The schedule of record" above)*
 
 | Iteration | Months | Milestone |
 | --- | --- | --- |
@@ -28,7 +52,7 @@ Gantt: `attachments/GanttChart.jpeg`
 | 3 | Feb – Apr | Failure signatures & repeated-run verification · controlled fixtures & reproducibility bundle · certificate evidence path · repair verification (gated) · CLI/CI & container security · non-perturbation verification |
 | 4 | May – Jun | End-to-end integration & user acceptance · final testing, deployment, report & handover |
 
-**Local schedule note:** by the **mid-April job fair**, the practical system should already be
+**Local schedule note (still true):** by the **mid-April job fair**, the practical system should already be
 stable enough for professional repeated demonstration. **Essential development should not be
 left to the post-job-fair period.**
 

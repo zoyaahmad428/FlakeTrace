@@ -1,5 +1,9 @@
 # Live demo plan (Form 2 #3 — 25 marks)
 
+> **Closed record (2026-11-13).** The Mid Evaluation was held on 16 October 2026. This file is kept
+> as it was for that evaluation. The outcome is in [[10-Final1/mid-eval-outcome]] and the current
+> plan in [[10-Final1/README]].
+
 *Status: every diagnosis step (2, 5, 6, 6b) has been run for real with `py -m runner diagnose` ([[evidence-m2]]); no step is rehearsed on the demo laptop yet — update each step to `REHEARSED` with the date.*
 
 **Core module:** order-dependent failure diagnosis — ordered re-execution, polluter search,

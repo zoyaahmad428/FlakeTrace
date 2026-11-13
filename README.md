@@ -8,6 +8,12 @@ polluted shared state (the *polluter*), reduces the failing order to a minimal s
 identifies the shared resource from compiled bytecode, and reports how reliably the failure
 replays — without needing application logs and without modifying the project's source.
 
+> **Status (2026-11-13):** the FYP-1 Mid Evaluation was held on 16 October (tag `mid-eval-v1`).
+> The supervisor's provisional verdict is *proceed with required corrections*: two certification
+> defects, no execution budget yet, and no whole diagnosis on a real project yet. Iteration 2
+> addresses them — plan in [docs/10-Final1/README.md](docs/10-Final1/README.md). The paragraph
+> below describes the Mid build.
+>
 > **Status (2026-10-11):** proposal approved with minor modifications (defence 11 September 2026).
 > Iteration 1 is built for the FYP-1 Mid Evaluation: one command, `py -m runner diagnose`, runs
 > the runner (`runner/`), the static evidence extractor (`evidence/`) and the outcome decision and

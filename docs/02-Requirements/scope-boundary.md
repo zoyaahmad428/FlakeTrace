@@ -3,6 +3,13 @@
 *The committed / gated / excluded lists. Consistency across this file, the slide deck and the
 proposal document is an approval condition — see [[07-Defense/weak-points]] §5.*
 
+> **After the Mid (2026-11-13).** This is still the committed scope. Three things about it are
+> **not yet confirmed by the supervisor** and are asked in [[10-Final1/supervisor-agenda]]: the
+> resource boundary (panel action A10), the static-only evidence of Iteration 1, and which later
+> items need a recorded change request. What is built against this list is counted in
+> [[10-Final1/scope-inventory]]. Until a container exists, the product is for **trusted projects
+> only** ([[03-Design/decisions/ADR-012-execution-semantics-and-reset-boundary]]).
+
 ---
 
 ## Product boundary in one exchange (Q10)

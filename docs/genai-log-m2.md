@@ -790,3 +790,54 @@ package inherited from the POC lock file (fixed with `npm audit fix`).
 
 **What I changed:** checked the screens in the browser (F3, N1, the NOT BUILT screens) and ran the live end-to-end
 check from `ui\start.cmd` (F1 VERIFIED in about a minute, busy and missing-pom messages, N1); committed each task.
+
+## 2026-11-13 — After the Mid: feedback read, vault updated, Iteration 2 designed
+
+**Tool:** Claude Fable 5.2 (claude.ai, with a cloud copy of the repository) · **Level:** L3 —
+the six design proposals and the plan below were drafted by the tool.
+
+**What I asked:** read the official Mid result, the supervisor's five review documents and the
+handbook's 3rd Edition; compare them with the repository; then update the vault so the team can
+start executing — including improving the architecture and design where the review requires it.
+
+**What was retained (all documentation; no code, no contract file changed):**
+- `docs/10-Final1/` — README, Mid outcome, feedback register (FT001–FT022), action register in
+  the handbook's Form 10 layout, Iteration 2 plan (W16–W34), scope inventory, supervisor agenda,
+  ownership preparation, report v2 plan, demo plan.
+- `docs/03-Design/decisions/ADR-010` to `ADR-015` — verdict contract v2, deletion evidence,
+  execution semantics and reset boundary, evidence bundle with recount and replay, budget ledger
+  and ranked search, resource intervention spike. All `PROPOSED`.
+- `docs/05-Testing/real-case-protocol.md`; the meeting note of 2026-11-13.
+- Updates to the vault README, status, roadmap, risk register, requirements, scope boundary,
+  architecture, certificate contract, evaluation plan, fixture suite, claims ledger (section G),
+  members, Claude guide, root `README.md` and `CLAUDE.md`; closed-record banners on `08-MidEval/`.
+
+**How it was verified:**
+- Both certification defects reproduced by the tool against `main` `7cf453d` with a scratch
+  script (output and script in [[evidence-m2]]).
+- Every code statement in the new documents was read from the source at `7cf453d`, with file and
+  line; every POC number was read from the files under `POC/` (`alone.csv`, `scan_*.csv`,
+  `replay.csv`, `decision_record_v3.md`).
+- All wiki links and relative links in the changed files resolve (checked by script).
+
+**Errors the tool made and corrected during the session:**
+- It first assumed the fastjson cases FJ-01 and FJ-02 were *victims* and planned FJ-01 as the
+  first real case. `POC/results/alone.csv` shows both fail alone 10/10 — they are *brittle*, which
+  the product does not diagnose. The protocol now uses FJ-03, a true victim.
+- Its first scope count was 41% and 66%; recounting the table gave 43% and 68%.
+- It wrote that the synthetic-failure prefix was "duplicated"; it is one constant plus three string
+  literals. Corrected in ADR-010.
+- It wrote "eight of eleven held-out cases are brittle"; the file says nine.
+- A demo row said turning off auto-deepening removes F2's edge; F2's edge is at the default depth,
+  so only analysing at depth 1 removes it.
+
+**Not verified, and marked so in the documents:** the poster and Final dates (estimated from the
+handbook's week numbers); the scope weights; whether fastjson still builds; whether JUnit's class
+request can be filtered and ordered as ADR-012 needs (a spike is planned); what "missing abstract"
+refers to — our submitted PDF contains one.
+
+**What I changed:** *to fill in after I and the team have reviewed the PR.*
+
+Ownership checkpoint: before building, I must be able to explain without the page — the four
+outcome categories and why two overlapping counts failed; what `ddmin` guarantees and what the
+deletion check adds; what a fresh JVM does and does not reset; how the reserve is computed.

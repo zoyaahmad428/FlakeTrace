@@ -922,3 +922,88 @@ two-order suite, victim-first shuffle, `--shuffles 0`, seeds in the record).
   -> `Tests 29 passed (29)`; typecheck clean; build OK. Live: proxy answered 502 before the backend started and 200
   after.
 - Eight Minor findings deferred and listed in the PR description.
+
+
+## Post-Mid: the two certification defects reproduced on `main` (2026-11-13)
+
+**Requirement:** before designing a fix, confirm the supervisor's findings FT003 and FT004 on our
+own copy of the code, not from the review's description.
+
+- Code: `main` `7cf453d` (the Mid tag `mid-eval-v1` is `86d8355`; the only commits since are the web
+  UI, PR #99 — `runner/diagnose.py`, `runner/minimise.py`, `runner/verify.py`, `eval/outcome.py` and
+  `eval/report.py` are unchanged since the tag).
+- Method: a scratch script, **not committed**, driving the real `runner.diagnose.run_steps` and the
+  real `eval.report.assemble_report` with `eval/tests/fake_runner.py`'s scripted runner. No JVM.
+  Run by Claude in its own cloud copy of the repository (Python 3, `jsonschema` 4.26.0), not on my
+  laptop.
+- Command: `PYTHONPATH=. python3 probe.py` from the repository root.
+- Real output:
+
+  ```
+  FT003: VERIFIED None | polluters ['P#t'] | alone 0 / 20
+  FT004: VERIFIED | retained ['P#t', 'Q#t']
+  FT004: sequence with Q deleted ([P, V]) then fails 20 / 20
+  ```
+
+- **FT003 confirmed.** Scenario: the victim alone always fails with `IllegalStateException`; after
+  P it always fails with `AssertionError`. Result: a schema-valid `VERIFIED` blaming P, with the
+  report showing "alone 0/20". Cause, read in the code: `run_steps` (lines 109–112) keeps
+  `alone_successes` (reference-matching failures) and never uses `alone_any`; the final
+  `DiagnosisRuns` (lines 131–132) always carries `alone_successes = 0`.
+- **FT004 confirmed.** Scenario: P alone is enough, but `[P, V]` passes on its first two runs — the
+  one the one-by-one search gives it and the one `ddmin` gives it — and fails on every run after.
+  Result: P **and Q** kept, `VERIFIED`; the shorter sequence `[P, V]` then fails 20 of 20.
+- Limitation: both scenarios are scripted outcome functions, as the supervisor's probes were. They
+  show the logic gap; they are not Java tests. The integrated Java regression for FT003 is fixture
+  case N4, planned in ADR-010. Nothing was fixed in this session.
+- The script, so the result can be repeated before the regression tests exist:
+
+  ```python
+  """Scratch probes (not committed): reproduce FT003 and FT004 against main 7cf453d."""
+  import random, sys
+  from eval.baseline import RunOutcome, TestIdentifier, FailureSignature
+  from eval.tests.fake_runner import FakeOrderRunner
+  from eval.report import assemble_report
+  from runner.diagnose import run_steps
+  from runner.integrity import SourceIntegrity
+  from dataclasses import replace
+
+  T = lambda c, m="t": TestIdentifier(c, m)
+  A = FailureSignature("java.lang.AssertionError", "V.t:10", "A")
+  B = FailureSignature("java.lang.IllegalStateException", "V.t:22", "B")
+  P, Q, X, V = T("P"), T("Q"), T("X"), T("V")
+  EDGE = {"shared_resource": {"kind": "static-field", "class": "C", "field": "f"},
+          "polluter_write_location": {"class": "P", "method": "t", "bytecode_offset": 1},
+          "victim_read_location": {"class": "V", "method": "t", "bytecode_offset": 1},
+          "limitations": []}
+
+  def finish(runs):
+      runs = replace(runs, source_integrity=SourceIntegrity(True, "probe"), execution_record="probe.jsonl")
+      return runs, assemble_report(runs, EDGE)
+
+  # ---- FT003: alone always fails with B; after P always fails with A
+  def ft003(order, test):
+      if test != V: return RunOutcome(True)
+      return RunOutcome(False, A if P in order else B)
+  runs, rep = finish(run_steps(FakeOrderRunner(ft003), [X, P, V], V, n=20))
+  print("FT003:", rep["outcome"], rep["unresolved_reason"], "| polluters", [str(p) for p in runs.polluters],
+        "| alone", rep["victim_alone"]["successes"], "/", rep["victim_alone"]["n"])
+
+  # ---- FT004: victim fails with A after P always; after Q alone never; ddmin's single trial is noisy:
+  # the pair-with-P-removed subset passes on its first (cached) trial only.
+  seen = {}
+  def ft004(order, test):
+      if test != V: return RunOutcome(True)
+      pre = tuple(order[:-1])
+      if P in pre:
+          if Q not in pre and len(pre) == 1:
+              k = seen[pre] = seen.get(pre, 0) + 1   # [P, V]: passes on trials 1-2, fails afterwards
+              return RunOutcome(True) if k <= 2 else RunOutcome(False, A)
+          return RunOutcome(False, A)
+      return RunOutcome(True)
+  runs, rep = finish(run_steps(FakeOrderRunner(ft004), [P, Q, V], V, n=20))
+  print("FT004:", rep["outcome"], "| retained", [str(p) for p in runs.polluters])
+  r = FakeOrderRunner(ft004)
+  fails = sum(1 for _ in range(20) if not r.run_ordered([P, V])[V].passed)
+  print("FT004: sequence with Q deleted ([P, V]) then fails", fails, "/ 20")
+  ```

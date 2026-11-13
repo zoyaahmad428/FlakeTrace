@@ -1,5 +1,9 @@
 # Architecture
 
+*Status (2026-11-13): target architecture for the whole project. Iteration 1 implemented part of
+it (next paragraph). **Iteration 2's additions are in the section "Iteration 2 — what changes"
+below**, proposed in ADR-010 to ADR-015 after the Mid review.*
+
 *Status (2026-10-11): target architecture for the whole project; Iteration 1 implements part of it.
 Implemented: sandbox runner (`runner/order_runner.py`, one fresh JVM per order, per-run timeout,
 no container yet), test discovery and environment record (`runner/discovery.py`,
@@ -12,6 +16,64 @@ beyond the timeout, dynamic evidence, CI adapter, CDR. Iteration 1 evidence appr
 How components call each other: [[contracts/interfaces]].*
 
 ---
+
+## Iteration 2 — what changes
+
+*`PROPOSED` 2026-11-13. Nothing in this section is built yet. Each row is an ADR waiting for three
+ticks.*
+
+The Mid review found the pipeline sound and three things missing around it: the verdict claimed
+more than the counts supported, no report could be audited away from the machine that made it,
+and nothing decided what to run next or when to stop. Iteration 2 adds exactly those.
+
+```
+                 victim, project, n, BUDGET, POLICY
+                              │
+        ┌─────────────────────▼──────────────────────┐
+        │ PLANNER  (runner/)                  ADR-014 │◄── ranked candidates ── EVIDENCE (evidence/)
+        │ chooses the next run · stops at the budget  │                        rank_candidates
+        │ never spends the verification reserve       │                        all edges, static overlap
+        └───────┬─────────────────────────▲───────────┘
+                │ order                   │ outcome + cost
+        ┌───────▼─────────────────────────┴───────────┐
+        │ BudgetedRunner ► RecordingRunner ► OrderRunner │
+        │ ledger           record.jsonl      one JVM,    │
+        │ ADR-014          ADR-013           class-grouped lifecycle  ADR-012
+        └───────┬──────────────────────────────────────┘
+                │ four-way TALLIES: alone · sequence · each deletion     ADR-010, ADR-011
+        ┌───────▼──────────────────────────────────────┐
+        │ DECISION + REPORT  (eval/)            ADR-010 │
+        │ four named claims · typed reason for every end │
+        └───────┬──────────────────────────────────────┘
+                │ report.json + record.jsonl + manifest
+        ┌───────▼──────────────────────────────────────┐
+        │ BUNDLE ─► verify-bundle (recount, re-decide)   │  ADR-013
+        │        ─► replay on another machine           │
+        └────────────────────────────────────────────────┘
+```
+
+| New or changed | What it is | Owner | ADR |
+| --- | --- | --- | --- |
+| **Outcome tally** | Every repeated phase returns pass / matching failure / other failure / infrastructure, not two overlapping counts | M3 type, M2 producer | 010 |
+| **Verdict contract v2** | `VERIFIED` asserts four named claims and nothing else; `CANDIDATE` is typed; every way a diagnosis can end has a report | M3 | 010 |
+| **Deletion verifier** | Each kept test is removed and the sequence repeated; unneeded tests are dropped | M2 runs, M3 rule | 011 |
+| **Class-grouped harness** | Consecutive tests of one class run as one JUnit request, so class-level setup runs once, as under Surefire | M2 | 012 |
+| **Execution contract** | A written statement of what is reset between runs and what the integrity check proves | M2 | 012 |
+| **Evidence bundle, recount, replay** | A report travels with its record; an independent recount recomputes it; another machine replays it | M3, M2 | 013 |
+| **Budget ledger and reserve** | One wrapper every JVM run passes through; verification is paid for before search | M2 | 014 |
+| **Planner, version 1** | Candidate order from static evidence; one real decision — analyse deeper or start running | M2 with M1 | 014 |
+| **Candidate ranking** | `rank_candidates`: a tuple score, no fitted weights, cached per test | M1 | 014 |
+| **Resource intervention** | Restore the named resource between polluter and victim and see whether the failure goes away. Spike only | M1, M2 | 015 |
+
+**What this does to the eight components.** The *diagnosis planner* (5) exists for the first time,
+in its simplest form. The *minimiser / verifier* (6) gains deletion evidence. The *certificate
+generator* (7) gains the bundle and the replay command it always promised. The *sandbox runner* (2)
+gains a budget and a faithful class lifecycle, and still has no container hardening. The *evidence
+store / graph* (4) and dynamic collection are unchanged: still FYP-2.
+
+**The interdependence, now in code rather than on a slide:** the planner asks the extractor for
+evidence, the cost of that evidence comes out of the same budget as the runs, and the runs it
+then chooses decide which further evidence is worth paying for.
 
 ## Component map
 

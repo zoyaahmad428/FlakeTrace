@@ -21,6 +21,19 @@ risk is testing whether you know what would falsify your plan.*
 | **Secret leakage** | Paths or credentials in logs | Redaction before logging or transmission; offline flag | **Any** secret found in an artefact |
 | **Stakeholder ecosystem mismatch** *(added)* | All recorded stakeholders are non-Java | Java corpora carry the technical claim; seek one Java/Maven practitioner | No Java practitioner secured **before defence** → state the limitation explicitly in the proposal |
 
+### Added after the Mid Evaluation (2026-11-13)
+
+| Risk | Threat | Mitigation | **Trigger for change** |
+| --- | --- | --- | --- |
+| **False confident certificate** ⚠ *materialised* | The Mid build issues `VERIFIED` for a victim that fails alone differently, and for a non-minimal sequence (FT003, FT004). This was already our stated worst outcome | Four outcome categories, deletion checks, a recount that recomputes every report from its record (ADR-010, ADR-011, ADR-013) | **Any** `VERIFIED` that an independent recount or a control contradicts → stop issuing `VERIFIED` for that path until fixed |
+| **The contribution is not built in time** | Budget and ranking are the approved contribution and do not exist yet (FT007) | Smallest measurable increment first: ledger, reserve, ranked against unranked (ADR-014). Offline comparison needs no JVM | Ledger not merged by the end of Sprint B → cut W27 and W34, keep W24–W26 |
+| **Time to the Final** | Roughly three weeks from 13 November, dates unconfirmed, four weeks without commits behind us | Fixed priority order and a written cut list ([[10-Final1/iteration-2-plan]]) | W17 not agreed within two days → escalate to the supervisor meeting |
+| **Harness changes the behaviour it measures** | `@BeforeClass` per method (FT006); the same class of error as the POC's 182 false polluters | Lifecycle control compared with Surefire before any real-project result (ADR-012) | The control differs between harness and Surefire after the fix |
+| **The real case will not build or reproduce** | fastjson at an old pinned commit, last built by us in September under the POC's scripts | Start the build in Sprint B; next case ready; ormlite as a second project; report the yield | Neither FJ-03 nor FJ-04 reproduces under our runner → report as a harness finding, show the offline comparison only |
+| **Integration knowledge in one member** | Member 2 holds the orchestration (FT020) | Written instructions; Member 1 reproduces alone; Member 3 backs up report and schema | Member 1 cannot complete the reproduction from the instructions |
+| **Ownership not demonstrated** | AI-assisted core modules (L3); understanding unobserved at the Mid; Form 11 multipliers | [[10-Final1/ownership-prep]]: answers aloud, tasks without AI | A member cannot do their practical task a week before the Final |
+| **Scope judged below 60%** | Our unweighted count is 43% at the Mid; weights not agreed | Agree the inventory and weights now ([[10-Final1/scope-inventory]]) | Supervisor's weighting puts the Final target below 60% → controlled change request before the Final |
+
 ---
 
 ## The two to name if asked "biggest risk" (Q94, Q95)

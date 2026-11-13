@@ -86,6 +86,10 @@ published finding — defend as a choice) · `FROZEN` (committed pre-registratio
 
 ## E. Scope and product
 
+> ⚠ **Rows E9, E12, E14 and E15 are qualified by section G below.** Their run counts are real.
+> Three phrases in them — "0/20 alone", "1-minimal" and "resource evidence" — claimed more than
+> was checked. Use the G wording.
+
 | # | Claim | Backing | Source | Owner | Status |
 | --- | --- | --- | --- | --- | --- |
 | E1 | Committed: Linux container; Maven for build and classpath; JUnit 4 tests run in one JVM via JUnitCore (JUnit 3 `TestCase` via the JUnit38 adapter) (ADR-003) | POC: all 8 cases were JUnit 3 (run under Surefire). Our harness: `runner/tests/test_order_runner.py` runs a JUnit 3 `TestCase` (`runner/tests/resources/LegacyJUnit3Test.java`) — methods listed, victim passes alone, fails after its polluter in one JVM with `junit.framework.AssertionFailedError`. The Linux container is a committed target, not yet built | [[02-Requirements/scope-boundary]], [[evidence-m2]] | M2 | COMMITTED |
@@ -112,6 +116,26 @@ published finding — defend as a choice) · `FROZEN` (committed pre-registratio
 | F2 | Scope grew by exactly one pillar when the team grew | Resource families, build system, language and certificate contract are unchanged from the two-member boundary | [[07-Defense/decisions/three-member-split]] | Joint | SETTLED |
 | **F3** | **The three-member group is departmentally approved** | The FYP portal registration lists all three members (23i-0805, 23i-0587, 23i-0027); checked by Member 2 on 2026-10-11 | FYP portal; [[09-Team/members]] | Joint | SETTLED |
 | F4 | AI tool usage is logged and acknowledged | Required by HEC guidance and the School guide. No component we claim as contribution is core-replacement | [[00-Meta/ai-usage-log]] | Joint | OPEN — *log must be current on the day* |
+
+## G. Corrections after the Mid review (added 2026-11-13)
+
+*What the supervisor's review changed about what we may say. Status `OPEN` means the stronger
+claim is not available until the named work is done and independently reproduced.*
+
+| # | Claim | Backing | Source | Owner | Status |
+| --- | --- | --- | --- | --- | --- |
+| **G1** | **A `VERIFIED` victim passes alone** | **NOT SUPPORTED at `mid-eval-v1`.** The alone check counted only failures matching the reference signature. Reproduced 2026-11-13 on `7cf453d`: fails alone 20/20 with another exception, after P 20/20 → `VERIFIED`. **Say instead:** "it never failed alone *with the same failure* in 20 runs; a victim failing alone differently was not caught — we found the path and are fixing it" | [[10-Final1/feedback-register]] FT003; [[evidence-m2]]; ADR-010 | M2, M3 | **OPEN** |
+| **G2** | **A `VERIFIED` sequence is deletion-minimal** | **NOT SUPPORTED when outcomes vary.** `ddmin` caches one trial per subset; no deletion is repeated. Reproduced 2026-11-13: an unneeded test kept, `VERIFIED`, and the shorter sequence then fails 20/20. On the deterministic fixture (F3) the result is the ground truth. **Say instead:** "reduced by single-trial delta debugging; minimal for the trials it saw" | FT004; [[evidence-m2]]; ADR-011 | M2, M3 | **OPEN** |
+| **G3** | **The reported resource is why the victim fails** | **NEVER CLAIMED, and our wording implied it.** The edge is a static intersection of possible writes and reads; the first by depth and name is shown; values, restores and timing are not modelled. **Say:** "a static overlap — a possible mechanism, not confirmed as the cause" | FT005; `evidence/extract.py` `FIXED_LIMITATIONS`; ADR-010 | M1 | **OPEN** — causal evidence only if ADR-015's spike succeeds |
+| **G4** | **The analysed code is never modified** | **Narrower than stated.** The project's files outside `target/` and `.git/` have the same SHA-256 before and after. A change made and undone during the run, or outside the project, is not seen. No sandbox. **Say exactly that** | FT021; `runner/integrity.py`; ADR-012 | M2 | SETTLED — *as the narrow statement* |
+| **G5** | **Each run starts clean** | **JVM state only.** Static fields and system properties restart with the JVM. Files, environment, network and external services do not. `@BeforeClass` runs per method under our harness, unlike Surefire | FT006, FT021; ADR-012 | M2 | **OPEN** until the lifecycle control passes |
+| **G6** | **Every diagnosis ends in a typed report** | **One exception.** An inconclusive search (`NO_SINGLE_POLLUTER`) exits with code 3 and no report | FT010; ADR-010 | M2, M3 | **OPEN** |
+| **G7** | **A report can be checked by someone else** | **NOT YET.** Reports name a record by an absolute path on one machine; records are not in the repository | FT009; ADR-013 | M3, M2 | **OPEN** |
+| **G8** | **FlakeTrace is budget-aware** | **PLANNED, not built.** No shared budget, no verification reserve; evidence is extracted after the search. The title's first word describes the design, not the Mid build. **Say:** "the budget and ranking are this iteration's work; the POC measured the ranking idea offline" | FT007; ADR-014 | M2, M1 | **OPEN** |
+| **G9** | **Ranking saves executions** | **POC only, offline, one project.** POC decision record v3: median 39.3% fewer confirmations than original order on eight pre-registered held-out fastjson cases, with the POC's own extractor and scoring. The product has never ranked a candidate. Never quote 39.3% as a product result | `POC/decision/decision_record_v3.md`; [[05-Testing/real-case-protocol]] | M1, M3 | EXECUTED *(POC)* · **OPEN** *(product)* |
+| **G10** | **FlakeTrace works on real projects** | **Extractor only.** Two fastjson pairs through the extractor; no whole diagnosis on any real project. Both of those cases are *brittle*, which the product does not diagnose | FT008; [[05-Testing/real-case-protocol]] | M3 | **OPEN** |
+| **G11** | **We are 60% complete** | **NOT A FACT.** Our unweighted count is about 43% at the Mid; weights are not agreed | [[10-Final1/scope-inventory]] | Joint | **ASSUMPTION — never assert** |
+| G12 | All three members did substantive technical work | The supervisor's review: "All three members have substantive attributed delivery"; no ranking or percentage assigned; individual understanding not yet observed | [[10-Final1/mid-eval-outcome]] | Joint | SETTLED — *and the second half is ours to prove* |
 
 ---
 

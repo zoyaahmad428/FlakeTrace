@@ -15,6 +15,32 @@
 | **FR-6** | Emit **Verified / Candidate / Unresolved** with a machine-readable typed reason, a human-readable report, an exact replay command, and the evidence bundle | Contents per [[03-Design/certificate-contract]]; **no numeric confidence score** |
 | **FR-7** | Provide a CLI with CI-compatible exit codes and published artifacts, installable on clean Linux from documentation | [[02-Requirements/non-functional]] NFR-2 |
 
+## Status after the Mid review (2026-11-13)
+
+One status per requirement, read from the code at `main` `7cf453d` and the supervisor's review.
+**This table is the single place a requirement's status is stated**; the report's tables are
+copied from it (FT017 found FR-1 "Partial" in one table and "Done" in another).
+
+| ID | Status | Built | Not built or found wrong | Closes with |
+| --- | --- | --- | --- | --- |
+| FR-1 | **Partial** | Project and victim accepted; tests discovered; JDK, OS, project commit recorded | No budget input. No Maven, Surefire, JUnit version, locale, timezone or image digest in the record | W22, W24 |
+| FR-2 | **Partial** | Exact order, one fresh JVM per order, signatures, per-run timeout | No container. Class-level lifecycle runs per method (FT006). No budget enforcement. No verified cleanup | W22, W24, W27 |
+| FR-3 | **Partial** | Static fields and constant-key system properties, with offsets, lifecycle attribution, depth 1–5 | Filesystem family. Evidence is static only | FYP-2 |
+| FR-4 | **Not built** | A `priority` argument nobody passes | Ranking, budget, reserve, both policies (FT007) | W24, W25; adaptive policy FYP-2 |
+| FR-5 | **Partial — with a defect** | One-by-one search, `ddmin`, repeated replay with a Wilson interval | Deletions never repeated (FT004). "Passes alone" checked against the reference signature only (FT003). No counterfactual resource check | W18, W19, W20 |
+| FR-6 | **Partial** | Three classes, typed reasons, JSON report and summary | One status has no report (FT010). No replay command, no bundle (FT009). Resource evidence worded too strongly (FT005) | W19, W21, W23 |
+| FR-7 | **Partial** | One command with exit codes; CI on JDK 8 | Not installable on clean Linux from documentation | W27; install FYP-2 |
+
+**Wording corrected by the review.** Where a requirement's acceptance text is stronger than what
+any check can show, the acceptance text is what changes — openly, in the report's requirements
+chapter, with the date:
+
+| Requirement text | Becomes |
+| --- | --- |
+| FR-5 "1-minimality deletion checks" | "…each kept predecessor removed and the sequence repeated `m` times (ADR-011)" |
+| FR-6 "a resource-event path" (via the certificate contract) | "…a static write/read overlap, labelled as such; a confirmed mechanism only where an intervention was run" |
+| The frozen definition "while `[v]` alone passes" | Unchanged — and now implemented literally: **every** alone run passes (ADR-010) |
+
 ## Traceability
 
 | FR | Component | Owner |
