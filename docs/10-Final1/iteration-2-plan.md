@@ -1,7 +1,8 @@
 # Iteration 2 — plan to the FYP-1 Final
 
-*v1 · 2026-11-13 · Status: `PROPOSED`. Owners and dates are proposals until all three members
-tick [[06-Meetings/2026-11-13-post-mid-planning]] and the cohort dates are confirmed.*
+*v1 · 2026-11-13 · Status: `AGREED` — work packages, owners and verifiers agreed by M1, M2 and M3
+in person on 2026-11-13 ([[06-Meetings/2026-11-13-post-mid-planning]]; confirmed by approving
+PR #101). **Dates stay estimates** until the cohort dates are confirmed.*
 
 **Iteration objective.** By the FYP-1 Final, FlakeTrace diagnoses one **real** fastjson failure
 and the fixture under a stated execution budget; every report states exactly what was established
@@ -28,9 +29,9 @@ for them.
 | WP | Work | Owner | Verifier | Needs | Done when |
 | --- | --- | --- | --- | --- | --- |
 | **W16** | Qualify the claims we cannot yet support, everywhere they appear: CLI summary, `eval/outcome.py` rationale text, UI labels, READMEs, claims ledger. Pass-alone, "1-minimal", resource "mechanism", "never modified" | Each in their own folder; M3 checks consistency | M3 | — | A search for the retired phrases (ADR-010 §2, ADR-011 §5, ADR-012 §1) finds none outside historical notes |
-| **W17** | Agree ADR-010 and ADR-011 and the `RunTally` shape. Draft schema v2 | M3 leads; M2, M1 | — | Supervisor's view on what `VERIFIED` means, if available | Three ticks on both ADRs; open questions Q1–Q3 answered or parked with a default |
+| **W17** ✅ | Agree ADR-010 and ADR-011 and the `RunTally` shape. ~~Draft schema v2~~ — moved into W19 with the other contract changes | M3 leads; M2, M1 | — | Supervisor's view on what `VERIFIED` means, if available | **Done 2026-11-13:** ADR-010 to ADR-014 accepted and ADR-015 accepted as a spike, three ticks each; Q1 option A, Q2 no retries, Q3 keep `VERIFIED` with its qualifier until the supervisor decides ([[06-Meetings/2026-11-13-post-mid-planning]]) |
 | **W18** | Outcome categories and tallies in the runner: `repeat()`, `run_steps()`, `DiagnosisRuns` | M2 | M1 | W17 | ADR-010 tests T1–T4 fail on `7cf453d` (output kept), then pass |
-| **W19** | Decision table v2, schema v2, report assembly, a report for `INCONSISTENT`, fixture case N4, the seven reports regenerated | M3 | M1 | W17; with W18 | ADR-010 T1–T6 green; N4's ground truth written before its first run; the command never exits 3 |
+| **W19** | Decision table v2, schema v2, report assembly, a report for `INCONSISTENT`, fixture case N4, the seven reports regenerated. *Step 1 — `RunTally` and the classifier in `eval/baseline.py` — written by M2 while M3 has no laptop; M3 reviews (agreed 2026-11-13)* | M3 (step 1: M2) | M1 (step 1: M3 reviews) | W17; with W18 | ADR-010 T1–T6 green; N4's ground truth written before its first run; the command never exits 3 |
 | **W30** | Poster, to the handbook's specification | M1 leads; all supply content | M2 checks claims against the ledger | Poster date | Supervisor-approved; source file and JPEG submitted |
 | **W31** | Supervisor meeting: decisions, dates, panel wording. Action register kept current | M2 compiles; all attend | — | — | Every row of [[10-Final1/supervisor-agenda]] has an answer or a date for one |
 | **W29a** | Signatures on the report. Each member's own declarations. Reconcile GenAI levels | Each member; M3 the register | A different member checks consistency | — | FT013, FT014, FT015 evidence exists |
@@ -53,7 +54,7 @@ for them.
 | --- | --- | --- | --- | --- | --- |
 | **W25** | `rank_candidates` with a per-test cache (M1). `--policy`, candidate scope option (M2). Offline and live comparison tool (M3) | M1, M2, M3 | M3 measures; M2 reviews the ranking rule **before** it meets ground truth | W24 | ADR-014 evidence items 4–5; the rule's commit predates its first measured run |
 | **W26b** | Real case, steps 6–9: `original`, `ranked`, `random` under one budget; independent repeat | M3 | M1 or M2 | W23, W24, W25, W26a | Bundles for every run, favourable or not; the yield table |
-| **W27** | Pinned container image and one documented command | M3 proposed, M2 reviews *(see note)* | M1 runs it | W23 | A fixture diagnosis runs in the container on a second machine |
+| **W27** | Pinned container image and one documented command | M3, M2 reviews *(see note)* | M1 runs it | W23 | A fixture diagnosis runs in the container on a second machine |
 | **W28** | Report v2.0 | Chapter owners; M2 compiles | M3 checks status against code; M1 the abstract | W19–W26 results | [[10-Final1/report-v2-plan]] checklist |
 | **W32** | One Java/Maven practitioner workflow check | M1; M2 supplies the case, M3 the acceptance task | M3 | A stable demo | A dated, consented record, or the blocker and an agreed substitute |
 | **W33** | Tag `final1-v1`. Deck. Demo rehearsed on the demo machine. Each member rehearses their own viva | M2 the tag; all | Each rehearses with another member asking | Everything above | [[10-Final1/demo-plan]] steps marked rehearsed; [[10-Final1/ownership-prep]] tasks done without AI |
@@ -63,7 +64,8 @@ for them.
 is a reproducibility image, which fits Member 3's "one-command reproducibility bundle" and takes
 load off the member the supervisor identified as the integration bottleneck. If the team prefers
 Member 2 to keep it, change this row — and record the choice either way, because the handbook
-asks for ownership changes to be recorded when they happen.
+asks for ownership changes to be recorded when they happen. **Recorded 2026-11-13: the team agreed
+that Member 3 owns W27** ([[06-Meetings/2026-11-13-post-mid-planning]]).
 
 ## The critical path
 
@@ -82,7 +84,7 @@ the plan, and it needs nothing new.
 | Member | Owns | Verifies |
 | --- | --- | --- |
 | **M1 — Zoya** | W21, W25 (ranking), W30, W32, W29b (table) | W18, W19, W20, W22 control, **W23 reproduction**, W27 |
-| **M2 — Raffay** | W18, W20 (runs), W22, W24, W25 (integration), W23 (replay), W31, W33 (tag), W28 (compile) | W21, W26a, W30 (claims) |
+| **M2 — Raffay** | W18, W19 step 1 (`RunTally`, for M3), W20 (runs), W22, W24, W25 (integration), W23 (replay), W31, W33 (tag), W28 (compile) | W21, W26a, W30 (claims) |
 | **M3 — Zarpash** | W17 (lead), W19, W20 (rule), W23, W26, W27, W29a (register), W25 (measurement) | W16, W24, W28, W29b, W32 |
 
 Member 1 is the reproduction backup and Member 3 the report and schema backup, as the supervisor

@@ -1,6 +1,6 @@
 # ADR-013 — Evidence bundle: a report that travels with its record, a recount and a replay
 
-**Date:** 2026-11-13 · **Status:** `PROPOSED` — needs M1, M2 and M3 ·
+**Date:** 2026-11-13 · **Status:** `ACCEPTED` by M1, M2 and M3 on 2026-11-13 (in person; PR #101) ·
 **Owner:** M3 (bundle format, recount checker) with M2 (capture, replay command) ·
 **Verifier:** M1 (reproduces a bundle on her own machine) ·
 **Closes:** FT009, and gives FT020 its handover exercise · **Work package:** W23 ·
@@ -136,6 +136,6 @@ from the written instructions alone.
 
 | Member | Agree? | Comment |
 | --- | --- | --- |
-| M1 | ☐ | |
-| M2 | ☐ | |
-| M3 | ☐ | |
+| M1 | ☑ | Agreed in person 2026-11-13, recorded by M2; confirmed by approving PR #101 |
+| M2 | ☑ | Agreed 2026-11-13 in person with M1 and M3; recorded their agreement in PR #101 |
+| M3 | ☑ | Agreed in person 2026-11-13, recorded by M2; confirmed by approving PR #101 |

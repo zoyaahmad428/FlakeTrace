@@ -1,6 +1,6 @@
 # ADR-011 — Deletion evidence: check every kept test by repeated removal
 
-**Date:** 2026-11-13 · **Status:** `PROPOSED` — needs M1, M2 and M3 ·
+**Date:** 2026-11-13 · **Status:** `ACCEPTED` by M1, M2 and M3 on 2026-11-13 (in person; PR #101) ·
 **Owner:** M2 (runs and records) with M3 (acceptance rule, storage in the report) ·
 **Closes:** FT004 · **Work package:** W20 ·
 **Builds on:** [[03-Design/decisions/ADR-007-w10-ddmin-minimisation]],
@@ -129,6 +129,6 @@ F3 (`k = 2`, `m = 20`): 40 launches, 80 invocations, on top of today's 20-run se
 
 | Member | Agree? | Comment |
 | --- | --- | --- |
-| M1 | ☐ | |
-| M2 | ☐ | |
-| M3 | ☐ | |
+| M1 | ☑ | Agreed in person 2026-11-13, recorded by M2; confirmed by approving PR #101 |
+| M2 | ☑ | Agreed 2026-11-13 in person with M1 and M3; recorded their agreement in PR #101 |
+| M3 | ☑ | Agreed in person 2026-11-13, recorded by M2; confirmed by approving PR #101 |

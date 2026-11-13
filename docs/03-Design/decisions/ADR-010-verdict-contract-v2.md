@@ -1,7 +1,8 @@
 # ADR-010 — Verdict contract v2: outcome categories, what `VERIFIED` asserts, a report for every status
 
-**Date:** 2026-11-13 · **Status:** `PROPOSED` — needs M1, M2 and M3, and the supervisor's
-agreement on what `VERIFIED` means ([[10-Final1/supervisor-agenda]] item 2) ·
+**Date:** 2026-11-13 · **Status:** `ACCEPTED` by M1, M2 and M3 on 2026-11-13 (in person;
+PR #101), with Q1–Q3 settled below. The supervisor's view on what `VERIFIED` means is still to be
+asked ([[10-Final1/supervisor-agenda]] item 2); Q1 and Q3 are reopened if it differs ·
 **Owner:** M3 (decision, schema, report) with M2 (runner counts) and M1 (resource wording) ·
 **Closes:** FT003, FT010, the wording half of FT005, part of FT017 ·
 **Work packages:** W17, W18, W19, W16 ·
@@ -76,7 +77,9 @@ The classification lives in **one** function, next to `FailureSignature` in `eva
 (the home of the shared types), together with the one definition of the synthetic prefix
 `flaketrace.` — today a constant in `runner/search.py` and three string literals in
 `runner/order_runner.py`. The recount checker of ADR-013 needs the same rule on Member 3's side, so
-it must not live only in the runner. Member 3 owns `eval/baseline.py`; Member 2 reviews the change.
+it must not live only in the runner. Member 3 owns `eval/baseline.py`. *Agreed 2026-11-13: while
+Member 3 has no laptop, Member 2 writes `RunTally` and the classifier there and Member 3 reviews it
+when back.*
 
 `DiagnosisRuns` carries `alone: RunTally` and `sequence: RunTally` in place of
 `alone_n / alone_successes` and `sequence_n / sequence_successes / sequence_any_failures`.
@@ -214,7 +217,8 @@ truth is written **before** the first run, as for every fixture case.
 ## Order of work — agree the interface before editing in parallel
 
 1. All three agree this ADR and the `RunTally` shape (W17).
-2. M3 adds `RunTally` and the classifier to `eval/baseline.py`; M2 reviews.
+2. M2 adds `RunTally` and the classifier to `eval/baseline.py`; M3 reviews when back *(swapped
+   2026-11-13 by M3's agreement, because M3 has no laptop; M3 still owns the file)*.
 3. M2 switches `repeat()`, `run_steps()` and `DiagnosisRuns` to tallies (W18). M3 switches
    `decide()`, the schema and `assemble_report()` (W19). T1–T4 turn green.
 4. M3 adds fixture N4; T5 turns green through the real command.
@@ -223,16 +227,16 @@ truth is written **before** the first run, as for every fixture case.
 
 ## Open questions
 
-| # | Question | Who decides |
-| --- | --- | --- |
-| Q1 | Option A or B for a sequence with no edge (section 4) | All three + supervisor |
-| Q2 | Should an `INFRA` run be retried a bounded number of times before it counts (row 8)? | M2 + M3 |
-| Q3 | Is `VERIFIED (sequence)` the right display, or should the outcome itself be renamed? | Supervisor |
+| # | Question | Who decides | Answer (2026-11-13, M1, M2, M3 in person) |
+| --- | --- | --- | --- |
+| Q1 | Option A or B for a sequence with no edge (section 4) | All three + supervisor | **Option A.** Replays reliably, passes alone, no static edge → `CANDIDATE [NO_SUPPORTED_RESOURCE_EVIDENCE]`. Still to be put to the supervisor (agenda item 2) |
+| Q2 | Should an `INFRA` run be retried a bounded number of times before it counts (row 8)? | M2 + M3 | **No retries for now.** A crashed or timed-out run counts as `INFRA` as it is; row 8 stays strict |
+| Q3 | Is `VERIFIED (sequence)` the right display, or should the outcome itself be renamed? | Supervisor | **Parked with a default:** keep `VERIFIED`, always displayed with the qualifier (section 2), until the supervisor decides |
 
 ## Agreement
 
 | Member | Agree? | Comment |
 | --- | --- | --- |
-| M1 | ☐ | |
-| M2 | ☐ | |
-| M3 | ☐ | |
+| M1 | ☑ | Agreed in person 2026-11-13, recorded by M2; confirmed by approving PR #101 |
+| M2 | ☑ | Agreed 2026-11-13 in person with M1 and M3; recorded their agreement in PR #101 |
+| M3 | ☑ | Agreed in person 2026-11-13, recorded by M2; confirmed by approving PR #101 |

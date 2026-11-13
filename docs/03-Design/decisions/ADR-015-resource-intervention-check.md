@@ -1,6 +1,7 @@
 # ADR-015 — Resource intervention check: testing whether the named resource is the cause
 
-**Date:** 2026-11-13 · **Status:** `PROPOSED — SPIKE FIRST`. Not scheduled before the FYP-1 Final
+**Date:** 2026-11-13 · **Status:** `ACCEPTED as a spike` by M1, M2 and M3 on 2026-11-13 (in person; PR #101): the
+spike only, with a go / no-go written up afterwards. Not scheduled before the FYP-1 Final
 unless W16–W26 are on track. Needs the supervisor's decision on whether causal certification stays
 a promise ([[10-Final1/supervisor-agenda]] item 2) ·
 **Owner:** M1 (which resource, what the result means) with M2 (harness step) ·
@@ -90,6 +91,6 @@ the spike.
 
 | Member | Agree to the spike? | Comment |
 | --- | --- | --- |
-| M1 | ☐ | |
-| M2 | ☐ | |
-| M3 | ☐ | |
+| M1 | ☑ | Agreed in person 2026-11-13, recorded by M2; confirmed by approving PR #101 |
+| M2 | ☑ | Agreed 2026-11-13 in person with M1 and M3; recorded their agreement in PR #101 |
+| M3 | ☑ | Agreed in person 2026-11-13, recorded by M2; confirmed by approving PR #101 |

@@ -19,8 +19,8 @@ How components call each other: [[contracts/interfaces]].*
 
 ## Iteration 2 — what changes
 
-*`PROPOSED` 2026-11-13. Nothing in this section is built yet. Each row is an ADR waiting for three
-ticks.*
+*`ACCEPTED` 2026-11-13 (ADR-010 to ADR-014; ADR-015 as a spike only). Nothing in this section is
+built yet.*
 
 The Mid review found the pipeline sound and three things missing around it: the verdict claimed
 more than the counts supported, no report could be audited away from the machine that made it,
