@@ -1,6 +1,7 @@
 # ADR-012 — Execution semantics: class-level lifecycle, and what is and is not reset
 
-**Date:** 2026-11-13 · **Status:** `PROPOSED` — needs M1, M2 and M3; section 2 needs a spike first ·
+**Date:** 2026-11-13 · **Status:** `ACCEPTED` by M1, M2 and M3 on 2026-11-13 (in person; PR #101); section 2 still
+needs its spike first ·
 **Owner:** M2 · **Verifier:** M1 (compares normal and diagnostic execution) ·
 **Closes:** FT006, FT021 · **Work packages:** W22, W27 ·
 **Builds on:** [[03-Design/decisions/ADR-003-order-runner-junitcore-harness]],
@@ -159,6 +160,6 @@ workspace mode, the container image digest or `null`, and the full command line.
 
 | Member | Agree? | Comment |
 | --- | --- | --- |
-| M1 | ☐ | |
-| M2 | ☐ | |
-| M3 | ☐ | |
+| M1 | ☑ | Agreed in person 2026-11-13, recorded by M2; confirmed by approving PR #101 |
+| M2 | ☑ | Agreed 2026-11-13 in person with M1 and M3; recorded their agreement in PR #101 |
+| M3 | ☑ | Agreed in person 2026-11-13, recorded by M2; confirmed by approving PR #101 |
