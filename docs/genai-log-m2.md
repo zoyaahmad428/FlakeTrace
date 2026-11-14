@@ -923,3 +923,29 @@ consume the scripted alone outcomes); fixed before the code was written.
 
 Ownership checkpoint: why the tallies sit beside the old fields for now and when they go; why the
 runner still searches after `alone.other > 0`; why T1 is still `VERIFIED` end to end until W19.
+
+## 2026-11-14 — W22 job 1: environment fields in the execution record
+
+**Tool:** Claude Code (Claude Opus 5.5), superpowers brainstorming → writing-plans →
+executing-plans (native) with test-driven-development · **Level:** L3 · **Branch:** `m2/w22-record-env`
+
+**Asked:** brainstorm W22, then design, plan and build its first job (ADR-012 §6).
+
+**Decided by me:** split W22 into four jobs in ADR-012's order; approved the short design and the
+two-task plan; chose native execution. I left the probe choice to Claude, which chose asking the
+test JVM (`FtHarness --env`) over Python's own values, because replay compares what the tests ran
+under.
+
+**Kept:** `FtHarness --env`, `parse_env`, `OrderRunner.jvm_environment()`, `git_state`,
+`maven_version`, `tool_environment`, the new header keys, `command` passed from the CLI, 8 new tests.
+
+**How it was verified:** see [[evidence-m2]] "W22 job 1": each new test failed first; runner 164,
+eval and UI backend suites OK; a real F1 run's header shown in full.
+
+**Errors found and corrected:** none in the code during this job. The design notes that the header
+holds absolute paths, which ADR-013 must redact.
+
+**What I changed:** *to fill in after reading the diff.*
+
+Ownership checkpoint: why the timezone is asked of the JVM and how the `JAVA_TOOL_OPTIONS` test
+proves it; why a failed probe gives `null` instead of stopping; where to add a new header field.

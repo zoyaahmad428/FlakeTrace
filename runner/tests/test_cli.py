@@ -262,6 +262,13 @@ class TestOrderFile(unittest.TestCase):
         kwargs = diagnose.call_args.kwargs
         self.assertEqual((kwargs["original_order"], kwargs["shuffles"], kwargs["seed"]), ([P, V], 7, 3))
 
+    def test_command_line_reaches_diagnose_for_the_record(self):
+        argv = ["diagnose", "--project", str(project_with_pom()), "--victim", str(V)]
+        records = Path(tempfile.mkdtemp())
+        with mock.patch("runner.cli.diagnose", return_value=runs(VICTIM_FAILS_ALONE, records / "r.jsonl")) as diagnose:
+            run_cli(argv)
+        self.assertEqual(diagnose.call_args.kwargs["command"], argv)
+
 
 class TestReports(unittest.TestCase):
     def test_victim_fails_alone_writes_a_report_and_skips_the_extractor(self):

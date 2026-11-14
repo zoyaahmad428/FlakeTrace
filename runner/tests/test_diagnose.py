@@ -19,7 +19,9 @@ from runner.diagnose import (
     DiagnoseInputError,
     diagnose,
     environment,
+    maven_version,
     run_steps,
+    tool_environment,
 )
 
 FIXTURE = Path(__file__).resolve().parents[2] / "fixtures" / "od-fixture"
@@ -321,6 +323,17 @@ class TestEnvironment(unittest.TestCase):
         (repo / "A.java").write_text("class A { int x; }", encoding="utf-8")
         self.assertTrue(environment(repo)["project_dirty"])
 
+    def test_maven_version_is_the_apache_maven_line_without_colour(self):
+        text = "WARNING: something\n\x1b[1mApache Maven 3.9.9 (8e8579a9)\x1b[m\nMaven home: x\n"
+        self.assertEqual(maven_version(text), "Apache Maven 3.9.9 (8e8579a9)")
+        self.assertIsNone(maven_version("no version here\n"))
+
+    def test_tool_outside_git_records_unknown_commit(self):
+        with mock.patch("runner.diagnose.shutil.which", return_value=None):
+            env = tool_environment()
+        self.assertEqual((env["tool_commit"], env["tool_dirty"], env["maven_version"]), (None, None, None))
+        self.assertEqual(env["python_version"], platform.python_version())
+
 
 class TestDiagnoseOnFixture(unittest.TestCase):
     """Real JVM runs on fixtures/od-fixture, checked against ground_truth.json."""
@@ -348,6 +361,29 @@ class TestDiagnoseOnFixture(unittest.TestCase):
 
     def expected_polluters(self, case_id):
         return [TestIdentifier.from_dict(p) for p in self.truth[case_id]["polluters"]]
+
+    def test_record_header_states_the_environment(self):
+        victim = TestIdentifier.from_dict(self.truth["F1"]["victim"])
+        runs = diagnose(FIXTURE, victim, n=1, record_dir=self.records, command=["diagnose", "--n", "1"])
+        header = json.loads(Path(runs.execution_record).read_text(encoding="utf-8").splitlines()[0])
+        self.assertEqual(header["jvm"]["junit.version"], "4.13.2")
+        self.assertTrue(header["maven_version"].startswith("Apache Maven"))
+        self.assertEqual((header["lifecycle"], header["workspace"], header["container_image"]),
+                         ("per-method", "in-place", None))
+        self.assertEqual(header["command"], ["diagnose", "--n", "1"])
+        self.assertIn("tool_commit", header)
+        self.assertIn("java_version", header)  # old keys kept
+
+    def test_failed_jvm_probe_records_null_and_the_diagnosis_goes_on(self):
+        victim = TestIdentifier.from_dict(self.truth["F1"]["victim"])
+        with mock.patch("runner.diagnose.OrderRunner.jvm_environment", return_value={}):
+            runs = diagnose(FIXTURE, victim, n=1, record_dir=self.records)
+        header = json.loads(Path(runs.execution_record).read_text(encoding="utf-8").splitlines()[0])
+        self.assertIsNone(header["jvm"])
+        for key in ("tool_commit", "tool_dirty", "maven_version", "python_version",
+                    "lifecycle", "workspace", "container_image", "command"):
+            self.assertIn(key, header)
+        self.assertEqual(runs.status, POLLUTER_FOUND)
 
     def test_f1_single_static_field_polluter(self):
         runs = self.diagnose_case("F1", n=20)

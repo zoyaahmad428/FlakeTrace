@@ -17,6 +17,18 @@ it closes only when its verifier has reproduced it ([[10-Final1/iteration-2-plan
 
 ## Changes, newest first
 
+### W22 job 1 — the record header says what the runs ran under (2026-11-14) · built
+
+**What changed for you:** every execution record's first line gains `tool_commit`, `tool_dirty`,
+`maven_version`, `python_version`, `jvm` (the test JVM's `java.version`, `timezone`, `locale`,
+`file.encoding`, `junit.version`), `lifecycle`, `workspace`, `container_image` and `command`.
+Nothing was removed. **M3:** these are the values ADR-013's manifest `environment` needs for
+`verify-bundle` and `replay` (W23). They hold absolute paths (`project`, `command`) that the bundle
+export must redact.
+
+**To look at it:** run any diagnosis and read the first line of the `.jsonl` record.
+
+
 ### W18 — the runner counts every phase as a tally (2026-11-14) · built, awaiting M1
 
 **What changed for you:**

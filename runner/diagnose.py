@@ -4,12 +4,13 @@ enough, ddmin shrinks the tests before the victim with single trials (W10, ADR-0
 counts and, since W18, ADR-010 tallies; the verdict is M3's eval.outcome.decide() (W9 builds the report)."""
 
 import platform
+import re
 import shutil
 import subprocess
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Optional, Sequence
+from typing import List, Optional, Sequence, Tuple
 
 from eval.baseline import FailureSignature, RunTally, TestIdentifier
 from runner.discovery import discover_order
@@ -158,7 +159,9 @@ def diagnose(
     timeout_s: float = 120.0,
     shuffles: int = 31,
     seed: int = 0,
+    command: Optional[List[str]] = None,
 ) -> DiagnosisRuns:
+    """`command` is the CLI's argument list, written to the record header; None from Python."""
     if n < 1:
         raise DiagnoseInputError(f"n must be >= 1, got {n!r}")
     if shuffles < 0:
@@ -197,6 +200,9 @@ def diagnose(
         "victim": str(victim), "n": n, "project": str(project),
         "java_version": java_version(), "started": started.isoformat(), **environment(project),
         "order_given": original_order is not None, "shuffles": shuffles, "seed_base": seed,
+        # ADR-012 section 6: what the runs ran under, so a replay can compare it (W22, W23).
+        **tool_environment(), "jvm": runner.jvm_environment() or None,
+        "lifecycle": "per-method", "workspace": "in-place", "container_image": None, "command": command,
     })
     result = run_steps(recorder, order, victim, n, priority, shuffles=shuffles, seed_base=seed,
                        order_given=original_order is not None)
@@ -208,15 +214,43 @@ def environment(project: Path) -> dict:
     """Execution-record facts for panel action A7: the analysed project's git commit, whether it had
     uncommitted changes, and the OS. Commit and dirty are None when the project is not in a git
     repository or git is missing -- unknown provenance never stops a diagnosis."""
-    commit = dirty = None
+    commit, dirty = git_state(project)
+    return {"project_commit": commit, "project_dirty": dirty, "os": platform.platform()}
+
+
+def git_state(folder: Path) -> Tuple[Optional[str], Optional[bool]]:
+    """(HEAD commit, uncommitted changes under `folder`), or (None, None) outside git or without git."""
     git = shutil.which("git")
     if git:
-        head = subprocess.run([git, "-C", str(project), "rev-parse", "HEAD"], capture_output=True, text=True)
-        status = subprocess.run([git, "-C", str(project), "status", "--porcelain", "--", "."],
+        head = subprocess.run([git, "-C", str(folder), "rev-parse", "HEAD"], capture_output=True, text=True)
+        status = subprocess.run([git, "-C", str(folder), "status", "--porcelain", "--", "."],
                                 capture_output=True, text=True)
         if head.returncode == 0 and status.returncode == 0:
-            commit, dirty = head.stdout.strip(), bool(status.stdout.strip())
-    return {"project_commit": commit, "project_dirty": dirty, "os": platform.platform()}
+            return head.stdout.strip(), bool(status.stdout.strip())
+    return None, None
+
+
+def maven_version(text: str) -> Optional[str]:
+    """The "Apache Maven x.y.z" line of `mvn -v`, without colour codes; None if there is none."""
+    for line in re.sub(r"\x1b\[[0-9;]*m", "", text).splitlines():
+        if line.startswith("Apache Maven"):
+            return line.strip()
+    return None
+
+
+def tool_environment() -> dict:
+    """FlakeTrace's own commit and dirty flag, Maven and Python versions (ADR-012 section 6).
+    A missing tool gives None -- unknown provenance never stops a diagnosis."""
+    commit, dirty = git_state(Path(__file__).resolve().parents[1])
+    maven = None
+    mvn = shutil.which("mvn")
+    if mvn:
+        try:
+            maven = maven_version(subprocess.run([mvn, "-v"], capture_output=True, text=True, timeout=60).stdout)
+        except (OSError, subprocess.SubprocessError):
+            maven = None
+    return {"tool_commit": commit, "tool_dirty": dirty, "maven_version": maven,
+            "python_version": platform.python_version()}
 
 
 def _label(runner, step: str) -> None:

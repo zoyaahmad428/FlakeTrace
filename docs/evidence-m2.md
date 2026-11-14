@@ -1109,3 +1109,35 @@ own copy of the code, not from the review's description.
   `decide()` reads the old `alone_successes`, which is still 0. ADR-010 rows 6–8 and the
   `INCONSISTENT` report are M3's W19. T4's report (exit 0) also waits for W19; the command still
   exits 3 with "No report: INCONSISTENT".
+
+## W22 job 1: environment fields in the execution record (2026-11-14)
+
+- **Requirement:** ADR-012 §6 (FT006, FT021; feeds ADR-013's manifest `environment`, W23).
+  Design `docs/superpowers/specs/2026-11-14-w22-record-environment-design.md`, plan
+  `docs/superpowers/plans/2026-11-14-w22-record-environment.md`. Branch `m2/w22-record-env`, stacked
+  on `m2/w18-tallies` (`e49fa13`).
+- **Task 1 — `FtHarness --env`, `OrderRunner.jvm_environment()`.** Test first:
+  `py -3 -m unittest runner.tests.test_order_runner` → `ImportError: cannot import name 'parse_env'`.
+  After: **29 OK**, none skipped. The timezone test forces `-Duser.timezone=Pacific/Kiritimati`
+  through `JAVA_TOOL_OPTIONS` and reads it back, so the value comes from the test JVM, not Python.
+  Real probe on this machine: `{'java.version': '21.0.9', 'timezone': 'Asia/Karachi', 'locale': 'en_US', 'file.encoding': 'UTF-8', 'junit.version': '4.13.2'}`.
+- **Task 2 — header fields and the CLI's command line.** Test first: `TestEnvironment` →
+  `ImportError: cannot import name 'maven_version'`; the CLI test → `KeyError: 'command'`. After:
+  the three new test groups **14 OK**; every `runner/tests/test_*.py` → **164 OK** (372 s, none
+  skipped), **165 OK** after the review fix below; every `eval/tests/test_*.py` OK; `ui.tests.test_server` OK.
+- **Real command:** `py -3 -m runner diagnose --project fixtures/od-fixture --victim
+  odfixture.ConfigVictimTest#expectsDefaultMode --n 2 --records <scratch>` → first record line:
+  ```
+  {"type": "header", "victim": "odfixture.ConfigVictimTest#expectsDefaultMode", "n": 2, ..., "java_version": "openjdk version \"21.0.9\" 2025-10-21 LTS", ..., "project_commit": "e49fa13b…", "project_dirty": false, "os": "Windows-11-10.0.26200-SP0", ..., "tool_commit": "e49fa13b…", "tool_dirty": true, "maven_version": "Apache Maven 3.10.0 (c43a36b8…)", "python_version": "3.14.0", "jvm": {"java.version": "21.0.9", "timezone": "Asia/Karachi", "locale": "en_US", "file.encoding": "UTF-8", "junit.version": "4.13.2"}, "lifecycle": "per-method", "workspace": "in-place", "container_image": null, "command": ["diagnose", "--project", "fixtures/od-fixture", "--victim", "odfixture.ConfigVictimTest#expectsDefaultMode", "--n", "2", "--records", "<scratch>"]}
+  ```
+  (`CANDIDATE` at `--n 2` is expected: two runs cannot reach the 0.70 Wilson lower bound.)
+- **Review** (fresh reviewer, Claude Opus, read-only): 0 critical, 1 important, 4 minor. Important:
+  the design's test "a failed probe still gives a header" had been left out of the plan. Added
+  `test_failed_jvm_probe_records_null_and_the_diagnosis_goes_on`; with `or None` removed from the
+  header code it fails (`AssertionError: {} is not None`), restored it passes; suite 165 OK.
+  Deferred minors: a `null` JVM property would make the harness drop the whole `jvm` entry; one test
+  named "outside git" really tests "git not installed"; `mvn.cmd -v` timeout may not stop a hung
+  Maven on Windows; `tool_dirty` counts untracked files.
+- **Limitations:** `lifecycle` and `workspace` are constants until W22 jobs 3 and 4.
+  `command` and `project` hold absolute paths with the user's name; ADR-013's redaction at bundle
+  export removes them, nothing here does. A JVM probe adds one short JVM launch per diagnosis.

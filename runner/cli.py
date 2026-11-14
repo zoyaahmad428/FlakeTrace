@@ -42,13 +42,14 @@ def main(argv=None) -> int:
     command.add_argument("--shuffles", type=int, default=31,
                          help="distinct shuffled orders to try if the order never fails (default 31)")
     command.add_argument("--seed", type=int, default=0, help="first shuffle seed (default 0)")
-    args = parser.parse_args(argv)
+    command = list(argv if argv is not None else sys.argv[1:])
+    args = parser.parse_args(command)
     return run_diagnose(Path(args.project), args.victim, args.n, args.records,
-                        Path(args.order) if args.order else None, args.shuffles, args.seed)
+                        Path(args.order) if args.order else None, args.shuffles, args.seed, command)
 
 
 def run_diagnose(project: Path, victim_id: str, n: int, records: str, order_path: Optional[Path] = None,
-                 shuffles: int = 31, seed: int = 0) -> int:
+                 shuffles: int = 31, seed: int = 0, command: Optional[List[str]] = None) -> int:
     # Java names only: the victim also becomes part of the record's file name.
     if not _VICTIM.fullmatch(victim_id):
         return _error(f"--victim must be Class#method (Java names, no spaces), got {victim_id!r}", 2)
@@ -67,7 +68,7 @@ def run_diagnose(project: Path, victim_id: str, n: int, records: str, order_path
 
     try:
         runs = diagnose(project, victim, n=n, record_dir=records, original_order=order,
-                        shuffles=shuffles, seed=seed)
+                        shuffles=shuffles, seed=seed, command=command)
     except DiagnoseInputError as error:
         return _error(str(error), 2)
     except subprocess.CalledProcessError as error:
