@@ -4,6 +4,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from eval.baseline import TestIdentifier
 from runner.order_runner import (
@@ -11,6 +12,7 @@ from runner.order_runner import (
     maven_test_classpath,
     normalise_message,
     normalise_stack,
+    parse_env,
     parse_results,
 )
 
@@ -106,6 +108,14 @@ class TestParseResults(unittest.TestCase):
         self.assertFalse(results[VICTIM].passed)
         self.assertEqual(results[VICTIM].failure_signature.exception_type, "flaketrace.NotExecuted")
 
+    def test_env_lines_become_a_dict_without_parsing_the_values(self):
+        text = "java.version\t1.8.0_452\ntimezone\tGMT+05:00\nlocale\ten\nfile.encoding\tCp1252\njunit.version\t4.13.2\n"
+        self.assertEqual(parse_env(text), {"java.version": "1.8.0_452", "timezone": "GMT+05:00", "locale": "en",
+                                           "file.encoding": "Cp1252", "junit.version": "4.13.2"})
+
+    def test_env_ignores_a_cut_off_last_line(self):
+        self.assertEqual(parse_env("locale\ten_US\njunit.ver"), {"locale": "en_US"})
+
 
 class TestOrderRunnerOnF1(unittest.TestCase):
     """Runs real JVMs on fixtures/od-fixture. Needs java, javac and mvn on PATH."""
@@ -118,6 +128,19 @@ class TestOrderRunnerOnF1(unittest.TestCase):
                 raise RuntimeError(f"FLAKETRACE_REQUIRE_JVM is set but {missing} not on PATH")
             raise unittest.SkipTest(f"{missing} not on PATH")
         cls.runner = OrderRunner(maven_test_classpath(FIXTURE))
+
+    def test_env_reports_the_jvm_and_junit(self):
+        env = self.runner.jvm_environment()
+        self.assertEqual(set(env), {"java.version", "timezone", "locale", "file.encoding", "junit.version"})
+        self.assertEqual(env["junit.version"], "4.13.2")
+
+    def test_env_timezone_comes_from_the_test_jvm(self):
+        with mock.patch.dict(os.environ, {"JAVA_TOOL_OPTIONS": "-Duser.timezone=Pacific/Kiritimati"}):
+            self.assertEqual(self.runner.jvm_environment()["timezone"], "Pacific/Kiritimati")
+
+    def test_env_failure_gives_an_empty_dict(self):
+        broken = OrderRunner(self.runner.classpath, timeout_s=0.001)
+        self.assertEqual(broken.jvm_environment(), {})
 
     def test_victim_passes_alone(self):
         self.assertTrue(self.runner.run_ordered([VICTIM])[VICTIM].passed)

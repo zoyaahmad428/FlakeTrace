@@ -2,6 +2,8 @@ import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import org.junit.internal.runners.ErrorReportingRunner;
 import org.junit.runner.Description;
@@ -16,6 +18,7 @@ import org.junit.runner.notification.RunListener;
  * one JVM, and writes one tab-separated result line per test to the file named in args[0].
  * With "--list <file>", reads class names instead and writes each class's test methods as
  * "Class#method", in the order JUnit would run them (ADR-004).
+ * With "--env <file>", writes what this JVM runs the tests under, one "key\tvalue" per line (ADR-012 section 6).
  * Launched by runner/order_runner.py; see ADR-003.
  */
 public class FtHarness {
@@ -23,6 +26,10 @@ public class FtHarness {
     public static void main(String[] args) throws Exception {
         if (args[0].equals("--list")) {
             list(args[1]);
+            System.exit(0);
+        }
+        if (args[0].equals("--env")) {
+            env(args[1]);
             System.exit(0);
         }
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in, "UTF-8"));
@@ -66,6 +73,16 @@ public class FtHarness {
                 }
             }
         }
+        out.close();
+    }
+
+    static void env(String resultFile) throws Exception {
+        PrintStream out = new PrintStream(new FileOutputStream(resultFile), true, "UTF-8");
+        out.println("java.version\t" + escape(System.getProperty("java.version")));
+        out.println("timezone\t" + escape(TimeZone.getDefault().getID()));
+        out.println("locale\t" + escape(Locale.getDefault().toString()));
+        out.println("file.encoding\t" + escape(System.getProperty("file.encoding")));
+        out.println("junit.version\t" + escape(junit.runner.Version.id()));
         out.close();
     }
 

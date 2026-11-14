@@ -115,6 +115,17 @@ def parse_results(
     return results
 
 
+def parse_env(text: str) -> Dict[str, str]:
+    """`FtHarness --env` output -> {key: value}. Values are kept exactly as the JVM reported them;
+    a line cut off mid-write (no final newline) is dropped, as in parse_results."""
+    env = {}
+    for line in text.split("\n")[:-1]:
+        fields = line.split("\t")
+        if len(fields) == 2:
+            env[fields[0]] = _unescape(fields[1])
+    return env
+
+
 def _tool(name: str) -> str:
     # shutil.which finds mvn.cmd / java.exe on Windows; a bare "mvn" in an argument list does not.
     path = shutil.which(name)
@@ -188,6 +199,25 @@ class OrderRunner:
                 missing = (f"{SYNTHETIC_PREFIX}Timeout", f"JVM exceeded {self._timeout_s}s")
             text = result_file.read_text(encoding="utf-8") if result_file.exists() else ""
         return parse_results(text, order, *missing)
+
+    def jvm_environment(self) -> Dict[str, str]:
+        """What a test JVM runs under: java.version, timezone, locale, file.encoding, junit.version
+        (FtHarness --env, same classpath and working directory as a test run; ADR-012 section 6).
+        {} if the probe fails for any reason -- unknown provenance never stops a diagnosis."""
+        with tempfile.TemporaryDirectory(prefix="flaketrace-env-") as tmp:
+            result_file = Path(tmp) / "env.tsv"
+            try:
+                subprocess.run(
+                    [self._java, "FtHarness", "--env", str(result_file)],
+                    env=_env_with_classpath([self._harness_dir] + self.classpath),
+                    cwd=self._working_dir,
+                    capture_output=True,
+                    timeout=self._timeout_s,
+                    check=True,
+                )
+                return parse_env(result_file.read_text(encoding="utf-8"))
+            except (OSError, subprocess.SubprocessError):
+                return {}
 
     def list_methods(self, class_names: Sequence[str]) -> List[TestIdentifier]:
         """The test methods of each class, in the order JUnit would run them (FtHarness --list).
