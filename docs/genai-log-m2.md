@@ -841,3 +841,30 @@ refers to — our submitted PDF contains one.
 Ownership checkpoint: before building, I must be able to explain without the page — the four
 outcome categories and why two overlapping counts failed; what `ddmin` guarantees and what the
 deletion check adds; what a fresh JVM does and does not reset; how the reserve is computed.
+
+## 2026-11-14 — W16: qualify the retired claims in `runner/` and `ui/`
+
+**Tool:** Claude Code (Claude Opus 5.5) · **Level:** L3 · **Branch:** `m2/w16-retire-claims`
+
+**Asked:** build my Iteration 2 task list, then do W16 test-first: remove or qualify "1-minimal",
+"mechanism"/"cause" for a static edge, "never modified"/"sandbox" and the unqualified alone count
+in my folders, using the replacements in claims ledger section G.
+
+**Kept:** the new test assertions (written and seen failing first), the `summary()` changes, the
+`outcomeLabel()` helper, the Certificate and Graph sentences, and the docstring, README and
+`04-Implementation` corrections.
+
+**How it was verified:** see [[evidence-m2]] "W16": 5 CLI and 4 UI tests failed on the old code
+for the expected reason, then the full runner (147), eval (85), UI backend (30) and UI (29)
+suites passed, and the real F1 command printed the new wording.
+
+**Errors found and corrected:** `docs/04-Implementation/diagnosis-runs.md` said a bystander kept by
+a flaky `ddmin` trial is exposed by verify ×n. FT004 shows it is not — the longer sequence still
+fails. Corrected. Test-first was knowingly skipped for the UI's fixed sentences, because a unit
+test would only repeat a constant; they were checked by build and phrase search instead.
+
+**What I changed:** *to fill in after reading the diff.*
+
+Ownership checkpoint: why "alone 0/20" was misleading (it counts only same-signature failures);
+why `VERIFIED (sequence)` and not plain `VERIFIED`; where the qualifier is added (one helper on each
+side, `summary()` and `outcomeLabel()`), and how to change it.

@@ -8,10 +8,10 @@ const read = (name: string) => JSON.parse(readFileSync(`${REPORTS}${name}.json`,
 
 // Spec section 5: expected values copied from eval/reports/*.json.
 const EXPECTED: Record<string, { outcome: string; polluters: number; order: number; reduced: number; reproduction: string; alone: string }> = {
-  f1: { outcome: "VERIFIED", polluters: 1, order: 3, reduced: 2, reproduction: "20/20", alone: "0/20" },
-  f2: { outcome: "VERIFIED", polluters: 1, order: 6, reduced: 2, reproduction: "20/20", alone: "0/20" },
-  f3: { outcome: "VERIFIED", polluters: 2, order: 15, reduced: 3, reproduction: "20/20", alone: "0/20" },
-  f4: { outcome: "VERIFIED", polluters: 1, order: 3, reduced: 2, reproduction: "20/20", alone: "0/20" },
+  f1: { outcome: "VERIFIED (sequence)", polluters: 1, order: 3, reduced: 2, reproduction: "20/20", alone: "0/20" },
+  f2: { outcome: "VERIFIED (sequence)", polluters: 1, order: 6, reduced: 2, reproduction: "20/20", alone: "0/20" },
+  f3: { outcome: "VERIFIED (sequence)", polluters: 2, order: 15, reduced: 3, reproduction: "20/20", alone: "0/20" },
+  f4: { outcome: "VERIFIED (sequence)", polluters: 1, order: 3, reduced: 2, reproduction: "20/20", alone: "0/20" },
   n1: { outcome: "UNRESOLVED(VICTIM_FAILS_ALONE)", polluters: 0, order: 9, reduced: 1, reproduction: "20/20", alone: "20/20" },
   n2: { outcome: "UNRESOLVED(VICTIM_FAILS_ALONE)", polluters: 0, order: 10, reduced: 1, reproduction: "9/20", alone: "9/20" },
   n3: { outcome: "UNRESOLVED(NOT_REPRODUCED)", polluters: 0, order: 4, reduced: 4, reproduction: "0/20", alone: "0/20" },

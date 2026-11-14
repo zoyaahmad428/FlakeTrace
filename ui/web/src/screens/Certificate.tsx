@@ -31,13 +31,15 @@ export default function CertificateScreen() {
           <h2 className={`text-[2.2rem] font-semibold leading-none ${TONE[v.outcomeTone].text}`}>{v.outcome}</h2>
           {v.reason && <p className="mt-2 text-ink-2">{v.reason}</p>}
           <p className="mt-3 text-sm text-ink-3">
-            VERIFIED needs a shared-resource edge and a Wilson lower bound of at least {WILSON_FLOOR.toFixed(2)} for the failing sequence.
+            VERIFIED (sequence) means the failing sequence replays with a Wilson lower bound of at least {WILSON_FLOOR.toFixed(2)}, the
+            victim never failed alone with the same failure, and static analysis found a possible write/read overlap. It does not mean
+            the shared resource is confirmed as the cause.
           </p>
         </Panel>
         <Panel title="Reliability">
           <div className="grid gap-4 md:grid-cols-2">
             <Count label="Failing sequence fails" value={v.reproduction} bounds={v.reproductionBounds} />
-            <Count label="Victim alone fails" value={v.alone} bounds={v.aloneBounds} />
+            <Count label="Victim alone fails with the same failure" value={v.alone} bounds={v.aloneBounds} />
           </div>
         </Panel>
         <Panel title="Failure signature">
@@ -46,6 +48,10 @@ export default function CertificateScreen() {
         </Panel>
         <Panel title="Source integrity" aside={<Badge tone={v.integrityPassed ? "verified" : "unresolved"}>{v.integrityPassed ? "passed" : "failed"}</Badge>}>
           <p className="text-ink-2">{v.integrity}</p>
+          <p className="mt-2 text-sm text-ink-3">
+            Checks only that the project's files outside target/ and .git/ have the same SHA-256 before and after the diagnosis. A file
+            changed and restored during the run, or outside the project, is not seen. Tests run without a sandbox.
+          </p>
         </Panel>
         <Panel title="Limitations" aside={v.instrumentation}>
           <ul className="list-disc space-y-1 pl-5 text-ink-2">

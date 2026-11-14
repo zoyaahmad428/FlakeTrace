@@ -39,8 +39,13 @@ in-process and decides nothing itself:
 - **Catches M3's `UnhandledStatus`** instead of listing supported statuses itself, so when M3
   supports `NOT_REPRODUCED` reports the command produces them unchanged.
 - **Minimisation in the summary** (W10): when `ddmin` found the polluters, one line says how many
-  earlier tests were shrunk to how many polluters in how many runs, and that the set is 1-minimal,
-  not necessarily the minimum. The report has no field for it.
+  earlier tests were shrunk to how many polluters in how many runs, and that the set was "reduced
+  by single-trial delta debugging; not deletion-verified" (W16, claims ledger G2). The report has no
+  field for it.
+- **Claim wording** (W16, 2026-11-14): a `VERIFIED` headline reads `VERIFIED (sequence)` (ADR-010
+  Q3); a shown resource gets the line "static overlap: a possible mechanism, not confirmed as the
+  cause"; the alone count is labelled "alone (same failure)", because it counts only failures that
+  match the reference signature (claims ledger G1, FT003).
 - **Several polluters** (W10): evidence per polluter, combined by `combine_fields`: the first
   polluter's edge is shown, the others named in `limitations`, and only if **every** polluter has an
   edge — otherwise no resource is shown (`UNRESOLVED(NO_SUPPORTED_RESOURCE_EVIDENCE)`).

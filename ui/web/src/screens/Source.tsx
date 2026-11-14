@@ -1,7 +1,7 @@
 import { useEffect, useState, type ChangeEvent } from "react";
 import { useStore } from "../state";
 import { api, isBackendDown, type ReportEntry } from "../lib/api";
-import { looksLikeReport, outcomeTone, type Outcome, type Report } from "../lib/report";
+import { looksLikeReport, outcomeLabel, outcomeTone, type Outcome, type Report } from "../lib/report";
 import { UNBUILT } from "../lib/labels";
 import { NotBuilt } from "../components/NotBuilt";
 import { Badge, Button, Field, FlowNav, Panel, ScreenHeader, Status, TestName, inputClass } from "../components/ui";
@@ -97,7 +97,7 @@ export default function SourceScreen() {
                 <li key={r.name} className="flex flex-wrap items-center gap-3">
                   <Button size="sm" onClick={() => openNamed(r.name)}>{r.name}</Button>
                   <TestName fq={r.victim} role="victim" />
-                  <Badge tone={outcomeTone(r.outcome as Outcome)}>{r.outcome}</Badge>
+                  <Badge tone={outcomeTone(r.outcome as Outcome)}>{outcomeLabel(r.outcome)}</Badge>
                 </li>
               ))}
             </ul>

@@ -277,7 +277,7 @@ class TestReports(unittest.TestCase):
         self.assertEqual((report["outcome"], report["unresolved_reason"]), ("UNRESOLVED", "VICTIM_FAILS_ALONE"))
         self.assertEqual(report["execution_record_reference"], str(record))
         self.assertTrue(out.startswith("UNRESOLVED (VICTIM_FAILS_ALONE)  pkg.VictimTest#v"), out)
-        self.assertIn("alone: 20/20", out)
+        self.assertIn("alone (same failure): 20/20", out)
         self.assertIn(str(report_path), out)
         out.encode("ascii")  # the summary must print on any console
 
@@ -285,8 +285,21 @@ class TestReports(unittest.TestCase):
         report = dict(self.report_with_resource(), polluters=[P.to_dict(), Q.to_dict()])
         text = summary(report, Path("r.report.json"), minimised=(12, 10))
         self.assertIn("  minimised:  12 earlier tests -> 2 polluters in 10 runs "
-                      "(1-minimal, not necessarily the minimum)", text.splitlines())
+                      "(reduced by single-trial delta debugging; not deletion-verified)", text.splitlines())
         self.assertNotIn("minimised:", summary(report, Path("r.report.json")))
+
+    def test_summary_shows_verified_with_its_qualifier(self):
+        first = summary(self.report_with_resource(), Path("r.report.json")).splitlines()[0]
+        self.assertEqual(first, "VERIFIED (sequence)  pkg.VictimTest#v")
+
+    def test_summary_calls_the_resource_a_static_overlap_not_the_cause(self):
+        text = summary(self.report_with_resource(), Path("r.report.json")).splitlines()
+        self.assertIn("              static overlap: a possible mechanism, not confirmed as the cause", text)
+
+    def test_summary_says_the_alone_count_is_the_same_failure_only(self):
+        text = summary(self.report_with_resource(), Path("r.report.json"))
+        self.assertIn("alone (same failure): 0/20", text)
+        self.assertNotIn("alone: 0/20", text)
 
     def test_command_shows_the_minimisation_only_when_ddmin_found_polluters(self):
         records = Path(tempfile.mkdtemp(prefix="flaketrace-cli-records-"))

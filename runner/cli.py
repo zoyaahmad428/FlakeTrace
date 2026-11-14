@@ -110,7 +110,7 @@ def resource_fields(project: Path, runs) -> dict:
 def combine_fields(pairs: list) -> dict:
     """Report fields from one pair per polluter. One polluter: M1's report_fields unchanged.
     Several: the first polluter's edge is shown and the others named in limitations, but only if
-    every polluter has an edge -- VERIFIED must mean every blamed test has a found mechanism."""
+    every polluter has an edge -- VERIFIED needs a static overlap for every blamed test."""
     fields = [report_fields(pair) for pair in pairs]
     if len(fields) == 1:
         return fields[0]
@@ -144,14 +144,16 @@ def summary(report: dict, report_path: Path, minimised: Optional[Tuple[int, int]
     """`minimised` = (earlier tests, ddmin runs) when ddmin found the polluters (ADR-007); the report's
     schema has no field for it, so only the summary says how far the order was shrunk."""
     reason = f" ({report['unresolved_reason']})" if report["unresolved_reason"] else ""
-    lines = [f"{report['outcome']}{reason}  {_test(report['victim'])}"]
+    # ADR-010 Q3: VERIFIED is about the sequence, never about the resource being the cause.
+    qualifier = " (sequence)" if report["outcome"] == "VERIFIED" else ""
+    lines = [f"{report['outcome']}{qualifier}{reason}  {_test(report['victim'])}"]
     if report["polluters"]:
         lines.append("  polluter:   " + ", ".join(_test(p) for p in report["polluters"]))
     if minimised:
         earlier, runs = minimised
         count = len(report["polluters"])
         lines.append(f"  minimised:  {earlier} earlier tests -> {count} polluter{'s' if count != 1 else ''} "
-                     f"in {runs} runs (1-minimal, not necessarily the minimum)")
+                     f"in {runs} runs (reduced by single-trial delta debugging; not deletion-verified)")
     explored = report.get("order_exploration")
     if explored and explored["reproducing_seed"] is not None:
         lines.append(f"  orders:     reproduced in shuffled order (seed {explored['reproducing_seed']}) "
@@ -174,9 +176,11 @@ def summary(report: dict, report_path: Path, minimised: Optional[Tuple[int, int]
             resource += (f" (write {_test(write)}@{write['bytecode_offset']}"
                          f" -> read {_test(read)}@{read['bytecode_offset']})")
         lines.append(f"  resource:   {resource}")
+        lines.append("              static overlap: a possible mechanism, not confirmed as the cause")
     reproduced, alone = report["reproduction"], report["victim_alone"]
+    # The alone count holds only failures matching the reference signature (claims ledger G1, FT003).
     lines.append(f"  reproduced: {reproduced['successes']}/{reproduced['n']} (lower bound "
-                 f"{reproduced['lower']:.3f})   alone: {alone['successes']}/{alone['n']}")
+                 f"{reproduced['lower']:.3f})   alone (same failure): {alone['successes']}/{alone['n']}")
     lines.append(f"  report:     {report_path}")
     lines.append(f"  record:     {report['execution_record_reference']}")
     return "\n".join(lines)
