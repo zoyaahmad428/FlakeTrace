@@ -1141,3 +1141,31 @@ own copy of the code, not from the review's description.
 - **Limitations:** `lifecycle` and `workspace` are constants until W22 jobs 3 and 4.
   `command` and `project` hold absolute paths with the user's name; ADR-013's redaction at bundle
   export removes them, nothing here does. A JVM probe adds one short JVM launch per diagnosis.
+
+## W22 job 2: the JUnit spike for class-grouped execution (2026-11-14) — throwaway, not merged
+
+- **Requirement:** ADR-012 §2 "spike before committing to this". Code in a scratch folder only
+  (`Spike.java`: `Request.aClass(cls).filterWith(methods).sortWith(by requested index)` with a
+  `RunListener`; `PerMethod.java`: one `Request.method` per test, today's harness; test classes
+  `LifecycleControlTest` (ADR-012 §3, plus a `third`), `Legacy3Test` (JUnit 3, `testC` fails),
+  `BrokenSetupTest` (`@BeforeClass` throws)). Compiled `javac -source 8 -target 8` against
+  `junit-4.13.2.jar` + `hamcrest-core-1.3.jar`; run on OpenJDK 21.0.9.
+- **Results (real output, abridged):**
+  ```
+  == LifecycleControlTest requested [third, first, second]
+  started third / finished third / started first / finished first / started second / finished second   run count 3
+  == Legacy3Test requested [testC, testA]
+  started testA / finished testA / started testC / FAILED testC : AssertionFailedError: C fails on purpose   run count 2
+  == BrokenSetupTest requested [b, a]
+  FAILED null : java.lang.IllegalStateException: setup broke   run count 0
+  == per-method (today's harness)
+  first PASS
+  second FAIL : java.lang.AssertionError: expected:<1> but was:<2>
+  testC FAIL ... / testA PASS
+  ```
+- **Findings:** JUnit 4 class requests filter and sort as needed, with `@BeforeClass` once; JUnit 3
+  sorting is silently ignored, so JUnit 3 classes stay `per-method`; a failing `@BeforeClass` must be
+  mapped to every test of its block by the harness; today's mode fails the control as ADR-012 §3
+  predicted. Written into ADR-012 §2.
+- **Limitations:** JDK 21 only (no JDK 8 installed here). Not tried: `@ClassRule`, `@RunWith`
+  runners other than the default (e.g. `Parameterized`), JUnit 3 `suite()` with `TestSetup`.

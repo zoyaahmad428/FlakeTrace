@@ -949,3 +949,15 @@ holds absolute paths, which ADR-013 must redact.
 
 Ownership checkpoint: why the timezone is asked of the JVM and how the `JAVA_TOOL_OPTIONS` test
 proves it; why a failed probe gives `null` instead of stopping; where to add a new header field.
+
+## 2026-11-14 — W22 job 2: JUnit spike (throwaway)
+
+**Tool:** Claude Code (Claude Opus 5.5) · **Level:** L3 · **Branch:** `m2/w22-record-env` (docs only)
+
+**Asked:** run ADR-012 §2's spike and record what it shows. **Kept:** only the findings, in ADR-012
+§2 and [[evidence-m2]]; the spike code stayed in a scratch folder, as the ADR requires.
+**Errors:** the first compile failed because Git Bash passed `/c/...` paths to Windows `javac`;
+fixed with Windows paths — a command error, not a finding. **What I changed:** *to fill in.*
+
+Ownership checkpoint: why JUnit 3 stays per-method (sorting silently ignored, and no class-level
+lifecycle to lose); what the harness must do when `@BeforeClass` throws.

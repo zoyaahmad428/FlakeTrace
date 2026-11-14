@@ -17,6 +17,14 @@ it closes only when its verifier has reproduced it ([[10-Final1/iteration-2-plan
 
 ## Changes, newest first
 
+### W22 job 2 — JUnit spike result (2026-11-14) · findings only
+
+JUnit 4 classes can run as one request filtered and sorted to any order, with `@BeforeClass` once;
+JUnit 3 classes cannot be sorted that way and stay one test per request. Today's harness runs
+`@BeforeClass` once per test — measured on the control class. **M1:** this is the behaviour your
+W22 control run (ADR-012 §3) will compare against Surefire. Details in ADR-012 §2.
+
+
 ### W22 job 1 — the record header says what the runs ran under (2026-11-14) · built
 
 **What changed for you:** every execution record's first line gains `tool_commit`, `tool_dirty`,

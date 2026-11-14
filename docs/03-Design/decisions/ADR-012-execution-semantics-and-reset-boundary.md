@@ -82,6 +82,19 @@ JUnit 3 `TestCase` that a class request can be filtered to chosen methods and so
 order, and that per-test results arrive through the listener. If the JUnit 3 adapter cannot be
 ordered, JUnit 3 classes keep `per-method` and the report says so.
 
+**Spike result (M2, 2026-11-14, JDK 21.0.9, JUnit 4.13.2; not merged — [[evidence-m2]] "W22 job 2"):**
+
+| Question | Answer |
+| --- | --- |
+| JUnit 4 class: `Request.aClass(c).filterWith(…).sortWith(…)` runs only the chosen methods, in the chosen order? | **Yes.** Asked `third, first, second` → ran in exactly that order |
+| `@BeforeClass` once per block? | **Yes.** All three tests asserting one setup passed |
+| Per-test results through the listener? | **Yes**: `testStarted` / `testFailure` / `testFinished` for each method, as it runs |
+| JUnit 3 `TestCase`: filtered and sorted? | **Filtered yes, sorted no — silently.** Asked `testC, testA` → ran `testA, testC` (declared order), no error. So JUnit 3 classes keep `per-method`, as planned above. JUnit 3 has no class-level lifecycle, so `per-method` loses nothing for it |
+| `@BeforeClass` throws? | One failure with **no method name**, no `testStarted`, run count 0. The harness must report it against every test of the block itself, or they would count as crashed (`INFRA`) instead of failed |
+| Today's `per-method` on the control class | `first` PASS, `second` FAIL `expected:<1> but was:<2>` — the deviation of section 3, measured |
+
+Not checked: JDK 8 (none installed on this machine; CI runs JDK 8 once the harness change lands).
+
 ### 3. A lifecycle control, compared against normal execution
 
 A small self-test class in Member 2's own test resources (`runner/tests/resources/`, where the
