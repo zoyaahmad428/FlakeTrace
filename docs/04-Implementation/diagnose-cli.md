@@ -73,7 +73,8 @@ in-process and decides nothing itself:
 
 ## ADR-008 additions (2026-10-11)
 
-- `--order <file>` (the real failing order), `--shuffles N` (default 31), `--seed S` (default 0). A bad
+- `--order <file>` (the real failing order), `--shuffles N` (default 31), `--seed S` (default 0),
+  `--lifecycle per-method|class-grouped` (default `per-method` until M1's control run; W22, ADR-012). A bad
   `--order` file, a duplicate, a missing victim or a test the project does not have → exit 2.
 - When the starting order never fails, the diagnosis tries distinct class-first shuffled orders; the
   summary names the reproducing seed (`orders: reproduced in shuffled order (seed 1) after 2 …`).

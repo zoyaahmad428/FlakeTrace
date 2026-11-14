@@ -36,8 +36,13 @@ results = runner.run_ordered([
 
 ### Harness protocol
 
-`java FtHarness <result-file>` with the classpath in `CLASSPATH`; stdin: one `Class#method` per
-line. Result file, one line per test (tabs/newlines/backslashes escaped):
+`java FtHarness <result-file> [--lifecycle per-method|class-grouped]` with the classpath in
+`CLASSPATH`; stdin: one `Class#method` per line. `per-method` (default) runs each test as its own
+JUnit request; `class-grouped` runs each run of consecutive same-class tests as one request,
+filtered and sorted to the given order, so `@BeforeClass`/`@AfterClass` run once per block as under
+Surefire (W22, ADR-012 §2). Only classes on JUnit's default JUnit 4 runner are grouped; JUnit 3,
+`@RunWith` and `suite()` classes stay one request per test. A failing `@BeforeClass` is reported
+as that failure for every test of the block. Result file, one line per test (tabs/newlines/backslashes escaped):
 
 ```
 index<TAB>Class#method<TAB>PASS|FAIL|SKIP<TAB>exceptionClass<TAB>message<TAB>frame|frame|…
@@ -76,8 +81,11 @@ not.
 
 ### Known limitations
 
-- Each method is its own JUnit `Request`: `@BeforeClass`/`@AfterClass` run once per method,
-  not once per class as under Maven Surefire.
+- In the default `per-method` mode each method is its own JUnit `Request`: `@BeforeClass`/`@AfterClass`
+  run once per method, not once per class as under Maven Surefire — measured by the lifecycle
+  control (`resources/lifecycle-control/`). `class-grouped` fixes it for JUnit 4 classes; it becomes
+  the default once Member 1 has run the control (ADR-012 §3). In `class-grouped`, an `@AfterClass`
+  failure is not charged to any test (as under Surefire).
 - JUnit 4, and JUnit 3 `TestCase` classes through JUnit's own JUnit38 adapter (tested with
   `resources/LegacyJUnit3Test.java`). JUnit 5 is not supported.
 - Only the top-level exception is part of the signature; a wrapped cause is not compared.
@@ -132,6 +140,7 @@ py -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVic
 | `--order` | none | file with the real failing order, one `Class#method` per line (`#` comments and blank lines ignored); without it the discovered order is used (ADR-008) |
 | `--shuffles` | `31` | distinct class-first shuffled orders to try when the starting order never fails (Gruber et al. [12], a Python study — assumption for JUnit); `0` turns it off |
 | `--seed` | `0` | first shuffle seed; every seed tried is in the execution record |
+| `--lifecycle` | `per-method` | `class-grouped` runs class-level setup once per run of same-class tests, as Surefire does (ADR-012); recorded in the header |
 
 It runs `diagnose()`, then — only when a polluter is found — Member 1's `analyse_pair` once per polluter
 (starts at depth 2, deepens to at most 5 only when needed, ADR-006) and `report_fields`, combined by

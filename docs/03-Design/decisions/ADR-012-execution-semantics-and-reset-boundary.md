@@ -167,6 +167,9 @@ workspace mode, the container image digest or `null`, and the full command line.
 1. Section 1 wording into the documents and the CLI text now (W16).
 2. Section 6 header fields (small, unblocks the evidence bundle of ADR-013).
 3. The spike of section 2; then the harness change with the control of section 3 (W22).
+   *Built 2026-11-14 (M2): `--lifecycle class-grouped`, the control as a Maven project in
+   `runner/tests/resources/lifecycle-control/` (so Surefire can run it; also run in CI). Default
+   stays `per-method` until M1 records the section 3 table on her machine.*
 4. Section 4, then section 5 (W22, W27) — both can be cut if time is short; sections 1–3 cannot.
 
 ## Agreement

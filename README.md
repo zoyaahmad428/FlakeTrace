@@ -64,6 +64,7 @@ py -m pip install -r eval/requirements.txt
 py -m unittest -v eval.tests.test_baseline eval.tests.test_examples eval.tests.test_outcome eval.tests.test_report eval.tests.test_schema_validator eval.tests.test_stats eval.tests.test_yield_report
 mvn -B -f fixtures/od-fixture/pom.xml test-compile
 py -m unittest -v runner.tests.test_cli runner.tests.test_diagnose runner.tests.test_discovery runner.tests.test_integrity runner.tests.test_minimise runner.tests.test_order_runner runner.tests.test_orders runner.tests.test_recording runner.tests.test_search
+mvn -B -q -f runner/tests/resources/lifecycle-control/pom.xml test   # lifecycle control under Surefire (ADR-012)
 py -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode
 py -m unittest -v ui.tests.test_server
 ui\start.cmd                                   # web UI on http://127.0.0.1:5174

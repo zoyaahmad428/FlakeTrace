@@ -1169,3 +1169,49 @@ own copy of the code, not from the review's description.
   predicted. Written into ADR-012 §2.
 - **Limitations:** JDK 21 only (no JDK 8 installed here). Not tried: `@ClassRule`, `@RunWith`
   runners other than the default (e.g. `Parameterized`), JUnit 3 `suite()` with `TestSetup`.
+
+## W22 job 3: class-grouped execution and the lifecycle control (2026-11-14)
+
+- **Requirement:** ADR-012 §2–§3, FT006. Design
+  `docs/superpowers/specs/2026-11-14-w22-class-grouped-execution-design.md`, plan
+  `docs/superpowers/plans/2026-11-14-w22-class-grouped-execution.md`. Branch `m2/w22-record-env`.
+  Default mode decided: `per-method` until M1's control run (Claude's call on M2's delegation).
+- **Checked first:** the runner class JUnit 4.13.2 gives — plain JUnit 4 class `org.junit.runners.JUnit4`,
+  JUnit 3 `JUnit38ClassRunner`, `@RunWith(Parameterized)` `Parameterized` (scratch probe).
+- **Task 1, test first:** `py -3 -m unittest runner.tests.test_order_runner` → `TypeError: OrderRunner.__init__()
+  got an unexpected keyword argument 'lifecycle'` (3 errors). The `per-method` control row passed
+  before and after: it measures today's behaviour (`second` fails, `expected:<<N>> but was:<<N>>`).
+  After: **39 OK**. Mutations, each restored byte for byte: grouping disabled →
+  `test_class_grouped_runs_class_setup_once` fails; a failing `@BeforeClass` no longer given to the
+  block → `test_grouped_setup_failure_fails_every_test_of_the_block` fails.
+- **The control, three ways, on this machine (OpenJDK 21.0.9, Maven 3.10.0):**
+
+  | Execution | Command | Result |
+  | --- | --- | --- |
+  | Surefire | `mvn -B -q -f runner/tests/resources/lifecycle-control/pom.xml test` | exit 0; report `tests="2" failures="0"` (ran `second`, `first`) |
+  | Harness `per-method`, `[first, second]` | `TestLifecycleControl.test_per_method_runs_class_setup_per_test` | `first` pass, `second` `AssertionError expected:<1> but was:<2>` |
+  | Harness `class-grouped`, same order | `TestLifecycleControl.test_class_grouped_runs_class_setup_once` | both pass |
+
+- **Task 2, test first:** CLI test → `KeyError: 'lifecycle'`; fixture test → `TypeError: diagnose()
+  got an unexpected keyword argument 'lifecycle'`. (The usage-error test passed before too — argparse
+  rejected the unknown option then, the bad value now.) After: every `runner/tests/test_*.py` →
+  **178 OK**, **180 OK** after the review fixes below (417 s, none skipped); every `eval/tests/test_*.py` → **99 OK**; `ui.tests.test_server` → **30 OK**.
+- **Real command:** `py -3 -m runner diagnose --project fixtures/od-fixture --victim
+  odfixture.ConfigVictimTest#expectsDefaultMode --lifecycle class-grouped --records <scratch>` →
+  `VERIFIED (sequence)`, polluter `ConfigPolluterTest#pollute`, reproduced 20/20, alone (same
+  failure) 0/20; header `lifecycle: class-grouped`.
+- **Review** (fresh reviewer, Claude Opus, read-only, with its own scratch probes): 0 critical,
+  2 important, 4 minor. Both important ones fixed test-first, each new test seen failing first:
+  (1) a throwing static initializer lost its cause in `class-grouped`
+  (`AssertionError: 'java.lang.NoClassDefFoundError' != 'java.lang.ExceptionInInitializerError'`) —
+  now reported exactly as `per-method` does; (2) an assumption failing in `@BeforeClass` was written
+  as a fake "No tests found" failure (`'java.lang.Exception' != 'flaketrace.NotExecuted'`) — now a
+  skip, as `per-method`. Probes `StaticInitProbeTest`, `AssumeSetupProbeTest`; suite 180 OK;
+  Surefire control still exit 0. Deferred minors: the grouped "No tests found" message lacks
+  `per-method`'s ` from ClassRequest@…` and stack frame, so an unknown method's signature differs
+  between the modes (the design said "same"); a spec line without `#` stops the harness (never sent
+  by Python); the harness alone treats an unknown mode as `per-method` (`OrderRunner` rejects it);
+  a test method named `initializationError` could take the empty-filter error.
+- **Limitations:** default unchanged until M1's run. JUnit 3, `@RunWith` and `suite()` classes
+  keep per-test lifecycle. An `@AfterClass` failure is not charged to a test in `class-grouped`.
+  JDK 8 not run locally — CI runs the control and the runner tests on JDK 8.

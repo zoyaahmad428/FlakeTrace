@@ -7,6 +7,7 @@ it closes only when its verifier has reproduced it ([[10-Final1/iteration-2-plan
 
 | For | What | Where | Why it matters |
 | --- | --- | --- | --- |
+| **M1** | **Run the lifecycle control (W22 verification)** — steps under "W22 job 3" below, on your own machine. When it matches, M2 makes `class-grouped` the default | branch `m2/w22-record-env` | ADR-012 §3; FT006 closes only with your independent run |
 | **M1** | Verify W18: run the commands under "W18" below on your machine and record the result in [[evidence-m1]] | PR from `m2/w18-tallies` | You are W18's verifier; FT003 needs an independent reproduction |
 | **M3** | W19 can now read `alone_tally` / `sequence_tally` from `DiagnosisRuns`. When it does, remove the old count fields and the `NO_SINGLE_POLLUTER` alias (or ask M2 to) | `runner/diagnose.py`, your `eval/report.py`, `eval/outcome.py` | Until then the verdict for FT003 is still the Mid's |
 | **M3** | Review W19 step 1 in **your** file `eval/baseline.py`: `classify`, `RunTally`, `tally`, `SYNTHETIC_PREFIX`, and 14 tests in `eval/tests/test_baseline.py` | PR from `m2/w19-runtally` | Written for you by agreement (2026-11-13); W18 and your W19 build on it |
@@ -16,6 +17,34 @@ it closes only when its verifier has reproduced it ([[10-Final1/iteration-2-plan
 | **M1** | Your part of W16: check the resource wording `evidence/` puts in reports (`FIXED_LIMITATIONS`, `report_fields`) against ledger G3. A search by M2 found no "cause" or "mechanism" in `evidence/extract.py`, so this may need no change — your call | `evidence/` | Same reason |
 
 ## Changes, newest first
+
+### W22 job 3 — class-grouped execution and the lifecycle control (2026-11-14) · built, awaiting M1
+
+**What changed for you:** a new option, `--lifecycle class-grouped`. With it, consecutive tests of
+the same JUnit 4 class run as one JUnit request, so `@BeforeClass`/`@AfterClass` run once per
+block, as under Maven Surefire. The default is still `per-method` (the Mid behaviour). Nothing in
+`evidence/` or `eval/` changed; the result format is the same. The record header's `lifecycle`
+now says which mode ran.
+
+**M1 — the control run, step by step** (do each step, write down what you see):
+
+1. `git fetch` then `git checkout m2/w22-record-env` (or `main` once it is merged).
+2. Surefire, the normal Maven run:
+   `mvn -B -q -f runner/tests/resources/lifecycle-control/pom.xml test`
+   Expected: exit code 0. Open
+   `runner/tests/resources/lifecycle-control/target/surefire-reports/TEST-LifecycleControlTest.xml`:
+   `tests="2" failures="0"`.
+3. FlakeTrace's harness, both modes:
+   `py -m unittest -v runner.tests.test_order_runner.TestLifecycleControl`
+   Expected: 3 tests OK. They assert that `per-method` makes `second` fail with
+   `expected:<1> but was:<2>` (class setup ran twice) and that `class-grouped` passes both.
+4. The real command on fixture F1 in the new mode:
+   `py -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode --lifecycle class-grouped --records %TEMP%\ft-records`
+   Expected: `VERIFIED (sequence)` with polluter `odfixture.ConfigPolluterTest#pollute`.
+5. Write in `docs/evidence-m1.md`: date, your JDK (`java -version`), each command, what it printed,
+   the three-row table (Surefire / per-method / class-grouped), and **anything unclear in these
+   steps**. Tell M2; M2 then flips the default in a one-line commit.
+
 
 ### W22 job 2 — JUnit spike result (2026-11-14) · findings only
 

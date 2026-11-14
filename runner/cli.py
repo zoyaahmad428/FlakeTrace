@@ -17,7 +17,7 @@ from eval.baseline import TestIdentifier
 from eval.report import UnhandledStatus, assemble_report
 from evidence.extract import DEFAULT_DEPTH, ExtractError, Project, analyse_pair, report_fields
 from runner.diagnose import INCONSISTENT, NOT_REPRODUCED, POLLUTER_FOUND, DiagnoseInputError, diagnose
-from runner.order_runner import ToolError
+from runner.order_runner import LIFECYCLES, ToolError
 
 _VICTIM = re.compile(r"[\w.$]+#[\w$]+")
 
@@ -42,14 +42,18 @@ def main(argv=None) -> int:
     command.add_argument("--shuffles", type=int, default=31,
                          help="distinct shuffled orders to try if the order never fails (default 31)")
     command.add_argument("--seed", type=int, default=0, help="first shuffle seed (default 0)")
-    command = list(argv if argv is not None else sys.argv[1:])
-    args = parser.parse_args(command)
+    command.add_argument("--lifecycle", choices=LIFECYCLES, default="per-method",
+                         help="per-method: @BeforeClass per test (default, as at the Mid); class-grouped: once "
+                              "per run of same-class tests, as under Maven Surefire (ADR-012)")
+    arguments = list(argv if argv is not None else sys.argv[1:])
+    args = parser.parse_args(arguments)
     return run_diagnose(Path(args.project), args.victim, args.n, args.records,
-                        Path(args.order) if args.order else None, args.shuffles, args.seed, command)
+                        Path(args.order) if args.order else None, args.shuffles, args.seed, arguments, args.lifecycle)
 
 
 def run_diagnose(project: Path, victim_id: str, n: int, records: str, order_path: Optional[Path] = None,
-                 shuffles: int = 31, seed: int = 0, command: Optional[List[str]] = None) -> int:
+                 shuffles: int = 31, seed: int = 0, command: Optional[List[str]] = None,
+                 lifecycle: str = "per-method") -> int:
     # Java names only: the victim also becomes part of the record's file name.
     if not _VICTIM.fullmatch(victim_id):
         return _error(f"--victim must be Class#method (Java names, no spaces), got {victim_id!r}", 2)
@@ -68,7 +72,7 @@ def run_diagnose(project: Path, victim_id: str, n: int, records: str, order_path
 
     try:
         runs = diagnose(project, victim, n=n, record_dir=records, original_order=order,
-                        shuffles=shuffles, seed=seed, command=command)
+                        shuffles=shuffles, seed=seed, command=command, lifecycle=lifecycle)
     except DiagnoseInputError as error:
         return _error(str(error), 2)
     except subprocess.CalledProcessError as error:

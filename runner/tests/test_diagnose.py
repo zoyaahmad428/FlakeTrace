@@ -374,6 +374,14 @@ class TestDiagnoseOnFixture(unittest.TestCase):
         self.assertIn("tool_commit", header)
         self.assertIn("java_version", header)  # old keys kept
 
+    def test_f1_under_class_grouped_lifecycle_finds_the_same_polluter(self):
+        victim = TestIdentifier.from_dict(self.truth["F1"]["victim"])
+        runs = diagnose(FIXTURE, victim, n=3, record_dir=self.records, lifecycle="class-grouped")
+        self.assertEqual(runs.status, POLLUTER_FOUND)
+        self.assertEqual(runs.polluters, self.expected_polluters("F1"))
+        header = json.loads(Path(runs.execution_record).read_text(encoding="utf-8").splitlines()[0])
+        self.assertEqual(header["lifecycle"], "class-grouped")
+
     def test_failed_jvm_probe_records_null_and_the_diagnosis_goes_on(self):
         victim = TestIdentifier.from_dict(self.truth["F1"]["victim"])
         with mock.patch("runner.diagnose.OrderRunner.jvm_environment", return_value={}):

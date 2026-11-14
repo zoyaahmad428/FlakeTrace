@@ -961,3 +961,28 @@ fixed with Windows paths — a command error, not a finding. **What I changed:**
 
 Ownership checkpoint: why JUnit 3 stays per-method (sorting silently ignored, and no class-level
 lifecycle to lose); what the harness must do when `@BeforeClass` throws.
+
+## 2026-11-14 — W22 job 3: class-grouped execution and the lifecycle control
+
+**Tool:** Claude Code (Claude Opus 5.5), superpowers brainstorming → writing-plans →
+executing-plans (native) → fresh review · **Level:** L3 · **Branch:** `m2/w22-record-env`
+
+**Asked:** build ADR-012 §2–§3 on the spike's findings, and document it so M1 can run the control
+when she has her laptop. **Decided by me:** approved the design and plan; left the default mode to
+Claude, which kept `per-method` until M1's control run (ADR-012's own rule).
+
+**Kept:** the harness `class-grouped` mode (`runBlock`), `OrderRunner(lifecycle=)`, `LIFECYCLES`,
+`--lifecycle` through `diagnose` and the CLI, the lifecycle control as a Maven project, two probe
+classes, 15 new tests, a CI step running the control under Surefire, M1's steps in the handover.
+
+**How it was verified:** see [[evidence-m2]] "W22 job 3": tests failed first; two mutations each
+caught; the control's three rows observed; runner 178, eval 99, UI backend 30 OK; real F1 run.
+
+**Errors found and corrected:** Claude found that ADR-012 asked for a Surefire run of a class that
+was not in any Maven project, and made the control its own small Maven project. It also renamed a
+confusing variable it had introduced in job 1 (`command` reused in `cli.main`).
+
+**What I changed:** *to fill in after reading the diff.*
+
+Ownership checkpoint: how `runBlock` groups, filters and sorts; why JUnit 3 is excluded; what
+happens when `@BeforeClass` throws; how the control proves the difference.

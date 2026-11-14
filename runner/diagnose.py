@@ -160,8 +160,10 @@ def diagnose(
     shuffles: int = 31,
     seed: int = 0,
     command: Optional[List[str]] = None,
+    lifecycle: str = "per-method",
 ) -> DiagnosisRuns:
-    """`command` is the CLI's argument list, written to the record header; None from Python."""
+    """`command` is the CLI's argument list, written to the record header; None from Python.
+    `lifecycle` is passed to the OrderRunner (ADR-012 section 2) and recorded."""
     if n < 1:
         raise DiagnoseInputError(f"n must be >= 1, got {n!r}")
     if shuffles < 0:
@@ -178,7 +180,8 @@ def diagnose(
     if records.exists() and not records.is_dir():
         raise DiagnoseInputError(f"record_dir {records} is a file, not a folder")
     before = snapshot(project)
-    runner = OrderRunner(maven_test_classpath(project), working_dir=project, timeout_s=timeout_s)
+    runner = OrderRunner(maven_test_classpath(project), working_dir=project, timeout_s=timeout_s,
+                         lifecycle=lifecycle)
     discovered = discover_order(runner, project / "target" / "test-classes")
     if original_order is not None:
         # A typo in a given order would fail with ClassNotFound and could pass for a reproduction.
@@ -202,7 +205,7 @@ def diagnose(
         "order_given": original_order is not None, "shuffles": shuffles, "seed_base": seed,
         # ADR-012 section 6: what the runs ran under, so a replay can compare it (W22, W23).
         **tool_environment(), "jvm": runner.jvm_environment() or None,
-        "lifecycle": "per-method", "workspace": "in-place", "container_image": None, "command": command,
+        "lifecycle": runner.lifecycle, "workspace": "in-place", "container_image": None, "command": command,
     })
     result = run_steps(recorder, order, victim, n, priority, shuffles=shuffles, seed_base=seed,
                        order_given=original_order is not None)
