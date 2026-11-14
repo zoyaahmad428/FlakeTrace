@@ -1073,3 +1073,39 @@ own copy of the code, not from the review's description.
   (336 s, real JVM runs), every `eval/tests/test_*.py` → **99 OK**, `ui.tests.test_server` → **30 OK**.
 - **Limitations:** nothing uses the tallies yet — the defect FT003 is still in `runner/verify.py`
   until W18. Awaiting review by M3 (owner of the file).
+
+## W18: the runner counts every phase as an ADR-010 tally (2026-11-14)
+
+- **Requirement:** ADR-010 §1 and §5, tests T1–T4 at the runner level; FT003, FT010. Branch
+  `m2/w18-tallies` from `main` `d1e4d4f`. Landing chosen by M2 (2026-11-14): tallies **beside** the
+  old count fields, `NO_SINGLE_POLLUTER` kept as an alias of `INCONSISTENT`, so no `eval/` file
+  changes until W19.
+- **Test first**, on the unchanged runner:
+  - `py -3 -m unittest runner.tests.test_diagnose.TestTallies` → **8 run: 7 errors**
+    (`'DiagnosisRuns' object has no attribute 'alone_tally'` / `'sequence_tally'`) and **1 failure**,
+    T4: `AssertionError: 'NO_SINGLE_POLLUTER' != 'INCONSISTENT'`. (A first version of one test
+    erred with `IndexError` because its order `[V]` also consumed the scripted alone outcomes in
+    the reproduce step; fixed in the test before any code was written.)
+  - `py -3 -m unittest runner.tests.test_search.TestRepeat` → `AssertionError: (2, 4) != RunTally(n=5, passed=1, matched=2, other=1, infra=1)`.
+  - What the unchanged runner returns for the three scripted defects (scratch script):
+    ```
+    T1 POLLUTER_FOUND alone_n 20 alone_successes 0 polluters ['pkg.PolluterTest#p']
+    T2 POLLUTER_FOUND alone_n 20 alone_successes 0 polluters ['pkg.PolluterTest#p']
+    T3 POLLUTER_FOUND alone_n 20 alone_successes 0 polluters ['pkg.PolluterTest#p']
+    ```
+    Failing alone 20/20 differently, 3/20 differently, and timing out 2/20 are indistinguishable
+    from passing alone 20/20 — FT003.
+- **After:**
+  ```
+  T1 POLLUTER_FOUND alone RunTally(n=20, passed=0, matched=0, other=20, infra=0) | old alone_successes 0
+  T2 POLLUTER_FOUND alone RunTally(n=20, passed=17, matched=0, other=3, infra=0) | old alone_successes 0
+  T3 POLLUTER_FOUND alone RunTally(n=20, passed=18, matched=0, other=0, infra=2) | old alone_successes 0
+  F1 POLLUTER_FOUND alone RunTally(n=20, passed=20, matched=0, other=0, infra=0) sequence RunTally(n=20, passed=0, matched=20, other=0, infra=0)
+  ```
+  (F1 is a real `diagnose()` on `fixtures/od-fixture`.) Every `runner/tests/test_*.py` → **155 OK**
+  (337 s, real JVM runs); every `eval/tests/test_*.py` → **99 OK**, no `eval/` file changed;
+  `ui.tests.test_server` → **30 OK**.
+- **Limitations:** the runner still blames P in T1–T3 and the report would still say `VERIFIED`:
+  `decide()` reads the old `alone_successes`, which is still 0. ADR-010 rows 6–8 and the
+  `INCONSISTENT` report are M3's W19. T4's report (exit 0) also waits for W19; the command still
+  exits 3 with "No report: INCONSISTENT".

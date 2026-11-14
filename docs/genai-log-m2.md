@@ -894,3 +894,32 @@ each caught by the intended tests; all runner (147), eval (99) and UI backend (3
 
 Ownership checkpoint: why `INFRA` is checked before the reference; why a tally must add up to `n`;
 how `tally([20 different failures])` shows the FT003 defect that `repeat()` hid.
+
+## 2026-11-14 — W18: tallies in the runner
+
+**Tool:** Claude Code (Claude Opus 5.5) · **Level:** L3 · **Branch:** `m2/w18-tallies`
+
+**Asked:** switch `repeat()`, `run_steps()` and `DiagnosisRuns` to ADR-010 tallies and rename the
+inconclusive status, test first, without breaking M3's `eval/` code while M3 has no laptop.
+
+**Decided by me:** of three options (tallies beside the old fields; replace and edit M3's files;
+replace and wait for M3), I chose the first. Claude proposed the names `alone_tally` /
+`sequence_tally` because `DiagnosisRuns.sequence` is already the test list.
+
+**Kept:** `repeat()` and `repeat_without_reference()` returning tallies, `_runs()` filling the old
+fields from the tallies, `INCONSISTENT` with the old name as an alias, eight new runner tests and
+three updated ones, the ADR-010 implementation note.
+
+**How it was verified:** see [[evidence-m2]] "W18": the tests failed first for the expected
+reasons; afterwards runner 155, eval 99 and UI backend 30 tests OK; the scripted T1–T3 and a real
+F1 run show the tallies.
+
+**Errors found and corrected:** a first draft of `repeat_without_reference` chose the reference
+with `classify(o, None)`, which raises on a real failure and, as written, always gave `None`; it was
+rewritten before any test ran. One new test was wrong (its order `[V]` let the reproduce step
+consume the scripted alone outcomes); fixed before the code was written.
+
+**What I changed:** *to fill in after reading the diff.*
+
+Ownership checkpoint: why the tallies sit beside the old fields for now and when they go; why the
+runner still searches after `alone.other > 0`; why T1 is still `VERIFIED` end to end until W19.

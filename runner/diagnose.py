@@ -1,7 +1,7 @@
 """W7 entry point (ADR-004): reproduce the failure, check the victim alone, search for a single
 polluter, repeat the sequence, check source integrity, record every run. When no single test is
 enough, ddmin shrinks the tests before the victim with single trials (W10, ADR-007). Returns raw
-counts; the verdict is M3's eval.outcome.decide() (W9 builds the report)."""
+counts and, since W18, ADR-010 tallies; the verdict is M3's eval.outcome.decide() (W9 builds the report)."""
 
 import platform
 import shutil
@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional, Sequence
 
-from eval.baseline import FailureSignature, TestIdentifier
+from eval.baseline import FailureSignature, RunTally, TestIdentifier
 from runner.discovery import discover_order
 from runner.integrity import SourceIntegrity, compare, snapshot
 from runner.minimise import ddmin
@@ -23,7 +23,9 @@ from runner.verify import repeat, repeat_without_reference
 
 POLLUTER_FOUND = "POLLUTER_FOUND"
 VICTIM_FAILS_ALONE = "VICTIM_FAILS_ALONE"
-NO_SINGLE_POLLUTER = "NO_SINGLE_POLLUTER"
+# ADR-010 section 5: the failure was seen once and could not be obtained again.
+INCONSISTENT = "INCONSISTENT"
+NO_SINGLE_POLLUTER = INCONSISTENT  # old name, kept for M3's eval/ code until W19 (agreed 2026-11-14)
 NOT_REPRODUCED = "NOT_REPRODUCED"
 
 
@@ -57,6 +59,19 @@ class DiagnosisRuns:
     infrastructure_failures: int = 0
     shuffle_infrastructure_failures: int = 0  # shuffle runs where the victim only crashed/timed out
     alone_infrastructure_failures: int = 0  # same for alone runs when nothing reproduced
+    # ADR-010 section 1 (W18). Named *_tally because `sequence` is already the test list. The count
+    # fields above are filled from these until M3's W19 reads the tallies; then they are removed.
+    alone_tally: Optional[RunTally] = None
+    sequence_tally: Optional[RunTally] = None
+
+
+def _runs(status, victim, order, reference, polluters, sequence, sequence_tally: RunTally,
+          alone_tally: RunTally, search_runs: int, **more) -> DiagnosisRuns:
+    """A DiagnosisRuns whose old count fields agree with its tallies."""
+    return DiagnosisRuns(status, victim, order, reference, polluters, sequence,
+                         sequence_tally.n, sequence_tally.matched, sequence_tally.n - sequence_tally.passed,
+                         alone_tally.n, alone_tally.matched, search_runs,
+                         alone_tally=alone_tally, sequence_tally=sequence_tally, **more)
 
 
 def run_steps(
@@ -95,21 +110,22 @@ def run_steps(
 
     _label(runner, "alone")
     if reference is None:
-        alone_reference, alone_matches, alone_any = repeat_without_reference(runner, victim, n)
+        alone_reference, alone = repeat_without_reference(runner, victim, n)
         if alone_reference is not None:
             # The only order that failed is the victim alone, so that is the failing order reported.
-            return DiagnosisRuns(VICTIM_FAILS_ALONE, victim, [victim], alone_reference, [], [victim],
-                                 n, alone_matches, alone_any, n, alone_matches, 0, **explore)
+            return _runs(VICTIM_FAILS_ALONE, victim, [victim], alone_reference, [], [victim],
+                         alone, alone, 0, **explore)
         # No real failure anywhere, so every failure counted (order, shuffles, alone) was a
-        # crash, timeout or skip.
-        return DiagnosisRuns(NOT_REPRODUCED, victim, order, None, [], order,
-                             attempts, 0, attempt_failures, n, 0, 0,
-                             infrastructure_failures=attempt_failures,
-                             alone_infrastructure_failures=alone_any, **explore)
-    alone_successes, alone_any = repeat(runner, [victim], victim, reference, n)
-    if alone_successes >= 1:
-        return DiagnosisRuns(VICTIM_FAILS_ALONE, victim, order, reference, [], [victim],
-                             n, alone_successes, alone_any, n, alone_successes, 0, **explore)
+        # crash, timeout or skip -- which is why the reproduce runs tally as passes and infra only.
+        reproduced = RunTally(attempts, attempts - attempt_failures, 0, 0, attempt_failures)
+        return _runs(NOT_REPRODUCED, victim, order, None, [], order, reproduced, alone, 0,
+                     infrastructure_failures=attempt_failures,
+                     alone_infrastructure_failures=alone.infra, **explore)
+    alone = repeat(runner, [victim], victim, reference, n)
+    if alone.matched >= 1:
+        return _runs(VICTIM_FAILS_ALONE, victim, order, reference, [], [victim], alone, alone, 0, **explore)
+    # alone.other and alone.infra do not stop the search: ADR-010 rows 7-8 are decided by M3's
+    # decide(), and the report still says what happened after the polluter (W19).
 
     _label(runner, "search")
     polluter, search_runs = find_polluter(runner, order, victim, reference, priority)
@@ -126,10 +142,10 @@ def run_steps(
             minimise_runs += ddmin_runs
     sequence = polluters + [victim] if polluters else order
     _label(runner, "verify")
-    successes, any_failures = repeat(runner, sequence, victim, reference, n)
-    status = POLLUTER_FOUND if polluters else NO_SINGLE_POLLUTER
-    return DiagnosisRuns(status, victim, order, reference, polluters, sequence,
-                         n, successes, any_failures, n, 0, search_runs, minimise_runs=minimise_runs, **explore)
+    verified = repeat(runner, sequence, victim, reference, n)
+    status = POLLUTER_FOUND if polluters else INCONSISTENT
+    return _runs(status, victim, order, reference, polluters, sequence, verified, alone, search_runs,
+                 minimise_runs=minimise_runs, **explore)
 
 
 def diagnose(

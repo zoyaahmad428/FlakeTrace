@@ -16,13 +16,13 @@ from typing import List, Optional, Tuple
 from eval.baseline import TestIdentifier
 from eval.report import UnhandledStatus, assemble_report
 from evidence.extract import DEFAULT_DEPTH, ExtractError, Project, analyse_pair, report_fields
-from runner.diagnose import NO_SINGLE_POLLUTER, NOT_REPRODUCED, POLLUTER_FOUND, DiagnoseInputError, diagnose
+from runner.diagnose import INCONSISTENT, NOT_REPRODUCED, POLLUTER_FOUND, DiagnoseInputError, diagnose
 from runner.order_runner import ToolError
 
 _VICTIM = re.compile(r"[\w.$]+#[\w$]+")
 
 _NO_REPORT_WHY = {
-    NO_SINGLE_POLLUTER: "the victim failed in the original order but not again (alone, after any single "
+    INCONSISTENT: "the victim failed in the original order but not again (alone, after any single "
                         "earlier test, or in the full order once more), so no test is blamed; likely flaky",
     NOT_REPRODUCED: "the victim never failed with a real failure in n runs of the original order",
 }

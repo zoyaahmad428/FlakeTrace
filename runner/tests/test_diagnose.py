@@ -8,11 +8,11 @@ import unittest
 from unittest import mock
 from pathlib import Path
 
-from eval.baseline import FailureSignature, RunOutcome, TestIdentifier
+from eval.baseline import FailureSignature, RunOutcome, RunTally, TestIdentifier
 from eval.tests.fake_runner import FakeOrderRunner
 from runner.recording import RecordingRunner
 from runner.diagnose import (
-    NO_SINGLE_POLLUTER,
+    INCONSISTENT,
     NOT_REPRODUCED,
     POLLUTER_FOUND,
     VICTIM_FAILS_ALONE,
@@ -74,7 +74,7 @@ class TestRunSteps(unittest.TestCase):
         calls = []
         runner = FakeOrderRunner(lambda order, test: (calls.append(1) or FAIL) if test == V and not calls else PASS)
         runs = run_steps(runner, [A, B, LATER, V], V, n=2)
-        self.assertEqual(runs.status, NO_SINGLE_POLLUTER)
+        self.assertEqual(runs.status, INCONSISTENT)
         self.assertEqual(runs.polluters, [])
         self.assertEqual(runs.minimise_runs, 1)
 
@@ -82,7 +82,7 @@ class TestRunSteps(unittest.TestCase):
         calls = []
         runner = FakeOrderRunner(lambda order, test: (calls.append(1) or FAIL) if test == V and not calls else PASS)
         runs = run_steps(runner, [A, V], V, n=2)
-        self.assertEqual(runs.status, NO_SINGLE_POLLUTER)
+        self.assertEqual(runs.status, INCONSISTENT)
         self.assertEqual((runs.polluters, runs.minimise_runs), ([], 0))
 
     def test_minimise_runs_are_recorded_as_their_own_step(self):
@@ -198,7 +198,7 @@ class TestRunSteps(unittest.TestCase):
         outcomes = [FAIL] + [PASS] * 10
         runner = FakeOrderRunner(lambda order, test: outcomes.pop(0))
         runs = run_steps(runner, [V, A], V, n=2)
-        self.assertEqual(runs.status, NO_SINGLE_POLLUTER)
+        self.assertEqual(runs.status, INCONSISTENT)
         self.assertEqual((runs.search_runs, runs.sequence), (0, [V]))
 
     def test_explicit_order_without_the_victim_fails_before_maven_runs(self):
@@ -224,6 +224,79 @@ class TestRunSteps(unittest.TestCase):
         self.assertEqual(runs.status, NOT_REPRODUCED)
         self.assertEqual((runs.sequence_n, runs.sequence_successes, runs.sequence_any_failures), (3, 0, 3))
         self.assertEqual(runs.infrastructure_failures, 3)
+
+
+# ADR-010 tests T1-T4 at the runner level (W18). The verdicts they lead to are M3's decide() (W19).
+P = TestIdentifier("pkg.PolluterTest", "p")
+SIG_A = FailureSignature("java.lang.AssertionError", "pkg.VictimTest.v:10", "after P")
+SIG_B = FailureSignature("java.lang.IllegalStateException", "pkg.VictimTest.v:22", "alone")
+TIMEOUT = RunOutcome(False, FailureSignature("flaketrace.Timeout", "", "JVM exceeded 120s"))
+
+
+def scripted(alone_outcomes):
+    """The victim fails with A after P; run alone, it returns `alone_outcomes` in turn (then passes)."""
+    alone = list(alone_outcomes)
+
+    def outcome(order, test):
+        if test != V:
+            return PASS
+        if P in order:
+            return RunOutcome(False, SIG_A)
+        if order == [V]:
+            return alone.pop(0) if alone else PASS
+        return PASS
+    return FakeOrderRunner(outcome)
+
+
+class TestTallies(unittest.TestCase):
+    def test_t1_victim_failing_alone_differently_is_counted_as_other(self):
+        runs = run_steps(scripted([RunOutcome(False, SIG_B)] * 20), [P, V], V, n=20)
+        self.assertEqual(runs.alone_tally, RunTally(n=20, passed=0, matched=0, other=20, infra=0))
+        self.assertEqual(runs.sequence_tally, RunTally(n=20, passed=0, matched=20, other=0, infra=0))
+
+    def test_t2_three_different_failures_in_twenty_alone_runs(self):
+        runs = run_steps(scripted([RunOutcome(False, SIG_B)] * 3), [P, V], V, n=20)
+        self.assertEqual(runs.alone_tally, RunTally(n=20, passed=17, matched=0, other=3, infra=0))
+
+    def test_t3_two_timeouts_alone_are_infra_not_passes(self):
+        runs = run_steps(scripted([TIMEOUT] * 2), [P, V], V, n=20)
+        self.assertEqual(runs.alone_tally, RunTally(n=20, passed=18, matched=0, other=0, infra=2))
+
+    def test_t4_a_failure_seen_once_and_never_again_is_inconsistent(self):
+        calls = []
+        runner = FakeOrderRunner(lambda order, test: (calls.append(1) or FAIL) if test == V and not calls else PASS)
+        runs = run_steps(runner, [A, B, LATER, V], V, n=2)
+        self.assertEqual(runs.status, "INCONSISTENT")
+        self.assertEqual(runs.polluters, [])
+
+    def test_old_count_fields_agree_with_the_tallies(self):
+        # Kept for M3's eval/report.py until W19 switches to the tallies.
+        runs = run_steps(scripted([RunOutcome(False, SIG_B)] * 3 + [TIMEOUT]), [P, V], V, n=20)
+        self.assertEqual((runs.alone_n, runs.alone_successes), (runs.alone_tally.n, runs.alone_tally.matched))
+        self.assertEqual((runs.sequence_n, runs.sequence_successes, runs.sequence_any_failures),
+                         (runs.sequence_tally.n, runs.sequence_tally.matched,
+                          runs.sequence_tally.n - runs.sequence_tally.passed))
+
+    def test_victim_failing_alone_has_an_alone_tally(self):
+        runs = run_steps(victim_fails_when(lambda order: True), [A, V], V, n=3)
+        self.assertEqual(runs.status, VICTIM_FAILS_ALONE)
+        self.assertEqual(runs.alone_tally, RunTally(3, 0, 3, 0, 0))
+
+    def test_failing_alone_without_a_reference_tallies_against_the_first_real_failure(self):
+        outcomes = [TIMEOUT, RunOutcome(False, SIG_B), RunOutcome(False, SIG_A), PASS]
+        runner = FakeOrderRunner(lambda order, test: outcomes.pop(0) if test == V and order == [V] else PASS)
+        runs = run_steps(runner, [A, V], V, n=4)  # [A, V] always passes; only the alone runs fail
+        self.assertEqual(runs.status, VICTIM_FAILS_ALONE)
+        self.assertEqual(runs.reference_signature, SIG_B)
+        self.assertEqual(runs.alone_tally, RunTally(4, 1, 1, 1, 1))
+
+    def test_not_reproduced_tallies_only_passes_and_crashes(self):
+        crash = RunOutcome(False, FailureSignature("flaketrace.JvmCrash", "", "code 1"))
+        runner = FakeOrderRunner(lambda order, test: crash if test == V and order == [V] else PASS)
+        runs = run_steps(runner, [A, V], V, n=3)
+        self.assertEqual(runs.status, NOT_REPRODUCED)
+        self.assertEqual(runs.sequence_tally, RunTally(3, 3, 0, 0, 0))
+        self.assertEqual(runs.alone_tally, RunTally(3, 0, 0, 0, 3))
 
 
 class TestEnvironment(unittest.TestCase):

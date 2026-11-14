@@ -92,10 +92,10 @@ one; each has its own tests in `runner/tests/`.
 | `integrity.py` | `snapshot(project)` hashes every file (SHA-256) except top-level `target/` and `.git/`; `compare(before, after)` → `SourceIntegrity(passed, details)` naming changed/added/removed files | done |
 | `recording.py` | `RecordingRunner(runner, path, header)` wraps any runner; set `.step` before a phase; every JVM run is appended as one JSON line (step, order, outcomes with signatures, start, seconds) — line 1 is the header: victim, n, project, `java_version`, `started`, and (panel action A7) `project_commit`, `project_dirty` (uncommitted changes) and `os` from `diagnose.environment()`; commit/dirty are `null` when the project is not in a git repository. Records go to `flaketrace-records/` (git-ignored) | done |
 | `discovery.py` | `discover_order(runner, target/test-classes)`: classes matching Surefire's default includes (`Test*`, `*Test`, `*Tests`, `*TestCase`, no `$`), sorted by full name; methods from JUnit via `java FtHarness --list <file>` (stdin: class names; file: `Class#method` lines). Surefire's default `runOrder` is `filesystem` — pass an explicit order for such projects | done |
-| `search.py`, `verify.py` | `reproduce` — run the original order until the victim fails; that failure is the reference signature (a `flaketrace.*` crash/timeout/skip never is; the prefix is `SYNTHETIC_PREFIX` in `eval/baseline.py`, next to ADR-010's `classify`, `RunTally` and `tally`). `find_polluter` — `[candidate, victim]` once per earlier test, `priority` first; first match wins. `repeat` — n runs → (matching, any-signature) victim failures | done |
+| `search.py`, `verify.py` | `reproduce` — run the original order until the victim fails; that failure is the reference signature (a `flaketrace.*` crash/timeout/skip never is; the prefix is `SYNTHETIC_PREFIX` in `eval/baseline.py`, next to ADR-010's `classify`, `RunTally` and `tally`). `find_polluter` — `[candidate, victim]` once per earlier test, `priority` first; first match wins. `repeat` — n runs → a `RunTally` of the victim's outcomes: passed, matched, other, infra (W18, ADR-010) | done |
 | `minimise.py` | `ddmin(runner, prefix, victim, reference)` → a reduced subset of the tests before the victim and the runs used; only the reference failure counts, each subset runs at most once, so the result is not deletion-verified (W10, ADR-007; FT004) | done |
 | `orders.py` | When the starting order never fails for real: up to 31 distinct valid shuffled orders (classes shuffled, then methods within each class; never interleaved), one run each, seeds recorded; the first real failure becomes the failing order (ADR-008) | done |
-| `diagnose.py` | `diagnose(project, victim, n=20)` → `DiagnosisRuns` (raw counts, no verdict); `run_steps(runner, order, victim, n)` is the same logic on any runner | done |
+| `diagnose.py` | `diagnose(project, victim, n=20)` → `DiagnosisRuns` (raw counts and the `alone_tally` / `sequence_tally` of ADR-010, no verdict; the older count fields are filled from the tallies until M3's W19 reads them); `run_steps(runner, order, victim, n)` is the same logic on any runner | done |
 
 ```python
 from pathlib import Path
@@ -104,7 +104,7 @@ from runner.diagnose import diagnose
 
 runs = diagnose(Path("fixtures/od-fixture"),
                 TestIdentifier("odfixture.ConfigVictimTest", "expectsDefaultMode"), n=20)
-runs.status, runs.polluters, runs.sequence_successes, runs.alone_successes
+runs.status, runs.polluters, runs.sequence_tally, runs.alone_tally   # RunTally(n, passed, matched, other, infra)
 runs.source_integrity.passed, runs.execution_record   # flaketrace-records/<time>-<victim>.jsonl
 ```
 
@@ -112,7 +112,7 @@ runs.source_integrity.passed, runs.execution_record   # flaketrace-records/<time
 | --- | --- | --- |
 | `POLLUTER_FOUND` | one earlier test makes the victim fail with the reference signature — or, when none does alone, `ddmin` reduced the earlier tests to a set that does (F3), with single trials | `polluters + [victim]` |
 | `VICTIM_FAILS_ALONE` | the victim reproduced its failure with nothing before it — no polluter is blamed | `[victim]` (counts = alone counts) |
-| `NO_SINGLE_POLLUTER` | a failure was seen (in the starting order or once in a shuffled order) but did not come back: no single earlier test reproduces it and the full order did not fail again (likely flaky; also a victim first in the order) — no test is blamed | the failing order |
+| `INCONSISTENT` (was `NO_SINGLE_POLLUTER`, still importable under that name until W19) | a failure was seen (in the starting order or once in a shuffled order) but did not come back: no single earlier test reproduces it and the full order did not fail again (likely flaky; also a victim first in the order) — no test is blamed | the failing order |
 | `NOT_REPRODUCED` | the victim never failed for real in `n` runs of the starting order, in up to 31 distinct class-first shuffled orders (ADR-008), or in `n` runs alone; crashes/timeouts are counted in `sequence_any_failures` and `infrastructure_failures` | the starting order |
 
 ## Command line (W9)
@@ -152,7 +152,7 @@ VERIFIED  odfixture.ConfigVictimTest#expectsDefaultMode
 | 0 | report written — any outcome, including `UNRESOLVED` |
 | 2 | input wrong (`--victim` not Java `Class#method`, no `pom.xml`, `--n` < 1, records inside the project or a file, unknown victim) |
 | 1 | a tool failed (Maven, `java`/`javac`/`mvn`, discovery timeout, the extractor/javap) |
-| 3 | no report can be built yet (`NO_SINGLE_POLLUTER` — the victim is first in the order and the failure did not come back). Since ADR-008, `NOT_REPRODUCED` gives a report and exit 0 |
+| 3 | no report can be built yet (`INCONSISTENT` — the victim is first in the order and the failure did not come back). Since ADR-008, `NOT_REPRODUCED` gives a report and exit 0 |
 
 ## Planned components, in build order
 

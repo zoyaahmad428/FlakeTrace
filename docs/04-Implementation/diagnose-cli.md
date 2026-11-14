@@ -27,7 +27,7 @@ in-process and decides nothing itself:
 | 0 | report written (any outcome, including `UNRESOLVED`) |
 | 2 | input wrong (`--victim` not Java `Class#method`, no `pom.xml`, `--n` < 1, records folder inside the project or a file, victim not a test of the project) |
 | 1 | a tool failed (Maven, `java`/`javac`/`mvn` missing, test discovery timed out, the extractor, javap) |
-| 3 | diagnosis ran but no report can be built yet (`NO_SINGLE_POLLUTER`, `NOT_REPRODUCED`) |
+| 3 | diagnosis ran but no report can be built yet (`INCONSISTENT`, formerly `NO_SINGLE_POLLUTER`; `NOT_REPRODUCED` has had a report since ADR-008) |
 
 ## 2. Why it is built this way
 

@@ -1,6 +1,6 @@
 import unittest
 
-from eval.baseline import FailureSignature, RunOutcome, TestIdentifier
+from eval.baseline import FailureSignature, RunOutcome, RunTally, TestIdentifier
 from eval.tests.fake_runner import FakeOrderRunner
 from runner.search import candidate_order, find_polluter, reproduce
 from runner.verify import repeat
@@ -74,9 +74,9 @@ class TestFindPolluter(unittest.TestCase):
 
 
 class TestRepeat(unittest.TestCase):
-    def test_counts_matching_and_any_failures(self):
+    def test_tallies_each_run_once(self):
         runner = FakeOrderRunner(scripted_victim([fails(REF), PASS, fails(OTHER), fails(CRASH), fails(REF)]))
-        self.assertEqual(repeat(runner, [A, V], V, REF, 5), (2, 4))
+        self.assertEqual(repeat(runner, [A, V], V, REF, 5), RunTally(n=5, passed=1, matched=2, other=1, infra=1))
         self.assertEqual(len(runner.calls), 5)
 
 

@@ -1,32 +1,21 @@
-"""Repeated-run counts (W7, ADR-004)."""
+"""Repeated runs, counted as ADR-010 tallies (W7, ADR-004; W18, ADR-010)."""
 
-from typing import Sequence, Tuple
+from typing import Optional, Sequence, Tuple
 
-from eval.baseline import SYNTHETIC_PREFIX, FailureSignature, TestIdentifier
+from eval.baseline import SYNTHETIC_PREFIX, FailureSignature, RunTally, TestIdentifier, tally
 
 
 def repeat(
     runner, sequence: Sequence[TestIdentifier], victim: TestIdentifier, reference: FailureSignature, n: int
-) -> Tuple[int, int]:
-    """Run `sequence` n times, each in a fresh JVM. Returns (runs where the victim failed with a
-    signature matching `reference`, runs where the victim failed for any reason)."""
-    successes = any_failures = 0
-    for _ in range(n):
-        outcome = runner.run_ordered(list(sequence))[victim]
-        if not outcome.passed:
-            any_failures += 1
-            if outcome.failure_signature.matches(reference):
-                successes += 1
-    return successes, any_failures
+) -> RunTally:
+    """Run `sequence` n times, each in a fresh JVM, and tally the victim's outcomes against `reference`."""
+    return tally([runner.run_ordered(list(sequence))[victim] for _ in range(n)], reference)
 
 
-def repeat_without_reference(runner, victim: TestIdentifier, n: int):
+def repeat_without_reference(runner, victim: TestIdentifier, n: int) -> Tuple[Optional[FailureSignature], RunTally]:
     """Run the victim alone n times when nothing reproduced yet (ADR-008). The first real failure
-    becomes the reference. Returns (reference or None, runs matching it, runs failing for any reason)."""
+    becomes the reference and every run is tallied against it. Returns (reference or None, tally)."""
     outcomes = [runner.run_ordered([victim])[victim] for _ in range(n)]
     reference = next((o.failure_signature for o in outcomes if not o.passed
                       and not o.failure_signature.exception_type.startswith(SYNTHETIC_PREFIX)), None)
-    any_failures = sum(1 for o in outcomes if not o.passed)
-    successes = 0 if reference is None else sum(
-        1 for o in outcomes if not o.passed and o.failure_signature.matches(reference))
-    return reference, successes, any_failures
+    return reference, tally(outcomes, reference)

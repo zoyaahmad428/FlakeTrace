@@ -14,7 +14,7 @@ from unittest import mock
 from eval.baseline import FailureSignature, TestIdentifier
 from eval.report import assemble_report
 from runner.cli import OrderFileError, combine_fields, main, read_order, resource_fields, summary
-from runner.diagnose import (NO_SINGLE_POLLUTER, POLLUTER_FOUND, VICTIM_FAILS_ALONE, DiagnoseInputError,
+from runner.diagnose import (INCONSISTENT, POLLUTER_FOUND, VICTIM_FAILS_ALONE, DiagnoseInputError,
                              DiagnosisRuns)
 from runner.integrity import SourceIntegrity
 from runner.order_runner import ToolError
@@ -381,15 +381,15 @@ class TestReports(unittest.TestCase):
             "victim_alone": {"successes": 0, "n": 20}, "execution_record_reference": "r.jsonl",
         }
 
-    def test_no_single_polluter_exits_3_without_a_report(self):
+    def test_inconsistent_exits_3_without_a_report_until_m3_builds_one(self):
         records = Path(tempfile.mkdtemp(prefix="flaketrace-cli-records-"))
         record = records / "20261010T000000Z-pkg.VictimTest#v.jsonl"
-        unhandled = runs(NO_SINGLE_POLLUTER, record, sequence=[P, V], alone_successes=0, search_runs=1)
+        unhandled = runs(INCONSISTENT, record, sequence=[P, V], alone_successes=0, search_runs=1)
         with mock.patch("runner.cli.diagnose", return_value=unhandled):
             code, out, _ = run_cli(["diagnose", "--project", str(project_with_pom()), "--victim", str(V)])
         self.assertEqual(code, 3)
         self.assertEqual(list(records.glob("*.report.json")), [])
-        self.assertIn("No report: NO_SINGLE_POLLUTER", out)
+        self.assertIn("No report: INCONSISTENT", out)
         self.assertIn(str(record), out)
 
 

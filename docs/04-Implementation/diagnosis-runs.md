@@ -21,7 +21,7 @@ verdict stays with M3's `decide()`, so the statistics and decision rules live in
 | `search.py` | `reproduce` (reference signature), `find_polluter` (one-by-one) |
 | `minimise.py` | `ddmin` — when no single test is enough, shrinks the tests before the victim with single trials, not deletion-verified (W10, ADR-007; FT004) |
 | `orders.py` | class-first shuffled orders when the starting order never fails; the first real failure becomes the failing order (ADR-008) |
-| `verify.py` | `repeat` ×n → matching and any-signature counts |
+| `verify.py` | `repeat` ×n → a `RunTally`: passed, matched, other, infra (W18, ADR-010). The old pair of counts hid a victim that failed alone *differently* (FT003) |
 | `diagnose.py` | `run_steps` (logic, testable with a fake runner) + `diagnose` (real wiring) |
 
 ## 2. Why it is built this way
@@ -43,7 +43,7 @@ verdict stays with M3's `decide()`, so the statistics and decision rules live in
 
 - **More than one polluter needed** (F3) → `ddmin` finds a reduced set (F3: `setFlagA`, `setFlagB`; 10 minimise runs = 1
   re-check of the full order + 9 `ddmin`) → `POLLUTER_FOUND` with several polluters. The full order must
-  fail once more before `ddmin`, so a one-off flaky failure ends `NO_SINGLE_POLLUTER` with nobody blamed. Each `ddmin` check is one run, so a flaky check can keep a bystander, and verify ×n does **not** expose it: the longer sequence still fails (FT004, reproduced 2026-11-13 in [[evidence-m2]]). Repeated deletion checks are ADR-011 (W20).
+  fail once more before `ddmin`, so a one-off flaky failure ends `INCONSISTENT` (called `NO_SINGLE_POLLUTER` before W18) with nobody blamed. Each `ddmin` check is one run, so a flaky check can keep a bystander, and verify ×n does **not** expose it: the longer sequence still fails (FT004, reproduced 2026-11-13 in [[evidence-m2]]). Repeated deletion checks are ADR-011 (W20).
 - **A rarely-failing flaky victim** can pass all `n` alone runs by chance and then fail during
   the search, giving a spurious polluter; the verify counts expose it (few matches of `n`), so
   `decide()` can at most say `CANDIDATE`.
