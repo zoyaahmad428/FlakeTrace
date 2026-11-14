@@ -1215,3 +1215,22 @@ own copy of the code, not from the review's description.
 - **Limitations:** default unchanged until M1's run. JUnit 3, `@RunWith` and `suite()` classes
   keep per-test lifecycle. An `@AfterClass` failure is not charged to a test in `class-grouped`.
   JDK 8 not run locally — CI runs the control and the runner tests on JDK 8.
+
+## W22 job 3 follow-up: the four deferred review minors fixed (2026-11-14)
+
+- **Asked by M2:** fix the minors deferred in the job 3 review. Each got a test first, seen failing
+  on `bbaa0d2` (`py -3 -m unittest runner.tests.test_order_runner.TestOrderRunnerOnProbes` →
+  19 run, **4 failures**):
+
+  | Minor | Failing output first | Fix in `runner/harness/FtHarness.java` |
+  | --- | --- | --- |
+  | Unknown method: different signature in the two modes | grouped `{… method='nope' …}` ≠ per-method | a test JUnit never ran (and no class-setup failure/skip) gets `runOne` — exactly the per-method result; no test code runs, the method does not exist |
+  | A method requested as `initializationError` took JUnit's empty-filter error | `…SortingRequ…` ≠ per-method message | listener only counts descriptions of this class (`index()`) |
+  | A line without `#` stopped the whole harness | `AssertionError: 1 != 0 : per-method` (exit 1) | `className`/`runOne` handle it; that line alone fails (`IllegalArgumentException`) |
+  | Harness accepted an unknown `--lifecycle` | `(0, [… PASS …]) != (2, [])` | usage error, exit 2, no results |
+
+- **After:** `runner.tests.test_order_runner` → **45 OK**; every `runner/tests/test_*.py` →
+  **184 OK** (435 s); every `eval/tests/test_*.py` → **99 OK**; `ui.tests.test_server` → **30 OK**;
+  Surefire control exit 0.
+- **Limitation:** the "no such test" path in `class-grouped` costs one extra `Request.method`
+  for that test (no test code runs).

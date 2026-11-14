@@ -298,6 +298,36 @@ class TestOrderRunnerOnProbes(unittest.TestCase):
             self.assertEqual(grouped[test].failure_signature.exception_type, "flaketrace.NotExecuted", test)
         self.assertEqual(grouped, self.runner.run_ordered(tests))
 
+    def test_grouped_unknown_method_has_the_same_signature_as_per_method(self):
+        order = [TestIdentifier("OrderProbeTest", "nope"), TestIdentifier("OrderProbeTest", "a")]
+        self.assertEqual(self.grouped.run_ordered(order), self.runner.run_ordered(order))
+
+    def test_grouped_method_named_initialization_error_is_not_confused_with_junit_errors(self):
+        order = [TestIdentifier("OrderProbeTest", "initializationError")]
+        self.assertEqual(self.grouped.run_ordered(order), self.runner.run_ordered(order))
+
+    def harness(self, lines, *args):
+        """Run FtHarness directly (as order_runner.py does) and return (exit code, result lines)."""
+        result_file = Path(tempfile.mkdtemp(prefix="flaketrace-harness-test-")) / "results.tsv"
+        finished = subprocess.run(
+            [shutil.which("java"), "FtHarness", str(result_file)] + list(args),
+            input="".join(f"{line}\n" for line in lines),
+            env=dict(os.environ, CLASSPATH=os.pathsep.join([self.runner._harness_dir] + self.classpath)),
+            capture_output=True, text=True, timeout=120,
+        )
+        text = result_file.read_text(encoding="utf-8") if result_file.exists() else ""
+        return finished.returncode, text.split("\n")[:-1]
+
+    def test_harness_line_without_hash_fails_only_itself(self):
+        for mode in ("per-method", "class-grouped"):
+            code, lines = self.harness(["noHashHere", "OrderProbeTest#a"], "--lifecycle", mode)
+            self.assertEqual(code, 0, mode)
+            self.assertEqual([line.split("\t")[2] for line in lines], ["FAIL", "PASS"], mode)
+
+    def test_harness_refuses_an_unknown_lifecycle(self):
+        code, lines = self.harness(["OrderProbeTest#a"], "--lifecycle", "per-class")
+        self.assertEqual((code, lines), (2, []))
+
     def test_grouped_crash_mid_block_keeps_finished_results(self):
         a, exits, b = (TestIdentifier("OrderProbeTest", m) for m in ("a", "exits", "b"))
         results = self.grouped.run_ordered([a, exits, b])

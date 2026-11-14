@@ -41,7 +41,16 @@ public class FtHarness {
             env(args[1]);
             System.exit(0);
         }
-        boolean grouped = args.length > 2 && args[1].equals("--lifecycle") && args[2].equals("class-grouped");
+        String lifecycle = "per-method";
+        if (args.length > 1) {
+            if (args.length != 3 || !args[1].equals("--lifecycle")
+                    || !(args[2].equals("per-method") || args[2].equals("class-grouped"))) {
+                System.err.println("usage: FtHarness <result-file> [--lifecycle per-method|class-grouped]");
+                System.exit(2);
+            }
+            lifecycle = args[2];
+        }
+        boolean grouped = lifecycle.equals("class-grouped");
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in, "UTF-8"));
         List<String> specs = new ArrayList<String>();
         String line;
@@ -72,7 +81,8 @@ public class FtHarness {
     }
 
     static String className(String spec) {
-        return spec.substring(0, spec.indexOf('#'));
+        int hash = spec.indexOf('#');
+        return hash < 0 ? spec : spec.substring(0, hash);
     }
 
     /**
@@ -82,7 +92,10 @@ public class FtHarness {
      * ignores sorting (ADR-012 section 2 spike), so those keep one request per test.
      */
     static boolean runBlock(final PrintStream out, final List<String> specs, final int start, int end) {
-        Class<?> cls;
+        if (specs.get(start).indexOf('#') < 0) {
+            return false;  // not Class#method: runOne reports it
+        }
+        final Class<?> cls;
         try {
             cls = Class.forName(className(specs.get(start)));
         } catch (Throwable t) {
@@ -110,8 +123,14 @@ public class FtHarness {
         final Throwable[] setupFailure = new Throwable[1];
         final boolean[] setupSkipped = new boolean[1];
         RunListener listener = new RunListener() {
+            // A description from elsewhere (e.g. JUnit's own "initializationError" when the filter
+            // matches nothing) must never be taken for one of this block's tests.
+            int index(Description d) {
+                return cls.getName().equals(d.getClassName()) ? methods.indexOf(d.getMethodName()) : -1;
+            }
+
             void write(Description d) {
-                int i = methods.indexOf(d.getMethodName());
+                int i = index(d);
                 if (i < 0 || written[i]) {
                     return;
                 }
@@ -127,7 +146,7 @@ public class FtHarness {
 
             @Override
             public void testFailure(Failure f) {
-                int i = methods.indexOf(f.getDescription().getMethodName());
+                int i = index(f.getDescription());
                 if (i >= 0) {
                     failures[i] = f.getException();
                 } else if (!started[0] && setupFailure[0] == null) {
@@ -137,7 +156,7 @@ public class FtHarness {
 
             @Override
             public void testAssumptionFailure(Failure f) {
-                int i = methods.indexOf(f.getDescription().getMethodName());
+                int i = index(f.getDescription());
                 if (i >= 0) {
                     skipped[i] = true;
                 } else if (!started[0]) {
@@ -147,7 +166,7 @@ public class FtHarness {
 
             @Override
             public void testIgnored(Description d) {
-                int i = methods.indexOf(d.getMethodName());
+                int i = index(d);
                 if (i >= 0) {
                     skipped[i] = true;
                 }
@@ -182,14 +201,15 @@ public class FtHarness {
         for (int i = 0; i < n; i++) {
             if (!written[i]) {
                 // Never ran: the class setup failed or was skipped, or JUnit has no such test method.
+                // For the last case, runOne gives exactly the per-method result (it runs no test code,
+                // because the method does not exist).
                 String result;
                 if (setupFailure[0] != null) {
                     result = format("FAIL", setupFailure[0]);
                 } else if (setupSkipped[0]) {
                     result = "SKIP\t\t\t";
                 } else {
-                    result = format("FAIL", new Exception(
-                        "No tests found matching Method " + methods.get(i) + "(" + cls.getName() + ")"));
+                    result = runOne(specs.get(start + i));
                 }
                 out.println((start + i) + "\t" + specs.get(start + i) + "\t" + result);
             }
@@ -236,6 +256,9 @@ public class FtHarness {
 
     static String runOne(String spec) {
         int hash = spec.indexOf('#');
+        if (hash < 0) {
+            return format("FAIL", new IllegalArgumentException("not Class#method: " + spec));
+        }
         Class<?> cls;
         try {
             cls = Class.forName(spec.substring(0, hash));

@@ -986,3 +986,14 @@ confusing variable it had introduced in job 1 (`command` reused in `cli.main`).
 
 Ownership checkpoint: how `runBlock` groups, filters and sorts; why JUnit 3 is excluded; what
 happens when `@BeforeClass` throws; how the control proves the difference.
+
+## 2026-11-14 — W22 job 3 follow-up: deferred review minors
+
+**Tool:** Claude Code (Claude Opus 5.5), test-driven-development · **Level:** L3 ·
+**Branch:** `m2/w22-record-env`
+
+**Asked:** fix the four minors the job 3 review deferred. **Kept:** four tests (each seen failing
+first) and four small harness fixes. **How verified:** [[evidence-m2]] "W22 job 3 follow-up":
+runner 184, eval 99, UI backend 30 OK. **Errors:** the first insert of the tests turned `
+`
+escapes into real newlines (a script error), fixed before running. **What I changed:** *to fill in.*
