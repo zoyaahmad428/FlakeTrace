@@ -7,8 +7,7 @@ interleaved, because JUnit cannot run such an order (iDFlakies [3], parameter-pr
 import random
 from typing import Dict, List, Optional, Sequence, Tuple
 
-from eval.baseline import FailureSignature, TestIdentifier
-from runner.search import SYNTHETIC_PREFIX
+from eval.baseline import SYNTHETIC_PREFIX, FailureSignature, TestIdentifier
 
 
 def class_first_shuffle(order: Sequence[TestIdentifier], seed: int) -> List[TestIdentifier]:

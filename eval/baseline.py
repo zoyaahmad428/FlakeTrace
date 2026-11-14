@@ -13,7 +13,7 @@ see `_shuffle_classes_then_methods`'s docstring for why.
 
 import random
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Protocol, Tuple
+from typing import Dict, Iterable, List, Optional, Protocol, Tuple
 
 
 @dataclass(frozen=True)
@@ -64,6 +64,50 @@ class RunOutcome:
             raise ValueError("RunOutcome: passed=True cannot carry a failure_signature")
         if not self.passed and self.failure_signature is None:
             raise ValueError("RunOutcome: passed=False requires a failure_signature")
+
+
+# ADR-010 section 1: every run of the victim has exactly one of four outcomes. Written by Member 2
+# for Member 3 (agreed 2026-11-13, W19 step 1); the runner and the recount checker both use it.
+SYNTHETIC_PREFIX = "flaketrace."  # exception types the runner invents for a crash, timeout or skip
+PASS, MATCH, OTHER, INFRA = "PASS", "MATCH", "OTHER", "INFRA"
+
+
+def classify(outcome: RunOutcome, reference: Optional[FailureSignature]) -> str:
+    """PASS, MATCH (a real failure with the reference signature), OTHER (a real failure with
+    another signature) or INFRA (crashed, timed out or not executed). A real failure needs a
+    reference to be told apart; without one it is a caller error."""
+    if outcome.passed:
+        return PASS
+    if outcome.failure_signature.exception_type.startswith(SYNTHETIC_PREFIX):
+        return INFRA
+    if reference is None:
+        raise ValueError("classify: a real failure cannot be classified without a reference signature")
+    return MATCH if outcome.failure_signature.matches(reference) else OTHER
+
+
+@dataclass(frozen=True)
+class RunTally:
+    """How n runs of one phase ended. The four counts never overlap and always add up to n."""
+
+    n: int
+    passed: int
+    matched: int
+    other: int
+    infra: int
+
+    def __post_init__(self):
+        counts = (self.n, self.passed, self.matched, self.other, self.infra)
+        if min(counts) < 0:
+            raise ValueError(f"RunTally: counts must be >= 0, got {counts}")
+        if self.passed + self.matched + self.other + self.infra != self.n:
+            raise ValueError(f"RunTally: passed + matched + other + infra must equal n, got {counts}")
+
+
+def tally(outcomes: Iterable[RunOutcome], reference: Optional[FailureSignature]) -> RunTally:
+    """Classify every outcome and count each category."""
+    categories = [classify(outcome, reference) for outcome in outcomes]
+    return RunTally(n=len(categories), passed=categories.count(PASS), matched=categories.count(MATCH),
+                    other=categories.count(OTHER), infra=categories.count(INFRA))
 
 
 class OrderRunner(Protocol):

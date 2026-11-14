@@ -5,11 +5,19 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from eval.baseline import (
+    INFRA,
+    MATCH,
+    OTHER,
+    PASS,
+    SYNTHETIC_PREFIX,
     BaselineResult,
     FailureSignature,
     RunOutcome,
+    RunTally,
     TestIdentifier,
+    classify,
     run_random_order_baseline,
+    tally,
 )
 from eval.tests.fake_runner import FakeOrderRunner
 
@@ -192,6 +200,73 @@ class TestTestIdentifierRoundTrip(unittest.TestCase):
         round_tripped = TestIdentifier.from_dict(original.to_dict())
         self.assertEqual(original, round_tripped)
         self.assertEqual(original.to_dict(), {"class": "odfixture.ConfigVictimTest", "method": "expectsDefaultMode"})
+
+
+# ADR-010 section 1 (W19 step 1, written by M2 for M3, agreed 2026-11-13).
+PASSED = RunOutcome(passed=True)
+SAME = RunOutcome(False, FailureSignature("java.lang.AssertionError", REFERENCE_SIGNATURE.stack_trace, "other message"))
+DIFFERENT = RunOutcome(False, FailureSignature("java.lang.IllegalStateException", "at V.t(V.java:22)"))
+CRASH = RunOutcome(False, FailureSignature("flaketrace.JvmCrash", ""))
+TIMEOUT = RunOutcome(False, FailureSignature("flaketrace.Timeout", "", "JVM exceeded 120s"))
+NOT_EXECUTED = RunOutcome(False, FailureSignature("flaketrace.NotExecuted", "", "ignored or an assumption failed"))
+
+
+class TestClassify(unittest.TestCase):
+    def test_a_pass_is_pass(self):
+        self.assertEqual(classify(PASSED, REFERENCE_SIGNATURE), PASS)
+
+    def test_the_reference_failure_is_match_even_with_another_message(self):
+        self.assertEqual(classify(SAME, REFERENCE_SIGNATURE), MATCH)
+
+    def test_a_different_real_failure_is_other(self):
+        self.assertEqual(classify(DIFFERENT, REFERENCE_SIGNATURE), OTHER)
+
+    def test_crash_timeout_and_not_executed_are_infra(self):
+        for outcome in (CRASH, TIMEOUT, NOT_EXECUTED):
+            self.assertEqual(classify(outcome, REFERENCE_SIGNATURE), INFRA, outcome)
+
+    def test_pass_and_infra_need_no_reference(self):
+        self.assertEqual(classify(PASSED, None), PASS)
+        self.assertEqual(classify(CRASH, None), INFRA)
+
+    def test_a_real_failure_without_a_reference_is_refused(self):
+        with self.assertRaises(ValueError):
+            classify(DIFFERENT, None)
+
+    def test_the_synthetic_prefix_is_the_runners(self):
+        self.assertEqual(SYNTHETIC_PREFIX, "flaketrace.")
+
+
+class TestRunTally(unittest.TestCase):
+    def test_counts_that_add_up_are_kept(self):
+        t = RunTally(n=20, passed=17, matched=0, other=3, infra=0)
+        self.assertEqual((t.n, t.passed, t.matched, t.other, t.infra), (20, 17, 0, 3, 0))
+
+    def test_counts_that_do_not_add_up_are_refused(self):
+        with self.assertRaises(ValueError):
+            RunTally(n=20, passed=20, matched=1, other=0, infra=0)
+
+    def test_a_negative_count_is_refused(self):
+        with self.assertRaises(ValueError):
+            RunTally(n=0, passed=1, matched=-1, other=0, infra=0)
+
+    def test_an_empty_tally_is_allowed(self):
+        self.assertEqual(RunTally(0, 0, 0, 0, 0).n, 0)
+
+
+class TestTally(unittest.TestCase):
+    def test_counts_each_category_once(self):
+        outcomes = [PASSED, PASSED, SAME, DIFFERENT, DIFFERENT, CRASH, TIMEOUT]
+        self.assertEqual(tally(outcomes, REFERENCE_SIGNATURE),
+                         RunTally(n=7, passed=2, matched=1, other=2, infra=2))
+
+    def test_no_outcomes_is_an_empty_tally(self):
+        self.assertEqual(tally([], REFERENCE_SIGNATURE), RunTally(0, 0, 0, 0, 0))
+
+    def test_ft003_alone_runs_failing_differently_are_not_passes(self):
+        # The Mid build counted only matching failures, so these 20 runs read as "never failed alone".
+        result = tally([DIFFERENT] * 20, REFERENCE_SIGNATURE)
+        self.assertEqual((result.passed, result.matched, result.other), (0, 0, 20))
 
 
 if __name__ == "__main__":

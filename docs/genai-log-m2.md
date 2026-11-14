@@ -868,3 +868,29 @@ test would only repeat a constant; they were checked by build and phrase search 
 Ownership checkpoint: why "alone 0/20" was misleading (it counts only same-signature failures);
 why `VERIFIED (sequence)` and not plain `VERIFIED`; where the qualifier is added (one helper on each
 side, `summary()` and `outcomeLabel()`), and how to change it.
+
+## 2026-11-14 — W19 step 1: `RunTally` and the classifier in `eval/baseline.py`
+
+**Tool:** Claude Code (Claude Opus 5.5) · **Level:** L3 · **Branch:** `m2/w19-runtally`
+
+**Asked:** implement ADR-010 §1 in M3's `eval/baseline.py` (agreed with M3 on 2026-11-13), test
+first, and make the runner use the one synthetic prefix.
+
+**Decided by me** when Claude showed the options: tests go in `eval/tests/test_baseline.py`; a real
+failure without a reference raises `ValueError` rather than counting as `OTHER`; add a `tally()`
+helper so W18 and the recount checker share the counting rule.
+
+**Kept:** `SYNTHETIC_PREFIX`, `PASS/MATCH/OTHER/INFRA`, `classify`, `RunTally`, `tally`, 14 tests,
+and the import changes in four runner files.
+
+**How it was verified:** tests failed first (import error), then 27 OK; three deliberate mutations
+each caught by the intended tests; all runner (147), eval (99) and UI backend (30) tests OK. See
+[[evidence-m2]].
+
+**Errors found and corrected:** the first mutation script missed its target because
+`eval/baseline.py` has CRLF line endings; the file was restored by the script and the check rerun.
+
+**What I changed:** *to fill in after reading the diff.*
+
+Ownership checkpoint: why `INFRA` is checked before the reference; why a tally must add up to `n`;
+how `tally([20 different failures])` shows the FT003 defect that `repeat()` hid.

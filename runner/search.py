@@ -2,10 +2,7 @@
 
 from typing import List, Optional, Sequence, Tuple
 
-from eval.baseline import FailureSignature, TestIdentifier
-
-# Exception types the runner invents for a crashed, timed-out or skipped test (ADR-003).
-SYNTHETIC_PREFIX = "flaketrace."
+from eval.baseline import SYNTHETIC_PREFIX, FailureSignature, TestIdentifier
 
 
 def reproduce(

@@ -2,8 +2,7 @@
 
 from typing import Sequence, Tuple
 
-from eval.baseline import FailureSignature, TestIdentifier
-from runner.search import SYNTHETIC_PREFIX
+from eval.baseline import SYNTHETIC_PREFIX, FailureSignature, TestIdentifier
 
 
 def repeat(

@@ -1047,3 +1047,29 @@ own copy of the code, not from the review's description.
   were not run (no file there changed). The report's `limitations` text comes from `eval/` and
   `evidence/` and is M3's and M1's part of W16. The CI step name "Victims pass alone (F1, F2, F3)"
   is kept: it names a real Maven check of the fixture, not a claim about a report.
+
+## W19 step 1: `RunTally`, `classify` and `tally` in `eval/baseline.py` (2026-11-14)
+
+- **Requirement:** ADR-010 §1 (four outcome categories, one classifier, one synthetic prefix);
+  W19 step 1, written by M2 in M3's file by M3's agreement of 2026-11-13. Branch `m2/w19-runtally`,
+  stacked on `m2/w16-retire-claims` (`9a05788`).
+- **Choices made by M2 (2026-11-14):** tests in `eval/tests/test_baseline.py`; `classify` raises
+  `ValueError` for a real failure when there is no reference; a `tally(outcomes, reference)` helper
+  so the runner (W18) and the recount checker (ADR-013) count the same way.
+- **Test first:** `py -3 -m unittest eval.tests.test_baseline` on the unchanged module →
+  `ImportError: cannot import name 'INFRA' from 'eval.baseline'` (FAILED, errors=1).
+- **After:** `py -3 -m unittest eval.tests.test_baseline` → **27 OK** (14 new).
+- **Mutation check** (scratch script; the file restored and compared byte for byte after):
+
+  | Mutation | Tests that failed |
+  | --- | --- |
+  | Sum check removed from `RunTally` | `test_counts_that_do_not_add_up_are_refused` |
+  | Crash/timeout/skip no longer `INFRA` | `test_pass_and_infra_need_no_reference`, `test_crash_timeout_and_not_executed_are_infra`, `test_counts_each_category_once` |
+  | Every real failure counted as `MATCH` | `test_a_different_real_failure_is_other`, `test_counts_each_category_once`, `test_ft003_alone_runs_failing_differently_are_not_passes` |
+
+- **Runner refactor:** `runner/search.py`, `verify.py`, `orders.py` import `SYNTHETIC_PREFIX` from
+  `eval/baseline.py`; `order_runner.py`'s three `"flaketrace.…"` literals use it. No behaviour
+  change intended; checked by the existing suites: every `runner/tests/test_*.py` → **147 OK**
+  (336 s, real JVM runs), every `eval/tests/test_*.py` → **99 OK**, `ui.tests.test_server` → **30 OK**.
+- **Limitations:** nothing uses the tallies yet — the defect FT003 is still in `runner/verify.py`
+  until W18. Awaiting review by M3 (owner of the file).
