@@ -8,18 +8,20 @@ import unittest
 from unittest import mock
 from pathlib import Path
 
-from eval.baseline import FailureSignature, RunOutcome, TestIdentifier
+from eval.baseline import FailureSignature, RunOutcome, RunTally, TestIdentifier
 from eval.tests.fake_runner import FakeOrderRunner
 from runner.recording import RecordingRunner
 from runner.diagnose import (
-    NO_SINGLE_POLLUTER,
+    INCONSISTENT,
     NOT_REPRODUCED,
     POLLUTER_FOUND,
     VICTIM_FAILS_ALONE,
     DiagnoseInputError,
     diagnose,
     environment,
+    maven_version,
     run_steps,
+    tool_environment,
 )
 
 FIXTURE = Path(__file__).resolve().parents[2] / "fixtures" / "od-fixture"
@@ -74,7 +76,7 @@ class TestRunSteps(unittest.TestCase):
         calls = []
         runner = FakeOrderRunner(lambda order, test: (calls.append(1) or FAIL) if test == V and not calls else PASS)
         runs = run_steps(runner, [A, B, LATER, V], V, n=2)
-        self.assertEqual(runs.status, NO_SINGLE_POLLUTER)
+        self.assertEqual(runs.status, INCONSISTENT)
         self.assertEqual(runs.polluters, [])
         self.assertEqual(runs.minimise_runs, 1)
 
@@ -82,7 +84,7 @@ class TestRunSteps(unittest.TestCase):
         calls = []
         runner = FakeOrderRunner(lambda order, test: (calls.append(1) or FAIL) if test == V and not calls else PASS)
         runs = run_steps(runner, [A, V], V, n=2)
-        self.assertEqual(runs.status, NO_SINGLE_POLLUTER)
+        self.assertEqual(runs.status, INCONSISTENT)
         self.assertEqual((runs.polluters, runs.minimise_runs), ([], 0))
 
     def test_minimise_runs_are_recorded_as_their_own_step(self):
@@ -198,7 +200,7 @@ class TestRunSteps(unittest.TestCase):
         outcomes = [FAIL] + [PASS] * 10
         runner = FakeOrderRunner(lambda order, test: outcomes.pop(0))
         runs = run_steps(runner, [V, A], V, n=2)
-        self.assertEqual(runs.status, NO_SINGLE_POLLUTER)
+        self.assertEqual(runs.status, INCONSISTENT)
         self.assertEqual((runs.search_runs, runs.sequence), (0, [V]))
 
     def test_explicit_order_without_the_victim_fails_before_maven_runs(self):
@@ -209,6 +211,12 @@ class TestRunSteps(unittest.TestCase):
         project = Path(tempfile.mkdtemp(prefix="flaketrace-project-"))
         with self.assertRaises(DiagnoseInputError):
             diagnose(project, V, original_order=[V], record_dir=project / "records")
+
+    def test_record_folder_inside_the_original_of_a_copy_is_refused_before_maven_runs(self):
+        original = Path(tempfile.mkdtemp(prefix="flaketrace-original-"))
+        copy = Path(tempfile.mkdtemp(prefix="flaketrace-copy-"))
+        with self.assertRaises(DiagnoseInputError):
+            diagnose(copy, V, original_order=[V], record_dir=original / "records", origin=original)
 
     def test_record_folder_that_is_a_file_is_refused_before_maven_runs(self):
         project = Path(tempfile.mkdtemp(prefix="flaketrace-project-"))
@@ -224,6 +232,79 @@ class TestRunSteps(unittest.TestCase):
         self.assertEqual(runs.status, NOT_REPRODUCED)
         self.assertEqual((runs.sequence_n, runs.sequence_successes, runs.sequence_any_failures), (3, 0, 3))
         self.assertEqual(runs.infrastructure_failures, 3)
+
+
+# ADR-010 tests T1-T4 at the runner level (W18). The verdicts they lead to are M3's decide() (W19).
+P = TestIdentifier("pkg.PolluterTest", "p")
+SIG_A = FailureSignature("java.lang.AssertionError", "pkg.VictimTest.v:10", "after P")
+SIG_B = FailureSignature("java.lang.IllegalStateException", "pkg.VictimTest.v:22", "alone")
+TIMEOUT = RunOutcome(False, FailureSignature("flaketrace.Timeout", "", "JVM exceeded 120s"))
+
+
+def scripted(alone_outcomes):
+    """The victim fails with A after P; run alone, it returns `alone_outcomes` in turn (then passes)."""
+    alone = list(alone_outcomes)
+
+    def outcome(order, test):
+        if test != V:
+            return PASS
+        if P in order:
+            return RunOutcome(False, SIG_A)
+        if order == [V]:
+            return alone.pop(0) if alone else PASS
+        return PASS
+    return FakeOrderRunner(outcome)
+
+
+class TestTallies(unittest.TestCase):
+    def test_t1_victim_failing_alone_differently_is_counted_as_other(self):
+        runs = run_steps(scripted([RunOutcome(False, SIG_B)] * 20), [P, V], V, n=20)
+        self.assertEqual(runs.alone_tally, RunTally(n=20, passed=0, matched=0, other=20, infra=0))
+        self.assertEqual(runs.sequence_tally, RunTally(n=20, passed=0, matched=20, other=0, infra=0))
+
+    def test_t2_three_different_failures_in_twenty_alone_runs(self):
+        runs = run_steps(scripted([RunOutcome(False, SIG_B)] * 3), [P, V], V, n=20)
+        self.assertEqual(runs.alone_tally, RunTally(n=20, passed=17, matched=0, other=3, infra=0))
+
+    def test_t3_two_timeouts_alone_are_infra_not_passes(self):
+        runs = run_steps(scripted([TIMEOUT] * 2), [P, V], V, n=20)
+        self.assertEqual(runs.alone_tally, RunTally(n=20, passed=18, matched=0, other=0, infra=2))
+
+    def test_t4_a_failure_seen_once_and_never_again_is_inconsistent(self):
+        calls = []
+        runner = FakeOrderRunner(lambda order, test: (calls.append(1) or FAIL) if test == V and not calls else PASS)
+        runs = run_steps(runner, [A, B, LATER, V], V, n=2)
+        self.assertEqual(runs.status, "INCONSISTENT")
+        self.assertEqual(runs.polluters, [])
+
+    def test_old_count_fields_agree_with_the_tallies(self):
+        # Kept for M3's eval/report.py until W19 switches to the tallies.
+        runs = run_steps(scripted([RunOutcome(False, SIG_B)] * 3 + [TIMEOUT]), [P, V], V, n=20)
+        self.assertEqual((runs.alone_n, runs.alone_successes), (runs.alone_tally.n, runs.alone_tally.matched))
+        self.assertEqual((runs.sequence_n, runs.sequence_successes, runs.sequence_any_failures),
+                         (runs.sequence_tally.n, runs.sequence_tally.matched,
+                          runs.sequence_tally.n - runs.sequence_tally.passed))
+
+    def test_victim_failing_alone_has_an_alone_tally(self):
+        runs = run_steps(victim_fails_when(lambda order: True), [A, V], V, n=3)
+        self.assertEqual(runs.status, VICTIM_FAILS_ALONE)
+        self.assertEqual(runs.alone_tally, RunTally(3, 0, 3, 0, 0))
+
+    def test_failing_alone_without_a_reference_tallies_against_the_first_real_failure(self):
+        outcomes = [TIMEOUT, RunOutcome(False, SIG_B), RunOutcome(False, SIG_A), PASS]
+        runner = FakeOrderRunner(lambda order, test: outcomes.pop(0) if test == V and order == [V] else PASS)
+        runs = run_steps(runner, [A, V], V, n=4)  # [A, V] always passes; only the alone runs fail
+        self.assertEqual(runs.status, VICTIM_FAILS_ALONE)
+        self.assertEqual(runs.reference_signature, SIG_B)
+        self.assertEqual(runs.alone_tally, RunTally(4, 1, 1, 1, 1))
+
+    def test_not_reproduced_tallies_only_passes_and_crashes(self):
+        crash = RunOutcome(False, FailureSignature("flaketrace.JvmCrash", "", "code 1"))
+        runner = FakeOrderRunner(lambda order, test: crash if test == V and order == [V] else PASS)
+        runs = run_steps(runner, [A, V], V, n=3)
+        self.assertEqual(runs.status, NOT_REPRODUCED)
+        self.assertEqual(runs.sequence_tally, RunTally(3, 3, 0, 0, 0))
+        self.assertEqual(runs.alone_tally, RunTally(3, 0, 0, 0, 3))
 
 
 class TestEnvironment(unittest.TestCase):
@@ -247,6 +328,17 @@ class TestEnvironment(unittest.TestCase):
         self.assertEqual((environment(repo)["project_commit"], environment(repo)["project_dirty"]), (head, False))
         (repo / "A.java").write_text("class A { int x; }", encoding="utf-8")
         self.assertTrue(environment(repo)["project_dirty"])
+
+    def test_maven_version_is_the_apache_maven_line_without_colour(self):
+        text = "WARNING: something\n\x1b[1mApache Maven 3.9.9 (8e8579a9)\x1b[m\nMaven home: x\n"
+        self.assertEqual(maven_version(text), "Apache Maven 3.9.9 (8e8579a9)")
+        self.assertIsNone(maven_version("no version here\n"))
+
+    def test_tool_outside_git_records_unknown_commit(self):
+        with mock.patch("runner.diagnose.shutil.which", return_value=None):
+            env = tool_environment()
+        self.assertEqual((env["tool_commit"], env["tool_dirty"], env["maven_version"]), (None, None, None))
+        self.assertEqual(env["python_version"], platform.python_version())
 
 
 class TestDiagnoseOnFixture(unittest.TestCase):
@@ -275,6 +367,84 @@ class TestDiagnoseOnFixture(unittest.TestCase):
 
     def expected_polluters(self, case_id):
         return [TestIdentifier.from_dict(p) for p in self.truth[case_id]["polluters"]]
+
+    def test_record_header_states_the_environment(self):
+        victim = TestIdentifier.from_dict(self.truth["F1"]["victim"])
+        runs = diagnose(FIXTURE, victim, n=1, record_dir=self.records, command=["diagnose", "--n", "1"])
+        header = json.loads(Path(runs.execution_record).read_text(encoding="utf-8").splitlines()[0])
+        self.assertEqual(header["jvm"]["junit.version"], "4.13.2")
+        self.assertTrue(header["maven_version"].startswith("Apache Maven"))
+        self.assertEqual((header["lifecycle"], header["workspace"], header["container_image"]),
+                         ("per-method", "in-place", None))
+        self.assertEqual(header["command"], ["diagnose", "--n", "1"])
+        self.assertIn("tool_commit", header)
+        self.assertIn("java_version", header)  # old keys kept
+
+    def test_f1_under_class_grouped_lifecycle_finds_the_same_polluter(self):
+        victim = TestIdentifier.from_dict(self.truth["F1"]["victim"])
+        runs = diagnose(FIXTURE, victim, n=3, record_dir=self.records, lifecycle="class-grouped")
+        self.assertEqual(runs.status, POLLUTER_FOUND)
+        self.assertEqual(runs.polluters, self.expected_polluters("F1"))
+        header = json.loads(Path(runs.execution_record).read_text(encoding="utf-8").splitlines()[0])
+        self.assertEqual(header["lifecycle"], "class-grouped")
+
+    def fresh_fixture(self):
+        folder = Path(tempfile.mkdtemp(prefix="flaketrace-fixture-")) / "od-fixture"
+        shutil.copytree(FIXTURE, folder, ignore=shutil.ignore_patterns("target"))
+        return folder
+
+    def run_cli_on(self, project, *extra):
+        from runner.cli import main
+        victim = str(TestIdentifier.from_dict(self.truth["F1"]["victim"]))
+        with mock.patch("sys.stdout"):
+            code = main(["diagnose", "--project", str(project), "--victim", victim, "--n", "3",
+                         "--records", self.records] + list(extra))
+        record = max(Path(self.records).glob(f"*-{victim}.jsonl"), key=lambda p: p.stat().st_mtime)
+        report = json.loads(record.with_suffix(".report.json").read_text(encoding="utf-8"))
+        return code, json.loads(record.read_text(encoding="utf-8").splitlines()[0]), report
+
+    def test_default_copy_never_writes_to_the_project(self):
+        project = self.fresh_fixture()
+        code, header, report = self.run_cli_on(project)
+        self.assertEqual(code, 0)
+        self.assertFalse((project / "target").exists())
+        self.assertTrue(report["source_integrity"]["passed"], report["source_integrity"])
+        self.assertIn("original project:", report["source_integrity"]["details"])
+        self.assertEqual((header["workspace"], header["project"]), ("copy", str(project.resolve())))
+
+    def test_in_place_still_builds_in_the_project(self):
+        project = self.fresh_fixture()
+        code, header, report = self.run_cli_on(project, "--workspace", "in-place")
+        self.assertEqual(code, 0)
+        self.assertTrue((project / "target").is_dir())
+        self.assertNotIn("original project:", report["source_integrity"]["details"])
+        self.assertEqual(header["workspace"], "in-place")
+
+    def test_a_change_to_the_original_during_a_copy_run_fails_integrity(self):
+        from runner.workspace import workspace
+        original = self.fresh_fixture()
+        victim = TestIdentifier.from_dict(self.truth["F1"]["victim"])
+        real_run_steps = run_steps
+
+        def edit_original_then_run(*args, **kwargs):
+            (original / "pom.xml").write_text((original / "pom.xml").read_text(encoding="utf-8") + "\n", encoding="utf-8")
+            return real_run_steps(*args, **kwargs)
+        with workspace(original, "copy") as work, \
+                mock.patch("runner.diagnose.run_steps", side_effect=edit_original_then_run):
+            runs = diagnose(work, victim, n=1, record_dir=self.records, workspace="copy", origin=original)
+        self.assertFalse(runs.source_integrity.passed)
+        self.assertIn("original project: changed: pom.xml", runs.source_integrity.details)
+
+    def test_failed_jvm_probe_records_null_and_the_diagnosis_goes_on(self):
+        victim = TestIdentifier.from_dict(self.truth["F1"]["victim"])
+        with mock.patch("runner.diagnose.OrderRunner.jvm_environment", return_value={}):
+            runs = diagnose(FIXTURE, victim, n=1, record_dir=self.records)
+        header = json.loads(Path(runs.execution_record).read_text(encoding="utf-8").splitlines()[0])
+        self.assertIsNone(header["jvm"])
+        for key in ("tool_commit", "tool_dirty", "maven_version", "python_version",
+                    "lifecycle", "workspace", "container_image", "command"):
+            self.assertIn(key, header)
+        self.assertEqual(runs.status, POLLUTER_FOUND)
 
     def test_f1_single_static_field_polluter(self):
         runs = self.diagnose_case("F1", n=20)

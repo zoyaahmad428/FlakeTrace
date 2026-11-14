@@ -27,7 +27,7 @@ in-process and decides nothing itself:
 | 0 | report written (any outcome, including `UNRESOLVED`) |
 | 2 | input wrong (`--victim` not Java `Class#method`, no `pom.xml`, `--n` < 1, records folder inside the project or a file, victim not a test of the project) |
 | 1 | a tool failed (Maven, `java`/`javac`/`mvn` missing, test discovery timed out, the extractor, javap) |
-| 3 | diagnosis ran but no report can be built yet (`NO_SINGLE_POLLUTER`, `NOT_REPRODUCED`) |
+| 3 | diagnosis ran but no report can be built yet (`INCONSISTENT`, formerly `NO_SINGLE_POLLUTER`; `NOT_REPRODUCED` has had a report since ADR-008) |
 
 ## 2. Why it is built this way
 
@@ -73,7 +73,11 @@ in-process and decides nothing itself:
 
 ## ADR-008 additions (2026-10-11)
 
-- `--order <file>` (the real failing order), `--shuffles N` (default 31), `--seed S` (default 0). A bad
+- `--order <file>` (the real failing order), `--shuffles N` (default 31), `--seed S` (default 0),
+  `--lifecycle per-method|class-grouped` (default `per-method` until M1's control run; W22, ADR-012),
+  `--workspace copy|in-place` (default `copy`: everything runs in a temporary copy that is deleted
+  afterwards, inside one `with workspace(...)` block around `diagnose()` and the evidence
+  extraction, which needs the copy's compiled classes; W22, ADR-012 §4). A bad
   `--order` file, a duplicate, a missing victim or a test the project does not have → exit 2.
 - When the starting order never fails, the diagnosis tries distinct class-first shuffled orders; the
   summary names the reproducing seed (`orders: reproduced in shuffled order (seed 1) after 2 …`).

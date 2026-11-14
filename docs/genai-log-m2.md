@@ -894,3 +894,130 @@ each caught by the intended tests; all runner (147), eval (99) and UI backend (3
 
 Ownership checkpoint: why `INFRA` is checked before the reference; why a tally must add up to `n`;
 how `tally([20 different failures])` shows the FT003 defect that `repeat()` hid.
+
+## 2026-11-14 — W18: tallies in the runner
+
+**Tool:** Claude Code (Claude Opus 5.5) · **Level:** L3 · **Branch:** `m2/w18-tallies`
+
+**Asked:** switch `repeat()`, `run_steps()` and `DiagnosisRuns` to ADR-010 tallies and rename the
+inconclusive status, test first, without breaking M3's `eval/` code while M3 has no laptop.
+
+**Decided by me:** of three options (tallies beside the old fields; replace and edit M3's files;
+replace and wait for M3), I chose the first. Claude proposed the names `alone_tally` /
+`sequence_tally` because `DiagnosisRuns.sequence` is already the test list.
+
+**Kept:** `repeat()` and `repeat_without_reference()` returning tallies, `_runs()` filling the old
+fields from the tallies, `INCONSISTENT` with the old name as an alias, eight new runner tests and
+three updated ones, the ADR-010 implementation note.
+
+**How it was verified:** see [[evidence-m2]] "W18": the tests failed first for the expected
+reasons; afterwards runner 155, eval 99 and UI backend 30 tests OK; the scripted T1–T3 and a real
+F1 run show the tallies.
+
+**Errors found and corrected:** a first draft of `repeat_without_reference` chose the reference
+with `classify(o, None)`, which raises on a real failure and, as written, always gave `None`; it was
+rewritten before any test ran. One new test was wrong (its order `[V]` let the reproduce step
+consume the scripted alone outcomes); fixed before the code was written.
+
+**What I changed:** *to fill in after reading the diff.*
+
+Ownership checkpoint: why the tallies sit beside the old fields for now and when they go; why the
+runner still searches after `alone.other > 0`; why T1 is still `VERIFIED` end to end until W19.
+
+## 2026-11-14 — W22 job 1: environment fields in the execution record
+
+**Tool:** Claude Code (Claude Opus 5.5), superpowers brainstorming → writing-plans →
+executing-plans (native) with test-driven-development · **Level:** L3 · **Branch:** `m2/w22-record-env`
+
+**Asked:** brainstorm W22, then design, plan and build its first job (ADR-012 §6).
+
+**Decided by me:** split W22 into four jobs in ADR-012's order; approved the short design and the
+two-task plan; chose native execution. I left the probe choice to Claude, which chose asking the
+test JVM (`FtHarness --env`) over Python's own values, because replay compares what the tests ran
+under.
+
+**Kept:** `FtHarness --env`, `parse_env`, `OrderRunner.jvm_environment()`, `git_state`,
+`maven_version`, `tool_environment`, the new header keys, `command` passed from the CLI, 8 new tests.
+
+**How it was verified:** see [[evidence-m2]] "W22 job 1": each new test failed first; runner 164,
+eval and UI backend suites OK; a real F1 run's header shown in full.
+
+**Errors found and corrected:** none in the code during this job. The design notes that the header
+holds absolute paths, which ADR-013 must redact.
+
+**What I changed:** *to fill in after reading the diff.*
+
+Ownership checkpoint: why the timezone is asked of the JVM and how the `JAVA_TOOL_OPTIONS` test
+proves it; why a failed probe gives `null` instead of stopping; where to add a new header field.
+
+## 2026-11-14 — W22 job 2: JUnit spike (throwaway)
+
+**Tool:** Claude Code (Claude Opus 5.5) · **Level:** L3 · **Branch:** `m2/w22-record-env` (docs only)
+
+**Asked:** run ADR-012 §2's spike and record what it shows. **Kept:** only the findings, in ADR-012
+§2 and [[evidence-m2]]; the spike code stayed in a scratch folder, as the ADR requires.
+**Errors:** the first compile failed because Git Bash passed `/c/...` paths to Windows `javac`;
+fixed with Windows paths — a command error, not a finding. **What I changed:** *to fill in.*
+
+Ownership checkpoint: why JUnit 3 stays per-method (sorting silently ignored, and no class-level
+lifecycle to lose); what the harness must do when `@BeforeClass` throws.
+
+## 2026-11-14 — W22 job 3: class-grouped execution and the lifecycle control
+
+**Tool:** Claude Code (Claude Opus 5.5), superpowers brainstorming → writing-plans →
+executing-plans (native) → fresh review · **Level:** L3 · **Branch:** `m2/w22-record-env`
+
+**Asked:** build ADR-012 §2–§3 on the spike's findings, and document it so M1 can run the control
+when she has her laptop. **Decided by me:** approved the design and plan; left the default mode to
+Claude, which kept `per-method` until M1's control run (ADR-012's own rule).
+
+**Kept:** the harness `class-grouped` mode (`runBlock`), `OrderRunner(lifecycle=)`, `LIFECYCLES`,
+`--lifecycle` through `diagnose` and the CLI, the lifecycle control as a Maven project, two probe
+classes, 15 new tests, a CI step running the control under Surefire, M1's steps in the handover.
+
+**How it was verified:** see [[evidence-m2]] "W22 job 3": tests failed first; two mutations each
+caught; the control's three rows observed; runner 178, eval 99, UI backend 30 OK; real F1 run.
+
+**Errors found and corrected:** Claude found that ADR-012 asked for a Surefire run of a class that
+was not in any Maven project, and made the control its own small Maven project. It also renamed a
+confusing variable it had introduced in job 1 (`command` reused in `cli.main`).
+
+**What I changed:** *to fill in after reading the diff.*
+
+Ownership checkpoint: how `runBlock` groups, filters and sorts; why JUnit 3 is excluded; what
+happens when `@BeforeClass` throws; how the control proves the difference.
+
+## 2026-11-14 — W22 job 3 follow-up: deferred review minors
+
+**Tool:** Claude Code (Claude Opus 5.5), test-driven-development · **Level:** L3 ·
+**Branch:** `m2/w22-record-env`
+
+**Asked:** fix the four minors the job 3 review deferred. **Kept:** four tests (each seen failing
+first) and four small harness fixes. **How verified:** [[evidence-m2]] "W22 job 3 follow-up":
+runner 184, eval 99, UI backend 30 OK. **Errors:** the first insert of the tests turned `
+`
+escapes into real newlines (a script error), fixed before running. **What I changed:** *to fill in.*
+
+## 2026-11-14 — W22 job 4: diagnose on a disposable copy
+
+**Tool:** Claude Code (Claude Opus 5.5), superpowers brainstorming → writing-plans →
+executing-plans (native) → fresh review · **Level:** L3 · **Branch:** `m2/w22-record-env`
+
+**Asked:** build ADR-012 §4. **Decided by me:** approved the design. Claude made two calls on my
+delegation: the CLI owns the copy (because evidence extraction needs the copy's compiled classes
+after `diagnose()` returns) and `copy` is the CLI default (no change to how tests run).
+
+**Kept:** `runner/workspace.py`, `integrity_of`, `diagnose(workspace=, origin=)`, `--workspace`,
+13 new tests, doc and claims-ledger updates.
+
+**How it was verified:** see [[evidence-m2]] "W22 job 4": tests failed first; runner 199, eval 99,
+UI backend 30 OK; a real run left the project folder without `target/`.
+
+**Found:** the Mid build wrote `target/` into the user's project — hidden because the integrity
+check skips `target/`. **Review fixes:** multi-module hint, `--copy-parent` with UI clean-up after a
+timeout, a warning for an undeletable copy, the missing `diagnose()`-level tests, no temp path in
+errors, no traceback on a failed copy. **Errors:** Claude's own new test leaked two temp copies;
+found by checking `%TEMP%`, fixed. **What I changed:** *to fill in after reading the diff.*
+
+Ownership checkpoint: why the copy lives in the CLI and not in `diagnose()`; what `origin` is for;
+what the two-part integrity line means; what the copy does not protect against.

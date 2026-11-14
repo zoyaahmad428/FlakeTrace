@@ -16,13 +16,14 @@ from typing import List, Optional, Tuple
 from eval.baseline import TestIdentifier
 from eval.report import UnhandledStatus, assemble_report
 from evidence.extract import DEFAULT_DEPTH, ExtractError, Project, analyse_pair, report_fields
-from runner.diagnose import NO_SINGLE_POLLUTER, NOT_REPRODUCED, POLLUTER_FOUND, DiagnoseInputError, diagnose
-from runner.order_runner import ToolError
+from runner.diagnose import INCONSISTENT, NOT_REPRODUCED, POLLUTER_FOUND, DiagnoseInputError, diagnose
+from runner.order_runner import LIFECYCLES, ToolError
+from runner.workspace import WORKSPACES, WorkspaceError, workspace
 
 _VICTIM = re.compile(r"[\w.$]+#[\w$]+")
 
 _NO_REPORT_WHY = {
-    NO_SINGLE_POLLUTER: "the victim failed in the original order but not again (alone, after any single "
+    INCONSISTENT: "the victim failed in the original order but not again (alone, after any single "
                         "earlier test, or in the full order once more), so no test is blamed; likely flaky",
     NOT_REPRODUCED: "the victim never failed with a real failure in n runs of the original order",
 }
@@ -42,13 +43,25 @@ def main(argv=None) -> int:
     command.add_argument("--shuffles", type=int, default=31,
                          help="distinct shuffled orders to try if the order never fails (default 31)")
     command.add_argument("--seed", type=int, default=0, help="first shuffle seed (default 0)")
-    args = parser.parse_args(argv)
+    command.add_argument("--lifecycle", choices=LIFECYCLES, default="per-method",
+                         help="per-method: @BeforeClass per test (default, as at the Mid); class-grouped: once "
+                              "per run of same-class tests, as under Maven Surefire (ADR-012)")
+    command.add_argument("--workspace", choices=WORKSPACES, default="copy",
+                         help="copy (default): build and run in a temporary copy of the project, deleted "
+                              "afterwards, so the project folder is never written to; in-place: as at the Mid")
+    command.add_argument("--copy-parent", default=None,
+                         help="folder to make the temporary copy in (default: the system temp folder)")
+    arguments = list(argv if argv is not None else sys.argv[1:])
+    args = parser.parse_args(arguments)
     return run_diagnose(Path(args.project), args.victim, args.n, args.records,
-                        Path(args.order) if args.order else None, args.shuffles, args.seed)
+                        Path(args.order) if args.order else None, args.shuffles, args.seed, arguments, args.lifecycle,
+                        args.workspace, Path(args.copy_parent) if args.copy_parent else None)
 
 
 def run_diagnose(project: Path, victim_id: str, n: int, records: str, order_path: Optional[Path] = None,
-                 shuffles: int = 31, seed: int = 0) -> int:
+                 shuffles: int = 31, seed: int = 0, command: Optional[List[str]] = None,
+                 lifecycle: str = "per-method", workspace_mode: str = "copy",
+                 copy_parent: Optional[Path] = None) -> int:
     # Java names only: the victim also becomes part of the record's file name.
     if not _VICTIM.fullmatch(victim_id):
         return _error(f"--victim must be Class#method (Java names, no spaces), got {victim_id!r}", 2)
@@ -65,23 +78,16 @@ def run_diagnose(project: Path, victim_id: str, n: int, records: str, order_path
         except OrderFileError as error:
             return _error(str(error), 2)
 
+    # ADR-012 section 4: build, run and extract evidence in `work`, a disposable copy by default.
     try:
-        runs = diagnose(project, victim, n=n, record_dir=records, original_order=order,
-                        shuffles=shuffles, seed=seed)
-    except DiagnoseInputError as error:
-        return _error(str(error), 2)
-    except subprocess.CalledProcessError as error:
-        tool = Path(str(error.cmd[0])).name
-        return _error(f"{tool} failed with exit code {error.returncode} on {project}; run it there to see why", 1)
-    except subprocess.TimeoutExpired as error:
-        return _error(f"{Path(str(error.cmd[0])).name} timed out after {error.timeout:g} s on {project}", 1)
-    except ToolError as error:
+        with workspace(project, workspace_mode, copy_parent) as work:
+            outcome = _diagnose_in(work, project, victim, n, records, order, shuffles, seed, command, lifecycle,
+                                   workspace_mode)
+    except WorkspaceError as error:
         return _error(str(error), 1)
-
-    try:
-        fields = resource_fields(project, runs) if runs.status == POLLUTER_FOUND else None
-    except ExtractError as error:
-        return _error(f"resource evidence failed: {error}", 1)
+    if isinstance(outcome, int):
+        return outcome
+    runs, fields = outcome
 
     try:
         report = assemble_report(runs, fields)
@@ -97,6 +103,35 @@ def run_diagnose(project: Path, victim_id: str, n: int, records: str, order_path
     print(summary(report, report_path, (len(runs.original_order) - 1, runs.minimise_runs) if ddmin_ran else None,
                   crashes))
     return 0
+
+
+def _diagnose_in(work: Path, project: Path, victim, n, records, order, shuffles, seed, command, lifecycle,
+                 workspace_mode):
+    """The diagnosis and Member 1's evidence, run in `work`. Returns (runs, fields), or an exit code
+    after printing the error. Messages name the user's project, never the temporary copy."""
+    def own(text: str) -> str:
+        return text.replace(str(Path(work).resolve()), str(project))
+    # A copy holds only the project folder: a module whose build reads ../pom.xml fails in it.
+    hint = ("; if the build needs files outside the project folder (e.g. a parent pom.xml), "
+            "try --workspace in-place") if workspace_mode == "copy" else "; run it there to see why"
+    try:
+        runs = diagnose(work, victim, n=n, record_dir=records, original_order=order,
+                        shuffles=shuffles, seed=seed, command=command, lifecycle=lifecycle,
+                        workspace=workspace_mode, origin=project if workspace_mode == "copy" else None)
+    except DiagnoseInputError as error:
+        return _error(own(str(error)), 2)
+    except subprocess.CalledProcessError as error:
+        tool = Path(str(error.cmd[0])).name
+        return _error(f"{tool} failed with exit code {error.returncode} on {project}{hint}", 1)
+    except subprocess.TimeoutExpired as error:
+        return _error(f"{Path(str(error.cmd[0])).name} timed out after {error.timeout:g} s on {project}", 1)
+    except ToolError as error:
+        return _error(own(str(error)), 1)
+    try:
+        fields = resource_fields(work, runs) if runs.status == POLLUTER_FOUND else None
+    except ExtractError as error:
+        return _error(f"resource evidence failed: {own(str(error))}", 1)
+    return runs, fields
 
 
 def resource_fields(project: Path, runs) -> dict:

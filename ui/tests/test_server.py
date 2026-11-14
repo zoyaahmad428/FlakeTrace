@@ -148,6 +148,14 @@ class TestJobs(unittest.TestCase):
         self.assertIn("timed out after 1 s", done["message"])
         wait(jobs, jobs.start("proj", "a.B#c")["id"])
 
+    def test_the_copy_goes_in_the_job_folder_and_is_removed_after_a_timeout(self):
+        jobs = fake_jobs("copy-sleep", timeout_s=3)
+        job = jobs.start("proj", "a.B#c")
+        done = wait(jobs, job["id"])
+        self.assertEqual(done["kind"], "timeout")
+        self.assertIn("--copy-parent", job["command"])
+        self.assertFalse((Path(job["records"]) / "work").exists())
+
     def test_timeout_also_stops_child_processes(self):
         jobs = fake_jobs("spawn-sleep", timeout_s=3)
         job = jobs.start("proj", "a.B#c")

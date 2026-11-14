@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from runner.integrity import compare, snapshot
+from runner.integrity import SourceIntegrity, compare, integrity_of, snapshot
 
 
 class TestIntegrity(unittest.TestCase):
@@ -40,6 +40,25 @@ class TestIntegrity(unittest.TestCase):
         (self.root / "src" / "target").mkdir()
         (self.root / "src" / "target" / "C.java").write_text("class C {}")
         self.assertIn("src/target/C.java", snapshot(self.root))
+
+
+class TestIntegrityOfCopyAndOriginal(unittest.TestCase):
+    """W22 job 4: in a disposable copy, both the copy and the user's original are checked."""
+
+    def test_both_identical_passes_and_names_both(self):
+        result = integrity_of(SourceIntegrity(True, "3 files identical"), SourceIntegrity(True, "3 files identical"))
+        self.assertTrue(result.passed)
+        self.assertTrue(result.details.startswith("copy: 3 files identical"))
+        self.assertIn("; original project: 3 files identical", result.details)
+
+    def test_a_change_in_the_original_fails_and_is_named(self):
+        result = integrity_of(SourceIntegrity(True, "3 files identical"), SourceIntegrity(False, "changed: src/A.java"))
+        self.assertFalse(result.passed)
+        self.assertIn("original project: changed: src/A.java", result.details)
+
+    def test_no_original_returns_the_single_result(self):
+        single = SourceIntegrity(False, "added: x.txt")
+        self.assertEqual(integrity_of(single, None), single)
 
 
 if __name__ == "__main__":

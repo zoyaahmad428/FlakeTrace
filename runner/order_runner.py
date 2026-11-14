@@ -17,6 +17,10 @@ from eval.baseline import SYNTHETIC_PREFIX, FailureSignature, RunOutcome, TestId
 
 HARNESS_SOURCE = Path(__file__).resolve().parent / "harness" / "FtHarness.java"
 
+# ADR-012 section 2: how class-level lifecycle (@BeforeClass/@AfterClass) runs. "per-method" is the
+# Mid behaviour and stays the default until Member 1's lifecycle control run validates the other.
+LIFECYCLES = ("per-method", "class-grouped")
+
 # A stack is cut at the first frame from JUnit's runner, reflection or the harness. These
 # frames differ between JDK 8 and JDK 21 and say nothing about the failure itself.
 _FRAMEWORK_PREFIXES = (
@@ -115,6 +119,17 @@ def parse_results(
     return results
 
 
+def parse_env(text: str) -> Dict[str, str]:
+    """`FtHarness --env` output -> {key: value}. Values are kept exactly as the JVM reported them;
+    a line cut off mid-write (no final newline) is dropped, as in parse_results."""
+    env = {}
+    for line in text.split("\n")[:-1]:
+        fields = line.split("\t")
+        if len(fields) == 2:
+            env[fields[0]] = _unescape(fields[1])
+    return env
+
+
 def _tool(name: str) -> str:
     # shutil.which finds mvn.cmd / java.exe on Windows; a bare "mvn" in an argument list does not.
     path = shutil.which(name)
@@ -143,9 +158,14 @@ def maven_test_classpath(project_dir) -> List[str]:
 class OrderRunner:
     """Satisfies eval.baseline.OrderRunner. One fresh JVM per run_ordered call."""
 
-    def __init__(self, classpath: Sequence[str], working_dir=None, timeout_s: float = 120.0):
+    def __init__(self, classpath: Sequence[str], working_dir=None, timeout_s: float = 120.0,
+                 lifecycle: str = "per-method"):
         """`working_dir` is where the tests run; pass the target project's directory, as Maven
-        would, so tests that use relative paths behave the same. None = the caller's directory."""
+        would, so tests that use relative paths behave the same. None = the caller's directory.
+        `lifecycle` is one of LIFECYCLES (ADR-012 section 2)."""
+        if lifecycle not in LIFECYCLES:
+            raise ValueError(f"lifecycle must be one of {LIFECYCLES}, got {lifecycle!r}")
+        self.lifecycle = lifecycle
         self.classpath = list(classpath)
         self._working_dir = working_dir
         self._timeout_s = timeout_s
@@ -171,7 +191,7 @@ class OrderRunner:
             result_file = Path(tmp) / "results.tsv"
             try:
                 finished = subprocess.run(
-                    [self._java, "FtHarness", str(result_file)],
+                    [self._java, "FtHarness", str(result_file), "--lifecycle", self.lifecycle],
                     input="".join(f"{test}\n" for test in order),
                     env=_env_with_classpath([self._harness_dir] + self.classpath),
                     cwd=self._working_dir,
@@ -188,6 +208,25 @@ class OrderRunner:
                 missing = (f"{SYNTHETIC_PREFIX}Timeout", f"JVM exceeded {self._timeout_s}s")
             text = result_file.read_text(encoding="utf-8") if result_file.exists() else ""
         return parse_results(text, order, *missing)
+
+    def jvm_environment(self) -> Dict[str, str]:
+        """What a test JVM runs under: java.version, timezone, locale, file.encoding, junit.version
+        (FtHarness --env, same classpath and working directory as a test run; ADR-012 section 6).
+        {} if the probe fails for any reason -- unknown provenance never stops a diagnosis."""
+        with tempfile.TemporaryDirectory(prefix="flaketrace-env-") as tmp:
+            result_file = Path(tmp) / "env.tsv"
+            try:
+                subprocess.run(
+                    [self._java, "FtHarness", "--env", str(result_file)],
+                    env=_env_with_classpath([self._harness_dir] + self.classpath),
+                    cwd=self._working_dir,
+                    capture_output=True,
+                    timeout=self._timeout_s,
+                    check=True,
+                )
+                return parse_env(result_file.read_text(encoding="utf-8"))
+            except (OSError, subprocess.SubprocessError):
+                return {}
 
     def list_methods(self, class_names: Sequence[str]) -> List[TestIdentifier]:
         """The test methods of each class, in the order JUnit would run them (FtHarness --list).

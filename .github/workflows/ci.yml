@@ -85,6 +85,8 @@ jobs:
           cache-dependency-path: eval/requirements.txt
       - name: Install dependencies
         run: pip install -r eval/requirements.txt
+      - name: Lifecycle control under Surefire (ADR-012 section 3) -- both tests must pass
+        run: mvn -B -q -f runner/tests/resources/lifecycle-control/pom.xml test
       - name: Runner tests (every runner/tests/test_*.py)
         run: |
           modules=$(ls runner/tests/test_*.py | sed 's#/#.#g; s#\.py$##')

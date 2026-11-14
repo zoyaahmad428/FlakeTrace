@@ -1073,3 +1073,217 @@ own copy of the code, not from the review's description.
   (336 s, real JVM runs), every `eval/tests/test_*.py` → **99 OK**, `ui.tests.test_server` → **30 OK**.
 - **Limitations:** nothing uses the tallies yet — the defect FT003 is still in `runner/verify.py`
   until W18. Awaiting review by M3 (owner of the file).
+
+## W18: the runner counts every phase as an ADR-010 tally (2026-11-14)
+
+- **Requirement:** ADR-010 §1 and §5, tests T1–T4 at the runner level; FT003, FT010. Branch
+  `m2/w18-tallies` from `main` `d1e4d4f`. Landing chosen by M2 (2026-11-14): tallies **beside** the
+  old count fields, `NO_SINGLE_POLLUTER` kept as an alias of `INCONSISTENT`, so no `eval/` file
+  changes until W19.
+- **Test first**, on the unchanged runner:
+  - `py -3 -m unittest runner.tests.test_diagnose.TestTallies` → **8 run: 7 errors**
+    (`'DiagnosisRuns' object has no attribute 'alone_tally'` / `'sequence_tally'`) and **1 failure**,
+    T4: `AssertionError: 'NO_SINGLE_POLLUTER' != 'INCONSISTENT'`. (A first version of one test
+    erred with `IndexError` because its order `[V]` also consumed the scripted alone outcomes in
+    the reproduce step; fixed in the test before any code was written.)
+  - `py -3 -m unittest runner.tests.test_search.TestRepeat` → `AssertionError: (2, 4) != RunTally(n=5, passed=1, matched=2, other=1, infra=1)`.
+  - What the unchanged runner returns for the three scripted defects (scratch script):
+    ```
+    T1 POLLUTER_FOUND alone_n 20 alone_successes 0 polluters ['pkg.PolluterTest#p']
+    T2 POLLUTER_FOUND alone_n 20 alone_successes 0 polluters ['pkg.PolluterTest#p']
+    T3 POLLUTER_FOUND alone_n 20 alone_successes 0 polluters ['pkg.PolluterTest#p']
+    ```
+    Failing alone 20/20 differently, 3/20 differently, and timing out 2/20 are indistinguishable
+    from passing alone 20/20 — FT003.
+- **After:**
+  ```
+  T1 POLLUTER_FOUND alone RunTally(n=20, passed=0, matched=0, other=20, infra=0) | old alone_successes 0
+  T2 POLLUTER_FOUND alone RunTally(n=20, passed=17, matched=0, other=3, infra=0) | old alone_successes 0
+  T3 POLLUTER_FOUND alone RunTally(n=20, passed=18, matched=0, other=0, infra=2) | old alone_successes 0
+  F1 POLLUTER_FOUND alone RunTally(n=20, passed=20, matched=0, other=0, infra=0) sequence RunTally(n=20, passed=0, matched=20, other=0, infra=0)
+  ```
+  (F1 is a real `diagnose()` on `fixtures/od-fixture`.) Every `runner/tests/test_*.py` → **155 OK**
+  (337 s, real JVM runs); every `eval/tests/test_*.py` → **99 OK**, no `eval/` file changed;
+  `ui.tests.test_server` → **30 OK**.
+- **Limitations:** the runner still blames P in T1–T3 and the report would still say `VERIFIED`:
+  `decide()` reads the old `alone_successes`, which is still 0. ADR-010 rows 6–8 and the
+  `INCONSISTENT` report are M3's W19. T4's report (exit 0) also waits for W19; the command still
+  exits 3 with "No report: INCONSISTENT".
+
+## W22 job 1: environment fields in the execution record (2026-11-14)
+
+- **Requirement:** ADR-012 §6 (FT006, FT021; feeds ADR-013's manifest `environment`, W23).
+  Design `docs/superpowers/specs/2026-11-14-w22-record-environment-design.md`, plan
+  `docs/superpowers/plans/2026-11-14-w22-record-environment.md`. Branch `m2/w22-record-env`, stacked
+  on `m2/w18-tallies` (`e49fa13`).
+- **Task 1 — `FtHarness --env`, `OrderRunner.jvm_environment()`.** Test first:
+  `py -3 -m unittest runner.tests.test_order_runner` → `ImportError: cannot import name 'parse_env'`.
+  After: **29 OK**, none skipped. The timezone test forces `-Duser.timezone=Pacific/Kiritimati`
+  through `JAVA_TOOL_OPTIONS` and reads it back, so the value comes from the test JVM, not Python.
+  Real probe on this machine: `{'java.version': '21.0.9', 'timezone': 'Asia/Karachi', 'locale': 'en_US', 'file.encoding': 'UTF-8', 'junit.version': '4.13.2'}`.
+- **Task 2 — header fields and the CLI's command line.** Test first: `TestEnvironment` →
+  `ImportError: cannot import name 'maven_version'`; the CLI test → `KeyError: 'command'`. After:
+  the three new test groups **14 OK**; every `runner/tests/test_*.py` → **164 OK** (372 s, none
+  skipped), **165 OK** after the review fix below; every `eval/tests/test_*.py` OK; `ui.tests.test_server` OK.
+- **Real command:** `py -3 -m runner diagnose --project fixtures/od-fixture --victim
+  odfixture.ConfigVictimTest#expectsDefaultMode --n 2 --records <scratch>` → first record line:
+  ```
+  {"type": "header", "victim": "odfixture.ConfigVictimTest#expectsDefaultMode", "n": 2, ..., "java_version": "openjdk version \"21.0.9\" 2025-10-21 LTS", ..., "project_commit": "e49fa13b…", "project_dirty": false, "os": "Windows-11-10.0.26200-SP0", ..., "tool_commit": "e49fa13b…", "tool_dirty": true, "maven_version": "Apache Maven 3.10.0 (c43a36b8…)", "python_version": "3.14.0", "jvm": {"java.version": "21.0.9", "timezone": "Asia/Karachi", "locale": "en_US", "file.encoding": "UTF-8", "junit.version": "4.13.2"}, "lifecycle": "per-method", "workspace": "in-place", "container_image": null, "command": ["diagnose", "--project", "fixtures/od-fixture", "--victim", "odfixture.ConfigVictimTest#expectsDefaultMode", "--n", "2", "--records", "<scratch>"]}
+  ```
+  (`CANDIDATE` at `--n 2` is expected: two runs cannot reach the 0.70 Wilson lower bound.)
+- **Review** (fresh reviewer, Claude Opus, read-only): 0 critical, 1 important, 4 minor. Important:
+  the design's test "a failed probe still gives a header" had been left out of the plan. Added
+  `test_failed_jvm_probe_records_null_and_the_diagnosis_goes_on`; with `or None` removed from the
+  header code it fails (`AssertionError: {} is not None`), restored it passes; suite 165 OK.
+  Deferred minors: a `null` JVM property would make the harness drop the whole `jvm` entry; one test
+  named "outside git" really tests "git not installed"; `mvn.cmd -v` timeout may not stop a hung
+  Maven on Windows; `tool_dirty` counts untracked files.
+- **Limitations:** `lifecycle` and `workspace` are constants until W22 jobs 3 and 4.
+  `command` and `project` hold absolute paths with the user's name; ADR-013's redaction at bundle
+  export removes them, nothing here does. A JVM probe adds one short JVM launch per diagnosis.
+
+## W22 job 2: the JUnit spike for class-grouped execution (2026-11-14) — throwaway, not merged
+
+- **Requirement:** ADR-012 §2 "spike before committing to this". Code in a scratch folder only
+  (`Spike.java`: `Request.aClass(cls).filterWith(methods).sortWith(by requested index)` with a
+  `RunListener`; `PerMethod.java`: one `Request.method` per test, today's harness; test classes
+  `LifecycleControlTest` (ADR-012 §3, plus a `third`), `Legacy3Test` (JUnit 3, `testC` fails),
+  `BrokenSetupTest` (`@BeforeClass` throws)). Compiled `javac -source 8 -target 8` against
+  `junit-4.13.2.jar` + `hamcrest-core-1.3.jar`; run on OpenJDK 21.0.9.
+- **Results (real output, abridged):**
+  ```
+  == LifecycleControlTest requested [third, first, second]
+  started third / finished third / started first / finished first / started second / finished second   run count 3
+  == Legacy3Test requested [testC, testA]
+  started testA / finished testA / started testC / FAILED testC : AssertionFailedError: C fails on purpose   run count 2
+  == BrokenSetupTest requested [b, a]
+  FAILED null : java.lang.IllegalStateException: setup broke   run count 0
+  == per-method (today's harness)
+  first PASS
+  second FAIL : java.lang.AssertionError: expected:<1> but was:<2>
+  testC FAIL ... / testA PASS
+  ```
+- **Findings:** JUnit 4 class requests filter and sort as needed, with `@BeforeClass` once; JUnit 3
+  sorting is silently ignored, so JUnit 3 classes stay `per-method`; a failing `@BeforeClass` must be
+  mapped to every test of its block by the harness; today's mode fails the control as ADR-012 §3
+  predicted. Written into ADR-012 §2.
+- **Limitations:** JDK 21 only (no JDK 8 installed here). Not tried: `@ClassRule`, `@RunWith`
+  runners other than the default (e.g. `Parameterized`), JUnit 3 `suite()` with `TestSetup`.
+
+## W22 job 3: class-grouped execution and the lifecycle control (2026-11-14)
+
+- **Requirement:** ADR-012 §2–§3, FT006. Design
+  `docs/superpowers/specs/2026-11-14-w22-class-grouped-execution-design.md`, plan
+  `docs/superpowers/plans/2026-11-14-w22-class-grouped-execution.md`. Branch `m2/w22-record-env`.
+  Default mode decided: `per-method` until M1's control run (Claude's call on M2's delegation).
+- **Checked first:** the runner class JUnit 4.13.2 gives — plain JUnit 4 class `org.junit.runners.JUnit4`,
+  JUnit 3 `JUnit38ClassRunner`, `@RunWith(Parameterized)` `Parameterized` (scratch probe).
+- **Task 1, test first:** `py -3 -m unittest runner.tests.test_order_runner` → `TypeError: OrderRunner.__init__()
+  got an unexpected keyword argument 'lifecycle'` (3 errors). The `per-method` control row passed
+  before and after: it measures today's behaviour (`second` fails, `expected:<<N>> but was:<<N>>`).
+  After: **39 OK**. Mutations, each restored byte for byte: grouping disabled →
+  `test_class_grouped_runs_class_setup_once` fails; a failing `@BeforeClass` no longer given to the
+  block → `test_grouped_setup_failure_fails_every_test_of_the_block` fails.
+- **The control, three ways, on this machine (OpenJDK 21.0.9, Maven 3.10.0):**
+
+  | Execution | Command | Result |
+  | --- | --- | --- |
+  | Surefire | `mvn -B -q -f runner/tests/resources/lifecycle-control/pom.xml test` | exit 0; report `tests="2" failures="0"` (ran `second`, `first`) |
+  | Harness `per-method`, `[first, second]` | `TestLifecycleControl.test_per_method_runs_class_setup_per_test` | `first` pass, `second` `AssertionError expected:<1> but was:<2>` |
+  | Harness `class-grouped`, same order | `TestLifecycleControl.test_class_grouped_runs_class_setup_once` | both pass |
+
+- **Task 2, test first:** CLI test → `KeyError: 'lifecycle'`; fixture test → `TypeError: diagnose()
+  got an unexpected keyword argument 'lifecycle'`. (The usage-error test passed before too — argparse
+  rejected the unknown option then, the bad value now.) After: every `runner/tests/test_*.py` →
+  **178 OK**, **180 OK** after the review fixes below (417 s, none skipped); every `eval/tests/test_*.py` → **99 OK**; `ui.tests.test_server` → **30 OK**.
+- **Real command:** `py -3 -m runner diagnose --project fixtures/od-fixture --victim
+  odfixture.ConfigVictimTest#expectsDefaultMode --lifecycle class-grouped --records <scratch>` →
+  `VERIFIED (sequence)`, polluter `ConfigPolluterTest#pollute`, reproduced 20/20, alone (same
+  failure) 0/20; header `lifecycle: class-grouped`.
+- **Review** (fresh reviewer, Claude Opus, read-only, with its own scratch probes): 0 critical,
+  2 important, 4 minor. Both important ones fixed test-first, each new test seen failing first:
+  (1) a throwing static initializer lost its cause in `class-grouped`
+  (`AssertionError: 'java.lang.NoClassDefFoundError' != 'java.lang.ExceptionInInitializerError'`) —
+  now reported exactly as `per-method` does; (2) an assumption failing in `@BeforeClass` was written
+  as a fake "No tests found" failure (`'java.lang.Exception' != 'flaketrace.NotExecuted'`) — now a
+  skip, as `per-method`. Probes `StaticInitProbeTest`, `AssumeSetupProbeTest`; suite 180 OK;
+  Surefire control still exit 0. Deferred minors: the grouped "No tests found" message lacks
+  `per-method`'s ` from ClassRequest@…` and stack frame, so an unknown method's signature differs
+  between the modes (the design said "same"); a spec line without `#` stops the harness (never sent
+  by Python); the harness alone treats an unknown mode as `per-method` (`OrderRunner` rejects it);
+  a test method named `initializationError` could take the empty-filter error.
+- **Limitations:** default unchanged until M1's run. JUnit 3, `@RunWith` and `suite()` classes
+  keep per-test lifecycle. An `@AfterClass` failure is not charged to a test in `class-grouped`.
+  JDK 8 not run locally — CI runs the control and the runner tests on JDK 8.
+
+## W22 job 3 follow-up: the four deferred review minors fixed (2026-11-14)
+
+- **Asked by M2:** fix the minors deferred in the job 3 review. Each got a test first, seen failing
+  on `bbaa0d2` (`py -3 -m unittest runner.tests.test_order_runner.TestOrderRunnerOnProbes` →
+  19 run, **4 failures**):
+
+  | Minor | Failing output first | Fix in `runner/harness/FtHarness.java` |
+  | --- | --- | --- |
+  | Unknown method: different signature in the two modes | grouped `{… method='nope' …}` ≠ per-method | a test JUnit never ran (and no class-setup failure/skip) gets `runOne` — exactly the per-method result; no test code runs, the method does not exist |
+  | A method requested as `initializationError` took JUnit's empty-filter error | `…SortingRequ…` ≠ per-method message | listener only counts descriptions of this class (`index()`) |
+  | A line without `#` stopped the whole harness | `AssertionError: 1 != 0 : per-method` (exit 1) | `className`/`runOne` handle it; that line alone fails (`IllegalArgumentException`) |
+  | Harness accepted an unknown `--lifecycle` | `(0, [… PASS …]) != (2, [])` | usage error, exit 2, no results |
+
+- **After:** `runner.tests.test_order_runner` → **45 OK**; every `runner/tests/test_*.py` →
+  **184 OK** (435 s); every `eval/tests/test_*.py` → **99 OK**; `ui.tests.test_server` → **30 OK**;
+  Surefire control exit 0.
+- **Limitation:** the "no such test" path in `class-grouped` costs one extra `Request.method`
+  for that test (no test code runs).
+
+## W22 job 4: diagnose on a disposable copy (2026-11-14)
+
+- **Requirement:** ADR-012 §4, FT021, panel action A3. Design
+  `docs/superpowers/specs/2026-11-14-w22-disposable-copy-design.md`, plan
+  `docs/superpowers/plans/2026-11-14-w22-disposable-copy.md`. Branch `m2/w22-record-env`.
+  Calls made by Claude on M2's delegation: the CLI owns the copy; `copy` is the CLI default.
+- **Found while designing:** today the diagnosis writes `target/` **inside the user's project**
+  (`mvn test-compile` in `maven_test_classpath`); the integrity check leaves `target/` out, so this
+  never showed. The new real test showed it before the fix: on a fresh fixture copy without
+  `target/`, `test_default_copy_never_writes_to_the_project` → `AssertionError: True is not false`
+  (`target/` existed afterwards).
+- **Test first:** `runner.tests.test_workspace` → `ModuleNotFoundError: No module named
+  'runner.workspace'`; `test_integrity` → `ImportError: cannot import name 'integrity_of'`; the CLI
+  tests → the given project was passed instead of a copy, and `--workspace` was an unknown option
+  (`SystemExit: 2`).
+- **After:** `test_workspace` 6 OK; targeted CLI/integrity/fixture tests 70 OK; every
+  `runner/tests/test_*.py` → **199 OK** (456 s, none skipped); every `eval/tests/test_*.py` →
+  **99 OK**; `ui.tests.test_server` → **30 OK**.
+- **Real command** on a fresh copy of the fixture in a folder whose name has a space,
+  `py -3 -m runner diagnose --project "<scratch>/od fixture" --victim odfixture.ConfigVictimTest#expectsDefaultMode --records <scratch>`
+  → `VERIFIED (sequence)`, exit 0; the project folder afterwards holds only `ground_truth.json`,
+  `pom.xml`, `src` (no `target/`); report `source_integrity`: `{'passed': True, 'details': 'copy: 23
+  files hashed (SHA-256) before and after; all identical; original project: 23 files hashed (SHA-256)
+  before and after; all identical'}`; no `flaketrace-work-*` folder left in the temp directory.
+- **Limitations:** files written outside the project (temp, home, network) are not contained; a
+  build that needs `.git` fails in the copy (use `--workspace in-place`); one full compile per
+  diagnosis. The UI's integrity caption (W16) is still true but does not mention the copy.
+- **Review** (fresh reviewer, Claude Opus, read-only; it ran real probes in a folder named
+  `my prøject ü`): 0 critical, 4 important, 7 minor. Confirmed working: records inside the original
+  refused; a change to the original during the run → `original project: changed: pom.xml`,
+  `UNRESOLVED (SOURCE_INTEGRITY_FAILED)`; non-ASCII paths; no temp path in the report or summary.
+  **Fixed, each test seen failing first:**
+  (1) a multi-module child fails in a copy (its parent `pom.xml` is outside) and the error said "run
+  it there" — now it suggests `--workspace in-place` (`'--workspace in-place' not found in 'error:
+  mvn failed …; run it there to see why'` before); (2) the UI kills the CLI on timeout, so the CLI's
+  clean-up never ran and a copy was left in `%TEMP%` (reviewer reproduced it) — new `--copy-parent`;
+  the UI puts the copy in the job folder and deletes it after a kill (test: `'tool' != 'timeout'`
+  before, FakeCli mode `copy-sleep`); (3) a copy that cannot be deleted is now named on stderr
+  instead of silently left; (4) the `diagnose()`-level tests the design asked for (records inside
+  the original; a change to the original) — they passed at once because the code already worked;
+  each was proved by breaking that code (records check without the original → test errors;
+  original not hashed → `AssertionError: True is not false`), file restored byte for byte. Two
+  minors re-graded up because a user sees them: an `ExtractError` printed the deleted temp path
+  (now the project path); a copy failure printed a Python traceback (now exit 1 with a
+  `--workspace in-place` hint). Doc truth: G4 wording narrowed ("FlakeTrace writes nothing there; a
+  test that does is caught by the hash"); a stale UI docstring corrected; the other minors written
+  as limitations in `runner/README.md`.
+- **A leak in my own test, found by checking `%TEMP%` after the run:** two `flaketrace-work-*`
+  folders holding `my project` — left by `test_a_copy_that_cannot_be_deleted_is_named_on_stderr`,
+  which fakes a failed delete. The test now removes it; the two folders were deleted; none remain.
+- **After the fixes:** every `runner/tests/test_*.py` → **212 OK** (471 s, none skipped); every
+  `eval/tests/test_*.py` → **99 OK**; `ui.tests.test_server` → **31 OK**; `ui/web` `npm test` → **29 passed**.

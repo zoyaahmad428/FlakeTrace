@@ -17,7 +17,10 @@ random-order baseline — is built on this one call.
 
 - **JUnitCore harness, not Maven Surefire.** Surefire orders tests by class and groups methods
   inside their class, so it cannot run `[A#x, B#y, A#z]`; it also costs a Maven start-up per
-  call. The harness calls `Request.method` per test, in the order given.
+  call. The harness calls `Request.method` per test, in the order given — or, with
+  `--lifecycle class-grouped` (W22), one filtered and sorted `Request.aClass` per run of same-class
+  tests, so class-level setup runs once per block as under Surefire (ADR-012 §2; the JUnit 3
+  adapter ignores sorting, so JUnit 3 classes stay per test).
 - **Python driver, not all-Java.** The evaluation code (`eval/`) is Python; `run_ordered`
   returns `eval.baseline` types directly with no JSON boundary.
 - **The target's own JUnit.** The classpath comes from `mvn dependency:build-classpath`, so no

@@ -30,6 +30,12 @@ def main(argv):
     if mode == "sleep":
         time.sleep(30)
         return 0
+    if mode == "copy-sleep":
+        # Like the real CLI killed mid-run: a project copy exists in --copy-parent and is never cleaned up.
+        parent = Path(args[args.index("--copy-parent") + 1])
+        (parent / "flaketrace-work-x" / "project").mkdir(parents=True)
+        time.sleep(60)
+        return 0
     if mode == "spawn-sleep":
         child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"])
         (records / "child.pid").write_text(str(child.pid), encoding="utf-8")

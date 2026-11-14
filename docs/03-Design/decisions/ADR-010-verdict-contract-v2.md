@@ -221,6 +221,12 @@ truth is written **before** the first run, as for every fixture case.
    2026-11-13 by M3's agreement, because M3 has no laptop; M3 still owns the file)*.
 3. M2 switches `repeat()`, `run_steps()` and `DiagnosisRuns` to tallies (W18). M3 switches
    `decide()`, the schema and `assemble_report()` (W19). T1–T4 turn green.
+   *Implementation note (W18, M2, 2026-11-14):* the fields are named `alone_tally` and
+   `sequence_tally`, because `DiagnosisRuns.sequence` is already the list of tests. While M3 has no
+   laptop they are added **beside** the old count fields, which are filled from the tallies, and
+   `NO_SINGLE_POLLUTER` stays importable as an alias of `INCONSISTENT`, so M3's `eval/` code and
+   tests keep working unchanged. The old fields and the alias are removed when W19 reads the
+   tallies. Until then the verdict for T1–T3 is still the Mid's (`decide()` reads the old fields).
 4. M3 adds fixture N4; T5 turns green through the real command.
 5. M1 reruns T1–T5 on her own machine at the correction commit and records the result (FT003's
    acceptance requires an independent reproduction).

@@ -88,7 +88,8 @@ def job_result(returncode: int, stdout: str, stderr: str, records: Path) -> dict
 
 
 class Busy(Exception):
-    """A diagnosis is already running; two runs would share the project's target/ folder."""
+    """A diagnosis is already running. One at a time keeps the machine's JVM load and the job list simple
+    (with --workspace in-place, two runs would also share the project's target/ folder)."""
 
     def __init__(self, job: dict):
         super().__init__("a diagnosis is already running")
@@ -137,7 +138,10 @@ class Jobs:
             if self._running is not None:
                 raise Busy(dict(self._jobs[self._running]))
             records = Path(tempfile.mkdtemp(prefix="flaketrace-ui-job-"))
-            args = ["diagnose", "--project", project, "--victim", victim, "--n", str(n), "--records", str(records)]
+            # The CLI's temporary project copy goes inside the job folder, so a timed-out job's copy can be
+            # removed even though the killed CLI never ran its own clean-up (W22, ADR-012 section 4).
+            args = ["diagnose", "--project", project, "--victim", victim, "--n", str(n), "--records", str(records),
+                    "--copy-parent", str(records / "work")]
             if order:
                 order_file = records / "order.txt"
                 order_file.write_text("\n".join(order) + "\n", encoding="utf-8")
@@ -175,6 +179,7 @@ class Jobs:
         except subprocess.TimeoutExpired:
             kill_tree(process)
             stdout, stderr = process.communicate()
+            shutil.rmtree(records / "work", ignore_errors=True)
             return {"state": "failed", "kind": "timeout",
                     "message": f"timed out after {self.timeout_s:g} s; the run and its JVMs were stopped",
                     "output_tail": tail(stdout + "\n" + stderr)}
