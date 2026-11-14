@@ -1,7 +1,8 @@
-"""Shrink the tests before the victim to a 1-minimal polluter set by delta debugging (W10, ADR-007).
+"""Shrink the tests before the victim to a smaller polluter set by delta debugging (W10, ADR-007).
 
 Zeller's ddmin: try chunks, then complements, then finer chunks. The last round removes each
-remaining test on its own, so every test in the result is needed (1-minimal, not minimum).
+remaining test on its own, once. So the result is 1-minimal only for the single trials ddmin saw:
+when outcomes vary, an unneeded test can be kept (FT004). Repeated deletion checks are ADR-011 (W20).
 """
 
 from typing import Dict, FrozenSet, List, Sequence, Tuple
@@ -13,7 +14,7 @@ def ddmin(
     runner, prefix: Sequence[TestIdentifier], victim: TestIdentifier, reference: FailureSignature
 ) -> Tuple[List[TestIdentifier], int]:
     """`prefix` must be non-empty and already known to make the victim fail with `reference`.
-    Returns (1-minimal subset of `prefix` in its original order, JVM runs made)."""
+    Returns (reduced subset of `prefix` in its original order, JVM runs made)."""
     cache: Dict[FrozenSet[TestIdentifier], bool] = {frozenset(prefix): True}
     runs = 0
 

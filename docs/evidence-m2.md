@@ -1007,3 +1007,69 @@ own copy of the code, not from the review's description.
   fails = sum(1 for _ in range(20) if not r.run_ordered([P, V])[V].passed)
   print("FT004: sequence with Q deleted ([P, V]) then fails", fails, "/ 20")
   ```
+
+## W16: retired claims qualified in `runner/` and `ui/` (2026-11-14)
+
+- **Requirement:** W16 ([[10-Final1/iteration-2-plan]]); claims ledger G1–G4; ADR-010 §2 and Q3;
+  ADR-011 §5; ADR-012 §1. Branch `m2/w16-retire-claims`, from `main` `b802600`.
+- **Changed:** `runner/cli.py` `summary()`: headline `VERIFIED (sequence)`; a shown resource gets
+  "static overlap: a possible mechanism, not confirmed as the cause"; the alone count is labelled
+  "alone (same failure)"; the minimise line says "reduced by single-trial delta debugging; not
+  deletion-verified". UI: `outcomeLabel()` in `ui/web/src/lib/report.ts` (used by the Certificate
+  headline, the step rail and the report list); fixed sentences on the Certificate and Evidence
+  graph screens. Docstrings, `runner/README.md` and three notes in `docs/04-Implementation/`.
+- **Test first.** New and changed assertions in `runner/tests/test_cli.py` and
+  `ui/web/src/lib/report.test.ts`, run on the unchanged code:
+  - `py -3 -m unittest runner.tests.test_cli.TestReports` → **13 run, 5 failed**, each on the old
+    wording, e.g. `AssertionError: 'VERIFIED  pkg.VictimTest#v' != 'VERIFIED (sequence)  pkg.VictimTest#v'`
+    and `'alone (same failure): 0/20' not found in '... alone: 0/20 ...'`.
+  - `npx vitest run src/lib/report.test.ts` → **4 failed, 17 passed**: f1–f4
+    `expected 'VERIFIED' to be 'VERIFIED (sequence)'`.
+- **After the change** (Windows 11, Python 3.14, Node 22.21.1, local JDK):
+  - every `runner/tests/test_*.py` (as CI runs them) → **147 tests OK** (338 s, real JVM runs included)
+  - every `eval/tests/test_*.py` → **85 OK** · `ui.tests.test_server` → **30 OK**
+  - `ui/web`: `npm test` → **29 passed** · `npm run typecheck` clean · `npm run build` OK
+  - Real command: `py -3 -m runner diagnose --project fixtures/od-fixture --victim
+    odfixture.ConfigVictimTest#expectsDefaultMode --records <scratch>` → exit 0:
+    ```
+    VERIFIED (sequence)  odfixture.ConfigVictimTest#expectsDefaultMode
+      polluter:   odfixture.ConfigPolluterTest#pollute
+      resource:   static-field odfixture.Config mode (write odfixture.ConfigPolluterTest#pollute@1 -> read odfixture.ConfigVictimTest#expectsDefaultMode@1)
+                  static overlap: a possible mechanism, not confirmed as the cause
+      reproduced: 20/20 (lower bound 0.839)   alone (same failure): 0/20
+    ```
+  - Search of `runner/`, `ui/`, `.github/`, `docs/04-Implementation/` for *1-minimal, never
+    modified, sandboxed, found mechanism, root cause, caused by, explains the failure, passes
+    alone* → one hit, the qualified "1-minimal only for the single trials ddmin saw" (ledger G2).
+- **Limitations:** wording only — the FT003 and FT004 defects are still in the code (W18, W20).
+  The UI's fixed sentences have no unit test (a test would repeat the string); they were checked
+  by typecheck, build and the phrase search, **not yet viewed in a browser**. `evidence/` tests
+  were not run (no file there changed). The report's `limitations` text comes from `eval/` and
+  `evidence/` and is M3's and M1's part of W16. The CI step name "Victims pass alone (F1, F2, F3)"
+  is kept: it names a real Maven check of the fixture, not a claim about a report.
+
+## W19 step 1: `RunTally`, `classify` and `tally` in `eval/baseline.py` (2026-11-14)
+
+- **Requirement:** ADR-010 §1 (four outcome categories, one classifier, one synthetic prefix);
+  W19 step 1, written by M2 in M3's file by M3's agreement of 2026-11-13. Branch `m2/w19-runtally`,
+  stacked on `m2/w16-retire-claims` (`9a05788`).
+- **Choices made by M2 (2026-11-14):** tests in `eval/tests/test_baseline.py`; `classify` raises
+  `ValueError` for a real failure when there is no reference; a `tally(outcomes, reference)` helper
+  so the runner (W18) and the recount checker (ADR-013) count the same way.
+- **Test first:** `py -3 -m unittest eval.tests.test_baseline` on the unchanged module →
+  `ImportError: cannot import name 'INFRA' from 'eval.baseline'` (FAILED, errors=1).
+- **After:** `py -3 -m unittest eval.tests.test_baseline` → **27 OK** (14 new).
+- **Mutation check** (scratch script; the file restored and compared byte for byte after):
+
+  | Mutation | Tests that failed |
+  | --- | --- |
+  | Sum check removed from `RunTally` | `test_counts_that_do_not_add_up_are_refused` |
+  | Crash/timeout/skip no longer `INFRA` | `test_pass_and_infra_need_no_reference`, `test_crash_timeout_and_not_executed_are_infra`, `test_counts_each_category_once` |
+  | Every real failure counted as `MATCH` | `test_a_different_real_failure_is_other`, `test_counts_each_category_once`, `test_ft003_alone_runs_failing_differently_are_not_passes` |
+
+- **Runner refactor:** `runner/search.py`, `verify.py`, `orders.py` import `SYNTHETIC_PREFIX` from
+  `eval/baseline.py`; `order_runner.py`'s three `"flaketrace.…"` literals use it. No behaviour
+  change intended; checked by the existing suites: every `runner/tests/test_*.py` → **147 OK**
+  (336 s, real JVM runs), every `eval/tests/test_*.py` → **99 OK**, `ui.tests.test_server` → **30 OK**.
+- **Limitations:** nothing uses the tallies yet — the defect FT003 is still in `runner/verify.py`
+  until W18. Awaiting review by M3 (owner of the file).

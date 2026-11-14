@@ -84,7 +84,10 @@ export type ReportView = {
 
 export const testName = (t: TestId) => `${t.class}#${t.method}`;
 
-export const outcomeText = (r: Report) => (r.outcome === "UNRESOLVED" ? `UNRESOLVED(${r.unresolved_reason})` : r.outcome);
+// ADR-010 Q3: VERIFIED is about the sequence, never about the resource being the cause.
+export const outcomeLabel = (outcome: string) => (outcome === "VERIFIED" ? "VERIFIED (sequence)" : outcome);
+
+export const outcomeText = (r: Report) => (r.outcome === "UNRESOLVED" ? `UNRESOLVED(${r.unresolved_reason})` : outcomeLabel(r.outcome));
 
 export const outcomeTone = (o: Outcome) => (o === "VERIFIED" ? "verified" : o === "CANDIDATE" ? "candidate" : "unresolved");
 

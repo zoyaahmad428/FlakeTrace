@@ -1,6 +1,6 @@
 """W7 entry point (ADR-004): reproduce the failure, check the victim alone, search for a single
 polluter, repeat the sequence, check source integrity, record every run. When no single test is
-enough, ddmin shrinks the tests before the victim to a 1-minimal set (W10, ADR-007). Returns raw
+enough, ddmin shrinks the tests before the victim with single trials (W10, ADR-007). Returns raw
 counts; the verdict is M3's eval.outcome.decide() (W9 builds the report)."""
 
 import platform

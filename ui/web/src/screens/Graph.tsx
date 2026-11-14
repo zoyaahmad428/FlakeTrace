@@ -18,7 +18,8 @@ export default function GraphScreen() {
   return (
     <>
       <ScreenHeader index={5} title="Evidence graph">
-        The shared state that links the polluter to the victim, found by static bytecode analysis.
+        A static overlap found by bytecode analysis: the polluter may write shared state that the victim may read. A possible
+        mechanism, not confirmed as the cause.
       </ScreenHeader>
       <div className="grid gap-5">
         <Panel title="Polluter → shared state → victim">

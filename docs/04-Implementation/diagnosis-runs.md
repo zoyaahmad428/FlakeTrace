@@ -9,8 +9,8 @@
 `diagnose(project, victim, n=20)` turns W6's single primitive — run an order in one fresh JVM —
 into the raw evidence a diagnosis report needs: the original failing order and its reference
 failure signature, how often the victim fails **alone**, which earlier test **pollutes** it, how
-often `[polluter, victim]` **reproduces** the failure, whether the analysed **source stayed
-unchanged**, and a **record** of every JVM run. It returns plain counts (`DiagnosisRuns`); the
+often `[polluter, victim]` **reproduces** the failure, whether the project's files outside
+`target/` and `.git/` had the **same hashes before and after** (not a sandbox; claims ledger G4), and a **record** of every JVM run. It returns plain counts (`DiagnosisRuns`); the
 verdict stays with M3's `decide()`, so the statistics and decision rules live in one place.
 
 | Module | Job |
@@ -19,7 +19,7 @@ verdict stays with M3's `decide()`, so the statistics and decision rules live in
 | `recording.py` | `RecordingRunner` writes each run as one JSON line, immediately; the header also names the project's git commit, whether it had uncommitted changes, and the OS (`environment()`, panel action A7) |
 | `discovery.py` | Surefire-like class list; methods from JUnit (`FtHarness --list`) |
 | `search.py` | `reproduce` (reference signature), `find_polluter` (one-by-one) |
-| `minimise.py` | `ddmin` — when no single test is enough, shrinks the tests before the victim to a 1-minimal set (W10, ADR-007) |
+| `minimise.py` | `ddmin` — when no single test is enough, shrinks the tests before the victim with single trials, not deletion-verified (W10, ADR-007; FT004) |
 | `orders.py` | class-first shuffled orders when the starting order never fails; the first real failure becomes the failing order (ADR-008) |
 | `verify.py` | `repeat` ×n → matching and any-signature counts |
 | `diagnose.py` | `run_steps` (logic, testable with a fake runner) + `diagnose` (real wiring) |
@@ -41,9 +41,9 @@ verdict stays with M3's `decide()`, so the statistics and decision rules live in
 
 ## 3. What breaks
 
-- **More than one polluter needed** (F3) → `ddmin` finds a 1-minimal set (F3: `setFlagA`, `setFlagB`; 10 minimise runs = 1
+- **More than one polluter needed** (F3) → `ddmin` finds a reduced set (F3: `setFlagA`, `setFlagB`; 10 minimise runs = 1
   re-check of the full order + 9 `ddmin`) → `POLLUTER_FOUND` with several polluters. The full order must
-  fail once more before `ddmin`, so a one-off flaky failure ends `NO_SINGLE_POLLUTER` with nobody blamed. Each `ddmin` check is one run, so a flaky check can keep a bystander; verify ×n exposes it.
+  fail once more before `ddmin`, so a one-off flaky failure ends `NO_SINGLE_POLLUTER` with nobody blamed. Each `ddmin` check is one run, so a flaky check can keep a bystander, and verify ×n does **not** expose it: the longer sequence still fails (FT004, reproduced 2026-11-13 in [[evidence-m2]]). Repeated deletion checks are ADR-011 (W20).
 - **A rarely-failing flaky victim** can pass all `n` alone runs by chance and then fail during
   the search, giving a spurious polluter; the verify counts expose it (few matches of `n`), so
   `decide()` can at most say `CANDIDATE`.

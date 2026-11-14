@@ -13,7 +13,7 @@ import tempfile
 from pathlib import Path
 from typing import Dict, List, Sequence
 
-from eval.baseline import FailureSignature, RunOutcome, TestIdentifier
+from eval.baseline import SYNTHETIC_PREFIX, FailureSignature, RunOutcome, TestIdentifier
 
 HARNESS_SOURCE = Path(__file__).resolve().parent / "harness" / "FtHarness.java"
 
@@ -96,7 +96,7 @@ def parse_results(
             results[test] = RunOutcome(
                 passed=False,
                 failure_signature=FailureSignature(
-                    "flaketrace.NotExecuted", "", "ignored or an assumption failed"
+                    f"{SYNTHETIC_PREFIX}NotExecuted", "", "ignored or an assumption failed"
                 ),
             )
         else:
@@ -181,11 +181,11 @@ class OrderRunner:
                     timeout=self._timeout_s,
                 )
                 missing = (
-                    "flaketrace.JvmCrash",
+                    f"{SYNTHETIC_PREFIX}JvmCrash",
                     f"JVM exited with code {finished.returncode} before this test reported",
                 )
             except subprocess.TimeoutExpired:
-                missing = ("flaketrace.Timeout", f"JVM exceeded {self._timeout_s}s")
+                missing = (f"{SYNTHETIC_PREFIX}Timeout", f"JVM exceeded {self._timeout_s}s")
             text = result_file.read_text(encoding="utf-8") if result_file.exists() else ""
         return parse_results(text, order, *missing)
 
