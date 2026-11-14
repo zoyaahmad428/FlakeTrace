@@ -18,6 +18,7 @@ from runner.diagnose import (INCONSISTENT, POLLUTER_FOUND, VICTIM_FAILS_ALONE, D
                              DiagnosisRuns)
 from runner.integrity import SourceIntegrity
 from runner.order_runner import ToolError
+from evidence.extract import ExtractError
 
 REPO = Path(__file__).resolve().parents[2]
 FIXTURE = REPO / "fixtures" / "od-fixture"
@@ -507,6 +508,87 @@ class TestCliOnFixture(unittest.TestCase):
         self.assertIn("odfixture.ConfigVictimTest#noSuchTest", err)
         self.assertIsNone(report)
         self.assertEqual(list(Path(self.records).glob("*noSuchTest*")), [])  # no empty record left behind
+
+
+class TestWorkspaceOption(unittest.TestCase):
+    """W22 job 4: --workspace copy (default) diagnoses a disposable copy of the project."""
+
+    def run_with(self, extra, side_effect=None, status=VICTIM_FAILS_ALONE):
+        project = project_with_pom()
+        records = Path(tempfile.mkdtemp())
+        seen = {}
+
+        def fake_diagnose(folder, *args, **kwargs):
+            seen["folder"], seen["kwargs"], seen["existed"] = Path(folder), kwargs, Path(folder).is_dir()
+            if side_effect:
+                raise side_effect
+            return runs(status, records / "r.jsonl", polluters=[P], sequence=[P, V], alone_successes=0)
+        with mock.patch("runner.cli.diagnose", side_effect=fake_diagnose):
+            code, out, err = run_cli(["diagnose", "--project", str(project), "--victim", str(V)] + extra)
+        return project, seen, code, err
+
+    def test_default_is_a_copy_that_is_gone_afterwards(self):
+        project, seen, code, _ = self.run_with([])
+        self.assertEqual(code, 0)
+        self.assertTrue(seen["existed"])
+        self.assertNotEqual(seen["folder"].resolve(), project.resolve())
+        self.assertEqual((seen["kwargs"]["workspace"], seen["kwargs"]["origin"]), ("copy", project))
+        self.assertFalse(seen["folder"].exists())
+
+    def test_in_place_is_the_project_itself(self):
+        project, seen, code, _ = self.run_with(["--workspace", "in-place"])
+        self.assertEqual(code, 0)
+        self.assertEqual(seen["folder"], project)
+        self.assertEqual((seen["kwargs"]["workspace"], seen["kwargs"]["origin"]), ("in-place", None))
+
+    def test_unknown_workspace_is_a_usage_error(self):
+        with self.assertRaises(SystemExit) as raised:
+            run_cli(["diagnose", "--project", str(project_with_pom()), "--victim", str(V), "--workspace", "elsewhere"])
+        self.assertEqual(raised.exception.code, 2)
+
+    def test_tool_error_in_the_copy_names_the_project_and_removes_the_copy(self):
+        project, seen, code, err = self.run_with([], side_effect=ToolError("'javac' not found on PATH"))
+        self.assertEqual(code, 1)
+        self.assertFalse(seen["folder"].exists())
+        failed = subprocess.CalledProcessError(1, ["mvn", "test-compile"])
+        project, seen, code, err = self.run_with([], side_effect=failed)
+        self.assertEqual(code, 1)
+        self.assertIn(str(project), err)
+        self.assertNotIn(str(seen["folder"]), err)
+
+
+class TestWorkspaceReviewFixes(TestWorkspaceOption):
+    """Fixes from the W22 job 4 review."""
+
+    def test_copy_parent_holds_the_copy(self):
+        parent = Path(tempfile.mkdtemp()) / "work"
+        project, seen, code, _ = self.run_with(["--copy-parent", str(parent)])
+        self.assertEqual(code, 0)
+        self.assertIn(parent.resolve(), seen["folder"].resolve().parents)
+
+    def test_maven_failure_in_a_copy_suggests_in_place(self):
+        failed = subprocess.CalledProcessError(1, ["mvn", "test-compile"])
+        project, seen, code, err = self.run_with([], side_effect=failed)
+        self.assertEqual(code, 1)
+        self.assertIn("--workspace in-place", err)
+        _, _, code, err = self.run_with(["--workspace", "in-place"], side_effect=failed)
+        self.assertNotIn("--workspace in-place", err)
+
+    def test_evidence_error_names_the_project_not_the_copy(self):
+        def failing(folder, runs):
+            raise ExtractError(f"class directory not found: {Path(folder).resolve() / 'target' / 'classes'}", 2)
+        with mock.patch("runner.cli.resource_fields", side_effect=failing):
+            project, seen, code, err = self.run_with([], status=POLLUTER_FOUND)
+        self.assertEqual(code, 1)
+        self.assertIn(str(project), err)
+        self.assertNotIn("flaketrace-work-", err)
+
+    def test_a_copy_that_cannot_be_made_exits_1_without_a_traceback(self):
+        with mock.patch("runner.workspace.shutil.copytree", side_effect=OSError("file is locked")):
+            project, seen, code, err = self.run_with([])
+        self.assertEqual(code, 1)
+        self.assertIn("--workspace in-place", err)
+        self.assertNotIn("Traceback", err)
 
 
 if __name__ == "__main__":

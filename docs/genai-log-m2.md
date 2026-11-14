@@ -997,3 +997,27 @@ first) and four small harness fixes. **How verified:** [[evidence-m2]] "W22 job 
 runner 184, eval 99, UI backend 30 OK. **Errors:** the first insert of the tests turned `
 `
 escapes into real newlines (a script error), fixed before running. **What I changed:** *to fill in.*
+
+## 2026-11-14 — W22 job 4: diagnose on a disposable copy
+
+**Tool:** Claude Code (Claude Opus 5.5), superpowers brainstorming → writing-plans →
+executing-plans (native) → fresh review · **Level:** L3 · **Branch:** `m2/w22-record-env`
+
+**Asked:** build ADR-012 §4. **Decided by me:** approved the design. Claude made two calls on my
+delegation: the CLI owns the copy (because evidence extraction needs the copy's compiled classes
+after `diagnose()` returns) and `copy` is the CLI default (no change to how tests run).
+
+**Kept:** `runner/workspace.py`, `integrity_of`, `diagnose(workspace=, origin=)`, `--workspace`,
+13 new tests, doc and claims-ledger updates.
+
+**How it was verified:** see [[evidence-m2]] "W22 job 4": tests failed first; runner 199, eval 99,
+UI backend 30 OK; a real run left the project folder without `target/`.
+
+**Found:** the Mid build wrote `target/` into the user's project — hidden because the integrity
+check skips `target/`. **Review fixes:** multi-module hint, `--copy-parent` with UI clean-up after a
+timeout, a warning for an undeletable copy, the missing `diagnose()`-level tests, no temp path in
+errors, no traceback on a failed copy. **Errors:** Claude's own new test leaked two temp copies;
+found by checking `%TEMP%`, fixed. **What I changed:** *to fill in after reading the diff.*
+
+Ownership checkpoint: why the copy lives in the CLI and not in `diagnose()`; what `origin` is for;
+what the two-part integrity line means; what the copy does not protect against.

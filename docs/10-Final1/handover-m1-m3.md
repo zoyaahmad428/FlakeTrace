@@ -18,6 +18,22 @@ it closes only when its verifier has reproduced it ([[10-Final1/iteration-2-plan
 
 ## Changes, newest first
 
+### W22 job 4 — diagnose on a disposable copy (2026-11-14) · built
+
+**What changed for you:** by default (`--workspace copy`) the command now copies the project to a
+temporary folder, builds and runs everything there — including **M1's evidence extraction**, which
+now reads the copy's `target/` — and deletes the copy afterwards. The project folder is no longer
+written to, not even `target/`. `source_integrity.details` now has two parts:
+`"copy: …; original project: …"`; the schema field is unchanged. `--workspace in-place` gives the
+old behaviour. **M3:** the reports you regenerate in W19 will carry the two-part details text.
+In the UI, each job's copy now lives in the job's own folder (`--copy-parent`) and is removed
+even when the job times out. A multi-module child module may need `--workspace in-place` (its
+parent `pom.xml` is outside the copied folder); the error message says so.
+**M1:** while running the lifecycle control (job 3 steps), also run step 4 once more and check
+that `fixtures/od-fixture` gained no new files — or better, run it on a fresh copy of the fixture
+without `target/` and confirm `target/` is still absent afterwards.
+
+
 ### W22 job 3 — class-grouped execution and the lifecycle control (2026-11-14) · built, awaiting M1
 
 **What changed for you:** a new option, `--lifecycle class-grouped`. With it, consecutive tests of

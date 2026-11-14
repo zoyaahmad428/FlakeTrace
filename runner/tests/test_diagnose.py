@@ -212,6 +212,12 @@ class TestRunSteps(unittest.TestCase):
         with self.assertRaises(DiagnoseInputError):
             diagnose(project, V, original_order=[V], record_dir=project / "records")
 
+    def test_record_folder_inside_the_original_of_a_copy_is_refused_before_maven_runs(self):
+        original = Path(tempfile.mkdtemp(prefix="flaketrace-original-"))
+        copy = Path(tempfile.mkdtemp(prefix="flaketrace-copy-"))
+        with self.assertRaises(DiagnoseInputError):
+            diagnose(copy, V, original_order=[V], record_dir=original / "records", origin=original)
+
     def test_record_folder_that_is_a_file_is_refused_before_maven_runs(self):
         project = Path(tempfile.mkdtemp(prefix="flaketrace-project-"))
         a_file = Path(tempfile.mkdtemp(prefix="flaketrace-records-")) / "records.txt"
@@ -381,6 +387,53 @@ class TestDiagnoseOnFixture(unittest.TestCase):
         self.assertEqual(runs.polluters, self.expected_polluters("F1"))
         header = json.loads(Path(runs.execution_record).read_text(encoding="utf-8").splitlines()[0])
         self.assertEqual(header["lifecycle"], "class-grouped")
+
+    def fresh_fixture(self):
+        folder = Path(tempfile.mkdtemp(prefix="flaketrace-fixture-")) / "od-fixture"
+        shutil.copytree(FIXTURE, folder, ignore=shutil.ignore_patterns("target"))
+        return folder
+
+    def run_cli_on(self, project, *extra):
+        from runner.cli import main
+        victim = str(TestIdentifier.from_dict(self.truth["F1"]["victim"]))
+        with mock.patch("sys.stdout"):
+            code = main(["diagnose", "--project", str(project), "--victim", victim, "--n", "3",
+                         "--records", self.records] + list(extra))
+        record = max(Path(self.records).glob(f"*-{victim}.jsonl"), key=lambda p: p.stat().st_mtime)
+        report = json.loads(record.with_suffix(".report.json").read_text(encoding="utf-8"))
+        return code, json.loads(record.read_text(encoding="utf-8").splitlines()[0]), report
+
+    def test_default_copy_never_writes_to_the_project(self):
+        project = self.fresh_fixture()
+        code, header, report = self.run_cli_on(project)
+        self.assertEqual(code, 0)
+        self.assertFalse((project / "target").exists())
+        self.assertTrue(report["source_integrity"]["passed"], report["source_integrity"])
+        self.assertIn("original project:", report["source_integrity"]["details"])
+        self.assertEqual((header["workspace"], header["project"]), ("copy", str(project.resolve())))
+
+    def test_in_place_still_builds_in_the_project(self):
+        project = self.fresh_fixture()
+        code, header, report = self.run_cli_on(project, "--workspace", "in-place")
+        self.assertEqual(code, 0)
+        self.assertTrue((project / "target").is_dir())
+        self.assertNotIn("original project:", report["source_integrity"]["details"])
+        self.assertEqual(header["workspace"], "in-place")
+
+    def test_a_change_to_the_original_during_a_copy_run_fails_integrity(self):
+        from runner.workspace import workspace
+        original = self.fresh_fixture()
+        victim = TestIdentifier.from_dict(self.truth["F1"]["victim"])
+        real_run_steps = run_steps
+
+        def edit_original_then_run(*args, **kwargs):
+            (original / "pom.xml").write_text((original / "pom.xml").read_text(encoding="utf-8") + "\n", encoding="utf-8")
+            return real_run_steps(*args, **kwargs)
+        with workspace(original, "copy") as work, \
+                mock.patch("runner.diagnose.run_steps", side_effect=edit_original_then_run):
+            runs = diagnose(work, victim, n=1, record_dir=self.records, workspace="copy", origin=original)
+        self.assertFalse(runs.source_integrity.passed)
+        self.assertIn("original project: changed: pom.xml", runs.source_integrity.details)
 
     def test_failed_jvm_probe_records_null_and_the_diagnosis_goes_on(self):
         victim = TestIdentifier.from_dict(self.truth["F1"]["victim"])

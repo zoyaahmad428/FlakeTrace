@@ -15,7 +15,7 @@ verdict stays with M3's `decide()`, so the statistics and decision rules live in
 
 | Module | Job |
 | --- | --- |
-| `integrity.py` | SHA-256 of every project file except `target/`, `.git/`, before and after |
+| `integrity.py` | SHA-256 of every project file except `target/`, `.git/`, before and after; on a copy (W22), both the copy and the user's original are checked |
 | `recording.py` | `RecordingRunner` writes each run as one JSON line, immediately; the header also names the project's git commit, whether it had uncommitted changes, and the OS (`environment()`, panel action A7), and since W22 what the runs ran under: FlakeTrace's commit, Maven, Python, the test JVM's version, timezone, locale, encoding and JUnit version (`FtHarness --env`), lifecycle and workspace mode, and the command line (ADR-012 §6) |
 | `discovery.py` | Surefire-like class list; methods from JUnit (`FtHarness --list`) |
 | `search.py` | `reproduce` (reference signature), `find_polluter` (one-by-one) |

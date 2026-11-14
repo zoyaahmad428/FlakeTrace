@@ -1234,3 +1234,56 @@ own copy of the code, not from the review's description.
   Surefire control exit 0.
 - **Limitation:** the "no such test" path in `class-grouped` costs one extra `Request.method`
   for that test (no test code runs).
+
+## W22 job 4: diagnose on a disposable copy (2026-11-14)
+
+- **Requirement:** ADR-012 §4, FT021, panel action A3. Design
+  `docs/superpowers/specs/2026-11-14-w22-disposable-copy-design.md`, plan
+  `docs/superpowers/plans/2026-11-14-w22-disposable-copy.md`. Branch `m2/w22-record-env`.
+  Calls made by Claude on M2's delegation: the CLI owns the copy; `copy` is the CLI default.
+- **Found while designing:** today the diagnosis writes `target/` **inside the user's project**
+  (`mvn test-compile` in `maven_test_classpath`); the integrity check leaves `target/` out, so this
+  never showed. The new real test showed it before the fix: on a fresh fixture copy without
+  `target/`, `test_default_copy_never_writes_to_the_project` → `AssertionError: True is not false`
+  (`target/` existed afterwards).
+- **Test first:** `runner.tests.test_workspace` → `ModuleNotFoundError: No module named
+  'runner.workspace'`; `test_integrity` → `ImportError: cannot import name 'integrity_of'`; the CLI
+  tests → the given project was passed instead of a copy, and `--workspace` was an unknown option
+  (`SystemExit: 2`).
+- **After:** `test_workspace` 6 OK; targeted CLI/integrity/fixture tests 70 OK; every
+  `runner/tests/test_*.py` → **199 OK** (456 s, none skipped); every `eval/tests/test_*.py` →
+  **99 OK**; `ui.tests.test_server` → **30 OK**.
+- **Real command** on a fresh copy of the fixture in a folder whose name has a space,
+  `py -3 -m runner diagnose --project "<scratch>/od fixture" --victim odfixture.ConfigVictimTest#expectsDefaultMode --records <scratch>`
+  → `VERIFIED (sequence)`, exit 0; the project folder afterwards holds only `ground_truth.json`,
+  `pom.xml`, `src` (no `target/`); report `source_integrity`: `{'passed': True, 'details': 'copy: 23
+  files hashed (SHA-256) before and after; all identical; original project: 23 files hashed (SHA-256)
+  before and after; all identical'}`; no `flaketrace-work-*` folder left in the temp directory.
+- **Limitations:** files written outside the project (temp, home, network) are not contained; a
+  build that needs `.git` fails in the copy (use `--workspace in-place`); one full compile per
+  diagnosis. The UI's integrity caption (W16) is still true but does not mention the copy.
+- **Review** (fresh reviewer, Claude Opus, read-only; it ran real probes in a folder named
+  `my prøject ü`): 0 critical, 4 important, 7 minor. Confirmed working: records inside the original
+  refused; a change to the original during the run → `original project: changed: pom.xml`,
+  `UNRESOLVED (SOURCE_INTEGRITY_FAILED)`; non-ASCII paths; no temp path in the report or summary.
+  **Fixed, each test seen failing first:**
+  (1) a multi-module child fails in a copy (its parent `pom.xml` is outside) and the error said "run
+  it there" — now it suggests `--workspace in-place` (`'--workspace in-place' not found in 'error:
+  mvn failed …; run it there to see why'` before); (2) the UI kills the CLI on timeout, so the CLI's
+  clean-up never ran and a copy was left in `%TEMP%` (reviewer reproduced it) — new `--copy-parent`;
+  the UI puts the copy in the job folder and deletes it after a kill (test: `'tool' != 'timeout'`
+  before, FakeCli mode `copy-sleep`); (3) a copy that cannot be deleted is now named on stderr
+  instead of silently left; (4) the `diagnose()`-level tests the design asked for (records inside
+  the original; a change to the original) — they passed at once because the code already worked;
+  each was proved by breaking that code (records check without the original → test errors;
+  original not hashed → `AssertionError: True is not false`), file restored byte for byte. Two
+  minors re-graded up because a user sees them: an `ExtractError` printed the deleted temp path
+  (now the project path); a copy failure printed a Python traceback (now exit 1 with a
+  `--workspace in-place` hint). Doc truth: G4 wording narrowed ("FlakeTrace writes nothing there; a
+  test that does is caught by the hash"); a stale UI docstring corrected; the other minors written
+  as limitations in `runner/README.md`.
+- **A leak in my own test, found by checking `%TEMP%` after the run:** two `flaketrace-work-*`
+  folders holding `my project` — left by `test_a_copy_that_cannot_be_deleted_is_named_on_stderr`,
+  which fakes a failed delete. The test now removes it; the two folders were deleted; none remain.
+- **After the fixes:** every `runner/tests/test_*.py` → **212 OK** (471 s, none skipped); every
+  `eval/tests/test_*.py` → **99 OK**; `ui.tests.test_server` → **31 OK**; `ui/web` `npm test` → **29 passed**.

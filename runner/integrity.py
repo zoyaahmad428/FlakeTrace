@@ -5,7 +5,7 @@ import hashlib
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 
 EXCLUDED_DIRS = {"target", ".git"}
 
@@ -38,3 +38,13 @@ def compare(before: Dict[str, str], after: Dict[str, str]) -> SourceIntegrity:
     parts = [f"{label}: {', '.join(paths)}" for label, paths in
              (("changed", changed), ("added", added), ("removed", removed)) if paths]
     return SourceIntegrity(False, "; ".join(parts))
+
+
+def integrity_of(copy: SourceIntegrity, original: Optional[SourceIntegrity]) -> SourceIntegrity:
+    """One result for a diagnosis on a disposable copy (W22, ADR-012 section 4): it passes only if
+    the copy and the user's original project are both unchanged. Without an original (in-place),
+    the single result."""
+    if original is None:
+        return copy
+    return SourceIntegrity(copy.passed and original.passed,
+                           f"copy: {copy.details}; original project: {original.details}")

@@ -171,6 +171,9 @@ workspace mode, the container image digest or `null`, and the full command line.
    `runner/tests/resources/lifecycle-control/` (so Surefire can run it; also run in CI). Default
    stays `per-method` until M1 records the section 3 table on her machine.*
 4. Section 4, then section 5 (W22, W27) — both can be cut if time is short; sections 1–3 cannot.
+   *Section 4 built 2026-11-14 (M2): `--workspace copy`, the CLI default. The CLI owns the copy
+   (the evidence extraction after `diagnose()` needs its compiled classes); integrity is reported
+   for the copy and for the original.*
 
 ## Agreement
 

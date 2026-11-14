@@ -14,7 +14,7 @@ from typing import List, Optional, Sequence, Tuple
 
 from eval.baseline import FailureSignature, RunTally, TestIdentifier
 from runner.discovery import discover_order
-from runner.integrity import SourceIntegrity, compare, snapshot
+from runner.integrity import SourceIntegrity, compare, integrity_of, snapshot
 from runner.minimise import ddmin
 from runner.orders import distinct_shuffles, search_orders
 from runner.order_runner import OrderRunner, java_version, maven_test_classpath
@@ -161,9 +161,13 @@ def diagnose(
     seed: int = 0,
     command: Optional[List[str]] = None,
     lifecycle: str = "per-method",
+    workspace: str = "in-place",
+    origin=None,
 ) -> DiagnosisRuns:
     """`command` is the CLI's argument list, written to the record header; None from Python.
-    `lifecycle` is passed to the OrderRunner (ADR-012 section 2) and recorded."""
+    `lifecycle` is passed to the OrderRunner (ADR-012 section 2) and recorded. When `project_dir` is a
+    disposable copy (ADR-012 section 4), `origin` is the user's project: the record names it, and it
+    is hashed before and after as well; `workspace` is recorded."""
     if n < 1:
         raise DiagnoseInputError(f"n must be >= 1, got {n!r}")
     if shuffles < 0:
@@ -173,12 +177,15 @@ def diagnose(
     if original_order is not None and len(set(original_order)) != len(original_order):
         raise DiagnoseInputError("the given order lists a test more than once")
     project = Path(project_dir).resolve()
+    source = Path(origin).resolve() if origin is not None else None
     records = Path(record_dir).resolve()
-    if records == project or project in records.parents:
-        # A record written inside the project would itself make the integrity check fail.
-        raise DiagnoseInputError(f"record_dir {records} is inside the analysed project {project}")
+    for folder in filter(None, (project, source)):
+        if records == folder or folder in records.parents:
+            # A record written inside the project would itself make the integrity check fail.
+            raise DiagnoseInputError(f"record_dir {records} is inside the analysed project {folder}")
     if records.exists() and not records.is_dir():
         raise DiagnoseInputError(f"record_dir {records} is a file, not a folder")
+    before_source = snapshot(source) if source is not None else None
     before = snapshot(project)
     runner = OrderRunner(maven_test_classpath(project), working_dir=project, timeout_s=timeout_s,
                          lifecycle=lifecycle)
@@ -200,17 +207,18 @@ def diagnose(
     started = datetime.now(timezone.utc)
     record = Path(record_dir) / f"{started.strftime('%Y%m%dT%H%M%SZ')}-{victim}.jsonl"
     recorder = RecordingRunner(runner, record, {
-        "victim": str(victim), "n": n, "project": str(project),
-        "java_version": java_version(), "started": started.isoformat(), **environment(project),
+        "victim": str(victim), "n": n, "project": str(source or project),
+        "java_version": java_version(), "started": started.isoformat(), **environment(source or project),
         "order_given": original_order is not None, "shuffles": shuffles, "seed_base": seed,
         # ADR-012 section 6: what the runs ran under, so a replay can compare it (W22, W23).
         **tool_environment(), "jvm": runner.jvm_environment() or None,
-        "lifecycle": runner.lifecycle, "workspace": "in-place", "container_image": None, "command": command,
+        "lifecycle": runner.lifecycle, "workspace": workspace, "container_image": None, "command": command,
     })
     result = run_steps(recorder, order, victim, n, priority, shuffles=shuffles, seed_base=seed,
                        order_given=original_order is not None)
-    return replace(result, source_integrity=compare(before, snapshot(project)),
-                   execution_record=str(record))
+    integrity = integrity_of(compare(before, snapshot(project)),
+                             compare(before_source, snapshot(source)) if source is not None else None)
+    return replace(result, source_integrity=integrity, execution_record=str(record))
 
 
 def environment(project: Path) -> dict:
