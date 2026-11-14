@@ -17,6 +17,7 @@ from runner.order_runner import (
 )
 
 FIXTURE = Path(__file__).resolve().parents[2] / "fixtures" / "od-fixture"
+CONTROL = Path(__file__).resolve().parent / "resources" / "lifecycle-control"
 
 POLLUTER = TestIdentifier("odfixture.ConfigPolluterTest", "pollute")
 VICTIM = TestIdentifier("odfixture.ConfigVictimTest", "expectsDefaultMode")
@@ -198,13 +199,16 @@ class TestOrderRunnerOnProbes(unittest.TestCase):
         jars = maven_test_classpath(FIXTURE)[2:]
         cls.probe_dir = tempfile.mkdtemp(prefix="flaketrace-probe-")
         subprocess.run(
-            [shutil.which("javac"), "-d", cls.probe_dir, str(Path(__file__).parent / "resources" / "ProbeTest.java"),
-             str(Path(__file__).parent / "resources" / "LegacyJUnit3Test.java")],
+            [shutil.which("javac"), "-d", cls.probe_dir]
+            + [str(Path(__file__).parent / "resources" / name) for name in
+               ("ProbeTest.java", "LegacyJUnit3Test.java", "OrderProbeTest.java", "BrokenSetupProbeTest.java",
+                "StaticInitProbeTest.java", "AssumeSetupProbeTest.java")],
             env=dict(os.environ, CLASSPATH=os.pathsep.join(jars)),
             check=True,
         )
         cls.classpath = [cls.probe_dir] + jars
         cls.runner = OrderRunner(cls.classpath)
+        cls.grouped = OrderRunner(cls.classpath, lifecycle="class-grouped")
 
     @classmethod
     def tearDownClass(cls):
@@ -242,6 +246,95 @@ class TestOrderRunnerOnProbes(unittest.TestCase):
         self.assertEqual(outcome.failure_signature.exception_type, "junit.framework.AssertionFailedError")
         self.assertTrue(outcome.failure_signature.stack_trace.endswith("LegacyJUnit3Test.testVictim:12"),
                         outcome.failure_signature.stack_trace)
+
+    # W22 job 3, ADR-012 section 2: class-grouped execution.
+    def test_grouped_block_runs_in_the_requested_order(self):
+        a, b = TestIdentifier("OrderProbeTest", "a"), TestIdentifier("OrderProbeTest", "b")
+        backwards = self.grouped.run_ordered([b, a])
+        self.assertFalse(backwards[b].passed)
+        self.assertTrue(backwards[a].passed)
+        forwards = self.grouped.run_ordered([a, b])
+        self.assertTrue(forwards[a].passed and forwards[b].passed)
+
+    def test_grouped_setup_failure_fails_every_test_of_the_block(self):
+        tests = [TestIdentifier("BrokenSetupProbeTest", "a"), TestIdentifier("BrokenSetupProbeTest", "b")]
+        results = self.grouped.run_ordered(tests)
+        for test in tests:
+            self.assertEqual(results[test].failure_signature.exception_type, "java.lang.IllegalStateException", test)
+
+    def test_grouped_unknown_method_is_a_real_failure(self):
+        nope, a = TestIdentifier("OrderProbeTest", "nope"), TestIdentifier("OrderProbeTest", "a")
+        results = self.grouped.run_ordered([nope, a])
+        self.assertEqual(results[nope].failure_signature.exception_type, "java.lang.Exception")
+        self.assertTrue(results[a].passed)
+
+    def test_grouped_junit3_keeps_the_requested_order(self):
+        order = [JUNIT3_VICTIM, JUNIT3_POLLUTER]
+        self.assertEqual(self.grouped.run_ordered(order), self.runner.run_ordered(order))
+        self.assertTrue(self.grouped.run_ordered(order)[JUNIT3_VICTIM].passed)
+
+    def test_grouped_class_in_two_blocks_runs_both(self):
+        a, b = TestIdentifier("OrderProbeTest", "a"), TestIdentifier("OrderProbeTest", "b")
+        between = TestIdentifier("ProbeTest", "needsPomInWorkingDir")
+        results = OrderRunner(self.classpath, working_dir=FIXTURE, lifecycle="class-grouped").run_ordered([a, between, b])
+        self.assertTrue(results[a].passed and results[between].passed and results[b].passed)
+
+    def test_grouped_class_that_cannot_load_fails_every_test(self):
+        tests = [TestIdentifier("NoSuchClass", "x"), TestIdentifier("NoSuchClass", "y")]
+        results = self.grouped.run_ordered(tests)
+        for test in tests:
+            self.assertEqual(results[test].failure_signature.exception_type, "java.lang.ClassNotFoundException", test)
+
+    def test_grouped_static_initializer_failure_keeps_its_cause(self):
+        tests = [TestIdentifier("StaticInitProbeTest", "a"), TestIdentifier("StaticInitProbeTest", "b")]
+        grouped = self.grouped.run_ordered(tests)
+        self.assertEqual(grouped[tests[0]].failure_signature.exception_type, "java.lang.ExceptionInInitializerError")
+        self.assertEqual(grouped, self.runner.run_ordered(tests))
+
+    def test_grouped_assumption_failing_in_class_setup_is_not_executed(self):
+        tests = [TestIdentifier("AssumeSetupProbeTest", "a"), TestIdentifier("AssumeSetupProbeTest", "b")]
+        grouped = self.grouped.run_ordered(tests)
+        for test in tests:
+            self.assertEqual(grouped[test].failure_signature.exception_type, "flaketrace.NotExecuted", test)
+        self.assertEqual(grouped, self.runner.run_ordered(tests))
+
+    def test_grouped_crash_mid_block_keeps_finished_results(self):
+        a, exits, b = (TestIdentifier("OrderProbeTest", m) for m in ("a", "exits", "b"))
+        results = self.grouped.run_ordered([a, exits, b])
+        self.assertTrue(results[a].passed)
+        self.assertEqual(results[exits].failure_signature.exception_type, "flaketrace.JvmCrash")
+        self.assertEqual(results[b].failure_signature.exception_type, "flaketrace.JvmCrash")
+
+
+class TestLifecycleControl(unittest.TestCase):
+    """ADR-012 section 3: the control class under both harness modes (Surefire: CI and M1)."""
+
+    FIRST = TestIdentifier("LifecycleControlTest", "first")
+    SECOND = TestIdentifier("LifecycleControlTest", "second")
+
+    @classmethod
+    def setUpClass(cls):
+        missing = [tool for tool in ("java", "javac", "mvn") if shutil.which(tool) is None]
+        if missing:
+            if os.environ.get("FLAKETRACE_REQUIRE_JVM"):
+                raise RuntimeError(f"FLAKETRACE_REQUIRE_JVM is set but {missing} not on PATH")
+            raise unittest.SkipTest(f"{missing} not on PATH")
+        cls.classpath = maven_test_classpath(CONTROL)
+
+    def test_per_method_runs_class_setup_per_test(self):
+        results = OrderRunner(self.classpath).run_ordered([self.FIRST, self.SECOND])
+        self.assertTrue(results[self.FIRST].passed)
+        self.assertEqual(results[self.SECOND].failure_signature.exception_type, "java.lang.AssertionError")
+        self.assertEqual(results[self.SECOND].failure_signature.message, "expected:<<N>> but was:<<N>>")
+
+    def test_class_grouped_runs_class_setup_once(self):
+        results = OrderRunner(self.classpath, lifecycle="class-grouped").run_ordered([self.FIRST, self.SECOND])
+        self.assertTrue(results[self.FIRST].passed)
+        self.assertTrue(results[self.SECOND].passed, results[self.SECOND].failure_signature)
+
+    def test_unknown_lifecycle_is_refused(self):
+        with self.assertRaises(ValueError):
+            OrderRunner(self.classpath, lifecycle="per-class")
 
 
 if __name__ == "__main__":

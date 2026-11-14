@@ -17,6 +17,10 @@ from eval.baseline import SYNTHETIC_PREFIX, FailureSignature, RunOutcome, TestId
 
 HARNESS_SOURCE = Path(__file__).resolve().parent / "harness" / "FtHarness.java"
 
+# ADR-012 section 2: how class-level lifecycle (@BeforeClass/@AfterClass) runs. "per-method" is the
+# Mid behaviour and stays the default until Member 1's lifecycle control run validates the other.
+LIFECYCLES = ("per-method", "class-grouped")
+
 # A stack is cut at the first frame from JUnit's runner, reflection or the harness. These
 # frames differ between JDK 8 and JDK 21 and say nothing about the failure itself.
 _FRAMEWORK_PREFIXES = (
@@ -154,9 +158,14 @@ def maven_test_classpath(project_dir) -> List[str]:
 class OrderRunner:
     """Satisfies eval.baseline.OrderRunner. One fresh JVM per run_ordered call."""
 
-    def __init__(self, classpath: Sequence[str], working_dir=None, timeout_s: float = 120.0):
+    def __init__(self, classpath: Sequence[str], working_dir=None, timeout_s: float = 120.0,
+                 lifecycle: str = "per-method"):
         """`working_dir` is where the tests run; pass the target project's directory, as Maven
-        would, so tests that use relative paths behave the same. None = the caller's directory."""
+        would, so tests that use relative paths behave the same. None = the caller's directory.
+        `lifecycle` is one of LIFECYCLES (ADR-012 section 2)."""
+        if lifecycle not in LIFECYCLES:
+            raise ValueError(f"lifecycle must be one of {LIFECYCLES}, got {lifecycle!r}")
+        self.lifecycle = lifecycle
         self.classpath = list(classpath)
         self._working_dir = working_dir
         self._timeout_s = timeout_s
@@ -182,7 +191,7 @@ class OrderRunner:
             result_file = Path(tmp) / "results.tsv"
             try:
                 finished = subprocess.run(
-                    [self._java, "FtHarness", str(result_file)],
+                    [self._java, "FtHarness", str(result_file), "--lifecycle", self.lifecycle],
                     input="".join(f"{test}\n" for test in order),
                     env=_env_with_classpath([self._harness_dir] + self.classpath),
                     cwd=self._working_dir,
