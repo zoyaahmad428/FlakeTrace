@@ -2,8 +2,10 @@
 
 **Owner:** Member 1 · **State:** Phases 2–6 done and ADR-006 implemented (2026-10-10): lifecycle attribution, call depth 1–5 (default 2), single-test mode, polluter→victim edges with pair-mode auto-deepening, validated against the fixture's ground truth and real fastjson.
 
-Finds the shared resource a polluter writes and a victim reads, from **compiled bytecode
-only** — the target project's source is never modified and no application logs are needed.
+Reports the resources a polluter may write and a victim may read, from **compiled bytecode
+only**: a **static overlap — a possible mechanism, not confirmed as the cause** (claims ledger G3).
+It reads `.class` files with `javap` and writes nothing into the analysed project; it needs no
+application logs.
 Contract: [docs/contracts/interfaces.md](../docs/contracts/interfaces.md) (Interface 2) and
 [docs/contracts/resource-evidence.md](../docs/contracts/resource-evidence.md) (output format, invocation).
 

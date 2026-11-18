@@ -458,3 +458,24 @@ PR #50 (removed in #51). Recorded choices were checked against the ADR agreement
 it is now named in that entry.
 
 **Rejections:** claiming edits or checks that the record does not show.
+
+## 2026-11-18 — W16: retired claims in `evidence/` wording
+
+**Assistance level:** L2 (Assisted): the assistant ran the phrase search, proposed the wording
+from claims ledger G3 and drafted the evidence entry; I read the diff and committed it.
+
+**What I asked:** do my part of W16: remove retired claims from `evidence/` and its note.
+
+**What was retained:** the new opening of `evidence/README.md`, the G3 sentence in §1 of
+`docs/04-Implementation/evidence-collector.md`, and the corrected FJ-01 line.
+
+**What I changed:** Read every changed line against ledger G3 and G4 before committing.
+
+**How it was verified:** the same phrase search before (two retired hits) and after (only the G3
+replacement phrase), recorded in [[evidence-m1]]. No code changed, so no test was re-run.
+
+**Errors found:** the note called `JSON.defaultTimeZone` "the real cause"; that was reasoned from
+the test's constants, never confirmed by a run.
+
+**Rejections:** editing `FIXED_LIMITATIONS` without the other two members, because it is part of
+the resource-evidence contract.
