@@ -67,7 +67,9 @@ python3 -m evidence.tools.measure_depth --classes fixtures/od-fixture/target/cla
 An empty edge list comes with `no_supported_resource_evidence: true`. That means no *supported*
 static evidence was found, not that the tests are independent. `extract.report_fields(pair)` gives
 the three fields of Member 3's report (`shared_resource`, `polluter_write_location`,
-`victim_read_location`) as the contract's projection defines. In-process callers use
+`victim_read_location`) as the contract's projection defines, plus `resource_edges`: every edge
+in the contract's order, each with its first write and read location and its depth (W21, ADR-010).
+Every edge is a static overlap, not a confirmed cause. In-process callers use
 `extract.analyse_pair(project, polluter_id, victim_id)` to get the pair with deepening.
 
 Depth follows calls into the project's own classes only (never the JDK or other jars),
