@@ -1,6 +1,6 @@
 # Evidence collector — `evidence/extract.py` (Member 1)
 
-*Status (2026-10-10): Iteration 1, Phases 2–6 and ADR-006: depth 1–5, single-test and pair mode, pair-mode auto-deepening. Four-point ownership note per
+*Status (2026-11-18): Iteration 1, Phases 2–6 and ADR-006: depth 1–5, single-test and pair mode, pair-mode auto-deepening; wording qualified for W16 (claims ledger G3). Four-point ownership note per
 [[04-Implementation/README]]. Contract: [[contracts/resource-evidence]]. Decisions:
 [[03-Design/decisions/ADR-001-iteration1-evidence-without-instrumentation]],
 [[03-Design/decisions/ADR-002-evidence-extractor-implementation]],
@@ -19,8 +19,11 @@ Given a polluter and a victim, `find_edges` keeps every resource the polluter WR
 (any root, including `@After`/`tearDown`) that the victim READS, with both sides' locations.
 `analyse_pair` does this for a pair and, when there is no edge and a walk was cut off at the
 depth limit, repeats it one level deeper (up to 5); the shallowest depth with an edge wins.
-`report_fields` projects the first edge into Member 3's report. This is the *where exactly* part of the certificate: without it FlakeTrace can only say "this
-order fails", which iDFlakies already does.
+`report_fields` projects the first edge into Member 3's report. An edge is a **static overlap —
+a possible mechanism, not confirmed as the cause**: the extractor sees that the code *may* write
+and read the same resource, not that it did, with what value, or in what order (ledger G3). This
+is the *where to look* part of the certificate: without it FlakeTrace can only say "this order
+fails", which iDFlakies already does.
 
 ## 2. Why it is built this way
 
@@ -48,7 +51,8 @@ Rejected: ASM/Javassist (dependency, offset workaround); copying the POC code (t
   report says so in `limitations` whenever its write or read is deeper than 2.
 - **Two shared resources at the same depth.** The report shows one, picked by the contract's
   order (combined depth, then `resource_id`), not by which one caused the failure. FJ-01 reports
-  `JSON.defaultLocale` and names `JSON.defaultTimeZone` (the real cause) in `limitations`.
+  `JSON.defaultLocale` and names `JSON.defaultTimeZone` in `limitations`. The test's own
+  constants point to the time zone, but no run has confirmed which field makes it fail.
 - **Virtual dispatch.** Only the statically named target is followed. If a subclass
   overrides it, the code that really runs is not analysed; `VIRTUAL_DISPATCH` says so. An
   interface call with no default method has nothing to scan.

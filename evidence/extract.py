@@ -631,7 +631,8 @@ def report_fields(pair):
     """The contract's projection of a pair into Member 3's report fields.
 
     The report holds one resource and one location per side, so only the first
-    edge and its first locations fit; everything else is named in `limitations`.
+    edge and its first locations fit there; everything else is named in `limitations`.
+    `resource_edges` lists every edge with its first locations and its depth (W21, ADR-010).
     """
     def location(access):
         return {"class": access["class"], "method": access["method"],
@@ -639,7 +640,15 @@ def report_fields(pair):
 
     fields = {"shared_resource": None, "polluter_write_location": None,
               "victim_read_location": None, "instrumentation_level": "static-only",
-              "limitations": list(pair["limitations"])}
+              "limitations": list(pair["limitations"]),
+              # W21 / ADR-010: every edge, in the contract's order, so the first is not the only
+              # one a reader sees. Each is a static overlap, not a confirmed cause (ledger G3).
+              "resource_edges": [{"shared_resource": edge["resource"],
+                                  "polluter_write_location": location(edge["polluter_write_locations"][0]),
+                                  "victim_read_location": location(edge["victim_read_locations"][0]),
+                                  "depth": max(edge["polluter_write_locations"][0]["depth"],
+                                               edge["victim_read_locations"][0]["depth"])}
+                                 for edge in pair["edges"]]}
     if not pair["edges"]:
         return fields
     first = pair["edges"][0]

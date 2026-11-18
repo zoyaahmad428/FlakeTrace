@@ -286,6 +286,7 @@ observation:
 | `shared_resource` | `edges[0].resource`, or `null` if no edges |
 | `polluter_write_location` | `{class, method, bytecode_offset}` of `edges[0].polluter_write_locations[0]`, or `null` |
 | `victim_read_location` | `{class, method, bytecode_offset}` of `edges[0].victim_read_locations[0]`, or `null` |
+| `resource_edges` | **Added 2026-11-18 (W21), as agreed by all three in ADR-010 (PR #101).** One entry per edge, in `edges` order: `{shared_resource, polluter_write_location, victim_read_location, depth}`, the locations being each edge's first write and first read, `depth` the deeper of the two. `[]` if no edges. Member 3's report copies it in W19 (schema v2); until then `eval/report.py` does not read it |
 | `instrumentation_level` | `"static-only"` |
 | `limitations` | Member 1 contributes the fixed limitations above + one line per dropped edge/location (see open question 1) + one line when the reported write or read is deeper than the default depth 2 (ADR-006, requested by Member 2) |
 
