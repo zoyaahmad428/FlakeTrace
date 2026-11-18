@@ -214,8 +214,9 @@ def summary(report: dict, report_path: Path, minimised: Optional[Tuple[int, int]
         lines.append("              static overlap: a possible mechanism, not confirmed as the cause")
     reproduced, alone = report["reproduction"], report["victim_alone"]
     # The alone count holds only failures matching the reference signature (claims ledger G1, FT003).
-    lines.append(f"  reproduced: {reproduced['successes']}/{reproduced['n']} (lower bound "
-                 f"{reproduced['lower']:.3f})   alone (same failure): {alone['successes']}/{alone['n']}")
+    # ADR-010/schema v2 (W19): "successes" renamed "matched" (M3, flagged for M2's review).
+    lines.append(f"  reproduced: {reproduced['matched']}/{reproduced['n']} (lower bound "
+                 f"{reproduced['lower']:.3f})   alone (same failure): {alone['matched']}/{alone['n']}")
     lines.append(f"  report:     {report_path}")
     lines.append(f"  record:     {report['execution_record_reference']}")
     return "\n".join(lines)

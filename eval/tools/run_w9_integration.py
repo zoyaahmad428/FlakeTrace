@@ -133,6 +133,19 @@ def run_n3():
     return report
 
 
+def run_n4():
+    victim = TestIdentifier("odfixture.DualFailureVictimTest", "expectsStateTwo")
+    print("=== N4: running diagnose() for real (n=20) -- ADR-010 T5, FT003 regression ===")
+    diagnosis = diagnose(FIXTURE, victim, n=20, record_dir=str(RECORD_DIR))
+    print(diagnosis)
+
+    report = assemble_report(diagnosis)  # no resource edge: N4 needs none
+    print("=== N4 report ===")
+    print(json.dumps(report, indent=2))
+    (REPORTS_DIR / "n4.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    return report
+
+
 def run_n1():
     victim = TestIdentifier("odfixture.NegativeAloneFailTest", "alwaysFails")
     print("=== N1: running diagnose() for real (n=20) ===")
@@ -168,6 +181,7 @@ if __name__ == "__main__":
     n1 = run_n1()
     n2 = run_n2()
     n3 = run_n3()
+    n4 = run_n4()
     print("\n=== SUMMARY ===")
     print("F1 outcome:", f1["outcome"], f1["unresolved_reason"])
     print("F2 outcome:", f2["outcome"], f2["unresolved_reason"])
@@ -176,3 +190,4 @@ if __name__ == "__main__":
     print("N1 outcome:", n1["outcome"], n1["unresolved_reason"])
     print("N2 outcome:", n2["outcome"], n2["unresolved_reason"])
     print("N3 outcome:", n3["outcome"], n3["unresolved_reason"])
+    print("N4 outcome:", n4["outcome"], n4["unresolved_reason"])

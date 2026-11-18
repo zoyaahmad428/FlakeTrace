@@ -1,60 +1,63 @@
-"""W9 report assembly (Interface 3, docs/contracts/interfaces.md).
+"""Report assembly, schema v2 (ADR-010/ADR-011, W19; Interface 3, docs/contracts/interfaces.md).
 
-Turns Member 2's raw diagnosis counts (runner.diagnose.DiagnosisRuns) and Member 1's
-pair-mode resource-edge data (evidence.extract.find_edges + report_fields, Output 2 of
-docs/contracts/resource-evidence.md) into one schema-validated diagnosis report.
+Turns Member 2's raw diagnosis tallies (runner.diagnose.DiagnosisRuns.alone_tally/sequence_tally,
+ADR-010/W18) and Member 1's pair-mode resource-edge data (evidence.extract.find_edges +
+report_fields, Output 2 of docs/contracts/resource-evidence.md) into one schema-v2-validated
+diagnosis report. Supersedes the schema-v1 module this project shipped for the Mid (tag
+mid-eval-v1): that version is unchanged there, reachable at that tag.
 
 Which shared resource goes in the report is decided once, by Member 1's find_edges/
-report_fields -- this module does not re-derive it. An earlier version of this file had its
-own correlation function (find_resource_edge); it duplicated that logic, dropped M1's
-FIXED_LIMITATIONS, and callers were passing --depth 1, which cannot find a resource accessed
-through a one-level helper call (e.g. F2's FeatureVictimTest reads the property inside
-FeatureFlags.isTurboEnabled(), not in the test method itself) -- flagged by Member 2, see
-docs/evidence-m3.md.
+report_fields -- this module does not re-derive it.
 
 With several polluters (W10, ADR-007), a caller's `resource_fields` can have
 `shared_resource=None` (because not every polluter has an edge, so none is shown as the primary
 resource) while still naming, in `limitations`, which polluters DID have an edge. Appending this
 module's own generic "No polluter-write/victim-read resource edge was found by static analysis"
 on top of that would contradict it. `resource_fields` may therefore carry an optional
-`any_edge_found: bool` key (absent for the ordinary single-polluter case, e.g. M1's
-`report_fields()` output): when present, it -- not `shared_resource is not None` -- decides
-whether the generic line is added. Flagged by Member 2 against PR #35 (W10); see
-docs/evidence-m3.md.
+`any_edge_found: bool` key: when present, it -- not `shared_resource is not None` -- decides
+whether the generic line is added.
 
-Three of runner.diagnose's four DiagnosisRuns.status values are wired end to end here:
-POLLUTER_FOUND, VICTIM_FAILS_ALONE and (ADR-008, 2026-10-10) NOT_REPRODUCED. NO_SINGLE_POLLUTER
-is still NOT handled -- see UnhandledStatus: it has no corresponding value in the schema's
-unresolved_reason enum, and is a genuinely rarer case post-W10 (M2's ddmin minimisation now
-resolves most cases that used to land here; NO_SINGLE_POLLUTER remains only for an empty
-prefix, i.e. the victim is first in the order). An open question for the team, not silently
-invented.
+Four of runner.diagnose's DiagnosisRuns.status values are wired end to end here: POLLUTER_FOUND,
+VICTIM_FAILS_ALONE, NOT_REPRODUCED and (new, ADR-010 section 5, FT010) INCONSISTENT (formerly
+NO_SINGLE_POLLUTER -- the runner keeps that name importable as an alias for callers that have
+not moved yet). Unlike schema v1, INCONSISTENT now gets a real report instead of UnhandledStatus:
+it is schema-valid, names no polluter, and exit code 3 ("no report yet") is retired for it.
 
-NOT_REPRODUCED needed two real things before it could be handled, both resolved by ADR-008:
-(1) runner.diagnose always sets reference_signature=None and alone_n=0 for this status (it
-short-circuits before running the isolation check), which eval.outcome.DecisionInput used to
-reject outright (`isolation_n > 0`); and (2) the schema required a real failure_signature,
-which a failure that never reproduced does not have. Both are fixed by Member 2's diagnose()
-always running the alone check (so isolation_n > 0 once that change lands) and by this
-module building `failure_signature: null` whenever `diagnosis.reference_signature is None` --
-which is also exactly when `decide()` can land on the new INFRASTRUCTURE_FAILURE reason (same
-underlying DiagnosisRuns.status, same None reference), so both reasons share this handling.
-Tested here with hand-built DiagnosisRuns objects (this project's established convention for
-code whose real dependency hasn't landed yet) ahead of Member 2's diagnose() change.
+ADR-010 rows 7/8 (VICTIM_FAILS_ALONE_DIFFERENTLY, and INFRASTRUCTURE_FAILURE from the alone
+check) can be reached from a POLLUTER_FOUND diagnosis that DOES name a polluter: Member 2's
+run_steps() (W18) deliberately does not stop the search when the victim fails alone with a
+different signature or only crashes, so the report can still say what was observed after the
+polluter. This module is what hides that polluter from the OUTPUT report in that case ("no test
+is blamed", ADR-010 row 7) -- `diagnosis.polluters` itself is left alone.
 
-Until that diagnose() change actually lands, a REAL NOT_REPRODUCED diagnosis still has
-alone_n == 0 today -- assemble_report raises UnhandledStatus for that specific case (status
-NOT_REPRODUCED and alone_n == 0), not the bare ValueError DecisionInput would otherwise raise,
-so either merge order (M2's diagnose() change landing before or after this module's) leaves
-the CLI's "exit 3, no report yet" behaviour intact rather than an uncaught traceback. Flagged
-by Member 2 while reviewing this branch; see docs/evidence-m3.md.
+ADR-011's deletion checks (claim S3, W20) and ADR-014's budget ledger (row 3, W24) have not
+landed: every report built here passes deletion_status=None and budget_exhausted=False to
+eval.outcome.decide(), which treats both as satisfied/not-exhausted (see that module's
+docstring) so this change does not regress any existing VERIFIED verdict (ADR-010 test T6). The
+report says so honestly via assurance.sequence.deletion = "NOT_YET_CHECKED" rather than
+fabricating DELETION_VERIFIED.
 """
 
 from typing import Optional
 
-from eval.outcome import DecisionInput, decide
+from eval.outcome import (
+    CANDIDATE_BELOW_REPLAY_THRESHOLD,
+    DELETION_NOT_YET_CHECKED,
+    OUTCOME_CANDIDATE,
+    OUTCOME_UNRESOLVED,
+    OUTCOME_VERIFIED,
+    REASON_INCONSISTENT_OUTCOMES,
+    REASON_INFRASTRUCTURE_FAILURE,
+    REASON_NOT_REPRODUCED,
+    REASON_SIGNATURE_MISMATCH,
+    REASON_VICTIM_FAILS_ALONE_DIFFERENTLY,
+    DecisionInput,
+    decide,
+)
 from eval.schema_validator import validate_report
-from runner.diagnose import DiagnosisRuns, NOT_REPRODUCED, POLLUTER_FOUND, VICTIM_FAILS_ALONE
+from runner.diagnose import DiagnosisRuns, INCONSISTENT, NOT_REPRODUCED, POLLUTER_FOUND, VICTIM_FAILS_ALONE
+
+SCHEMA_VERSION = 2
 
 _ORDER_EXPLORATION_FIELDS = (
     "order_given", "shuffled_orders", "orders_exhausted", "shuffle_seed_base", "reproducing_seed",
@@ -66,14 +69,11 @@ class UnhandledStatus(Exception):
 
 
 def _order_exploration(diagnosis: DiagnosisRuns, infrastructure_failures: int) -> Optional[dict]:
-    """ADR-008's optional order_exploration report field, built only once Member 2's
-    diagnose() actually tracks it (DiagnosisRuns gaining all five order fields below). Until
-    then this returns None and the key is omitted entirely -- the schema allows that.
-    `infrastructure_failures` is the already-combined total (every phase: given/discovered
-    order, shuffles, alone check) that assemble_report also feeds to decide() -- not
-    recomputed here, so the report and the outcome always agree. Reported whenever the order
-    fields are present, regardless of status: a shuffle that found the reproduction (e.g. F4,
-    VERIFIED) is exactly as worth reporting as one that never did (NOT_REPRODUCED)."""
+    """ADR-008's optional order_exploration report field, built only once Member 2's diagnose()
+    actually tracks it (DiagnosisRuns gaining all five order fields below); otherwise None, and
+    the key is omitted entirely -- the schema allows that. `infrastructure_failures` is the
+    already-combined total (every phase: given/discovered order, shuffles, alone check) -- not
+    recomputed here, so the report and the outcome always agree."""
     if not all(hasattr(diagnosis, f) for f in _ORDER_EXPLORATION_FIELDS):
         return None
     return {
@@ -91,125 +91,195 @@ def assemble_report(
     resource_fields: Optional[dict] = None,
     confidence: float = 0.95,
 ) -> dict:
-    """Build and validate one diagnosis report from a DiagnosisRuns and (for POLLUTER_FOUND)
-    `resource_fields` -- the output of evidence.extract.report_fields(pair) (one polluter) or a
-    caller's own combination of several such results (W10, several polluters; see module
-    docstring for the optional `any_edge_found` key that case can set).
-    Raises UnhandledStatus for any status other than POLLUTER_FOUND, VICTIM_FAILS_ALONE or
-    NOT_REPRODUCED -- see module docstring."""
-    if diagnosis.status not in (POLLUTER_FOUND, VICTIM_FAILS_ALONE, NOT_REPRODUCED):
+    """Build and validate one schema-v2 diagnosis report from a DiagnosisRuns and (for
+    POLLUTER_FOUND) `resource_fields` -- the output of evidence.extract.report_fields(pair) (one
+    polluter) or a caller's own combination of several such results (W10, several polluters; see
+    module docstring for the optional `any_edge_found` key that case can set).
+    Raises UnhandledStatus for any status other than POLLUTER_FOUND, VICTIM_FAILS_ALONE,
+    NOT_REPRODUCED or INCONSISTENT -- see module docstring."""
+    if diagnosis.status not in (POLLUTER_FOUND, VICTIM_FAILS_ALONE, NOT_REPRODUCED, INCONSISTENT):
         raise UnhandledStatus(
             f"assemble_report does not yet handle DiagnosisRuns.status={diagnosis.status!r}; "
             "see eval/report.py's module docstring"
         )
     if diagnosis.status == NOT_REPRODUCED and diagnosis.alone_n == 0:
-        # Safe for either merge order (flagged by Member 2): today's real runner.diagnose()
-        # still short-circuits before running the alone check for NOT_REPRODUCED, so alone_n
-        # is 0 until ADR-008 step 4 lands. Without this guard, DecisionInput's isolation_n > 0
-        # check raises a bare ValueError here, which the CLI does not catch (ADR-005 keeps
-        # unexpected bugs loud) -- so the command would crash with a traceback instead of its
-        # designed "exit 3, no report yet" UX. Raising UnhandledStatus instead keeps that UX
-        # working right up until runner.diagnose() actually starts providing alone_n > 0, at
-        # which point this branch is simply never reached.
+        # Pre-ADR-008 shape: today's real runner.diagnose() always runs the alone check, so a
+        # real NOT_REPRODUCED diagnosis never has alone_n == 0 any more. Kept so a DiagnosisRuns
+        # built against that older contract fails loudly here (UnhandledStatus) instead of
+        # raising a bare ValueError out of DecisionInput that the CLI does not catch.
         raise UnhandledStatus(
-            "assemble_report cannot yet build a NOT_REPRODUCED report: alone_n is 0, meaning "
-            "runner.diagnose() has not started running the alone check for this status yet "
-            "(ADR-008 step 4, not landed). See eval/report.py's module docstring."
+            "assemble_report cannot build a NOT_REPRODUCED report with alone_n == 0 (pre-ADR-008 "
+            "shape). See eval/report.py's module docstring."
         )
+    if diagnosis.alone_tally is None or diagnosis.sequence_tally is None:
+        raise ValueError(
+            "assemble_report (schema v2) requires DiagnosisRuns.alone_tally/sequence_tally "
+            "(ADR-010, W18) -- got None. This DiagnosisRuns predates W18's tallies."
+        )
+
     fields = resource_fields if diagnosis.status == POLLUTER_FOUND else None
     edge_found = bool(fields and fields["shared_resource"] is not None)
     any_edge_found = fields.get("any_edge_found", edge_found) if fields else False
-    # Combined across every phase (given/discovered order, shuffles, alone check) -- matches
-    # runner.cli's own `crashes` total (ADR-008) and eval.outcome.decide()'s new semantics for
-    # this field (see eval/outcome.py's module docstring, row 3b). getattr defaults keep this
-    # 0 for any DiagnosisRuns that predates these fields.
+
+    # Combined across every phase (given/discovered order, shuffles, alone check) -- ADR-008's
+    # field, unchanged by ADR-010. Not derivable from alone_tally/sequence_tally alone: the
+    # shuffle phase is a third phase neither tally covers.
     infrastructure_failures = (
         getattr(diagnosis, "infrastructure_failures", 0)
         + getattr(diagnosis, "shuffle_infrastructure_failures", 0)
         + getattr(diagnosis, "alone_infrastructure_failures", 0)
     )
 
-    decision_input = DecisionInput(
-        source_integrity_passed=diagnosis.source_integrity.passed,
-        isolation_successes=diagnosis.alone_successes,
-        isolation_n=diagnosis.alone_n,
-        sequence_successes=diagnosis.sequence_successes,
-        sequence_n=diagnosis.sequence_n,
-        sequence_failures_any=diagnosis.sequence_any_failures,
-        resource_edge_exists=edge_found,
-        confidence=confidence,
-        infrastructure_failures=infrastructure_failures,
-    )
-    decision = decide(decision_input)
-
     ref = diagnosis.reference_signature
-    if diagnosis.status in (POLLUTER_FOUND, VICTIM_FAILS_ALONE):
-        assert ref is not None, "POLLUTER_FOUND/VICTIM_FAILS_ALONE always carry a reference signature"
+    if diagnosis.status in (POLLUTER_FOUND, VICTIM_FAILS_ALONE, INCONSISTENT):
+        assert ref is not None, "POLLUTER_FOUND/VICTIM_FAILS_ALONE/INCONSISTENT always carry a reference signature"
     failure_signature = None if ref is None else {
         "exception_type": ref.exception_type,
         "message": ref.message,
         "stack_trace": ref.stack_trace,
     }
 
+    decision_input = DecisionInput(
+        source_integrity_passed=diagnosis.source_integrity.passed,
+        reference_established=(ref is not None),
+        infrastructure_failures_anywhere=infrastructure_failures,
+        alone=diagnosis.alone_tally,
+        sequence=diagnosis.sequence_tally,
+        resource_edge_exists=edge_found,
+        confidence=confidence,
+        search_inconsistent=(diagnosis.status == INCONSISTENT),
+        deletion_status=None,  # ADR-011/W20 not yet landed -- see module docstring
+    )
+    decision = decide(decision_input)
+    reason = decision.unresolved_reason
+    alone = diagnosis.alone_tally
+    sequence = diagnosis.sequence_tally
+    reference_established = ref is not None
+
+    # UNRESOLVED means no verdict could be made -- nothing is blamed in the OUTPUT report, even
+    # if the search (which does not stop early for ADR-010 rows 7-11, W18) named a polluter and
+    # a candidate sequence. diagnosis.polluters/sequence are left alone; only what is reported
+    # changes (ADR-010 rows 6-8 say this explicitly -- "no test is blamed" -- and the same
+    # reasoning applies to rows 9-11, where the candidate sequence did not hold up either).
+    no_blame = decision.outcome == OUTCOME_UNRESOLVED and reason != "SOURCE_INTEGRITY_FAILED"
+    reported_polluters = [] if no_blame else diagnosis.polluters
+    # Only collapse reduced_sequence to [victim] when there was an actual found polluter to
+    # un-blame (diagnosis.polluters non-empty). For INCONSISTENT/NOT_REPRODUCED, no polluter was
+    # ever found and diagnosis.sequence is already just the starting order (ADR-010 section 5) --
+    # showing it as-is is correct, not something to hide.
+    reported_sequence = (
+        [diagnosis.victim] if (no_blame and diagnosis.polluters) else diagnosis.sequence
+    )
+
     limitations = [
-        "instrumentation_level is static-only (Iteration 1); runtime instrumentation is Iteration 2.",
+        "instrumentation_level is static-only; runtime instrumentation is not built.",
     ]
     if diagnosis.status == POLLUTER_FOUND:
         if fields:
             limitations += fields["limitations"]
         if not any_edge_found:
             limitations.append("No polluter-write/victim-read resource edge was found by static analysis.")
-    elif decision.unresolved_reason in ("NOT_REPRODUCED", "INFRASTRUCTURE_FAILURE"):
-        # order_given defaults True (pre-ADR-008 callers only ever ran the given order) and
-        # shuffled_orders 0, so this reads correctly for a DiagnosisRuns that predates ADR-008
-        # too. Flagged by Member 2: the old text always said "given order" even when the order
-        # that was actually run came from a shuffle (ADR-008 has no "given" order at all for
-        # some victims -- only discovered, possibly-shuffled orders).
-        order_desc = "given" if getattr(diagnosis, "order_given", True) else "discovered"
-        shuffled_orders = getattr(diagnosis, "shuffled_orders", 0)
-        shuffle_note = f" (plus {shuffled_orders} shuffled order(s))" if shuffled_orders else ""
-        if decision.unresolved_reason == "NOT_REPRODUCED":
+        if len(diagnosis.polluters) > 1:
             limitations.append(
-                f"Not reproduced: {diagnosis.sequence_n} runs of the {order_desc} order{shuffle_note}, "
-                f"{diagnosis.alone_n} runs alone. In the {order_desc} order the failure rate is below "
-                f"{decision.sequence_interval[1]:.3f} with {confidence:.0%} confidence (Wilson). "
-                "This is not evidence that the test is reliable: flaky tests have been found only "
-                "after thousands of reruns."
+                "resource_edges lists only the primary edge: Member 1's extractor reports one "
+                "edge at a time, so a multi-polluter sequence's other edge(s) are named in this "
+                "list as free text only, not as structured resourceEdge entries (ADR-010 "
+                "section 6; Member 1's W21 is what lists every edge structurally)."
             )
-        elif diagnosis.sequence_any_failures > 0:
+        if decision.outcome in (OUTCOME_CANDIDATE, OUTCOME_VERIFIED):
             limitations.append(
-                f"Every one of {diagnosis.sequence_any_failures} failing run(s) of {diagnosis.sequence_n} "
-                f"({order_desc} order{shuffle_note}) crashed or timed out; none produced a real "
-                "exception, so there is no failure signature to report. This is a tooling/"
-                "infrastructure problem, not evidence of a different bug."
-            )
-        else:
-            limitations.append(
-                f"The {order_desc} order never failed in {diagnosis.sequence_n} runs{shuffle_note}, "
-                f"but {infrastructure_failures} run(s) elsewhere (e.g. the alone check) only crashed "
-                "or timed out, never a real exception -- a tooling problem, not evidence this victim "
-                "is reliable."
+                "Deletion checks (ADR-011) are not yet implemented: claim S3 (every kept test "
+                "is needed) is not independently re-verified beyond the minimiser's single "
+                "trial for any sequence with more than one kept test. assurance.sequence."
+                "deletion reports this honestly as NOT_YET_CHECKED rather than DELETION_VERIFIED."
             )
 
+    order_desc = "given" if getattr(diagnosis, "order_given", True) else "discovered"
+    shuffled_orders = getattr(diagnosis, "shuffled_orders", 0)
+    shuffle_note = f" (plus {shuffled_orders} shuffled order(s))" if shuffled_orders else ""
+
+    if reason == REASON_VICTIM_FAILS_ALONE_DIFFERENTLY:  # row 7
+        limitations.append(
+            f"Victim failed {alone.other}/{alone.n} time(s) alone with a different failure than "
+            f"the {sequence.matched}/{sequence.n} reference failures seen after the search's "
+            "candidate sequence -- recorded, but no test is blamed (ADR-010 row 7)."
+        )
+    elif reason == REASON_INFRASTRUCTURE_FAILURE and reference_established and alone.passed < alone.n:  # row 8
+        limitations.append(
+            f"Victim run alone crashed or timed out {alone.infra}/{alone.n} time(s), never a "
+            "real exception -- a tooling problem, so no test is blamed (ADR-010 row 8)."
+        )
+    elif reason == REASON_INCONSISTENT_OUTCOMES:  # row 2
+        limitations.append(
+            f"The failure appeared once in the {order_desc} order{shuffle_note} and could not "
+            f"be obtained again in {sequence.n} further run(s); likely not order-dependent. "
+            "Re-run with a larger --n, or supply the exact failing order with --order."
+        )
+    elif reason == REASON_NOT_REPRODUCED and reference_established:  # row 11
+        limitations.append(
+            f"A reference failure was observed during the search, but the candidate sequence "
+            f"did not reproduce it on re-verification ({sequence.n} runs, all passed) -- no "
+            "test is blamed (ADR-010 row 11)."
+        )
+    elif reason == REASON_INFRASTRUCTURE_FAILURE and reference_established:  # row 10
+        limitations.append(
+            f"A reference failure was observed during the search, but the candidate sequence "
+            f"only crashed or timed out on re-verification ({sequence.infra}/{sequence.n}), "
+            "never reproducing it for real -- no test is blamed (ADR-010 row 10)."
+        )
+    elif reason == REASON_SIGNATURE_MISMATCH:  # row 9
+        limitations.append(
+            f"The candidate sequence failed {sequence.other + sequence.infra}/{sequence.n} "
+            "time(s) on re-verification, but never with the reference failure signature -- not "
+            "confirmed as this bug, so no test is blamed (ADR-010 row 9)."
+        )
+    elif reason == REASON_NOT_REPRODUCED:  # row 5: no reference anywhere
+        limitations.append(
+            f"Not reproduced: {sequence.n} runs of the {order_desc} order{shuffle_note}, "
+            f"{alone.n} runs alone. In the {order_desc} order the failure rate is below "
+            f"{decision.sequence_interval[1]:.3f} with {confidence:.0%} confidence (Wilson). "
+            "This is not evidence that the test is reliable: flaky tests have been found only "
+            "after thousands of reruns."
+        )
+    elif reason == REASON_INFRASTRUCTURE_FAILURE:  # row 4: no reference anywhere
+        limitations.append(
+            f"The {order_desc} order never failed for real in {sequence.n} runs{shuffle_note}, "
+            f"but {infrastructure_failures} run(s) somewhere (the order, a shuffle, or the alone "
+            "check) only crashed or timed out, never a real exception -- a tooling problem, not "
+            "evidence this victim is reliable."
+        )
+
+    # Resource evidence names the polluter (polluter_write_location is its class/method) -- when
+    # no_blame withholds the polluter, it withholds the resource evidence pointing at it too.
+    edge = None
+    if not no_blame and fields and fields["shared_resource"] is not None:
+        edge = {
+            "shared_resource": fields["shared_resource"],
+            "polluter_write_location": fields["polluter_write_location"],
+            "victim_read_location": fields["victim_read_location"],
+        }
+
     report = {
+        "schema_version": SCHEMA_VERSION,
         "victim": diagnosis.victim.to_dict(),
-        "polluters": [p.to_dict() for p in diagnosis.polluters],
+        "polluters": [p.to_dict() for p in reported_polluters],
         "original_failing_order": [t.to_dict() for t in diagnosis.original_order],
-        "reduced_sequence": [t.to_dict() for t in diagnosis.sequence],
+        "reduced_sequence": [t.to_dict() for t in reported_sequence],
         "reproduction": {
-            "successes": diagnosis.sequence_successes, "n": diagnosis.sequence_n,
-            "confidence": confidence,
+            "n": diagnosis.sequence_tally.n, "passed": diagnosis.sequence_tally.passed,
+            "matched": diagnosis.sequence_tally.matched, "other": diagnosis.sequence_tally.other,
+            "infra": diagnosis.sequence_tally.infra, "confidence": confidence,
             "lower": decision.sequence_interval[0], "upper": decision.sequence_interval[1],
         },
-        "sequence_any_signature_failures": diagnosis.sequence_any_failures,
         "victim_alone": {
-            "successes": diagnosis.alone_successes, "n": diagnosis.alone_n,
-            "confidence": confidence,
-            "lower": decision.isolation_interval[0], "upper": decision.isolation_interval[1],
+            "n": alone.n, "passed": alone.passed, "matched": alone.matched, "other": alone.other,
+            "infra": alone.infra, "confidence": confidence,
+            "lower": decision.alone_interval[0], "upper": decision.alone_interval[1],
         },
-        "shared_resource": fields["shared_resource"] if fields else None,
-        "polluter_write_location": fields["polluter_write_location"] if fields else None,
-        "victim_read_location": fields["victim_read_location"] if fields else None,
+        "shared_resource": edge["shared_resource"] if edge else None,
+        "polluter_write_location": edge["polluter_write_location"] if edge else None,
+        "victim_read_location": edge["victim_read_location"] if edge else None,
+        "resource_edges": [edge] if edge else [],
         "failure_signature": failure_signature,
         "instrumentation_level": "static-only",
         "execution_record_reference": diagnosis.execution_record,
@@ -219,8 +289,24 @@ def assemble_report(
         },
         "outcome": decision.outcome,
         "unresolved_reason": decision.unresolved_reason,
+        "candidate_reasons": list(decision.candidate_reasons),
         "limitations": limitations,
     }
+    if decision.outcome in (OUTCOME_CANDIDATE, OUTCOME_VERIFIED):
+        report["assurance"] = {
+            "sequence": {
+                "reproduces": (
+                    "NOT_ESTABLISHED" if CANDIDATE_BELOW_REPLAY_THRESHOLD in decision.candidate_reasons
+                    else "ESTABLISHED"
+                ),
+                "passes_alone": "ESTABLISHED",
+                "deletion": DELETION_NOT_YET_CHECKED,
+            },
+            "resource": {
+                "level": "STATIC_OVERLAP" if edge_found else "NONE",
+                "mechanism": "NOT_ASSESSED",
+            },
+        }
     order_exploration = _order_exploration(diagnosis, infrastructure_failures)
     if order_exploration is not None:
         report["order_exploration"] = order_exploration

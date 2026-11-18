@@ -1,4 +1,5 @@
 {
+  "schema_version": 2,
   "victim": { "class": "odfixture.ToggleVictimTest", "method": "expectsNotBothFlagsSet" },
   "polluters": [
     { "class": "odfixture.ToggleAPolluterTest", "method": "setFlagA" },
@@ -15,17 +16,23 @@
     { "class": "odfixture.ToggleVictimTest", "method": "expectsNotBothFlagsSet" }
   ],
   "reproduction": {
-    "successes": 20, "n": 20, "confidence": 0.95,
+    "n": 20, "passed": 0, "matched": 20, "other": 0, "infra": 0, "confidence": 0.95,
     "lower": 0.83887484172924, "upper": 1.0
   },
-  "sequence_any_signature_failures": 20,
   "victim_alone": {
-    "successes": 0, "n": 20, "confidence": 0.95,
+    "n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0, "confidence": 0.95,
     "lower": 0.0, "upper": 0.16112515827076002
   },
   "shared_resource": { "kind": "static-field", "class": "odfixture.Toggles", "field": "flagA and flagB (both required)" },
   "polluter_write_location": { "class": "odfixture.ToggleBPolluterTest", "method": "setFlagB", "bytecode_offset": 3 },
   "victim_read_location": { "class": "odfixture.ToggleVictimTest", "method": "expectsNotBothFlagsSet", "bytecode_offset": 7 },
+  "resource_edges": [
+    {
+      "shared_resource": { "kind": "static-field", "class": "odfixture.Toggles", "field": "flagA and flagB (both required)" },
+      "polluter_write_location": { "class": "odfixture.ToggleBPolluterTest", "method": "setFlagB", "bytecode_offset": 3 },
+      "victim_read_location": { "class": "odfixture.ToggleVictimTest", "method": "expectsNotBothFlagsSet", "bytecode_offset": 7 }
+    }
+  ],
   "failure_signature": {
     "exception_type": "java.lang.AssertionError",
     "message": null,
@@ -36,10 +43,16 @@
   "source_integrity": { "passed": true, "details": "No real source-integrity checker exists yet (Member 2's component) -- 'passed: true' is asserted by construction (plain Maven, no instrumentation involved), not independently checked." },
   "outcome": "VERIFIED",
   "unresolved_reason": null,
+  "candidate_reasons": [],
+  "assurance": {
+    "sequence": { "reproduces": "ESTABLISHED", "passes_alone": "ESTABLISHED", "deletion": "NOT_YET_CHECKED" },
+    "resource": { "level": "STATIC_OVERLAP", "mechanism": "NOT_ASSESSED" }
+  },
   "limitations": [
     "reproduction and victim_alone are REAL measured counts: od-fixture's F3 case was actually run 20 times each way via plain Maven on 2026-10-09 (eval/tools/run_real_reps.sh). F3 is deterministic given its full 3-test reduced sequence -- it reproduces every single time, not a flaky in-between rate. See docs/evidence-m3.md and eval/benchmark/logs/F3.json.",
-    "This is the two-polluter edge case: removing either single polluter (A or B) alone makes the victim pass again -- a one-by-one polluter search cannot find it, only a search that considers polluter combinations. Not demonstrated here (no real search/minimiser exists yet, Member 2's component); this example shows only that the combined sequence reproduces reliably once both are known.",
-    "The schema's single polluter_write_location field cannot represent both of this case's two required writes (flagA and flagB); only the second write is shown here -- a known Iteration 1 schema limitation for multi-polluter cases.",
-    "bytecode_offset values (3, 7) are still placeholders -- no real static-bytecode-evidence extractor exists yet (Member 1's component)."
+    "This is the two-polluter edge case: removing either single polluter (A or B) alone makes the victim pass again -- a one-by-one polluter search cannot find it, only a search that considers polluter combinations (W10, ADR-007).",
+    "resource_edges lists only the primary edge (Member 1's extractor reports one edge at a time; ADR-010 section 6/W21 is what lists every edge structurally). The schema's single polluter_write_location field cannot represent both of this case's two required writes (flagA and flagB); only the second write is shown here -- a known Iteration 1/2 limitation for multi-polluter cases.",
+    "bytecode_offset values (3, 7) are still placeholders -- no real static-bytecode-evidence extractor exists yet (Member 1's component).",
+    "assurance.sequence.deletion is NOT_YET_CHECKED (ADR-011, W20 not yet landed): this is especially relevant for a two-polluter case like this one -- deletion checks beyond the single-trial minimiser do not exist yet for either polluter."
   ]
 }

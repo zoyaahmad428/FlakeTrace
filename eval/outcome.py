@@ -1,52 +1,52 @@
-"""Outcome/decision logic for FlakeTrace diagnosis reports (Iteration 1).
+"""Outcome/decision logic for FlakeTrace diagnosis reports (ADR-010, verdict contract v2).
 
-Decision table (confirmed with Member 3 on 2026-10-08; first match wins):
+Decision table (docs/03-Design/decisions/ADR-010-verdict-contract-v2.md section 3, agreed by
+all three members 2026-11-13, PR #101; evaluated top to bottom, first match wins):
 
-  1. source integrity check failed            -> UNRESOLVED(SOURCE_INTEGRITY_FAILED)
-  2. victim fails alone at least once          -> UNRESOLVED(VICTIM_FAILS_ALONE)
-     (isolation_successes >= 1; a "success" here means the isolation run
-     failed with the SAME signature as the reference failure)
-  3. sequence never reproduces that signature  (sequence_successes == 0):
-       a. and never failed at all, and no infrastructure failures anywhere
-          (sequence_failures_any == 0 and infrastructure_failures == 0) -> UNRESOLVED(NOT_REPRODUCED)
-       b. never failed in the sequence, but some other phase (e.g. the alone
-          check) only crashed/timed out (sequence_failures_any == 0 and
-          infrastructure_failures > 0) -> UNRESOLVED(INFRASTRUCTURE_FAILURE)
-       c. sequence failed only with crashes/timeouts, no real failure at all
-          (sequence_failures_any == infrastructure_failures > 0) -> UNRESOLVED(INFRASTRUCTURE_FAILURE)
-       d. failed with a real but different signature -> UNRESOLVED(SIGNATURE_MISMATCH)
-  4. sequence reproduces it at least once       (sequence_successes >= 1):
-       a. no polluter-write/victim-read resource edge -> UNRESOLVED(NO_SUPPORTED_RESOURCE_EVIDENCE)
-       b. resource edge exists, Wilson lower bound >= threshold -> VERIFIED
-       c. resource edge exists, Wilson lower bound <  threshold -> CANDIDATE
+  1. source_integrity_passed is False                          -> UNRESOLVED(SOURCE_INTEGRITY_FAILED)
+  2. search_inconsistent (seen once, not again)                -> UNRESOLVED(INCONSISTENT_OUTCOMES)
+  3. budget_exhausted (search ended before a sequence was found) -> UNRESOLVED(BUDGET_EXHAUSTED)
+  4. no real failure anywhere, and an infra failure somewhere  -> UNRESOLVED(INFRASTRUCTURE_FAILURE)
+  5. no real failure anywhere                                  -> UNRESOLVED(NOT_REPRODUCED)
+  6. alone.matched >= 1                                        -> UNRESOLVED(VICTIM_FAILS_ALONE)
+  7. alone.other >= 1                                          -> UNRESOLVED(VICTIM_FAILS_ALONE_DIFFERENTLY)
+  8. alone.infra >= 1                                          -> UNRESOLVED(INFRASTRUCTURE_FAILURE)
+  9. sequence.matched == 0 and sequence.other >= 1             -> UNRESOLVED(SIGNATURE_MISMATCH)
+  10. sequence.matched == 0 and sequence.infra >= 1            -> UNRESOLVED(INFRASTRUCTURE_FAILURE)
+  11. sequence.matched == 0                                    -> UNRESOLVED(NOT_REPRODUCED)
+  12. any of S1, S3, R1 not established                        -> CANDIDATE, candidate_reasons lists each
+  13. otherwise                                                -> VERIFIED
 
-Ranking alone never produces VERIFIED: VERIFIED requires both a concrete
-polluter-write/victim-read resource edge AND a Wilson lower bound at or
-above the confidence threshold.
+"no real failure anywhere" (rows 4-5) means no reference failure signature was EVER established,
+anywhere in the diagnosis -- not just in the `alone`/`sequence` tallies below. Those two tallies
+are the FINAL alone check and the FINAL sequence re-verify; a reference can be established
+earlier, during the search/reproduce phase, and then not reproduce again on re-verification
+(exactly ADR-011's motivating bug: single-trial ddmin can shrink to a sequence that does not
+actually hold up). That later case is row 11 (NOT_REPRODUCED) or row 10 (INFRASTRUCTURE_FAILURE),
+not row 4/5 -- which is why rows 4/5 take `reference_established` as its own input rather than
+being derived from `alone`/`sequence`, and why rows 6-11 are checked only once a reference is
+known to exist (asking "did alone match the reference" makes no sense otherwise).
 
-BELOW_CONFIDENCE_THRESHOLD stays in the schema's unresolved-reason enum (the
-brief requires it "at least"), but this decision function never emits it --
-case 4c uses CANDIDATE instead, per the 2026-10-08 team decision.
+What VERIFIED asserts -- exactly four claims (ADR-010 section 2), and nothing else; it does NOT
+assert the resource is the cause of the failure:
 
-Rows 3b/3c (INFRASTRUCTURE_FAILURE, ADR-008, 2026-10-10/11) distinguish "no real
-failure anywhere, only crashes/timeouts" from row 3d (SIGNATURE_MISMATCH, "it
-failed for real but not the reference bug") -- before this, a crash-only
-sequence read as SIGNATURE_MISMATCH, which suggests a different real bug
-rather than a tooling/infrastructure problem. `infrastructure_failures` is a
-caller-supplied total across every phase a real diagnosis has (the given/
-discovered order, any shuffled orders tried, and the alone check) -- not just
-the sequence runs row 3's other fields describe -- because a crash can happen
-in any of them even when the sequence itself ran clean (row 3b is exactly
-that case: a victim that never fails in its own order but crashes sometimes
-when run alone). `infrastructure_failures` defaults to 0, so a caller that
-has not counted this (every pre-ADR-008 caller) gets exactly the old
-behaviour: row 3a whenever `sequence_failures_any == 0`, row 3d (renamed from
-3c) whenever it is not.
+  S1 reproduces          sequence tally   Wilson 95% lower bound of matched/n >= lower_bound_threshold
+  S2 passes alone        alone tally      alone.passed == alone.n (rows 6-8 are what withholds this)
+  S3 every kept test is needed   deletion checks (ADR-011, W20)
+  R1 a static overlap exists     Member 1's edges (ADR-007, unchanged)
+
+S3 and budget (row 3) depend on work packages that have not landed yet (ADR-011/W20 deletion
+checks, ADR-014/W24 budget ledger). Both default to "not yet checked" / "not exhausted", which
+this decision table treats as satisfied -- the same defaulting convention eval/report.py already
+uses for infrastructure_failures and order_exploration, so this change does not regress any
+existing VERIFIED verdict (ADR-010 test T6) ahead of W20/W24 actually landing. See
+DecisionInput.deletion_status and .budget_exhausted below.
 """
 
 from dataclasses import dataclass
 from typing import Optional, Tuple
 
+from eval.baseline import RunTally
 from eval.stats import wilson_interval
 
 OUTCOME_VERIFIED = "VERIFIED"
@@ -54,174 +54,251 @@ OUTCOME_CANDIDATE = "CANDIDATE"
 OUTCOME_UNRESOLVED = "UNRESOLVED"
 VALID_OUTCOMES = (OUTCOME_VERIFIED, OUTCOME_CANDIDATE, OUTCOME_UNRESOLVED)
 
-REASON_VICTIM_FAILS_ALONE = "VICTIM_FAILS_ALONE"
-REASON_NOT_REPRODUCED = "NOT_REPRODUCED"
-REASON_SIGNATURE_MISMATCH = "SIGNATURE_MISMATCH"
-REASON_INFRASTRUCTURE_FAILURE = "INFRASTRUCTURE_FAILURE"
-REASON_NO_SUPPORTED_RESOURCE_EVIDENCE = "NO_SUPPORTED_RESOURCE_EVIDENCE"
-REASON_BELOW_CONFIDENCE_THRESHOLD = "BELOW_CONFIDENCE_THRESHOLD"  # reserved, unused by decide()
 REASON_SOURCE_INTEGRITY_FAILED = "SOURCE_INTEGRITY_FAILED"
+REASON_INCONSISTENT_OUTCOMES = "INCONSISTENT_OUTCOMES"  # new, ADR-010 row 2, FT010
+REASON_BUDGET_EXHAUSTED = "BUDGET_EXHAUSTED"  # new, ADR-010 row 3 / ADR-014
+REASON_INFRASTRUCTURE_FAILURE = "INFRASTRUCTURE_FAILURE"
+REASON_NOT_REPRODUCED = "NOT_REPRODUCED"
+REASON_VICTIM_FAILS_ALONE = "VICTIM_FAILS_ALONE"
+REASON_VICTIM_FAILS_ALONE_DIFFERENTLY = "VICTIM_FAILS_ALONE_DIFFERENTLY"  # new, ADR-010 row 7, FT003
+REASON_SIGNATURE_MISMATCH = "SIGNATURE_MISMATCH"
 VALID_UNRESOLVED_REASONS = (
-    REASON_VICTIM_FAILS_ALONE,
-    REASON_NOT_REPRODUCED,
-    REASON_SIGNATURE_MISMATCH,
-    REASON_INFRASTRUCTURE_FAILURE,
-    REASON_NO_SUPPORTED_RESOURCE_EVIDENCE,
-    REASON_BELOW_CONFIDENCE_THRESHOLD,
     REASON_SOURCE_INTEGRITY_FAILED,
+    REASON_INCONSISTENT_OUTCOMES,
+    REASON_BUDGET_EXHAUSTED,
+    REASON_INFRASTRUCTURE_FAILURE,
+    REASON_NOT_REPRODUCED,
+    REASON_VICTIM_FAILS_ALONE,
+    REASON_VICTIM_FAILS_ALONE_DIFFERENTLY,
+    REASON_SIGNATURE_MISMATCH,
+)
+# Retired as UNRESOLVED reasons by ADR-010 section 4 (Q1, option A, agreed 2026-11-13):
+# NO_SUPPORTED_RESOURCE_EVIDENCE and BELOW_CONFIDENCE_THRESHOLD are no longer abstention
+# reasons -- a sequence that reproduces reliably and passes alone is CANDIDATE now, with the
+# same names reused as candidate_reasons below.
+
+# ADR-010 section 3's candidate_reasons values (row 12) -- every unmet claim, not just one.
+CANDIDATE_BELOW_REPLAY_THRESHOLD = "BELOW_REPLAY_THRESHOLD"
+CANDIDATE_DELETION_EVIDENCE_INCOMPLETE = "DELETION_EVIDENCE_INCOMPLETE"
+CANDIDATE_DELETION_EVIDENCE_INCONCLUSIVE = "DELETION_EVIDENCE_INCONCLUSIVE"
+CANDIDATE_NO_SUPPORTED_RESOURCE_EVIDENCE = "NO_SUPPORTED_RESOURCE_EVIDENCE"
+CANDIDATE_BUDGET_EXHAUSTED = "BUDGET_EXHAUSTED"  # reserved: ADR-011 section 3 rolls a mid-run
+# budget exhaustion (during deletion checks) into DELETION_EVIDENCE_INCOMPLETE instead: decide()
+# does not currently emit this value on its own. Kept for forward compatibility, as the old
+# BELOW_CONFIDENCE_THRESHOLD reason was.
+VALID_CANDIDATE_REASONS = (
+    CANDIDATE_BELOW_REPLAY_THRESHOLD,
+    CANDIDATE_DELETION_EVIDENCE_INCOMPLETE,
+    CANDIDATE_DELETION_EVIDENCE_INCONCLUSIVE,
+    CANDIDATE_NO_SUPPORTED_RESOURCE_EVIDENCE,
+    CANDIDATE_BUDGET_EXHAUSTED,
 )
 
 DEFAULT_CONFIDENCE = 0.95
 DEFAULT_LOWER_BOUND_THRESHOLD = 0.70
 
+# ADR-011 section 4's four deletion-evidence values for claim S3 (W20, not yet landed -- no
+# caller can produce these yet). NOT_YET_CHECKED is this module's OWN addition, not in ADR-011's
+# table: it is what DecisionInput.deletion_status=None means, and is flagged here for the other
+# two members to confirm or replace in review, per docs/evidence-m3.md. It exists so a schema v2
+# report can say honestly "this was not checked" rather than silently reusing NOT_APPLICABLE
+# (which ADR-011 defines to mean "no polluter was found" -- a different, false claim for a
+# diagnosis that DID find a polluter but whose deletion check hasn't been built yet).
+DELETION_VERIFIED = "DELETION_VERIFIED"
+DELETION_INCONCLUSIVE = "INCONCLUSIVE"
+DELETION_INCOMPLETE = "INCOMPLETE"
+DELETION_NOT_APPLICABLE = "NOT_APPLICABLE"
+DELETION_NOT_YET_CHECKED = "NOT_YET_CHECKED"  # this module's addition -- see note above
+VALID_DELETION_STATUSES = (
+    DELETION_VERIFIED, DELETION_INCONCLUSIVE, DELETION_INCOMPLETE, DELETION_NOT_APPLICABLE,
+)
+# Values of deletion_status that satisfy claim S3 (do not block VERIFIED at row 12).
+# NOT_YET_CHECKED is deliberately not in VALID_DELETION_STATUSES (it is never a caller-supplied
+# value -- None means the same thing) but is treated the same way here.
+_DELETION_SATISFIES_S3 = (DELETION_VERIFIED, DELETION_NOT_APPLICABLE)
+
 
 @dataclass(frozen=True)
 class DecisionInput:
     source_integrity_passed: bool
-    isolation_successes: int
-    isolation_n: int
-    sequence_successes: int
-    sequence_n: int
-    sequence_failures_any: int
+    reference_established: bool
+    """Whether ANY real (non-infrastructure) failure was ever observed, anywhere in the
+    diagnosis -- the search/reproduce phase included, not just the alone/sequence tallies below.
+    False is exactly runner.diagnose's NOT_REPRODUCED status (reference_signature is None)."""
+    infrastructure_failures_anywhere: int
+    """Combined infrastructure-failure count across every phase (search, shuffles, alone) --
+    rows 4/5 only, used only when reference_established is False. Not derived from alone/
+    sequence below: those are later-phase tallies that do not cover the search/shuffle phases."""
+    alone: RunTally
+    sequence: RunTally
     resource_edge_exists: bool
     confidence: float = DEFAULT_CONFIDENCE
     lower_bound_threshold: float = DEFAULT_LOWER_BOUND_THRESHOLD
-    infrastructure_failures: int = 0
-    """Total runs, across every phase (the given/discovered order, any shuffled orders, and
-    the alone check), that only crashed, timed out or were skipped -- never a real exception
-    (ADR-008). Not bounded by sequence_failures_any: a phase other than the given/discovered
-    order can be where the infrastructure failures actually happened. Defaults to 0: a caller
-    that has not counted this gets exactly the pre-ADR-008 SIGNATURE_MISMATCH behaviour."""
+    search_inconsistent: bool = False
+    """ADR-010 row 2 (runner status INCONSISTENT, formerly NO_SINGLE_POLLUTER): the failure was
+    seen once in the starting order and could not be obtained again -- not alone, not after any
+    single earlier test, not in the full order once more. Defaults False: no pre-ADR-010 caller
+    reports it."""
+    budget_exhausted: bool = False
+    """ADR-010 row 3 / ADR-014 (W24, not yet built): the execution budget ran out before a
+    sequence was found. Defaults False until the budget ledger lands -- no caller can report it
+    yet, so this can never regress an existing verdict."""
+    deletion_status: Optional[str] = None
+    """ADR-011 claim S3 (W20, not yet built): the rolled-up NEEDED/NOT_NEEDED/INCONCLUSIVE
+    outcome of repeated-removal checks on every kept test. One of VALID_DELETION_STATUSES, or
+    None for "not yet checked" (equivalent to DELETION_NOT_YET_CHECKED above) -- which this
+    decision table treats as satisfying S3, so a multi-polluter sequence (e.g. fixture F3) stays
+    VERIFIED exactly as it was before ADR-010/W19, until W20's real checks replace the default
+    (ADR-010 test T6: unchanged verdicts)."""
 
     def __post_init__(self):
-        if self.isolation_n <= 0:
-            raise ValueError(f"isolation_n must be > 0, got {self.isolation_n!r}")
-        if self.sequence_n <= 0:
-            raise ValueError(f"sequence_n must be > 0, got {self.sequence_n!r}")
-        if not (0 <= self.isolation_successes <= self.isolation_n):
-            raise ValueError(
-                f"isolation_successes must be within [0, isolation_n], "
-                f"got isolation_successes={self.isolation_successes!r}, isolation_n={self.isolation_n!r}"
-            )
-        if not (0 <= self.sequence_successes <= self.sequence_n):
-            raise ValueError(
-                f"sequence_successes must be within [0, sequence_n], "
-                f"got sequence_successes={self.sequence_successes!r}, sequence_n={self.sequence_n!r}"
-            )
-        if not (0 <= self.sequence_failures_any <= self.sequence_n):
-            raise ValueError(
-                f"sequence_failures_any must be within [0, sequence_n], "
-                f"got sequence_failures_any={self.sequence_failures_any!r}, sequence_n={self.sequence_n!r}"
-            )
-        if self.sequence_successes > self.sequence_failures_any:
-            raise ValueError(
-                "sequence_successes (signature-matching failures) cannot exceed "
-                f"sequence_failures_any (any-signature failures), got "
-                f"sequence_successes={self.sequence_successes!r}, "
-                f"sequence_failures_any={self.sequence_failures_any!r}"
-            )
-        if self.infrastructure_failures < 0:
-            raise ValueError(f"infrastructure_failures must be >= 0, got {self.infrastructure_failures!r}")
+        if self.alone.n <= 0:
+            raise ValueError(f"alone.n must be > 0, got {self.alone.n!r}")
+        if self.sequence.n <= 0:
+            raise ValueError(f"sequence.n must be > 0, got {self.sequence.n!r}")
         if not (0.0 < self.confidence < 1.0):
             raise ValueError(f"confidence must be in (0, 1), got {self.confidence!r}")
         if not (0.0 <= self.lower_bound_threshold <= 1.0):
             raise ValueError(f"lower_bound_threshold must be in [0, 1], got {self.lower_bound_threshold!r}")
+        if self.infrastructure_failures_anywhere < 0:
+            raise ValueError(
+                f"infrastructure_failures_anywhere must be >= 0, got {self.infrastructure_failures_anywhere!r}"
+            )
+        if self.deletion_status is not None and self.deletion_status not in VALID_DELETION_STATUSES:
+            raise ValueError(
+                f"deletion_status must be None or one of {VALID_DELETION_STATUSES}, "
+                f"got {self.deletion_status!r}"
+            )
 
 
 @dataclass(frozen=True)
 class Decision:
     outcome: str
     unresolved_reason: Optional[str]
+    candidate_reasons: Tuple[str, ...]  # always (), except for OUTCOME_CANDIDATE
     sequence_interval: Tuple[float, float]
-    isolation_interval: Tuple[float, float]
+    alone_interval: Tuple[float, float]
     rationale: str
 
 
 def decide(d: DecisionInput) -> Decision:
-    """Apply the Iteration 1 decision table to a DecisionInput. See module
-    docstring for the full table; this function implements it top to bottom,
-    first match wins."""
+    """Apply the ADR-010 decision table to a DecisionInput. See module docstring for the full
+    table; this function implements it top to bottom, first match wins."""
 
-    sequence_interval = wilson_interval(d.sequence_successes, d.sequence_n, d.confidence)
-    isolation_interval = wilson_interval(d.isolation_successes, d.isolation_n, d.confidence)
+    sequence_interval = wilson_interval(d.sequence.matched, d.sequence.n, d.confidence)
+    alone_interval = wilson_interval(d.alone.matched, d.alone.n, d.confidence)
 
-    def result(outcome, reason, rationale):
+    def result(outcome, reason, rationale, candidate_reasons=()):
         return Decision(
             outcome=outcome,
             unresolved_reason=reason,
+            candidate_reasons=tuple(candidate_reasons),
             sequence_interval=sequence_interval,
-            isolation_interval=isolation_interval,
+            alone_interval=alone_interval,
             rationale=rationale,
         )
 
     if not d.source_integrity_passed:
         return result(
-            OUTCOME_UNRESOLVED,
-            REASON_SOURCE_INTEGRITY_FAILED,
+            OUTCOME_UNRESOLVED, REASON_SOURCE_INTEGRITY_FAILED,
             "Source-integrity check failed, so no other evidence can be trusted.",
         )
 
-    if d.isolation_successes >= 1:
+    if d.search_inconsistent:
         return result(
-            OUTCOME_UNRESOLVED,
-            REASON_VICTIM_FAILS_ALONE,
-            f"Victim reproduced its reference failure signature "
-            f"{d.isolation_successes}/{d.isolation_n} times when run alone; "
-            "cannot attribute any polluted-order failure to a polluter.",
+            OUTCOME_UNRESOLVED, REASON_INCONSISTENT_OUTCOMES,
+            "The failure appeared once in the starting order and could not be obtained again; "
+            "likely not order-dependent. Re-run with a larger --n, or supply the exact failing "
+            "order with --order.",
         )
 
-    if d.sequence_successes == 0:
-        if d.sequence_failures_any == 0:
-            if d.infrastructure_failures > 0:
-                return result(
-                    OUTCOME_UNRESOLVED,
-                    REASON_INFRASTRUCTURE_FAILURE,
-                    f"Sequence never failed in {d.sequence_n} runs, but {d.infrastructure_failures} "
-                    "run(s) elsewhere (e.g. the alone check) only crashed or timed out, never a real "
-                    "exception -- a tooling problem, not evidence this victim is reliable.",
-                )
-            return result(
-                OUTCOME_UNRESOLVED,
-                REASON_NOT_REPRODUCED,
-                f"Sequence never reproduced any failure in {d.sequence_n} runs.",
-            )
-        if d.sequence_failures_any == d.infrastructure_failures:
-            return result(
-                OUTCOME_UNRESOLVED,
-                REASON_INFRASTRUCTURE_FAILURE,
-                f"Sequence failed {d.sequence_failures_any}/{d.sequence_n} times, but every "
-                "failure was a crash or timeout, never a real exception -- a tooling problem, "
-                "not evidence of a different bug.",
-            )
+    if d.budget_exhausted:
         return result(
-            OUTCOME_UNRESOLVED,
-            REASON_SIGNATURE_MISMATCH,
-            f"Sequence failed {d.sequence_failures_any}/{d.sequence_n} times but never with "
-            "the reference failure signature.",
+            OUTCOME_UNRESOLVED, REASON_BUDGET_EXHAUSTED,
+            "The execution budget ran out before a reproducing sequence was found.",
         )
 
-    # sequence_successes >= 1 from here on.
+    if not d.reference_established:
+        if d.infrastructure_failures_anywhere > 0:
+            return result(
+                OUTCOME_UNRESOLVED, REASON_INFRASTRUCTURE_FAILURE,
+                f"No real failure anywhere ({d.sequence.n} sequence run(s), {d.alone.n} alone "
+                f"run(s)), but {d.infrastructure_failures_anywhere} run(s) only crashed or "
+                "timed out -- a tooling problem, not evidence this victim is reliable.",
+            )
+        return result(
+            OUTCOME_UNRESOLVED, REASON_NOT_REPRODUCED,
+            f"The sequence never reproduced any failure in {d.sequence.n} run(s), and the victim "
+            f"never failed in {d.alone.n} run(s) alone.",
+        )
+
+    if d.alone.matched >= 1:
+        return result(
+            OUTCOME_UNRESOLVED, REASON_VICTIM_FAILS_ALONE,
+            f"Victim reproduced its reference failure signature {d.alone.matched}/{d.alone.n} "
+            "times when run alone; cannot attribute any polluted-order failure to a polluter.",
+        )
+
+    if d.alone.other >= 1:
+        return result(
+            OUTCOME_UNRESOLVED, REASON_VICTIM_FAILS_ALONE_DIFFERENTLY,
+            f"Victim failed {d.alone.other}/{d.alone.n} times when run alone, with a different "
+            "failure than the reference signature; cannot attribute any polluted-order failure "
+            "to a polluter, even though one reproduces it.",
+        )
+
+    if d.alone.infra >= 1:
+        return result(
+            OUTCOME_UNRESOLVED, REASON_INFRASTRUCTURE_FAILURE,
+            f"Victim run alone crashed or timed out {d.alone.infra}/{d.alone.n} times, never a "
+            "real exception -- a tooling problem, not evidence the victim passes alone.",
+        )
+
+    # From here alone.passed == alone.n: the victim passed alone every time (claim S2 holds).
+    if d.sequence.matched == 0:
+        if d.sequence.other >= 1:
+            return result(
+                OUTCOME_UNRESOLVED, REASON_SIGNATURE_MISMATCH,
+                f"Sequence failed {d.sequence.other + d.sequence.infra}/{d.sequence.n} times "
+                "but never with the reference failure signature.",
+            )
+        if d.sequence.infra >= 1:
+            return result(
+                OUTCOME_UNRESOLVED, REASON_INFRASTRUCTURE_FAILURE,
+                f"Sequence crashed or timed out {d.sequence.infra}/{d.sequence.n} times, never "
+                "a real exception -- a tooling problem, not evidence of a different bug.",
+            )
+        return result(
+            OUTCOME_UNRESOLVED, REASON_NOT_REPRODUCED,
+            f"A reference failure was observed during the search, but the candidate sequence "
+            f"did not reproduce it on re-verification ({d.sequence.n} runs, all passed).",
+        )
+
+    # sequence.matched >= 1 and alone.passed == alone.n from here: S2 holds, check S1/S3/R1.
+    reasons = []
+    if sequence_interval[0] < d.lower_bound_threshold:
+        reasons.append(CANDIDATE_BELOW_REPLAY_THRESHOLD)
+    if d.deletion_status is not None and d.deletion_status not in _DELETION_SATISFIES_S3:
+        reasons.append(
+            CANDIDATE_DELETION_EVIDENCE_INCONCLUSIVE if d.deletion_status == DELETION_INCONCLUSIVE
+            else CANDIDATE_DELETION_EVIDENCE_INCOMPLETE
+        )
     if not d.resource_edge_exists:
-        return result(
-            OUTCOME_UNRESOLVED,
-            REASON_NO_SUPPORTED_RESOURCE_EVIDENCE,
-            f"Sequence reproduced {d.sequence_successes}/{d.sequence_n} times, but no "
-            "polluter-write/victim-read resource edge was found to support it.",
-        )
+        reasons.append(CANDIDATE_NO_SUPPORTED_RESOURCE_EVIDENCE)
 
-    if sequence_interval[0] >= d.lower_bound_threshold:
+    if reasons:
         return result(
-            OUTCOME_VERIFIED,
-            None,
-            f"Sequence reproduced {d.sequence_successes}/{d.sequence_n} "
-            f"(Wilson lower bound {sequence_interval[0]:.3f} >= {d.lower_bound_threshold}), "
-            "victim never failed alone, and a resource edge supports it.",
+            OUTCOME_CANDIDATE, None,
+            f"Sequence reproduced {d.sequence.matched}/{d.sequence.n} "
+            f"(Wilson lower bound {sequence_interval[0]:.3f}), victim never failed alone, but: "
+            f"{', '.join(reasons)}.",
+            candidate_reasons=reasons,
         )
 
     return result(
-        OUTCOME_CANDIDATE,
-        None,
-        f"Sequence reproduced {d.sequence_successes}/{d.sequence_n} "
-        f"(Wilson lower bound {sequence_interval[0]:.3f} < {d.lower_bound_threshold}) "
-        "with a supporting resource edge, but below the confidence threshold for VERIFIED.",
+        OUTCOME_VERIFIED, None,
+        f"Sequence reproduced {d.sequence.matched}/{d.sequence.n} "
+        f"(Wilson lower bound {sequence_interval[0]:.3f} >= {d.lower_bound_threshold}), victim "
+        "never failed alone, every kept test is needed, and a static overlap supports it. This "
+        "does not assert the resource is the cause of the failure.",
     )

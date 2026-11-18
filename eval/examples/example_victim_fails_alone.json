@@ -1,4 +1,5 @@
 {
+  "schema_version": 2,
   "victim": { "class": "odfixture.NegativeAloneFailTest", "method": "alwaysFails" },
   "polluters": [],
   "original_failing_order": [
@@ -6,17 +7,17 @@
   ],
   "reduced_sequence": [],
   "reproduction": {
-    "successes": 20, "n": 20, "confidence": 0.95,
+    "n": 20, "passed": 0, "matched": 20, "other": 0, "infra": 0, "confidence": 0.95,
     "lower": 0.83887484172924, "upper": 1.0
   },
-  "sequence_any_signature_failures": 20,
   "victim_alone": {
-    "successes": 20, "n": 20, "confidence": 0.95,
+    "n": 20, "passed": 0, "matched": 20, "other": 0, "infra": 0, "confidence": 0.95,
     "lower": 0.83887484172924, "upper": 1.0
   },
   "shared_resource": null,
   "polluter_write_location": null,
   "victim_read_location": null,
+  "resource_edges": [],
   "failure_signature": {
     "exception_type": "java.lang.AssertionError",
     "message": "expected:<2> but was:<1>",
@@ -27,8 +28,9 @@
   "source_integrity": { "passed": true, "details": "No real source-integrity checker exists yet (Member 2's component) -- 'passed: true' is asserted by construction (plain Maven, no instrumentation involved), not independently checked." },
   "outcome": "UNRESOLVED",
   "unresolved_reason": "VICTIM_FAILS_ALONE",
+  "candidate_reasons": [],
   "limitations": [
     "victim_alone (and reproduction, which is identical since reduced_sequence is empty) is a REAL measured count: od-fixture's N1 case was actually run alone 20 times via plain Maven on 2026-10-09 (eval/tools/run_real_reps.sh), not hand-picked. See docs/evidence-m3.md and eval/benchmark/logs/N1.json.",
-    "N1 negative control: this victim fails deterministically even in isolation (20/20, confirmed by real repetition, not just asserted), so no polluter can be attributed. Compare example_victim_fails_alone_intermittent.json for the same gate triggered by an intermittent (not deterministic) alone-failure."
+    "N1 negative control: this victim fails deterministically even in isolation (20/20, confirmed by real repetition, not just asserted) WITH the reference failure signature (ADR-010 row 6), so no polluter can be attributed. Compare example_victim_fails_alone_intermittent.json for the same gate triggered intermittently, and example_victim_fails_alone_differently.json for the related but distinct row 7 (fails alone with a DIFFERENT signature -- the Mid's FT003 bug)."
   ]
 }

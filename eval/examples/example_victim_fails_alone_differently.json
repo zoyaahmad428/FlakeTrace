@@ -1,0 +1,39 @@
+{
+  "schema_version": 2,
+  "victim": { "class": "com.example.DualFailureVictimTest", "method": "expectsStateTwo" },
+  "polluters": [],
+  "original_failing_order": [
+    { "class": "com.example.DualFailurePolluterTest", "method": "setState" },
+    { "class": "com.example.DualFailureVictimTest", "method": "expectsStateTwo" }
+  ],
+  "reduced_sequence": [
+    { "class": "com.example.DualFailureVictimTest", "method": "expectsStateTwo" }
+  ],
+  "reproduction": {
+    "n": 20, "passed": 0, "matched": 20, "other": 0, "infra": 0, "confidence": 0.95,
+    "lower": 0.83887484172924, "upper": 1.0
+  },
+  "victim_alone": {
+    "n": 20, "passed": 0, "matched": 0, "other": 20, "infra": 0, "confidence": 0.95,
+    "lower": 0.0, "upper": 0.16112515827076002
+  },
+  "shared_resource": null,
+  "polluter_write_location": null,
+  "victim_read_location": null,
+  "resource_edges": [],
+  "failure_signature": {
+    "exception_type": "java.lang.AssertionError",
+    "message": "expected:<2> but was:<1>",
+    "stack_trace": "at com.example.DualFailureVictimTest.expectsStateTwo(DualFailureVictimTest.java:12)"
+  },
+  "instrumentation_level": "static-only",
+  "execution_record_reference": "illustrative-only: no real execution record backs this example",
+  "source_integrity": { "passed": true, "details": "Illustrative: no modification detected to any instrumented class." },
+  "outcome": "UNRESOLVED",
+  "unresolved_reason": "VICTIM_FAILS_ALONE_DIFFERENTLY",
+  "candidate_reasons": [],
+  "limitations": [
+    "Hand-written illustrative example, not a recorded benchmark run -- see eval/examples/README.md. Entirely synthetic (com.example.* names), not tied to any real case in this repo.",
+    "ADR-010 row 7 (FT003, the Mid review's bug): after DualFailurePolluterTest#setState, the victim reliably fails with java.lang.AssertionError (the reference signature, 20/20). Run ALONE, with no polluter, the victim still fails every time -- but with java.lang.IllegalStateException, a DIFFERENT signature. The Mid build counted only alone failures that match the reference, so this read as 'never failed alone' and would have named DualFailurePolluterTest#setState as the polluter -- schema-valid and VERIFIED, wrongly. ADR-010 fixes this: any real failure alone, matching or not, withholds a verdict. No test is blamed; what was observed is recorded here instead (victim_alone.other = 20, not matched)."
+  ]
+}

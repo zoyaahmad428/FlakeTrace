@@ -1,0 +1,87 @@
+{
+  "schema_version": 2,
+  "victim": {
+    "class": "odfixture.DualFailureVictimTest",
+    "method": "expectsStateTwo"
+  },
+  "polluters": [],
+  "original_failing_order": [
+    {
+      "class": "odfixture.AlwaysEarlyVictimTest",
+      "method": "expectsLateFlagUnset"
+    },
+    {
+      "class": "odfixture.ConfigPolluterTest",
+      "method": "pollute"
+    },
+    {
+      "class": "odfixture.ConfigVictimTest",
+      "method": "expectsDefaultMode"
+    },
+    {
+      "class": "odfixture.DualFailurePolluterTest",
+      "method": "setState"
+    },
+    {
+      "class": "odfixture.DualFailureVictimTest",
+      "method": "expectsStateTwo"
+    }
+  ],
+  "reduced_sequence": [
+    {
+      "class": "odfixture.DualFailureVictimTest",
+      "method": "expectsStateTwo"
+    }
+  ],
+  "reproduction": {
+    "n": 20,
+    "passed": 0,
+    "matched": 20,
+    "other": 0,
+    "infra": 0,
+    "confidence": 0.95,
+    "lower": 0.83887484172924,
+    "upper": 1.0
+  },
+  "victim_alone": {
+    "n": 20,
+    "passed": 0,
+    "matched": 0,
+    "other": 20,
+    "infra": 0,
+    "confidence": 0.95,
+    "lower": 0.0,
+    "upper": 0.16112515827076002
+  },
+  "shared_resource": null,
+  "polluter_write_location": null,
+  "victim_read_location": null,
+  "resource_edges": [],
+  "failure_signature": {
+    "exception_type": "java.lang.AssertionError",
+    "message": "expected:<<N>> but was:<<N>>",
+    "stack_trace": "org.junit.Assert.fail:89\norg.junit.Assert.failNotEquals:835\norg.junit.Assert.assertEquals:647\norg.junit.Assert.assertEquals:633\nodfixture.DualFailureVictimTest.expectsStateTwo:18"
+  },
+  "instrumentation_level": "static-only",
+  "execution_record_reference": "C:\\Users\\zarpa\\OneDrive\\Documents\\GitHub\\FlakeTracee\\eval\\reports\\flaketrace-records\\20261118T183945Z-odfixture.DualFailureVictimTest#expectsStateTwo.jsonl",
+  "source_integrity": {
+    "passed": true,
+    "details": "26 files hashed (SHA-256) before and after; all identical"
+  },
+  "outcome": "UNRESOLVED",
+  "unresolved_reason": "VICTIM_FAILS_ALONE_DIFFERENTLY",
+  "candidate_reasons": [],
+  "limitations": [
+    "instrumentation_level is static-only; runtime instrumentation is not built.",
+    "No polluter-write/victim-read resource edge was found by static analysis.",
+    "Victim failed 20/20 time(s) alone with a different failure than the 20/20 reference failures seen after the search's candidate sequence -- recorded, but no test is blamed (ADR-010 row 7)."
+  ],
+  "order_exploration": {
+    "order_given": false,
+    "shuffled_orders_tried": 0,
+    "orders_exhausted": false,
+    "seed_base": 0,
+    "reproducing_seed": null,
+    "infrastructure_failures": 0
+  }
+}
