@@ -1141,3 +1141,37 @@ case: a reference found during the search does not guarantee the final re-verifi
 still shows it), why `assurance.sequence.deletion` can say `"NOT_YET_CHECKED"` — a value not in
 ADR-011's own table — and why `polluters`/`shared_resource` are both suppressed together (not
 just `polluters`) whenever a verdict is withheld.
+
+## 2026-11-18 — W16: verify M2's retire-claims work, finish M3's own part
+
+**What I asked:** Continue Iteration 2 after W19; picked W16 next because both M1 and M2 had
+just pushed their parts (M2's already merged, M1's on an open branch) and M3's own part
+(`eval/`) plus the overall "checks consistency" role were the only pieces left undone.
+
+**What was retained:** The one real fix found — `eval/report.py`'s deletion-check limitation
+text reworded to reuse `runner/cli.py`'s exact approved phrase ("reduced by single-trial delta
+debugging; not deletion-verified") instead of my own paraphrase from W19, plus the matching two
+example JSON files, plus the reports regenerated so the committed files stay consistent with
+the code.
+
+**What I changed:** Nothing generated needed correcting here — this was mostly verification
+(reading M2's already-merged code, confirming it matches ADR-010/011's exact wording) rather
+than new generation. The one thing I pushed back on myself: my first instinct from the grep
+output was to start "fixing" dozens of hits across `docs/01-Literature/`, `claims-ledger.md`
+etc. before actually reading each one in context — stopped and read every hit first, which
+showed almost all of them were already-correct approved wording, historical notes, or another
+paper's own terminology, not FlakeTrace claims. Only the one real inconsistency (above) needed
+a change.
+
+**How it was verified:** `py -m unittest discover -s eval/tests` → 119/119 OK (wording-only
+change, no behaviour change expected or found); real `py -m eval.tools.run_w9_integration`
+re-run → all 8 verdicts unchanged, confirming the fix only touched `limitations` text.
+
+**Rejected / not done:** M1's `evidence/` wording branch not reviewed in depth — it's not
+merged to `main` yet, so there is nothing yet to check for consistency against; flagged to
+re-check once it lands, since her branch and this session's doc edits (`members.md`,
+`iteration-2-plan.md`, `genai-register.md`) touch some of the same files and could conflict.
+
+Ownership checkpoint: be able to explain why `runner/cli.py` already had the correct wording
+before this session (M2's own earlier, separate work) and what exactly W16 added on top of
+that (only a product-wide consistency check plus one small text fix in `eval/report.py`).

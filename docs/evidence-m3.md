@@ -1581,3 +1581,50 @@ Reviewed M2's step-1 work first (`RunTally`/`classify` in `eval/baseline.py`, PR
   outside this session's scope, and ADR-010's own Consequences section already assigns this to
   Member 2. The real `diagnose` CLI path is unaffected (fixed above); only the web UI reading a
   schema-v2 report would currently show stale/missing labels for the new fields.
+
+## 2026-11-18 — W16: verify M2's retired-claims work, finish M3's own part
+
+**Requirement:** `docs/10-Final1/iteration-2-plan.md` W16 — qualify every claim the Mid build
+could not support (pass-alone, "1-minimal", resource "mechanism", "never modified"), with M3
+owning `eval/`'s own part and checking consistency everywhere else. M2's part (`runner/`, `ui/`)
+was flagged "awaiting verification by M3"; M1's and M3's parts were flagged "not started".
+
+- Checked: M2's `m2/w16-retire-claims` branch tip (`9a05788`) is already merged into `main`
+  (its merge-base with `main` is itself — not an open PR). Read the real, current
+  `runner/cli.py`: "static overlap: a possible mechanism, not confirmed as the cause" (line 214)
+  and "reduced by single-trial delta debugging; not deletion-verified" (line 191) match ADR-010
+  §2 and ADR-011 §5's approved wording exactly. Verified, nothing further needed from M2's side.
+- Checked: M1 pushed `m1/w16-evidence-wording` (not yet merged — its merge-base with `main` is
+  `main`'s own current tip, i.e. a real, open, unmerged branch). Not reviewed in depth here
+  (M1's own work, not yet on `main` to check consistency against); flagged to re-check once
+  merged.
+- File/function: `eval/outcome.py`, `eval/report.py` — both written fresh in W19 (this session,
+  above), so M3's own "pass-alone"/"mechanism" usages were already the approved, qualified
+  wording throughout (e.g. `decide()`'s VERIFIED rationale: "...does not assert the resource is
+  the cause of the failure"). One real inconsistency found by comparing against `runner/cli.py`
+  rather than just reading `eval/` in isolation: `eval/report.py`'s deletion-check limitation
+  line paraphrased ADR-011 §5's wording instead of reusing it verbatim, unlike the CLI's exact
+  "reduced by single-trial delta debugging; not deletion-verified". Fixed for product-wide
+  wording consistency (the whole point of W16); `eval/examples/example_f1_verified.json` and
+  `example_f3_verified.json`'s matching limitation lines updated the same way.
+- Command: `git grep -n -i -E "1-minimal|never modified|sandboxed|found mechanism|root cause|
+  caused by|explains the failure|passes alone" -- eval/ fixtures/` (M2's own W16 search pattern,
+  re-run against M3's folders) and a second pass for "cause"/"mechanism" more broadly across
+  every `.py` file and `ui/web/src/`. Result: every hit is either already-approved wording
+  (`"not confirmed as the cause"`, `"reduced by single-trial delta debugging; not
+  deletion-verified"`), a historical/dated note in `docs/evidence-*.md` or `ground_truth.json`
+  (exempted by W16's own "Done when" criterion), a factual code comment about the fixture's
+  actual designed behaviour (e.g. `ConfigVictimTest`'s real `passes alone` docstring — true by
+  construction, not a tool claim), or a literature-review doc describing another paper's own
+  terminology (`docs/01-Literature/`) — never an unqualified FlakeTrace claim about itself.
+- Command: `py -m eval.tools.run_w9_integration` (real run, all 8 cases) after the wording fix,
+  to keep the committed reports consistent with the code that produced them. Result: all 8
+  verdicts unchanged (F1-F4 `VERIFIED`, N1/N2 `UNRESOLVED(VICTIM_FAILS_ALONE)`, N3
+  `UNRESOLVED(NOT_REPRODUCED)`, N4 `UNRESOLVED(VICTIM_FAILS_ALONE_DIFFERENTLY)`) — only the
+  `limitations` text changed, as intended.
+- Command: `py -m unittest discover -s eval/tests`. Result: **119/119 passed** (unaffected by a
+  free-text wording change).
+- Limitation: this entry checks consistency on everything currently committed to `main`. M1's
+  `evidence/` wording fix is real but still on an open branch — re-run the same search once it
+  merges, since a broken merge of M1's and M3's overlapping doc edits (`members.md`,
+  `iteration-2-plan.md`, `genai-register.md`) is possible and worth a second look then.

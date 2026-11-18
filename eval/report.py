@@ -188,10 +188,9 @@ def assemble_report(
             )
         if decision.outcome in (OUTCOME_CANDIDATE, OUTCOME_VERIFIED):
             limitations.append(
-                "Deletion checks (ADR-011) are not yet implemented: claim S3 (every kept test "
-                "is needed) is not independently re-verified beyond the minimiser's single "
-                "trial for any sequence with more than one kept test. assurance.sequence."
-                "deletion reports this honestly as NOT_YET_CHECKED rather than DELETION_VERIFIED."
+                "Reduced by single-trial delta debugging; not deletion-verified (ADR-011, W20 "
+                "not yet landed). assurance.sequence.deletion reports this honestly as "
+                "NOT_YET_CHECKED rather than DELETION_VERIFIED."
             )
 
     order_desc = "given" if getattr(diagnosis, "order_given", True) else "discovered"

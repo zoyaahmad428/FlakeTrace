@@ -53,6 +53,6 @@
     "This is the two-polluter edge case: removing either single polluter (A or B) alone makes the victim pass again -- a one-by-one polluter search cannot find it, only a search that considers polluter combinations (W10, ADR-007).",
     "resource_edges lists only the primary edge (Member 1's extractor reports one edge at a time; ADR-010 section 6/W21 is what lists every edge structurally). The schema's single polluter_write_location field cannot represent both of this case's two required writes (flagA and flagB); only the second write is shown here -- a known Iteration 1/2 limitation for multi-polluter cases.",
     "bytecode_offset values (3, 7) are still placeholders -- no real static-bytecode-evidence extractor exists yet (Member 1's component).",
-    "assurance.sequence.deletion is NOT_YET_CHECKED (ADR-011, W20 not yet landed): this is especially relevant for a two-polluter case like this one -- deletion checks beyond the single-trial minimiser do not exist yet for either polluter."
+    "Reduced by single-trial delta debugging; not deletion-verified (ADR-011, W20 not yet landed) -- especially relevant for a two-polluter case like this one, where neither polluter has been repeated-removal checked yet. assurance.sequence.deletion reports this as NOT_YET_CHECKED."
   ]
 }

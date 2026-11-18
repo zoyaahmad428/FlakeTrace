@@ -94,7 +94,7 @@
     "stack_trace": "org.junit.Assert.fail:89\norg.junit.Assert.failNotEquals:835\norg.junit.Assert.assertEquals:647\norg.junit.Assert.assertEquals:633\nodfixture.ConfigVictimTest.expectsDefaultMode:10"
   },
   "instrumentation_level": "static-only",
-  "execution_record_reference": "C:\\Users\\zarpa\\OneDrive\\Documents\\GitHub\\FlakeTracee\\eval\\reports\\flaketrace-records\\20261118T183623Z-odfixture.ConfigVictimTest#expectsDefaultMode.jsonl",
+  "execution_record_reference": "C:\\Users\\zarpa\\OneDrive\\Documents\\GitHub\\FlakeTracee\\eval\\reports\\flaketrace-records\\20261118T190757Z-odfixture.ConfigVictimTest#expectsDefaultMode.jsonl",
   "source_integrity": {
     "passed": true,
     "details": "26 files hashed (SHA-256) before and after; all identical"
@@ -111,7 +111,7 @@
     "Written values are not modelled: a polluter that writes and then restores the original value still produces a WRITE.",
     "Execution timing is not modelled (e.g. a victim <clinit> read that happens before the polluter runs).",
     "Missing evidence is not proof of independence.",
-    "Deletion checks (ADR-011) are not yet implemented: claim S3 (every kept test is needed) is not independently re-verified beyond the minimiser's single trial for any sequence with more than one kept test. assurance.sequence.deletion reports this honestly as NOT_YET_CHECKED rather than DELETION_VERIFIED."
+    "Reduced by single-trial delta debugging; not deletion-verified (ADR-011, W20 not yet landed). assurance.sequence.deletion reports this honestly as NOT_YET_CHECKED rather than DELETION_VERIFIED."
   ],
   "assurance": {
     "sequence": {
