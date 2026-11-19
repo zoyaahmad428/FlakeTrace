@@ -61,6 +61,10 @@ HAS_JAVAP = bool(shutil.which(extract.javap_command()))
 NO_JAVAP = "javap not found (need a JDK 8+)"
 NO_SELFTEST = ("self-test classes not compiled: run mvn -B -q -f "
                "evidence/tests/resources/m1-selftest/pom.xml test-compile")
+CONTROLS_TARGET = os.path.join(HERE, "resources", "ft005-controls", "target")
+CONTROLS_DIRS = [os.path.join(CONTROLS_TARGET, "classes"), os.path.join(CONTROLS_TARGET, "test-classes")]
+NO_CONTROLS = ("FT005 controls not compiled: run mvn -B -q -f "
+               "evidence/tests/resources/ft005-controls/pom.xml test-compile")
 
 
 def summary(accesses):
@@ -551,6 +555,40 @@ class ResourceEdgesTest(unittest.TestCase):
         fields = extract.report_fields({"edges": [], "limitations": list(extract.FIXED_LIMITATIONS)})
         self.assertEqual(fields["resource_edges"], [])
         self.assertIsNone(fields["shared_resource"])
+
+
+
+@needs(os.path.isdir(CONTROLS_DIRS[1]), NO_CONTROLS)
+@needs(HAS_JAVAP, NO_JAVAP)
+class Ft005ControlsTest(unittest.TestCase):
+    """W21 / FT005: two controls where the static edge is not why the victim fails.
+
+    Expected results were written in resources/ft005-controls/EXPECTED.md before the first run.
+    """
+
+    def pair(self, polluter, victim):
+        return analyse_pair(CONTROLS_DIRS, "controls." + polluter, "controls." + victim)
+
+    def test_write_then_restore_gives_an_edge_on_the_restored_field_only(self):
+        pair = self.pair("RestoringPolluterTest#pollute", "RestoringVictimTest#check")
+        self.assertEqual([e["resource_id"] for e in pair["edges"]], ["controls.State#restored"])
+        self.assertIn(("polluter", "REFLECTION"),
+                      [(o["side"], o["kind"]) for o in pair["unsupported_observations"]])
+
+    def test_write_then_restore_is_reported_as_overlap_only(self):
+        fields = extract.report_fields(self.pair("RestoringPolluterTest#pollute", "RestoringVictimTest#check"))
+        self.assertEqual(fields["shared_resource"],
+                         {"kind": "static-field", "class": "controls.State", "field": "restored"})
+        self.assertIn("Written values are not modelled: a polluter that writes and then restores the "
+                      "original value still produces a WRITE.", fields["limitations"])
+
+    def test_unrelated_overlap_lists_both_edges_and_shows_the_first_by_name(self):
+        fields = extract.report_fields(self.pair("TwoFieldPolluterTest#pollute", "TwoFieldVictimTest#check"))
+        self.assertEqual([e["shared_resource"]["field"] for e in fields["resource_edges"]], ["a", "b"])
+        self.assertEqual(fields["shared_resource"],
+                         {"kind": "static-field", "class": "controls.State", "field": "a"})
+        self.assertIn("Another shared resource is not shown in this report: controls.State#b",
+                      fields["limitations"])
 
 
 if __name__ == "__main__":

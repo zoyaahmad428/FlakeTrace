@@ -54,7 +54,8 @@ mvn -B -f fixtures/od-fixture/pom.xml test-compile
 python3 -m unittest -v $(ls runner/tests/test_*.py | sed 's#/#.#g; s#\.py$##')   # starts real JVMs, a few minutes
 python3 -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode
 mvn -B -q -f evidence/tests/resources/m1-selftest/pom.xml test-compile
-python3 -m unittest -v evidence.tests.test_extract       # needs the two compiles above and javap
+mvn -B -q -f evidence/tests/resources/ft005-controls/pom.xml test-compile
+python3 -m unittest -v evidence.tests.test_extract       # needs the compiles above and javap
 ```
 
 Windows (cmd or PowerShell):
@@ -69,6 +70,7 @@ py -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVic
 py -m unittest -v ui.tests.test_server
 ui\start.cmd                                   # web UI on http://127.0.0.1:5174
 mvn -B -q -f evidence/tests/resources/m1-selftest/pom.xml test-compile
+mvn -B -q -f evidence/tests/resources/ft005-controls/pom.xml test-compile
 py -m unittest -v evidence.tests.test_extract
 ```
 

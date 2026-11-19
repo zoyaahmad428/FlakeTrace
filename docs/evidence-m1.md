@@ -659,3 +659,49 @@ victim_read_location, depth}`. `shared_resource` and the two locations are uncha
   - With several polluters, `runner/cli.py`'s `combine_fields` (M2) keeps the first polluter's
     fields, so only that polluter's `resource_edges` would reach the report. Noted for M2.
   - Not run on my own machine yet; M2 verifies W21.
+
+## W21 part 2: the two FT005 controls (2026-11-18)
+
+**Requirement:** W21 / FT005 / ADR-015's control table: two cases where static analysis finds an
+edge that is **not** why the victim fails, and FlakeTrace must not call it the cause.
+
+- **Where:** `evidence/tests/resources/ft005-controls/` (a Maven project in M1's folder; M1 chose
+  this over adding cases to M3's fixture). Expected results were written in its `EXPECTED.md`
+  **before** the project was first compiled or run.
+  - Control 1, write-then-restore: `RestoringPolluterTest#pollute` writes `State.restored` and puts
+    the old value back, and sets `State.hidden` through reflection; `RestoringVictimTest#check`
+    fails only because of `State.hidden`.
+  - Control 2, unrelated overlap: `TwoFieldPolluterTest#pollute` writes `State.a` and `State.b`;
+    `TwoFieldVictimTest#check` reads both but fails only because of `State.b`.
+- **Tests first:** `Ft005ControlsTest` (3 tests) in `evidence/tests/test_extract.py`. Run in the
+  team's cloud environment with Claude, before the project was compiled:
+  `FLAKETRACE_REQUIRE_JVM=1 python3 -m unittest -v evidence.tests.test_extract.Ft005ControlsTest`
+  → `FAILED (errors=1)`, "FT005 controls not compiled" (the guard CI relies on).
+- **After** `mvn -B -q -f evidence/tests/resources/ft005-controls/pom.xml test-compile` (exit 0),
+  same command → `Ran 3 tests … OK`. Real extractor output (javap 21.0.12.1, `depth_used` 2):
+  - Control 1: one edge, `controls.State#restored`, writes `pollute@6` and `pollute@10`, read
+    `check@1`; observations include `REFLECTION` on the polluter side. No edge on `State#hidden`.
+  - Control 2: two edges, `controls.State#a` (write `pollute@1`, read `check@0`) then
+    `controls.State#b` (write `pollute@5`, read `check@15`); `shared_resource` is `State#a`.
+  All as `EXPECTED.md` predicted.
+- **Full diagnosis**, same environment, main `0d66ff3` + this branch's commits:
+  `python3 -m runner diagnose --project evidence/tests/resources/ft005-controls --victim controls.RestoringVictimTest#check --records <scratch>`
+  → exit 0, `VERIFIED (sequence)`, polluter `controls.RestoringPolluterTest#pollute`, resource
+  `State restored` with the line "static overlap: a possible mechanism, not confirmed as the cause",
+  reproduced 20/20 (lower bound 0.839), alone (same failure) 0/20. The report's `limitations` carry
+  "Written values are not modelled…".
+  Same for `controls.TwoFieldVictimTest#check` → exit 0, `VERIFIED (sequence)`, polluter
+  `controls.TwoFieldPolluterTest#pollute`, resource `State a` with the same static-overlap line,
+  20/20, alone 0/20; `limitations` names "Another shared resource is not shown in this report:
+  controls.State#b".
+- **Whole evidence suite:** `FLAKETRACE_REQUIRE_JVM=1 python3 -m unittest evidence.tests.test_extract`
+  (fixture, self-test and controls compiled) → `Ran 45 tests … OK`.
+- **What this shows:** in both controls the reruns find the right polluter, but the static edge
+  points at a field that is not why the victim fails; neither report calls it the cause.
+- **Limitations:**
+  - The report lists the extra edge only in `limitations` until M3's W19 copies `resource_edges`.
+  - CI compiles only the fixture and the self-test project, so `Ft005ControlsTest` will fail in CI
+    until M2 adds `mvn -B -q -f evidence/tests/resources/ft005-controls/pom.xml test-compile` to
+    the evidence job's compile step in `.github/workflows/ci.yml` (M2's file).
+  - Both controls are hand-made; they show the wording is honest, not how often this happens in
+    real projects. Run in the cloud, not yet on my own machine; M2 verifies W21.

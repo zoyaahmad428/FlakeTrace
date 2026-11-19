@@ -30,6 +30,7 @@ written fresh ([ADR-002](../docs/03-Design/decisions/ADR-002-evidence-extractor-
 | `extract.py` | The extractor: runs `javap -v -p -c`, parses classes, finds the test's lifecycle roots, scans them |
 | `tests/test_extract.py` | Unit tests (standard-library `unittest`) |
 | `tests/resources/m1-selftest/` | Member 1's own test input classes (a tiny Maven project), **not** a project fixture |
+| `tests/resources/ft005-controls/` | Two FT005 controls (W21): write-then-restore, and unrelated overlap. Expected results in its `EXPECTED.md`, written before the first run |
 | `tools/measure_depth.py` | Measures accesses, unsupported observations, javap calls and time per depth |
 | `javap-dumps/` | Saved `javap` output used as evidence in docs |
 
@@ -54,6 +55,7 @@ python3 -m evidence.extract --classes fixtures/od-fixture/target/classes \
 
 # tests: compile the self-test classes and the fixture once, then run
 mvn -B -q -f evidence/tests/resources/m1-selftest/pom.xml test-compile
+mvn -B -q -f evidence/tests/resources/ft005-controls/pom.xml test-compile
 mvn -B -q -f fixtures/od-fixture/pom.xml test-compile
 python3 -m unittest evidence.tests.test_extract -v
 # in CI: fail instead of skipping when classes or javap are missing
