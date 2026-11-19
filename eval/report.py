@@ -42,7 +42,9 @@ from typing import Optional
 
 from eval.outcome import (
     CANDIDATE_BELOW_REPLAY_THRESHOLD,
+    DELETION_INCOMPLETE,
     DELETION_NOT_YET_CHECKED,
+    DELETION_VERIFIED,
     OUTCOME_CANDIDATE,
     OUTCOME_UNRESOLVED,
     OUTCOME_VERIFIED,
@@ -139,6 +141,16 @@ def assemble_report(
         "stack_trace": ref.stack_trace,
     }
 
+    # Claim S3 before W20's deletion runs exist (decided 2026-11-19 by M2 with M3's permission,
+    # applying ADR-011 sections 2 and 4): with ONE polluter, "the sequence without it" is the victim
+    # alone, so the alone check is the deletion check -- verified when the victim passed alone in
+    # every run. With two or more, no deletion run has been made: INCOMPLETE, so CANDIDATE.
+    deletion_status = None
+    if diagnosis.status == POLLUTER_FOUND and diagnosis.polluters:
+        alone_all_passed = diagnosis.alone_tally.passed == diagnosis.alone_tally.n
+        deletion_status = (DELETION_VERIFIED if len(diagnosis.polluters) == 1 and alone_all_passed
+                           else DELETION_INCOMPLETE)
+
     decision_input = DecisionInput(
         source_integrity_passed=diagnosis.source_integrity.passed,
         reference_established=(ref is not None),
@@ -148,7 +160,7 @@ def assemble_report(
         resource_edge_exists=edge_found,
         confidence=confidence,
         search_inconsistent=(diagnosis.status == INCONSISTENT),
-        deletion_status=None,  # ADR-011/W20 not yet landed -- see module docstring
+        deletion_status=deletion_status,
     )
     decision = decide(decision_input)
     reason = decision.unresolved_reason
@@ -179,19 +191,17 @@ def assemble_report(
             limitations += fields["limitations"]
         if not any_edge_found:
             limitations.append("No polluter-write/victim-read resource edge was found by static analysis.")
-        if len(diagnosis.polluters) > 1:
-            limitations.append(
-                "resource_edges lists only the primary edge: Member 1's extractor reports one "
-                "edge at a time, so a multi-polluter sequence's other edge(s) are named in this "
-                "list as free text only, not as structured resourceEdge entries (ADR-010 "
-                "section 6; Member 1's W21 is what lists every edge structurally)."
-            )
         if decision.outcome in (OUTCOME_CANDIDATE, OUTCOME_VERIFIED):
-            limitations.append(
-                "Reduced by single-trial delta debugging; not deletion-verified (ADR-011, W20 "
-                "not yet landed). assurance.sequence.deletion reports this honestly as "
-                "NOT_YET_CHECKED rather than DELETION_VERIFIED."
-            )
+            if deletion_status == DELETION_VERIFIED:
+                limitations.append(
+                    f"Deletion check from the alone runs (ADR-011 section 2): without its one polluter the "
+                    f"victim passed {diagnosis.alone_tally.passed} of {diagnosis.alone_tally.n} runs alone."
+                )
+            else:
+                limitations.append(
+                    "Reduced by single-trial delta debugging; not deletion-verified (ADR-011; the "
+                    "repeated deletion runs for two or more polluters are W20, not yet landed)."
+                )
 
     order_desc = "given" if getattr(diagnosis, "order_given", True) else "discovered"
     shuffled_orders = getattr(diagnosis, "shuffled_orders", 0)
@@ -257,6 +267,12 @@ def assemble_report(
             "polluter_write_location": fields["polluter_write_location"],
             "victim_read_location": fields["victim_read_location"],
         }
+    # W21 (Member 1, PR #105): report_fields lists every edge with its depth; show all of them
+    # (ADR-010 section 6). A caller without that list falls back to the primary edge.
+    if no_blame or not fields:
+        edges = []
+    else:
+        edges = fields.get("resource_edges", [edge] if edge else [])
 
     report = {
         "schema_version": SCHEMA_VERSION,
@@ -278,7 +294,7 @@ def assemble_report(
         "shared_resource": edge["shared_resource"] if edge else None,
         "polluter_write_location": edge["polluter_write_location"] if edge else None,
         "victim_read_location": edge["victim_read_location"] if edge else None,
-        "resource_edges": [edge] if edge else [],
+        "resource_edges": edges,
         "failure_signature": failure_signature,
         "instrumentation_level": "static-only",
         "execution_record_reference": diagnosis.execution_record,
@@ -299,7 +315,7 @@ def assemble_report(
                     else "ESTABLISHED"
                 ),
                 "passes_alone": "ESTABLISHED",
-                "deletion": DELETION_NOT_YET_CHECKED,
+                "deletion": deletion_status or DELETION_NOT_YET_CHECKED,
             },
             "resource": {
                 "level": "STATIC_OVERLAP" if edge_found else "NONE",

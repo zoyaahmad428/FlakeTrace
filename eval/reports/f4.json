@@ -129,7 +129,8 @@
         "class": "odfixture.AlwaysEarlyVictimTest",
         "method": "expectsLateFlagUnset",
         "bytecode_offset": 0
-      }
+      },
+      "depth": 1
     }
   ],
   "failure_signature": {
@@ -138,7 +139,7 @@
     "stack_trace": "org.junit.Assert.fail:87\norg.junit.Assert.assertTrue:42\norg.junit.Assert.assertFalse:65\norg.junit.Assert.assertFalse:75\nodfixture.AlwaysEarlyVictimTest.expectsLateFlagUnset:15"
   },
   "instrumentation_level": "static-only",
-  "execution_record_reference": "C:\\Users\\zarpa\\OneDrive\\Documents\\GitHub\\FlakeTracee\\eval\\reports\\flaketrace-records\\20261118T190951Z-odfixture.AlwaysEarlyVictimTest#expectsLateFlagUnset.jsonl",
+  "execution_record_reference": "C:\\Users\\raffa\\Desktop\\Semester 7\\FYP-I\\FlakeTrace\\FlakeTrace\\eval\\reports\\flaketrace-records\\20261119T165241Z-odfixture.AlwaysEarlyVictimTest#expectsLateFlagUnset.jsonl",
   "source_integrity": {
     "passed": true,
     "details": "26 files hashed (SHA-256) before and after; all identical"
@@ -155,13 +156,13 @@
     "Written values are not modelled: a polluter that writes and then restores the original value still produces a WRITE.",
     "Execution timing is not modelled (e.g. a victim <clinit> read that happens before the polluter runs).",
     "Missing evidence is not proof of independence.",
-    "Reduced by single-trial delta debugging; not deletion-verified (ADR-011, W20 not yet landed). assurance.sequence.deletion reports this honestly as NOT_YET_CHECKED rather than DELETION_VERIFIED."
+    "Deletion check from the alone runs (ADR-011 section 2): without its one polluter the victim passed 20 of 20 runs alone."
   ],
   "assurance": {
     "sequence": {
       "reproduces": "ESTABLISHED",
       "passes_alone": "ESTABLISHED",
-      "deletion": "NOT_YET_CHECKED"
+      "deletion": "DELETION_VERIFIED"
     },
     "resource": {
       "level": "STATIC_OVERLAP",

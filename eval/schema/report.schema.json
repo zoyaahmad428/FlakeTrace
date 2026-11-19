@@ -69,11 +69,12 @@
     },
     "resourceEdge": {
       "type": "object",
-      "description": "ADR-010 section 6: one polluter-write/victim-read edge. resource_edges lists every edge Member 1 found (Iteration 2 limitation: today's extractor reports at most one edge per polluter, so this is at most one entry per named polluter until W21 lands all edges -- see limitations).",
+      "description": "ADR-010 section 6: one polluter-write/victim-read edge, a static overlap (not a confirmed cause). resource_edges lists every edge Member 1's report_fields found (W21, PR #105), each with the depth at which it was found.",
       "properties": {
         "shared_resource": { "$ref": "#/$defs/sharedResource" },
         "polluter_write_location": { "$ref": "#/$defs/codeLocation" },
-        "victim_read_location": { "$ref": "#/$defs/codeLocation" }
+        "victim_read_location": { "$ref": "#/$defs/codeLocation" },
+        "depth": { "type": "integer", "minimum": 1, "description": "Call depth of the deeper of the two first locations (ADR-006); optional for reports built before W21." }
       },
       "required": ["shared_resource", "polluter_write_location", "victim_read_location"],
       "additionalProperties": false
