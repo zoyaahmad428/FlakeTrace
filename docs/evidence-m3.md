@@ -1628,3 +1628,94 @@ was flagged "awaiting verification by M3"; M1's and M3's parts were flagged "not
   `evidence/` wording fix is real but still on an open branch — re-run the same search once it
   merges, since a broken merge of M1's and M3's overlapping doc edits (`members.md`,
   `iteration-2-plan.md`, `genai-register.md`) is possible and worth a second look then.
+
+## 2026-11-19 — W26a steps 1-5: the first real case (fastjson FJ-03), real runs, real finding
+
+**Requirement:** [[05-Testing/real-case-protocol]] steps 1-5 (M3 lead) — fetch and build the
+chosen real case (fastjson `FJ-03`, `MaxBufSizeTest#test_max_buf`) at its pinned commit, confirm
+the premise with the runner directly, fix a starting order, check it, and freeze the protocol.
+"Needs nothing new" per the critical path; started in Sprint A since fastjson buildability was
+flagged as the largest unknown in the whole Iteration-2 plan.
+
+- Setup: fastjson `https://github.com/alibaba/fastjson` fetched into a scratch folder **outside
+  this repository** (never committed, per the protocol's "Source" row and the project's own
+  ethics/legal section), checked out at the pinned commit
+  `e05e9c5e4be580691cc55a59f3256595393203a1`. No real JDK 8 exists on this machine (only
+  JDK 17/24) — downloaded Eclipse Temurin 8 (`1.8.0_512`) as a portable zip from Adoptium's own
+  API (`api.adoptium.net`, ~106 MB), extracted to the same scratch folder, nothing installed
+  system-wide. **Member Zarpash's explicit permission** for the download, given the choice
+  between this and starting Docker Desktop (M1's earlier fastjson work used a `ft-jdk8`
+  container, not available to start here without the member's involvement).
+- Command: `mvn -B -DskipTests test-compile` with that JDK 8 as `JAVA_HOME`. Result:
+  **BUILD SUCCESS**, 3 min 41 s, 172 main + 2,496 test sources compiled — matches
+  [[evidence-m1]]'s own count from Phase 5 exactly. `git status` in the fastjson checkout
+  showed no source changes afterward (CLAUDE.md §4: FlakeTrace must never modify the analysed
+  project — confirmed, not just asserted).
+- Command: a one-off script (`runner.order_runner.OrderRunner.run_ordered`, the real runner,
+  not through the full `diagnose()` orchestration — matches the protocol's "with the runner
+  directly"), `JAVA_TOOL_OPTIONS=-Duser.timezone=UTC -Duser.language=en -Duser.country=US`
+  pinned per the protocol's Environment table. Victim alone ×10: **10/10 PASS**. `[known
+  polluter `SerializeWriterTest_14#test_writer_1`, victim]` ×10: **10/10 FAIL**,
+  `junit.framework.AssertionFailedError` at `MaxBufSizeTest.test_max_buf:20` — exactly the
+  signature the protocol names. Clean, deterministic, real bug; recorded at
+  `eval/real-cases/fj03/premise.json`.
+- File/function found while building step 3's starting order: `runner/discovery.py`'s
+  `is_surefire_test_class()` hardcodes Surefire's **default** include pattern
+  (`Test*`/`*Test`/`*Tests`/`*TestCase`). fastjson's `pom.xml` overrides Surefire entirely
+  (`<includes><include>**/bvt/**/*.java</include></includes>` — every class under any `bvt/`
+  folder, no naming convention). Our discovery silently misses real test classes, **including
+  the known polluter** (`SerializeWriterTest_14`/`_15` match neither `*Test` nor `*Tests` nor
+  `*TestCase`). Confirmed this is not just a scratch-script problem: the real command
+  `py -m runner diagnose --order eval/real-cases/fj03/order.txt --project <fastjson> --victim
+  com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` refuses the case outright —
+  `"1 test(s) in the given order are not among the project's tests"`. Workaround used only to
+  keep this session's own steps moving (enumerate every class file in the package by path, let
+  `OrderRunner.list_methods` — real JUnit/harness reflection — decide which have test methods,
+  instead of pre-filtering by name): found exactly 525 real test methods, matching the POC's own
+  524-candidate-plus-1-victim count exactly, confirming the workaround's correctness. **Not
+  fixed here** — flagged as a real, registered risk
+  ([[00-Meta/risk-register]], "Discovery misses real test classes with custom Surefire
+  includes") for M2, since `runner/discovery.py` is M2's file and the real fix (reading the
+  project's actual Surefire configuration) is a design decision, not a mechanical rename.
+  **Member Zarpash's explicit decision**, given three options, was to flag this for M2 rather
+  than attempt the fix or switch to a different case.
+- Command: ran the corrected (workaround) starting order (261 entries, package-scoped,
+  discovered order cut after the victim) for real, once. Result: **PASS** (does not reproduce)
+  — expected, since the natural alphabetical order places `MaxBufSizeTest` (M) before every
+  `SerializeWriterTest_*` (S) candidate, the same lesson as our own fixture's F4.
+- Command: the real ADR-008 shuffled-order search (`runner.orders.distinct_shuffles` +
+  `search_orders`, the exact functions `diagnose()` itself uses), 31 distinct shuffles, same
+  workaround-corrected 525-method candidate pool. Result: **none of the 31 reproduced the
+  failure** (`any_failures: 0` across all 31) — genuinely surprising at first, since several
+  shuffles (seeds 0, 1, 2, 4, 8, 9, 10, 12, 13, 14, 15, 18, 20, 23, 25 of the 31) place all 6
+  known-relevant candidate methods before the victim. Investigated seed 0 (513 tests) in detail:
+  several *other* `SerializeWriterTest_N` variant classes (`_19`, `_7`, `_12`,
+  `_BrowserSecure_4_script`, ...) also run between the last relevant candidate and the victim.
+  These almost certainly touch the same shared `SerializeWriter` buffer-size state and undo the
+  pollution before the victim runs — a real, order-dependence-cancelling interaction a clean
+  2-test fixture can never show. **This is a genuine, reportable result, not a dead end**: random
+  full-suite shuffling cannot reliably find this real bug within a modest budget, even though
+  the bug is 100% real and deterministic with the exact pair (confirmed above). Direct,
+  real-world evidence for why a targeted one-by-one search (which is what already works, and
+  what W25's evidence-ranked search builds on) matters more than blind random search on a dense
+  real project. **Member Zarpash's explicit decision**, given two options (try a much bigger
+  shuffle budget, or accept this and move on), was to accept it and freeze the known pair as the
+  starting order.
+- File/function: `eval/real-cases/README.md`, `eval/real-cases/fj03/order.txt` (the known pair,
+  `SerializeWriterTest_14#test_writer_1` then the victim — SHA-256
+  `8c9b208ac5c970138a37679fc3f91156e467c7701d6b91e2e49dc4b66234be1e`), `eval/real-cases/fj03/premise.json`
+  (the real step-2 tallies above). `docs/05-Testing/real-case-protocol.md` — status changed from
+  `PROPOSED` to `FROZEN FOR STEPS 1-5`, with a Findings section recording everything above
+  honestly, including that steps 6-9 are blocked. `docs/00-Meta/risk-register.md` — new entry
+  for the discovery.py gap, materialising a scenario its own pre-registered "real case will not
+  build or reproduce" risk (added 2026-11-13) had already anticipated in spirit, though the real
+  mechanism (a naming-filter gap, not a build failure) is more specific than that entry's
+  original wording.
+- Limitation: steps 6-9 (the whole pipeline, policy comparison) cannot run until M2 fixes
+  `runner/discovery.py` to read the project's real Surefire configuration. Steps 6-8 also need
+  the budget ledger (ADR-014/W24, not yet built) regardless. The offline comparison
+  (`scan_FJ-03.csv` already has every pair's outcome, no JVM needed) remains available and is
+  not done in this entry — a cheaper next step once picked back up.
+- Limitation: FJ-04 and the ormlite-core case (the protocol's fallback cases) were not tried.
+  Given FJ-04 is in the same fastjson package, it would very likely hit the identical
+  discovery.py gap; not attempted, since the finding (and its fix owner) is already established.
