@@ -2,8 +2,10 @@
 
 **Owner:** Member 1 · **State:** Phases 2–6 done and ADR-006 implemented (2026-10-10): lifecycle attribution, call depth 1–5 (default 2), single-test mode, polluter→victim edges with pair-mode auto-deepening, validated against the fixture's ground truth and real fastjson.
 
-Finds the shared resource a polluter writes and a victim reads, from **compiled bytecode
-only** — the target project's source is never modified and no application logs are needed.
+Reports the resources a polluter may write and a victim may read, from **compiled bytecode
+only**: a **static overlap — a possible mechanism, not confirmed as the cause** (claims ledger G3).
+It reads `.class` files with `javap` and writes nothing into the analysed project; it needs no
+application logs.
 Contract: [docs/contracts/interfaces.md](../docs/contracts/interfaces.md) (Interface 2) and
 [docs/contracts/resource-evidence.md](../docs/contracts/resource-evidence.md) (output format, invocation).
 
@@ -65,7 +67,9 @@ python3 -m evidence.tools.measure_depth --classes fixtures/od-fixture/target/cla
 An empty edge list comes with `no_supported_resource_evidence: true`. That means no *supported*
 static evidence was found, not that the tests are independent. `extract.report_fields(pair)` gives
 the three fields of Member 3's report (`shared_resource`, `polluter_write_location`,
-`victim_read_location`) as the contract's projection defines. In-process callers use
+`victim_read_location`) as the contract's projection defines, plus `resource_edges`: every edge
+in the contract's order, each with its first write and read location and its depth (W21, ADR-010).
+Every edge is a static overlap, not a confirmed cause. In-process callers use
 `extract.analyse_pair(project, polluter_id, victim_id)` to get the pair with deepening.
 
 Depth follows calls into the project's own classes only (never the JDK or other jars),

@@ -501,5 +501,57 @@ class CommandLineTest(unittest.TestCase):
         self.assertEqual(flat["edges"], [])
 
 
+
+def fake_access(resource_id, resource, access, cls, method, offset, depth):
+    """One access in analyse_test's shape, for tests of report_fields that need no JVM."""
+    return {"resource_id": resource_id, "resource": resource, "access": access,
+            "class": cls, "method": method, "bytecode_offset": offset, "depth": depth}
+
+
+class ResourceEdgesTest(unittest.TestCase):
+    """W21 / ADR-010: report_fields lists every edge, not only the first (FT005).
+
+    Pure function test: the pair is built by hand, so no javap or compiled classes are needed.
+    """
+
+    A = {"kind": "static-field", "class": "p.State", "field": "a"}
+    B = {"kind": "static-field", "class": "p.State", "field": "b"}
+
+    def two_edge_pair(self):
+        def edge(resource_id, resource, read_depth):
+            return {"resource_id": resource_id, "resource": resource,
+                    "polluter_write_locations": [
+                        fake_access(resource_id, resource, "WRITE", "p.PolluterTest", "pollute", 3, 1),
+                        fake_access(resource_id, resource, "WRITE", "p.PolluterTest", "pollute", 9, 1)],
+                    "victim_read_locations": [
+                        fake_access(resource_id, resource, "READ", "p.VictimTest", "check", 4, read_depth)]}
+        # Already in the contract's order: combined depth, then resource_id.
+        return {"edges": [edge("p.State#a", self.A, 1), edge("p.State#b", self.B, 3)],
+                "limitations": list(extract.FIXED_LIMITATIONS)}
+
+    def test_every_edge_is_listed_in_contract_order_with_its_depth(self):
+        fields = extract.report_fields(self.two_edge_pair())
+        self.assertEqual(fields["resource_edges"], [
+            {"shared_resource": self.A,
+             "polluter_write_location": {"class": "p.PolluterTest", "method": "pollute", "bytecode_offset": 3},
+             "victim_read_location": {"class": "p.VictimTest", "method": "check", "bytecode_offset": 4},
+             "depth": 1},
+            {"shared_resource": self.B,
+             "polluter_write_location": {"class": "p.PolluterTest", "method": "pollute", "bytecode_offset": 3},
+             "victim_read_location": {"class": "p.VictimTest", "method": "check", "bytecode_offset": 4},
+             "depth": 3}])
+
+    def test_shared_resource_is_still_the_first_edge(self):
+        fields = extract.report_fields(self.two_edge_pair())
+        self.assertEqual(fields["shared_resource"], fields["resource_edges"][0]["shared_resource"])
+        self.assertEqual(fields["polluter_write_location"],
+                         fields["resource_edges"][0]["polluter_write_location"])
+
+    def test_no_edge_gives_an_empty_list(self):
+        fields = extract.report_fields({"edges": [], "limitations": list(extract.FIXED_LIMITATIONS)})
+        self.assertEqual(fields["resource_edges"], [])
+        self.assertIsNone(fields["shared_resource"])
+
+
 if __name__ == "__main__":
     unittest.main()
