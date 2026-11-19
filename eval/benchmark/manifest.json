@@ -96,6 +96,18 @@
       "ground_truth_ref": "fixtures/od-fixture/ground_truth.json#N3"
     },
     {
+      "case_id": "N4",
+      "source": "fixture",
+      "project": "od-fixture",
+      "project_path": "fixtures/od-fixture",
+      "sha": null,
+      "victim": { "class": "odfixture.DualFailureVictimTest", "method": "expectsStateTwo" },
+      "polluters": [],
+      "ground_truth_outcome": "UNRESOLVED",
+      "ground_truth_reason": "VICTIM_FAILS_ALONE_DIFFERENTLY",
+      "ground_truth_ref": "fixtures/od-fixture/ground_truth.json#N4"
+    },
+    {
       "case_id": "POC-DEMO-1",
       "source": "poc-recorded",
       "project": "demo-project",

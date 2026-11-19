@@ -1,4 +1,5 @@
 {
+  "schema_version": 2,
   "victim": {
     "class": "odfixture.ConfigVictimTest",
     "method": "expectsDefaultMode"
@@ -34,16 +35,21 @@
     }
   ],
   "reproduction": {
-    "successes": 20,
     "n": 20,
+    "passed": 0,
+    "matched": 20,
+    "other": 0,
+    "infra": 0,
     "confidence": 0.95,
     "lower": 0.83887484172924,
     "upper": 1.0
   },
-  "sequence_any_signature_failures": 20,
   "victim_alone": {
-    "successes": 0,
     "n": 20,
+    "passed": 20,
+    "matched": 0,
+    "other": 0,
+    "infra": 0,
     "confidence": 0.95,
     "lower": 0.0,
     "upper": 0.16112515827076002
@@ -63,29 +69,62 @@
     "method": "expectsDefaultMode",
     "bytecode_offset": 1
   },
+  "resource_edges": [
+    {
+      "shared_resource": {
+        "kind": "static-field",
+        "class": "odfixture.Config",
+        "field": "mode"
+      },
+      "polluter_write_location": {
+        "class": "odfixture.ConfigPolluterTest",
+        "method": "pollute",
+        "bytecode_offset": 1
+      },
+      "victim_read_location": {
+        "class": "odfixture.ConfigVictimTest",
+        "method": "expectsDefaultMode",
+        "bytecode_offset": 1
+      },
+      "depth": 1
+    }
+  ],
   "failure_signature": {
     "exception_type": "java.lang.AssertionError",
     "message": "expected:<<N>> but was:<<N>>",
     "stack_trace": "org.junit.Assert.fail:89\norg.junit.Assert.failNotEquals:835\norg.junit.Assert.assertEquals:647\norg.junit.Assert.assertEquals:633\nodfixture.ConfigVictimTest.expectsDefaultMode:10"
   },
   "instrumentation_level": "static-only",
-  "execution_record_reference": "C:\\Users\\zarpa\\OneDrive\\Documents\\GitHub\\FlakeTracee\\eval\\reports\\flaketrace-records\\20261011T085440Z-odfixture.ConfigVictimTest#expectsDefaultMode.jsonl",
+  "execution_record_reference": "C:\\Users\\raffa\\Desktop\\Semester 7\\FYP-I\\FlakeTrace\\FlakeTrace\\eval\\reports\\flaketrace-records\\20261119T165107Z-odfixture.ConfigVictimTest#expectsDefaultMode.jsonl",
   "source_integrity": {
     "passed": true,
-    "details": "23 files hashed (SHA-256) before and after; all identical"
+    "details": "26 files hashed (SHA-256) before and after; all identical"
   },
   "outcome": "VERIFIED",
   "unresolved_reason": null,
+  "candidate_reasons": [],
   "limitations": [
-    "instrumentation_level is static-only (Iteration 1); runtime instrumentation is Iteration 2.",
+    "instrumentation_level is static-only; runtime instrumentation is not built.",
     "Static analysis only; no runtime evidence (Iteration 2).",
     "Calls into JDK classes and third-party jars are not followed.",
     "Virtual dispatch to subclasses and reflection are not resolved (see VIRTUAL_DISPATCH, REFLECTION).",
     "Only static fields and constant-key system properties are modelled. Files, environment variables, network, databases, singletons reached through instance fields, etc. are not.",
     "Written values are not modelled: a polluter that writes and then restores the original value still produces a WRITE.",
     "Execution timing is not modelled (e.g. a victim <clinit> read that happens before the polluter runs).",
-    "Missing evidence is not proof of independence."
+    "Missing evidence is not proof of independence.",
+    "Deletion check from the alone runs (ADR-011 section 2): without its one polluter the victim passed 20 of 20 runs alone."
   ],
+  "assurance": {
+    "sequence": {
+      "reproduces": "ESTABLISHED",
+      "passes_alone": "ESTABLISHED",
+      "deletion": "DELETION_VERIFIED"
+    },
+    "resource": {
+      "level": "STATIC_OVERLAP",
+      "mechanism": "NOT_ASSESSED"
+    }
+  },
   "order_exploration": {
     "order_given": false,
     "shuffled_orders_tried": 0,

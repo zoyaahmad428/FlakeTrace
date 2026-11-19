@@ -1021,3 +1021,29 @@ found by checking `%TEMP%`, fixed. **What I changed:** *to fill in after reading
 
 Ownership checkpoint: why the copy lives in the CLI and not in `diagnose()`; what `origin` is for;
 what the two-part integrity line means; what the copy does not protect against.
+
+## 2026-11-19 — PR #106 integration (M3's W19) and the CI line for PR #107
+
+**Tool:** Claude Code (Claude Opus 5.5) · **Level:** L3 · **Branch:** `m3/w19-verdict-contract-v2`
+(with M3's permission)
+
+**Asked:** check what M1 and M3 pushed, then make both open PRs mergeable: merge `main` into #106,
+resolve the two doc tables, use M1's `resource_edges`, answer `VERIFIED` without deletion checks,
+and add the CI line #107 needs. **Decided by me:** the deletion answer Claude proposed (ADR-011 §2:
+one polluter is deletion-verified by the alone check; two or more are `CANDIDATE` until W20); to do
+the UI and Mid-report fixes on the same branch.
+
+**Kept:** the merge resolution, `ci.yml` guarded compile line, `eval/report.py` edges and deletion
+status, the schema's optional `depth`, `combine_fields` edges, `ui/web` schema v2 mapping and
+Certificate text, `json_to_tex.py --reports`, `report.yml` reading the tag, regenerated reports,
+updated tests.
+
+**Errors found and corrected:** a JSON rewrite of the schema reformatted the whole file (498-line
+diff) — restored and redone as a 5-line text edit; an unconditional CI line would have broken #106's
+own `evidence` job — guarded; two test expectations were wrong (case of "Deletion"; the extra
+`DELETION_EVIDENCE_INCOMPLETE` reason is the intended change).
+
+**What I changed:** *to fill in after reading the diff.*
+
+Ownership checkpoint: why one polluter's alone check counts as its deletion check; why F3 is
+`CANDIDATE` now and becomes `VERIFIED` with W20; why the Mid report reads the tag.

@@ -6,18 +6,19 @@ import { looksLikeReport, toView, type Report } from "./report";
 const REPORTS = fileURLToPath(new URL("../../../../eval/reports/", import.meta.url));
 const read = (name: string) => JSON.parse(readFileSync(`${REPORTS}${name}.json`, "utf-8")) as Report;
 
-// Spec section 5: expected values copied from eval/reports/*.json.
+// Spec section 5: expected values copied from eval/reports/*.json (schema v2, regenerated 2026-11-19).
 const EXPECTED: Record<string, { outcome: string; polluters: number; order: number; reduced: number; reproduction: string; alone: string }> = {
   f1: { outcome: "VERIFIED (sequence)", polluters: 1, order: 3, reduced: 2, reproduction: "20/20", alone: "0/20" },
-  f2: { outcome: "VERIFIED (sequence)", polluters: 1, order: 6, reduced: 2, reproduction: "20/20", alone: "0/20" },
-  f3: { outcome: "VERIFIED (sequence)", polluters: 2, order: 15, reduced: 3, reproduction: "20/20", alone: "0/20" },
-  f4: { outcome: "VERIFIED (sequence)", polluters: 1, order: 3, reduced: 2, reproduction: "20/20", alone: "0/20" },
-  n1: { outcome: "UNRESOLVED(VICTIM_FAILS_ALONE)", polluters: 0, order: 9, reduced: 1, reproduction: "20/20", alone: "20/20" },
-  n2: { outcome: "UNRESOLVED(VICTIM_FAILS_ALONE)", polluters: 0, order: 10, reduced: 1, reproduction: "9/20", alone: "9/20" },
-  n3: { outcome: "UNRESOLVED(NOT_REPRODUCED)", polluters: 0, order: 4, reduced: 4, reproduction: "0/20", alone: "0/20" },
+  f2: { outcome: "VERIFIED (sequence)", polluters: 1, order: 8, reduced: 2, reproduction: "20/20", alone: "0/20" },
+  f3: { outcome: "CANDIDATE", polluters: 2, order: 17, reduced: 3, reproduction: "20/20", alone: "0/20" },
+  f4: { outcome: "VERIFIED (sequence)", polluters: 1, order: 14, reduced: 2, reproduction: "20/20", alone: "0/20" },
+  n1: { outcome: "UNRESOLVED(VICTIM_FAILS_ALONE)", polluters: 0, order: 11, reduced: 1, reproduction: "20/20", alone: "20/20" },
+  n2: { outcome: "UNRESOLVED(VICTIM_FAILS_ALONE)", polluters: 0, order: 12, reduced: 1, reproduction: "15/20", alone: "15/20" },
+  n3: { outcome: "UNRESOLVED(NOT_REPRODUCED)", polluters: 0, order: 6, reduced: 6, reproduction: "0/20", alone: "0/20" },
+  n4: { outcome: "UNRESOLVED(VICTIM_FAILS_ALONE_DIFFERENTLY)", polluters: 0, order: 5, reduced: 1, reproduction: "20/20", alone: "0/20" },
 };
 
-describe("toView on the seven committed reports", () => {
+describe("toView on the eight committed reports", () => {
   for (const [name, e] of Object.entries(EXPECTED)) {
     it(name, () => {
       const v = toView(read(name));
@@ -62,8 +63,18 @@ describe("details", () => {
   });
   it("describes how orders were explored", () => {
     expect(toView(read("f1")).exploration).toBe("The original order reproduced the failure; no shuffled orders were needed.");
-    expect(toView(read("f4")).exploration).toBe("Reproduced with a shuffled order (seed 1) after 2 shuffled orders.");
+    expect(toView(read("f4")).exploration).toBe("Reproduced with a shuffled order (seed 6) after 7 shuffled orders.");
     expect(toView(read("n3")).exploration).toBe("31 shuffled orders tried (seeds from 0); none reproduced the failure.");
+  });
+  it("shows every alone outcome, so failing alone differently is visible (FT003, N4)", () => {
+    expect(toView(read("n4")).aloneDetail).toBe("passed 0 · failed differently 20 · crashed or not run 0");
+    expect(toView(read("n4")).reason).toMatch(/fails when run alone with a different failure/);
+  });
+  it("says why a result is only a candidate (F3)", () => {
+    expect(toView(read("f3")).candidateReasons).toEqual([
+      "the deletion checks for two or more kept tests have not run yet (W20), so not every kept test is shown to be needed",
+    ]);
+    expect(toView(read("f1")).candidateReasons).toEqual([]);
   });
   it("gives the Wilson interval", () => {
     expect(toView(read("f1")).reproductionBounds).toBe("95% Wilson interval [0.839, 1.000]");

@@ -1,4 +1,5 @@
 {
+  "schema_version": 2,
   "victim": {
     "class": "odfixture.ToggleVictimTest",
     "method": "expectsNotBothFlagsSet"
@@ -25,6 +26,14 @@
     {
       "class": "odfixture.ConfigVictimTest",
       "method": "expectsDefaultMode"
+    },
+    {
+      "class": "odfixture.DualFailurePolluterTest",
+      "method": "setState"
+    },
+    {
+      "class": "odfixture.DualFailureVictimTest",
+      "method": "expectsStateTwo"
     },
     {
       "class": "odfixture.EnvDependentNegativeTest",
@@ -90,16 +99,21 @@
     }
   ],
   "reproduction": {
-    "successes": 20,
     "n": 20,
+    "passed": 0,
+    "matched": 20,
+    "other": 0,
+    "infra": 0,
     "confidence": 0.95,
     "lower": 0.83887484172924,
     "upper": 1.0
   },
-  "sequence_any_signature_failures": 20,
   "victim_alone": {
-    "successes": 0,
     "n": 20,
+    "passed": 20,
+    "matched": 0,
+    "other": 0,
+    "infra": 0,
     "confidence": 0.95,
     "lower": 0.0,
     "upper": 0.16112515827076002
@@ -119,21 +133,62 @@
     "method": "expectsNotBothFlagsSet",
     "bytecode_offset": 0
   },
+  "resource_edges": [
+    {
+      "shared_resource": {
+        "kind": "static-field",
+        "class": "odfixture.Toggles",
+        "field": "flagA"
+      },
+      "polluter_write_location": {
+        "class": "odfixture.ToggleAPolluterTest",
+        "method": "setFlagA",
+        "bytecode_offset": 1
+      },
+      "victim_read_location": {
+        "class": "odfixture.ToggleVictimTest",
+        "method": "expectsNotBothFlagsSet",
+        "bytecode_offset": 0
+      },
+      "depth": 1
+    },
+    {
+      "shared_resource": {
+        "kind": "static-field",
+        "class": "odfixture.Toggles",
+        "field": "flagB"
+      },
+      "polluter_write_location": {
+        "class": "odfixture.ToggleBPolluterTest",
+        "method": "setFlagB",
+        "bytecode_offset": 1
+      },
+      "victim_read_location": {
+        "class": "odfixture.ToggleVictimTest",
+        "method": "expectsNotBothFlagsSet",
+        "bytecode_offset": 6
+      },
+      "depth": 1
+    }
+  ],
   "failure_signature": {
     "exception_type": "java.lang.AssertionError",
     "message": "",
     "stack_trace": "org.junit.Assert.fail:87\norg.junit.Assert.assertTrue:42\norg.junit.Assert.assertFalse:65\norg.junit.Assert.assertFalse:75\nodfixture.ToggleVictimTest.expectsNotBothFlagsSet:14"
   },
   "instrumentation_level": "static-only",
-  "execution_record_reference": "C:\\Users\\zarpa\\OneDrive\\Documents\\GitHub\\FlakeTracee\\eval\\reports\\flaketrace-records\\20261011T085539Z-odfixture.ToggleVictimTest#expectsNotBothFlagsSet.jsonl",
+  "execution_record_reference": "C:\\Users\\raffa\\Desktop\\Semester 7\\FYP-I\\FlakeTrace\\FlakeTrace\\eval\\reports\\flaketrace-records\\20261119T165204Z-odfixture.ToggleVictimTest#expectsNotBothFlagsSet.jsonl",
   "source_integrity": {
     "passed": true,
-    "details": "23 files hashed (SHA-256) before and after; all identical"
+    "details": "26 files hashed (SHA-256) before and after; all identical"
   },
-  "outcome": "VERIFIED",
+  "outcome": "CANDIDATE",
   "unresolved_reason": null,
+  "candidate_reasons": [
+    "DELETION_EVIDENCE_INCOMPLETE"
+  ],
   "limitations": [
-    "instrumentation_level is static-only (Iteration 1); runtime instrumentation is Iteration 2.",
+    "instrumentation_level is static-only; runtime instrumentation is not built.",
     "Static analysis only; no runtime evidence (Iteration 2).",
     "Calls into JDK classes and third-party jars are not followed.",
     "Virtual dispatch to subclasses and reflection are not resolved (see VIRTUAL_DISPATCH, REFLECTION).",
@@ -141,8 +196,20 @@
     "Written values are not modelled: a polluter that writes and then restores the original value still produces a WRITE.",
     "Execution timing is not modelled (e.g. a victim <clinit> read that happens before the polluter runs).",
     "Missing evidence is not proof of independence.",
-    "Polluter odfixture.ToggleBPolluterTest#setFlagB: shared resource odfixture.Toggles#flagB is not shown in this report"
+    "Polluter odfixture.ToggleBPolluterTest#setFlagB: shared resource odfixture.Toggles#flagB is not shown in this report",
+    "Reduced by single-trial delta debugging; not deletion-verified (ADR-011; the repeated deletion runs for two or more polluters are W20, not yet landed)."
   ],
+  "assurance": {
+    "sequence": {
+      "reproduces": "ESTABLISHED",
+      "passes_alone": "ESTABLISHED",
+      "deletion": "INCOMPLETE"
+    },
+    "resource": {
+      "level": "STATIC_OVERLAP",
+      "mechanism": "NOT_ASSESSED"
+    }
+  },
   "order_exploration": {
     "order_given": false,
     "shuffled_orders_tried": 0,

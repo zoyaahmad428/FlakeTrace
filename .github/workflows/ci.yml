@@ -116,6 +116,10 @@ jobs:
         run: |
           mvn -B -q -f fixtures/od-fixture/pom.xml test-compile
           mvn -B -q -f evidence/tests/resources/m1-selftest/pom.xml test-compile
+          # M1's FT005 controls (W21, PR #107); compiled when present so the job works before and after #107 merges.
+          if [ -f evidence/tests/resources/ft005-controls/pom.xml ]; then
+            mvn -B -q -f evidence/tests/resources/ft005-controls/pom.xml test-compile
+          fi
       - name: Evidence tests
         run: python -m unittest -v evidence.tests.test_extract
 

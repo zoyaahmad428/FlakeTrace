@@ -45,6 +45,12 @@ one policy, not two.
 For `R = [p]`, "R without p" is the victim alone — the alone check has already measured it. The
 deletion check for a single polluter **is** the alone tally, reused and labelled as such.
 
+*Applied before W20 (2026-11-19, M2 with M3's permission, PR #106): one polluter whose victim
+passed alone in every run → `DELETION_VERIFIED` from the alone check; two or more polluters →
+`INCOMPLETE` until W20's deletion runs exist, so `CANDIDATE [DELETION_EVIDENCE_INCOMPLETE]` (§4).
+F1, F2, F4 stay `VERIFIED`; F3 is `CANDIDATE` until W20 (its ground truth `VERIFIED` is ADR-011 T3's
+target).*
+
 ### 3. The loop is bounded
 
 Dropping a `NOT_NEEDED` test restarts the checks on a set one smaller, so there are at most `k`

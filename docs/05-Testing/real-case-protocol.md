@@ -1,8 +1,67 @@
 # Real-case protocol — the first real project through the whole pipeline
 
-*v1 · 2026-11-13 · Status: `PROPOSED`. The choice of case and the comparator are Member 3's to
-confirm; the supervisor asked to see "a feasible case and protocol" at the next review (FT008).
-**Freeze this file before the first whole-pipeline run on the case.***
+*v1 · 2026-11-13 · Status: `FROZEN FOR STEPS 1-5` (2026-11-19, M3). Steps 1-5 complete for
+FJ-03 — see "Findings" below. **Steps 6-9 (the whole pipeline) are blocked** on a real tool gap
+found while doing steps 3-4: `runner/discovery.py` cannot discover or validate an `--order`
+naming the known polluter, so `py -m runner diagnose` refuses this case outright (not a
+ranking-quality issue — a hard block). Flagged for M2
+([[00-Meta/risk-register]]); this file stays frozen with its real findings recorded until that
+lands. The choice of case and the comparator are Member 3's to confirm; the supervisor asked to
+see "a feasible case and protocol" at the next review (FT008).*
+
+## Findings (2026-11-19, M3, real runs — native Windows, JDK 24 for the runner itself,
+real Temurin 8 (`1.8.0_512`, downloaded as a portable zip for this build only, not installed)
+for building and running fastjson, as the POC did)
+
+**Steps 1-2 confirmed exactly as this file predicted.** `mvn -B -DskipTests test-compile` on
+fastjson at the pinned commit: `BUILD SUCCESS` in 3:41, 172 main + 2,496 test sources, no source
+changes afterward (`git status` clean). Victim alone ×10: 10/10 PASS. `[known polluter,
+victim]` ×10: 10/10 FAIL, `junit.framework.AssertionFailedError` at
+`MaxBufSizeTest.test_max_buf:20` — exactly the signature this file names. Timezone/locale
+pinned explicitly via `JAVA_TOOL_OPTIONS=-Duser.timezone=UTC -Duser.language=en
+-Duser.country=US` (recorded here since this file's own Environment table requires it).
+
+**Step 3 found a real tool gap, not just a protocol detail.** "The package's discovered order"
+is supposed to come from `runner.discovery.discover_order()`, scoped to
+`com.alibaba.json.bvt.serializer`. That function's `is_surefire_test_class()` hardcodes
+Surefire's *default* include pattern. fastjson's `pom.xml` overrides Surefire entirely
+(`<includes><include>**/bvt/**/*.java</include></includes>` — every class under any `bvt/`
+folder, no naming convention at all), so our discovery silently misses real test classes,
+**including the known polluter `SerializeWriterTest_14`** (and `_15`; neither matches
+`Test*`/`*Test`/`*Tests`/`*TestCase`). A workaround (enumerate every class in the package by
+file, let the harness's own JUnit reflection decide which have test methods) found exactly
+525 real test methods — matching the POC's own 524-candidate count (+1 victim) exactly, so the
+workaround's correctness is itself confirmed. The *product's own CLI* has the identical gap:
+`py -m runner diagnose --order eval/real-cases/fj03/order.txt ...` refuses the case with
+`"1 test(s) in the given order are not among the project's tests"`. This blocks steps 6-9 until
+`runner/discovery.py` reads the project's actual Surefire configuration instead of assuming the
+default — see [[00-Meta/risk-register]] for the registered risk and what the fix needs.
+
+**Step 4 found a second real, honest result — not a dead end.** The package's discovered order
+(workaround-corrected, 525 methods, cut after the victim at 261 entries) does not fail, run for
+real: confirmed (`PASS`). Per this file's own rule, that's a reportable `NOT_REPRODUCED` for the
+natural order. The ADR-008 shuffled-order fallback (31 distinct shuffles, real
+`runner.orders.distinct_shuffles`/`search_orders`, same workaround-corrected candidate pool) was
+then run for real: **none of the 31 reproduced the failure**, even though several shuffles
+placed all 6 of the known-relevant candidate methods before the victim. Inspected one in detail
+(seed 0, 513 tests, all 6 relevant methods before the victim): many *other*
+`SerializeWriterTest_N` variant classes also run between the last relevant candidate and the
+victim (`_19`, `_7`, `_12`, `_BrowserSecure_4_script`, ...) — these almost certainly also touch
+`SerializeWriter`'s shared buffer-size state and undo the pollution before the victim runs. This
+is a genuine, real-world finding distinct from our clean synthetic fixture: **a dense real test
+suite can have other tests that silently cancel the very pollution a random shuffle is trying to
+expose**, which a purely random full-suite shuffle search cannot reliably see through, even
+though the underlying bug is 100% real and trivially reproducible with the *exact* pair. This is
+direct, real-world motivation for why a targeted, evidence-ranked search (W25) — which tries one
+candidate immediately before the victim, the same shape that already works in step 2 — matters
+more than broad random shuffling on a project of this density.
+
+**Step 5.** This file is frozen with the above findings. The known-pair order is committed at
+`eval/real-cases/fj03/order.txt` (SHA-256 `8c9b208ac5c970138a37679fc3f91156e467c7701d6b91e2e49dc4b66234be1e`)
+as the starting order for steps 6-9, since neither the natural discovered order nor the 31-shuffle
+search found a different one, and this is the one directly confirmed in step 2. Steps 6-9
+themselves wait on the discovery.py fix (and, for 6-8, the budget ledger, ADR-014/W24, already
+not yet built).
 
 **Lead:** M3 · **Execution compatibility:** M2 · **Resource coverage:** M1 ·
 **Independent repeat:** M1 or M2 · **Work package:** W26
@@ -65,9 +124,8 @@ Read straight from those files on 2026-11-13:
 `632b87c2a455b8eab4a6c09324e1f166273588d8`, ISC licence), where the POC needed the whole module as
 scope.
 
-Not fetched or built by us yet in this iteration. **The first task is to find out whether it still
-builds.** A case that will not build is recorded with its error and replaced by the next; it is
-not dropped silently.
+**Fetched and built for real 2026-11-19** (M3) — see Findings above. It builds and the premise
+reproduces exactly as predicted; the blocker found is in our own discovery, not in fastjson.
 
 ## Environment — pinned and recorded
 

@@ -11,7 +11,7 @@ from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest import mock
 
-from eval.baseline import FailureSignature, TestIdentifier
+from eval.baseline import FailureSignature, RunTally, TestIdentifier
 from eval.report import assemble_report
 from runner.cli import OrderFileError, combine_fields, main, read_order, resource_fields, summary
 from runner.diagnose import (INCONSISTENT, POLLUTER_FOUND, VICTIM_FAILS_ALONE, DiagnoseInputError,
@@ -50,6 +50,21 @@ def runs(status, record, **overrides):
         execution_record=str(record),
     )
     fields.update(overrides)
+    # ADR-010/schema v2 (W19, M3): assemble_report() now reads alone_tally/sequence_tally
+    # directly. Derived here from the scalar fields above so every existing call site keeps
+    # working unchanged -- "matched" = *_successes, other/infra assumed 0 (no test here
+    # exercises a real-different-signature or crash alone/sequence run), "passed" the rest.
+    if "alone_tally" not in overrides:
+        fields["alone_tally"] = RunTally(
+            n=fields["alone_n"], passed=fields["alone_n"] - fields["alone_successes"],
+            matched=fields["alone_successes"], other=0, infra=0,
+        )
+    if "sequence_tally" not in overrides:
+        matched, any_failures = fields["sequence_successes"], fields["sequence_any_failures"]
+        fields["sequence_tally"] = RunTally(
+            n=fields["sequence_n"], passed=fields["sequence_n"] - any_failures,
+            matched=matched, other=any_failures - matched, infra=0,
+        )
     return DiagnosisRuns(**fields)
 
 
@@ -143,6 +158,12 @@ Q = TestIdentifier("pkg.SecondPolluterTest", "q")
 
 
 class TestCombineFields(unittest.TestCase):
+    def test_every_polluters_edges_are_listed(self):
+        # W21 (PR #105): each pair's report_fields lists its edges; combined, the report lists all.
+        fields = combine_fields([pair(P, "pkg.T#a"), pair(Q, "pkg.T#b")])
+        self.assertEqual([edge["shared_resource"]["field"] for edge in fields["resource_edges"]], ["a", "b"])
+        self.assertTrue(all("depth" in edge for edge in fields["resource_edges"]))
+
     def test_one_polluter_is_unchanged(self):
         from evidence.extract import report_fields
         single = pair(P, "pkg.T#flagA")
@@ -181,7 +202,11 @@ class TestCombineFields(unittest.TestCase):
         self.assertTrue(fields["any_edge_found"])
         runs_ = runs(POLLUTER_FOUND, "r.jsonl", polluters=[P, Q], sequence=[P, Q, V], alone_successes=0)
         report = assemble_report(runs_, fields)
-        self.assertEqual((report["outcome"], report["unresolved_reason"]), ("UNRESOLVED", "NO_SUPPORTED_RESOURCE_EVIDENCE"))
+        # ADR-010 section 4 (Q1, option A, 2026-11-13): a reproducing, passes-alone sequence
+        # with no resource edge is CANDIDATE now, not UNRESOLVED (M3, flagged for M2's review).
+        self.assertEqual((report["outcome"], report["unresolved_reason"]), ("CANDIDATE", None))
+        # Two polluters and no W20 deletion runs yet: also DELETION_EVIDENCE_INCOMPLETE (2026-11-19).
+        self.assertEqual(report["candidate_reasons"], ["DELETION_EVIDENCE_INCOMPLETE", "NO_SUPPORTED_RESOURCE_EVIDENCE"])
         self.assertNotIn("No polluter-write/victim-read resource edge was found by static analysis.",
                          report["limitations"])
 
@@ -349,8 +374,8 @@ class TestReports(unittest.TestCase):
     def test_summary_of_not_reproduced_states_the_bound_and_not_proof(self):
         report = dict(self.report_with_resource(), polluters=[], shared_resource=None, outcome="UNRESOLVED",
                       unresolved_reason="NOT_REPRODUCED",
-                      reproduction={"successes": 0, "n": 20, "lower": 0.0, "upper": 0.161},
-                      victim_alone={"successes": 0, "n": 20},
+                      reproduction={"matched": 0, "n": 20, "lower": 0.0, "upper": 0.161},
+                      victim_alone={"matched": 0, "n": 20},
                       order_exploration={"order_given": True, "shuffled_orders_tried": 31,
                                          "orders_exhausted": False, "seed_base": 0, "reproducing_seed": None})
         text = summary(report, Path("r.report.json")).splitlines()
@@ -360,8 +385,8 @@ class TestReports(unittest.TestCase):
     def test_summary_names_crashes_instead_of_never_failed(self):
         report = dict(self.report_with_resource(), polluters=[], shared_resource=None, outcome="UNRESOLVED",
                       unresolved_reason="NOT_REPRODUCED",
-                      reproduction={"successes": 0, "n": 3, "lower": 0.0, "upper": 0.561},
-                      victim_alone={"successes": 0, "n": 3},
+                      reproduction={"matched": 0, "n": 3, "lower": 0.0, "upper": 0.561},
+                      victim_alone={"matched": 0, "n": 3},
                       order_exploration={"order_given": False, "shuffled_orders_tried": 4,
                                          "orders_exhausted": True, "seed_base": 0, "reproducing_seed": None})
         text = summary(report, Path("r.report.json"), crashes=7)
@@ -371,8 +396,8 @@ class TestReports(unittest.TestCase):
     def test_summary_says_discovered_order_when_no_order_was_given(self):
         report = dict(self.report_with_resource(), polluters=[], shared_resource=None, outcome="UNRESOLVED",
                       unresolved_reason="NOT_REPRODUCED",
-                      reproduction={"successes": 0, "n": 20, "lower": 0.0, "upper": 0.161},
-                      victim_alone={"successes": 0, "n": 20},
+                      reproduction={"matched": 0, "n": 20, "lower": 0.0, "upper": 0.161},
+                      victim_alone={"matched": 0, "n": 20},
                       order_exploration={"order_given": False, "shuffled_orders_tried": 31,
                                          "orders_exhausted": False, "seed_base": 0, "reproducing_seed": None})
         text = summary(report, Path("r.report.json")).splitlines()
@@ -398,20 +423,26 @@ class TestReports(unittest.TestCase):
             "shared_resource": {"kind": "static-field", "class": "odfixture.Config", "field": "mode"},
             "polluter_write_location": {"class": "pkg.PolluterTest", "method": "p", "bytecode_offset": 1},
             "victim_read_location": {"class": "pkg.VictimTest", "method": "v", "bytecode_offset": 4},
-            "reproduction": {"successes": 20, "n": 20, "lower": 0.839},
-            "victim_alone": {"successes": 0, "n": 20}, "execution_record_reference": "r.jsonl",
+            "reproduction": {"matched": 20, "n": 20, "lower": 0.839},
+            "victim_alone": {"matched": 0, "n": 20}, "execution_record_reference": "r.jsonl",
         }
 
-    def test_inconsistent_exits_3_without_a_report_until_m3_builds_one(self):
+    def test_inconsistent_writes_a_real_report_now(self):
+        """ADR-010 section 5 (FT010, M3's W19): INCONSISTENT (formerly NO_SINGLE_POLLUTER) is
+        schema-valid now -- exit code 3 ("no report yet") is retired for this status."""
         records = Path(tempfile.mkdtemp(prefix="flaketrace-cli-records-"))
         record = records / "20261010T000000Z-pkg.VictimTest#v.jsonl"
-        unhandled = runs(INCONSISTENT, record, sequence=[P, V], alone_successes=0, search_runs=1)
-        with mock.patch("runner.cli.diagnose", return_value=unhandled):
+        found = runs(INCONSISTENT, record, polluters=[], sequence=[P, V],
+                     alone_successes=0, search_runs=1)
+        with mock.patch("runner.cli.diagnose", return_value=found):
             code, out, _ = run_cli(["diagnose", "--project", str(project_with_pom()), "--victim", str(V)])
-        self.assertEqual(code, 3)
-        self.assertEqual(list(records.glob("*.report.json")), [])
-        self.assertIn("No report: INCONSISTENT", out)
-        self.assertIn(str(record), out)
+        self.assertEqual(code, 0)
+        report_path = record.with_suffix(".report.json")
+        self.assertTrue(report_path.is_file())
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+        self.assertEqual((report["outcome"], report["unresolved_reason"]), ("UNRESOLVED", "INCONSISTENT_OUTCOMES"))
+        self.assertEqual(report["polluters"], [])
+        self.assertTrue(out.startswith("UNRESOLVED (INCONSISTENT_OUTCOMES)"), out)
 
 
 class TestCliOnFixture(unittest.TestCase):
@@ -453,7 +484,8 @@ class TestCliOnFixture(unittest.TestCase):
         self.assertEqual(report["outcome"], "VERIFIED")
         self.assertEqual(report["shared_resource"],
                          {"kind": "static-field", "class": "odfixture.Config", "field": "mode"})
-        self.assertEqual((report["reproduction"]["successes"], report["victim_alone"]["successes"]), (20, 0))
+        # ADR-010/schema v2 (W19): "successes" renamed "matched" (M3, flagged for M2's review).
+        self.assertEqual((report["reproduction"]["matched"], report["victim_alone"]["matched"]), (20, 0))
         record = Path(report["execution_record_reference"])
         self.assertFalse(record.is_absolute())
         self.assertTrue((work / record).is_file())
@@ -468,10 +500,12 @@ class TestCliOnFixture(unittest.TestCase):
         self.assertEqual(report["victim_read_location"],
                          {"class": "odfixture.FeatureFlags", "method": "isTurboEnabled", "bytecode_offset": 2})
 
-    def test_f3_two_polluters_verified(self):
+    def test_f3_two_polluters_are_candidate_until_deletion_checks_exist(self):
+        # Ground truth for F3 is VERIFIED; it is reached once W20's deletion runs show both
+        # polluters are needed (ADR-011 test T3). Until then the honest verdict is CANDIDATE.
         code, out, err, report = self.diagnose("odfixture.ToggleVictimTest#expectsNotBothFlagsSet", 20)
         self.assertEqual(code, 0, err)
-        self.assertEqual(report["outcome"], "VERIFIED")
+        self.assertEqual((report["outcome"], report["candidate_reasons"]), ("CANDIDATE", ["DELETION_EVIDENCE_INCOMPLETE"]))
         self.assertEqual(report["polluters"], [{"class": "odfixture.ToggleAPolluterTest", "method": "setFlagA"},
                                                {"class": "odfixture.ToggleBPolluterTest", "method": "setFlagB"}])
         self.assertEqual(report["shared_resource"], {"kind": "static-field", "class": "odfixture.Toggles", "field": "flagA"})

@@ -1,0 +1,24 @@
+{
+  "_": "W26a step 2 (docs/05-Testing/real-case-protocol.md): confirmed with the real runner directly (runner.order_runner.OrderRunner.run_ordered, not a hand-built DiagnosisRuns), 2026-11-19, native Windows, real Temurin 8 1.8.0_512, fastjson @ e05e9c5e4be580691cc55a59f3256595393203a1, JAVA_TOOL_OPTIONS=-Duser.timezone=UTC -Duser.language=en -Duser.country=US. Tallies in ADR-010's shape (eval.baseline.RunTally).",
+  "victim": "com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf",
+  "polluter": "com.alibaba.json.bvt.serializer.SerializeWriterTest_14#test_writer_1",
+  "alone_tally": {
+    "n": 10,
+    "passed": 10,
+    "matched": 0,
+    "other": 0,
+    "infra": 0
+  },
+  "pair_tally": {
+    "n": 10,
+    "passed": 0,
+    "matched": 10,
+    "other": 0,
+    "infra": 0
+  },
+  "reference_signature": {
+    "exception_type": "junit.framework.AssertionFailedError",
+    "stack_trace": "junit.framework.Assert.fail:55\njunit.framework.Assert.assertTrue:22\njunit.framework.Assert.assertNotNull:256\njunit.framework.Assert.assertNotNull:248\njunit.framework.TestCase.assertNotNull:417\ncom.alibaba.json.bvt.serializer.MaxBufSizeTest.test_max_buf:20",
+    "message": ""
+  }
+}

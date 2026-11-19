@@ -205,11 +205,12 @@ class TestHttp(unittest.TestCase):
         self.assertEqual(body["missing"], ["mvn"])
         self.assertEqual(body["fixture"], str(FIXTURE))
 
-    def test_reports_lists_the_seven_committed_reports(self):
+    def test_reports_lists_the_eight_committed_reports(self):
+        # N4 added W19 (ADR-010 test T5, M3; flagged for M2's review).
         with serving(fake_jobs("report")) as (_, base):
             status, body = call(base, "GET", "/api/reports")
         self.assertEqual(status, 200)
-        self.assertEqual([entry["name"] for entry in body], ["f1", "f2", "f3", "f4", "n1", "n2", "n3"])
+        self.assertEqual([entry["name"] for entry in body], ["f1", "f2", "f3", "f4", "n1", "n2", "n3", "n4"])
         self.assertEqual(body[0]["victim"], "odfixture.ConfigVictimTest#expectsDefaultMode")
 
     def test_one_report_and_names_outside_the_list(self):

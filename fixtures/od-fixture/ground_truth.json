@@ -58,6 +58,18 @@
       "expected_outcome_notes": "ADR-008 case (W-next): the polluter class name (ZzzLatePolluterTest) sorts alphabetically AFTER the victim class name (AlwaysEarlyVictimTest), and test discovery in this project is alphabetical by class (confirmed in docs/evidence-m2.md's W7 Task 3). So in the module's natural discovered order the victim always runs before the polluter, and the original-order repetition (ADR-008 step 1) can never reproduce the bug -- this case exists specifically to exercise ADR-008 step 2 (trying shuffled orders) and is not reproducible by the pre-ADR-008 pipeline at all. A shuffle that places ZzzLatePolluterTest#setLateFlag before AlwaysEarlyVictimTest#expectsLateFlagUnset must reproduce the failure deterministically: the polluter sets LateFlag.isSet = true and never restores it; the victim asserts LateFlag.isSet is false. The victim passes alone and in the natural (alphabetical) order; it fails only when the polluter precedes it, which requires reordering to discover.\n\nCONFIRMED 2026-10-10 by Member 3, real runs (native Windows, JDK 24): real discovered order places AlwaysEarlyVictimTest first and ZzzLatePolluterTest last of 16 methods, confirming it is unreachable without reordering. Real diagnose() on the natural order (n=5): NOT_REPRODUCED, as designed -- this is expected, not a problem (the natural order genuinely never fails). Real one-fresh-JVM run with the explicit order [ZzzLatePolluterTest#setLateFlag, AlwaysEarlyVictimTest#expectsLateFlagUnset]: polluter passes, victim FAILS with java.lang.AssertionError at AlwaysEarlyVictimTest.expectsLateFlagUnset:15 -- matches the predicted mechanism exactly. Victim run alone: passes. Not yet confirmed through the full ADR-008 shuffle-search pipeline end to end (Member 2's step 4, not yet landed) -- that confirmation is real order-dependent behaviour, independently verified by hand; only the automated discovery of the right order remains pending."
     },
     {
+      "id": "N4",
+      "category": "regression-victim-fails-alone-differently",
+      "victim": { "class": "odfixture.DualFailureVictimTest", "method": "expectsStateTwo" },
+      "polluters": [],
+      "polluter_combination": "none",
+      "order_sensitive_among_polluters": false,
+      "shared_resource": null,
+      "expected_outcome": "UNRESOLVED",
+      "expected_outcome_reason_free_text": "VICTIM_FAILS_ALONE_DIFFERENTLY",
+      "expected_outcome_notes": "ADR-010 test T5 (W19, FT003 regression, authored before any run, 2026-11-18): DualFailurePolluterTest#setState sets DualFailureState.state = 1 and never restores it; the victim throws java.lang.IllegalStateException when state is still 0 (unset, i.e. run alone), and otherwise asserts state == 2, which fails with java.lang.AssertionError when state is 1 (i.e. after the polluter). Two REAL failures, never a pass, and never the SAME signature as each other. The Mid build (mid-eval-v1) counted only alone failures matching the reference signature, so the real IllegalStateException seen alone there would have read as 'never failed alone' -- it would have named DualFailurePolluterTest#setState as the polluter and reported VERIFIED, wrongly (ADR-010 section 1, FT003). polluters is expected empty: ADR-010 row 7 says no test is blamed when the victim fails alone at all, matching or not. This is the integrated regression the supervisor asked for -- through the real `py -m runner diagnose` command, not a hand-built DiagnosisRuns."
+    },
+    {
       "id": "N1",
       "category": "negative-control-fails-alone",
       "victim": { "class": "odfixture.NegativeAloneFailTest", "method": "alwaysFails" },
