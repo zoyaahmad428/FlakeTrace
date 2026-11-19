@@ -1,8 +1,12 @@
 import { plural } from "./format";
 
-// Mirrors eval/schema/report.schema.json (read-only consumer, ADR-009).
+// Mirrors eval/schema/report.schema.json, schema v2 (read-only consumer, ADR-009; ADR-010).
 export type TestId = { class: string; method: string };
-export type WilsonCount = { successes: number; n: number; confidence: number; lower: number; upper: number };
+// ADR-010: every run is passed, matched (the reference failure), other (a different real failure) or infra.
+export type WilsonCount = {
+  n: number; passed: number; matched: number; other: number; infra: number;
+  confidence: number; lower: number; upper: number;
+};
 export type SharedResource = { kind: "static-field"; class: string; field: string } | { kind: "system-property"; key: string };
 export type CodeLocation = { class: string; method: string; bytecode_offset: number };
 export type FailureSignature = { exception_type: string; message?: string | null; stack_trace: string };
@@ -15,13 +19,16 @@ export type OrderExploration = {
   infrastructure_failures: number;
 };
 export type Outcome = "VERIFIED" | "CANDIDATE" | "UNRESOLVED";
+export type ResourceEdge = {
+  shared_resource: SharedResource; polluter_write_location: CodeLocation; victim_read_location: CodeLocation; depth?: number;
+};
 export type Report = {
+  schema_version: number;
   victim: TestId;
   polluters: TestId[];
   original_failing_order: TestId[];
   reduced_sequence: TestId[];
   reproduction: WilsonCount;
-  sequence_any_signature_failures: number;
   victim_alone: WilsonCount;
   shared_resource: SharedResource | null;
   polluter_write_location: CodeLocation | null;
@@ -31,27 +38,42 @@ export type Report = {
   instrumentation_level: string;
   execution_record_reference: string;
   source_integrity: { passed: boolean; details: string };
+  resource_edges: ResourceEdge[];
   outcome: Outcome;
   unresolved_reason: string | null;
+  candidate_reasons: string[];
   limitations: string[];
 };
 
 const REQUIRED: (keyof Report)[] = [
-  "victim", "polluters", "original_failing_order", "reduced_sequence", "reproduction", "sequence_any_signature_failures",
-  "victim_alone", "shared_resource", "polluter_write_location", "victim_read_location", "failure_signature",
-  "instrumentation_level", "execution_record_reference", "source_integrity", "outcome", "unresolved_reason", "limitations",
+  "schema_version", "victim", "polluters", "original_failing_order", "reduced_sequence", "reproduction", "victim_alone",
+  "shared_resource", "polluter_write_location", "victim_read_location", "resource_edges", "failure_signature",
+  "instrumentation_level", "execution_record_reference", "source_integrity", "outcome", "unresolved_reason",
+  "candidate_reasons", "limitations",
 ];
 
 export const WILSON_FLOOR = 0.7;
 
 const REASON: Record<string, string> = {
   VICTIM_FAILS_ALONE: "the victim also fails when run alone, so no earlier test can be blamed",
+  VICTIM_FAILS_ALONE_DIFFERENTLY: "the victim fails when run alone with a different failure, so no earlier test can be blamed",
+  INCONSISTENT_OUTCOMES: "the failure appeared once and could not be obtained again; it is likely not order-dependent",
+  BUDGET_EXHAUSTED: "the execution budget ran out before a failing sequence was found",
   NOT_REPRODUCED: "the failure never reproduced, in the original order or in any shuffled order tried",
   SIGNATURE_MISMATCH: "the sequence failed, but with a different failure than the original",
   INFRASTRUCTURE_FAILURE: "the runs only crashed or timed out; no real failure was observed",
   NO_SUPPORTED_RESOURCE_EVIDENCE: "no shared state of a supported kind (static field or system property) links the polluter to the victim",
   BELOW_CONFIDENCE_THRESHOLD: "the failure does not reproduce reliably enough",
   SOURCE_INTEGRITY_FAILED: "the analysed project's source changed during the run",
+};
+
+// ADR-010 section 3 row 12: why a reproducing sequence is CANDIDATE and not VERIFIED.
+const CANDIDATE_REASON: Record<string, string> = {
+  BELOW_REPLAY_THRESHOLD: "the failure does not replay reliably enough (Wilson lower bound below 0.70)",
+  DELETION_EVIDENCE_INCOMPLETE: "the deletion checks for two or more kept tests have not run yet (W20), so not every kept test is shown to be needed",
+  DELETION_EVIDENCE_INCONCLUSIVE: "removing a kept test sometimes still reproduced the failure, so the sequence is not stable enough to call minimal",
+  NO_SUPPORTED_RESOURCE_EVIDENCE: "no static overlap of a supported kind (static field or system property) links every polluter to the victim",
+  BUDGET_EXHAUSTED: "the execution budget ran out before every check could run",
 };
 
 export type Loc = { at: string; cls: string; offset: number; note: string };
@@ -61,6 +83,7 @@ export type ReportView = {
   outcome: string;
   outcomeTone: "verified" | "candidate" | "unresolved";
   reason: string | null;
+  candidateReasons: string[];
   polluters: string[];
   pollutersNote: string;
   originalOrder: string[];
@@ -69,6 +92,7 @@ export type ReportView = {
   reproductionBounds: string;
   alone: string;
   aloneBounds: string;
+  aloneDetail: string;
   resource: { name: string; kind: string } | null;
   resourceNote: string;
   write: Loc | null;
@@ -95,7 +119,10 @@ export const resourceName = (r: SharedResource) => (r.kind === "static-field" ? 
 
 const resourceKind = (r: SharedResource) => (r.kind === "static-field" ? "static field" : "system property");
 
-const rate = (c: WilsonCount) => `${c.successes}/${c.n}`;
+const rate = (c: WilsonCount) => `${c.matched}/${c.n}`;
+
+// FT003: "0/20 with the same failure" alone is not "never failed alone" -- show every outcome.
+const detail = (c: WilsonCount) => `passed ${c.passed} · failed differently ${c.other} · crashed or not run ${c.infra}`;
 
 const bounds = (c: WilsonCount) => `${Math.round(c.confidence * 100)}% Wilson interval [${c.lower.toFixed(3)}, ${c.upper.toFixed(3)}]`;
 
@@ -119,7 +146,7 @@ function exploration(r: Report): string {
   }
   if (e.shuffled_orders_tried === 0) {
     const which = e.order_given ? "given" : "original";
-    return r.reproduction.successes > 0
+    return r.reproduction.matched > 0
       ? `${start}The ${which} order reproduced the failure; no shuffled orders were needed.${crashes}`
       : `${start}The ${which} order never reproduced the failure; no shuffled orders were tried.${crashes}`;
   }
@@ -135,6 +162,7 @@ export function toView(r: Report): ReportView {
     outcome: outcomeText(r),
     outcomeTone: outcomeTone(r.outcome),
     reason,
+    candidateReasons: (r.candidate_reasons ?? []).map((c) => CANDIDATE_REASON[c] ?? c),
     polluters: r.polluters.map(testName),
     pollutersNote: r.polluters.length ? "" : reason ? `No polluter is named: ${reason}.` : "No polluter is named in this report.",
     originalOrder: r.original_failing_order.map(testName),
@@ -143,6 +171,7 @@ export function toView(r: Report): ReportView {
     reproductionBounds: bounds(r.reproduction),
     alone: rate(r.victim_alone),
     aloneBounds: bounds(r.victim_alone),
+    aloneDetail: detail(r.victim_alone),
     resource: r.shared_resource ? { name: resourceName(r.shared_resource), kind: resourceKind(r.shared_resource) } : null,
     resourceNote: r.shared_resource
       ? ""
