@@ -607,3 +607,55 @@ that can be reproduced and a real result for it. No change to `evidence/`.
     `eval/reports/f2.json`.
 - **Limitation:** javap 21 only; CI's `evidence` job runs the same suite on JDK 8 for each PR. A
   run on Member 1's own machine is still to be done once Maven is installed there.
+
+## W16: retired claims in `evidence/` and its note (2026-11-18)
+
+**Requirement:** W16 (FT005, claims ledger G3 and G4): no retired claim in M1's folder or note.
+Only wording changed; no code, test, contract or report field changed.
+
+- **Search before the change** (main `0d66ff3`, run in the team's cloud environment with Claude):
+  `git grep -n -i -E "1-minimal|never modified|sandboxed|found mechanism|root cause|caused by|explains the failure|passes alone|real cause|the cause" -- evidence docs/04-Implementation/evidence-collector.md`
+  → two hits: `evidence/README.md:6` ("the target project's source is never modified", G4) and
+  `docs/04-Implementation/evidence-collector.md:51` (`JSON.defaultTimeZone` "the real cause", G3).
+- **Change:** the README's opening and §1 of the note now call an edge "a static overlap — a
+  possible mechanism, not confirmed as the cause" (G3's wording). The README says only what the
+  extractor does to the project (reads `.class` files, writes nothing), not a whole-tool claim.
+  The FJ-01 line says the test's constants point to the time zone, but no run has confirmed it.
+- **Search after the change**, same command → two hits, both the G3 replacement phrase itself
+  ("…not confirmed as the cause"): `evidence/README.md:6` and
+  `docs/04-Implementation/evidence-collector.md:23`. No retired claim remains.
+- `evidence/extract.py` already had no "cause" or "mechanism" (M2's search, handover note).
+- **Not changed, on purpose:** `FIXED_LIMITATIONS` in `evidence/extract.py`. It is the contract's
+  fixed list (`docs/contracts/resource-evidence.md`, "Fixed limitations"), so adding the G3
+  sentence there is a contract change for all three members; proposed in the PR, not made.
+- **Limitation:** a phrase search finds only the words searched for; M3 checks consistency (W16
+  verifier).
+
+## W21 part 1: `report_fields` lists every edge (2026-11-18)
+
+**Requirement:** W21 / FT005 / ADR-010: the extra edges must be visible, not only the first.
+`report_fields` now also returns `resource_edges`: one entry per edge in the contract's order
+(combined depth, then `resource_id`), each `{shared_resource, polluter_write_location,
+victim_read_location, depth}`. `shared_resource` and the two locations are unchanged.
+
+- **Test first:** `evidence/tests/test_extract.py`, new class `ResourceEdgesTest` (3 tests; a
+  hand-built two-edge pair, so no javap is needed).
+  On the unchanged code (main `0d66ff3` + the W16 wording commit), run in the team's cloud
+  environment with Claude: `python3 -m unittest evidence.tests.test_extract.ResourceEdgesTest`
+  → `Ran 3 tests … FAILED (errors=3)`, each `KeyError: 'resource_edges'`.
+- **After the change**, same command → `Ran 3 tests … OK`.
+- **Whole suites after the change** (same environment: Linux, Maven 3.9.11, OpenJDK and javap
+  21.0.12.1, Python 3.13.16; fixture and self-test compiled with `mvn -B -q … test-compile`, exit 0):
+  - `FLAKETRACE_REQUIRE_JVM=1 python3 -m unittest evidence.tests.test_extract` → `Ran 42 tests … OK`.
+  - Every `eval/tests/test_*.py`, as CI runs them → `Ran 99 tests … OK`.
+  - `FLAKETRACE_REQUIRE_JVM=1 python3 -m unittest runner.tests.test_cli` → `Ran 63 tests … OK`.
+- **Contract:** the projection table in `docs/contracts/resource-evidence.md` gains the
+  `resource_edges` row, as ADR-010 (agreed by M1, M2, M3, PR #101) specifies. The PR needs M2's
+  and M3's approval.
+- **Limitations:**
+  - The report does not show `resource_edges` yet: the schema has `additionalProperties: false`,
+    and `eval/report.py` builds the report from named keys, so the field is ignored until M3's W19
+    (schema v2) copies it.
+  - With several polluters, `runner/cli.py`'s `combine_fields` (M2) keeps the first polluter's
+    fields, so only that polluter's `resource_edges` would reach the report. Noted for M2.
+  - Not run on my own machine yet; M2 verifies W21.
