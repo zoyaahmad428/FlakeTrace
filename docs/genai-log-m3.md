@@ -1175,3 +1175,52 @@ re-check once it lands, since her branch and this session's doc edits (`members.
 Ownership checkpoint: be able to explain why `runner/cli.py` already had the correct wording
 before this session (M2's own earlier, separate work) and what exactly W16 added on top of
 that (only a product-wide consistency check plus one small text fix in `eval/report.py`).
+
+## 2026-11-19 — W26a: the first real case (fastjson FJ-03), steps 1-5
+
+**What I asked:** Continue to W26a next (the real-case protocol), since it was flagged as
+startable without anything new per the critical path. Asked to actually fetch, build and run
+the case for real, not just read the protocol document.
+
+**What was retained:** `eval/real-cases/fj03/order.txt` and `premise.json` (the real step-2
+tallies), the protocol document's Findings section, the new risk-register entry, and every
+status-doc update above.
+
+**What I changed / decisions I surfaced rather than made myself:** This session had three real
+forks where I stopped and asked rather than deciding alone:
+1. fastjson needs real JDK 8; this machine has none. Asked whether to download a portable
+   Temurin 8 zip or start Docker Desktop (M1's earlier fastjson work used a container) — the
+   member chose the download, which needed explicit permission anyway (downloading a file).
+2. The real shuffle search found something genuinely surprising (0/31 reproduced, even with
+   the known polluter's methods placed before the victim in several shuffles) before I
+   understood why. Investigated it myself first (checked which shuffles actually had the
+   polluter before the victim, then inspected one in full detail) rather than asking the
+   member to interpret a result I hadn't explained yet — found the real mechanism (other
+   `SerializeWriterTest_N` variants reset the same state) before presenting it.
+3. Two real forks needed the member's call, not mine: how to frame the shuffle-search result
+   (accept it as a finding, or spend more JVM time on a bigger budget first), and how to
+   handle the `runner/discovery.py` blocker (ask M2 to fix it, switch cases, or stop). Both
+   times I laid out the real trade-off with what I'd already found, not a vague "what should I
+   do?" — the member chose: accept the finding, and flag `discovery.py` for M2 rather than
+   patch it myself or avoid it by switching cases.
+
+**How it was verified:** Every number in this session is from a real run, not inferred: the
+build (`BUILD SUCCESS`, exact file counts matching [[evidence-m1]]'s own Phase 5 count), the
+10/10 premise tallies, the natural-order PASS, the 31-shuffle search's real outcome, and the
+one-shuffle inspection's actual intervening test list — all re-checked against
+`POC/results/scan_FJ-03.csv`'s pre-existing real data (its 524-candidate count, its 6
+`od_relevant` rows, all `SerializeWriterTest_14`/`_15`) rather than asserted from memory.
+
+**Rejected / not done:** Did not patch `runner/discovery.py` myself — flagged it instead,
+twice (risk register, evidence log), since reading a project's actual Surefire configuration is
+a real design decision belonging to M2's file, not a 2-line mechanical fix like this session's
+earlier `runner/cli.py` rename. Did not try FJ-04 or the ormlite-core fallback case — reasoned
+(not just guessed) that FJ-04, being in the same fastjson package, would very likely hit the
+identical gap, so trying it would not add information the discovery.py finding doesn't already
+cover.
+
+Ownership checkpoint: be able to explain why the natural discovered order doesn't reproduce the
+bug (alphabetical: M before S), why 31 random shuffles still didn't find it even when some
+placed the right class first (other tests in between reset the state), and why that is a
+genuine result about search quality, not a bug in the fixture or a reason to doubt step 2's
+premise confirmation.
