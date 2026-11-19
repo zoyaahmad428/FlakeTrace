@@ -18,6 +18,22 @@ it closes only when its verifier has reproduced it ([[10-Final1/iteration-2-plan
 
 ## Changes, newest first
 
+### PR #106 made mergeable, and the CI line for PR #107 (2026-11-19, M2 with M3's permission)
+
+**M3:** on your branch `m3/w19-verdict-contract-v2` M2 merged `main` (two doc tables), and changed
+your `eval/report.py` in two places you allowed: (1) `resource_edges` now comes from M1's
+`report_fields` (every edge, with an optional `depth`, added to `resourceEdge` in the schema — a
+5-line diff), and the "extractor reports one edge" limitation is gone; (2) the deletion status:
+one polluter passing alone → `DELETION_VERIFIED` (ADR-011 §2), two or more → `INCOMPLETE` →
+`CANDIDATE [DELETION_EVIDENCE_INCOMPLETE]` until W20. So **F3 is `CANDIDATE` now**; its ground truth
+stays `VERIFIED` as W20's target. The eight reports were regenerated with your tool. Please read the
+diff of `eval/report.py`, the schema and the reports before approving.
+**M1:** your #107 failed CI only because `ci.yml` did not compile `ft005-controls`; the line is on
+#106 (guarded, so it works before and after #107). Once #106 merges, re-run #107's checks. Reports
+now list every edge you return. Both of you: #106 changes a contract (schema) — **both M1 and M2
+must approve**, per CONTRIBUTING.
+
+
 ### W22 job 4 — diagnose on a disposable copy (2026-11-14) · built
 
 **What changed for you:** by default (`--workspace copy`) the command now copies the project to a

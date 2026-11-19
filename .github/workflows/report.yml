@@ -6,10 +6,10 @@ name: Report
 on:
   pull_request:
     branches: [main]
-    paths: ["mid-eval-report/**", "eval/reports/**", ".github/workflows/report.yml"]
+    paths: ["mid-eval-report/**", ".github/workflows/report.yml"]
   push:
     branches: [main]
-    paths: ["mid-eval-report/**", "eval/reports/**", ".github/workflows/report.yml"]
+    paths: ["mid-eval-report/**", ".github/workflows/report.yml"]
   workflow_dispatch:
 
 permissions:
@@ -20,17 +20,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # the mid-eval-v1 tag is needed below
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      # The committed results tables must equal what the real reports say.
-      - name: Generated tables match eval/reports
+      # The Mid report's tables must equal what the reports said AT THE MID (tag mid-eval-v1).
+      # eval/reports/ has moved on to schema v2 (W19); the Mid report is a closed record.
+      - name: Generated tables match the reports at mid-eval-v1
         run: |
-          python mid-eval-report/scripts/json_to_tex.py
+          mkdir -p "$RUNNER_TEMP/mid"
+          git archive mid-eval-v1 eval/reports | tar -x -C "$RUNNER_TEMP/mid"
+          python mid-eval-report/scripts/json_to_tex.py --reports "$RUNNER_TEMP/mid/eval/reports"
           git diff --exit-code -- mid-eval-report/tables/generated \
-            || { echo "::error::Run python3 mid-eval-report/scripts/json_to_tex.py and commit the result"; exit 1; }
+            || { echo "::error::The Mid report's tables no longer match the reports at mid-eval-v1"; exit 1; }
 
       - name: Compile with latexmk
         uses: xu-cheng/latex-action@v3

@@ -146,8 +146,8 @@ class TestRealManifest(unittest.TestCase):
 
     def test_yield_report_shows_real_funnel_for_run_cases_and_not_yet_run_for_the_rest(self):
         report = generate_yield_report()
-        self.assertEqual(report["total_cases"], 13)
-        self.assertEqual(report["not_yet_run"], 8)  # F4, N3 (ADR-008), POC-DEMO-1 + 5 idoft
+        self.assertEqual(report["total_cases"], 14)
+        self.assertEqual(report["not_yet_run"], 9)  # F4, N3 (ADR-008), N4 (ADR-010), POC-DEMO-1 + 5 idoft
         self.assertEqual(report["built"], 5)        # F1,F2,F3,N1,N2 all compiled fine
         self.assertEqual(report["reproduced"], 3)   # F1,F2,F3 verified
         self.assertEqual(report["victim_fails_alone"], 2)  # N1,N2

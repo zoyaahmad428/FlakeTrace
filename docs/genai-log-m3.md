@@ -1049,3 +1049,178 @@ Ownership checkpoint: be able to explain why F3/F4's resource-evidence call goes
 `runner.cli.resource_fields()` rather than a second hand-rolled combination here, and what
 `order_exploration.reproducing_seed=1` on F4's real report actually means (the discovered
 order alone never finds the bug; the first shuffle tried, seed 1, does).
+
+## 2026-11-18 — W19: verdict contract v2 (ADR-010), schema v2, fixture N4
+
+**What I asked:** Pick up Iteration 2 and start M3's own work. Reviewed the current state
+(pulled `main`, read ADR-010/011, `docs/10-Final1/iteration-2-plan.md`, `members.md`) and
+identified W19 as the right starting point: M3's biggest owned package, with its only
+prerequisite (W17) already done and step 1 (M2's `RunTally`/`classify`) already merged and
+waiting on my review. Asked for: review step 1 first, then build M3's part — `decide()`, the
+schema, `assemble_report()`, and fixture N4 — to the ADR-010 decision table.
+
+**What was retained:**
+- `eval/outcome.py` — the full rewrite (13-row decision table, `DecisionInput` on `RunTally`s,
+  `candidate_reasons`). Reviewed row by row against the ADR-010 table text before accepting.
+- `eval/report.py` — the full rewrite (reads tallies directly, handles `INCONSISTENT`, the
+  "no test is blamed" rule, `resource_edges`/`assurance`/`candidate_reasons` in the report).
+- `eval/schema/report.schema.json` v2, and the matching rewrites of `eval/tests/test_outcome.py`,
+  `test_report.py`, `test_examples.py`, `test_schema_validator.py`, plus the 9 example JSON
+  files under `eval/examples/` (one new: `example_victim_fails_alone_differently.json`).
+- `fixtures/od-fixture/src/main/java/odfixture/DualFailureState.java` and the two N4 test
+  classes, `ground_truth.json`'s N4 entry, `eval/benchmark/manifest.json`'s N4 row, and
+  `eval/tools/run_w9_integration.py`'s `run_n4()`.
+- `docs/contracts/report-schema.md` (rewritten for v2) and `docs/03-Design/certificate-contract.md`
+  (updated to say what's now built vs. still accepted-but-pending, ADR-011/W20).
+
+**What I changed / pushed back on before accepting:**
+- The first draft of `eval/outcome.py` derived rows 4/5 ("no real failure anywhere") from the
+  `alone`/`sequence` `RunTally`s alone. I caught this myself by writing `test_outcome.py`'s
+  row-by-row tests and reasoning about which rows could actually be reached given the earlier
+  rows' preconditions — rows 10/11 turned out to be mathematically dead code under that
+  derivation, since by the time row 11's precondition holds, rows 4/5 would already have fired.
+  Required adding `reference_established`/`infrastructure_failures_anywhere` as their own
+  `DecisionInput` fields (computed in `eval/report.py` from `diagnosis.reference_signature is
+  not None` and the existing cross-phase infra count respectively) rather than deriving
+  everything from two tallies.
+- `assurance.sequence.deletion`'s `"NOT_YET_CHECKED"` value is not in ADR-011's own four-value
+  table. I considered reusing `NOT_APPLICABLE` but rejected it myself (that value means "no
+  polluter was found" in ADR-011 — a different, false claim here) and added the new value
+  instead, explicitly flagged in code, `docs/evidence-m3.md`, and the register as my own
+  addition for the team to confirm, not something I decided unilaterally belongs in the shared
+  contract.
+- Deliberately did **not** build ADR-011 §2's "free" single-polluter deletion check in this
+  session, even though the data to do it already exists (the alone tally) — it's explicitly
+  one of ADR-011's own tests (T4), which is W20's work, not W19's. Left as a note for W20
+  rather than quietly finishing part of another work package early.
+- A real schema bug surfaced only when running against the real fixture (not caught by any
+  hand-built test): `failure_signature`'s null-vs-non-null rule was tied strictly to
+  `unresolved_reason`, but `SOURCE_INTEGRITY_FAILED` can legitimately co-occur with a
+  never-established reference (null signature) too — the rule couldn't see that. Loosened the
+  schema rule and moved the real invariant into `eval/report.py`'s own tests.
+- Found that `runner/cli.py` (two lines) and `runner/tests/test_cli.py` (its shared `runs()`
+  helper, 11 call sites, plus one behavioural assertion and one whole test) would break on
+  schema v2 — a cross-member-boundary issue. **Did not fix this myself without asking**: used
+  `AskUserQuestion` twice, once for the 2-line `cli.py` rename and once for the larger
+  `test_cli.py` fix, and only touched either file after Zarpash said yes both times. Both edits
+  are flagged in code comments and `docs/evidence-m3.md` as things for Member 2 to actually
+  review, not things Member 2 agreed to — that distinction matters and is stated explicitly,
+  not glossed over.
+
+**How it was verified:**
+- `py -m unittest discover -s eval/tests` → **119/119 passed** (up from 85 before this session).
+- `py -m unittest runner.tests.test_cli -v` → **63/63 passed**, confirmed on a clean rerun. The
+  first run (backgrounded while I was still writing N4's `.java` files) showed 3 failures, all
+  traced to the source-integrity checker correctly catching my own concurrent file writes mid-
+  diagnosis — not a bug in the change itself; rerunning cleanly after the files had settled
+  confirmed this.
+- `py -m unittest discover -s evidence/tests` → 39/39 passed (sanity check; nothing in
+  `evidence/` touched).
+- `mvn -B -q -f fixtures/od-fixture/pom.xml test-compile` → clean compile of the new N4 classes.
+- `py -m eval.tools.run_w9_integration` (real `diagnose()` + `evidence.extract` +
+  `assemble_report()`, all 8 cases) → F1–F4 → `VERIFIED`, N1/N2 → `UNRESOLVED(VICTIM_FAILS_ALONE)`,
+  N3 → `UNRESOLVED(NOT_REPRODUCED)`, **N4 → `UNRESOLVED(VICTIM_FAILS_ALONE_DIFFERENTLY)`** —
+  every one matches `ground_truth.json`, and F1–F4/N1–N3 are byte-for-byte unchanged in verdict
+  from before this session (ADR-010 test T6). The 8 real reports are committed at
+  `eval/reports/{f1,f2,f3,f4,n1,n2,n3,n4}.json`.
+
+**Rejected / not done:**
+- `ui/web/src/lib/report.ts` still reads v1 field names — explicitly Member 2's follow-up per
+  ADR-010's own Consequences section; not touched (TypeScript, outside this session, and
+  explicitly assigned elsewhere).
+- `runner/diagnose.py`'s old scalar `DiagnosisRuns` fields and the `NO_SINGLE_POLLUTER` alias
+  are still there, even though ADR-010's "order of work" says they're removed "when W19 reads
+  the tallies" — removing them would mean rewriting ~20 lines across `runner/tests/
+  test_diagnose.py`, which I did not do without a specific ask; flagged as a follow-up instead.
+- M1's independent reproduction of T1–T5 (FT003's acceptance criterion) is not done here — it
+  is explicitly her verification step, not mine.
+
+Ownership checkpoint: be able to explain why `decide()` checks `reference_established` as its
+own input rather than deriving it from the `alone`/`sequence` tallies (the ADR-011 motivating
+case: a reference found during the search does not guarantee the final re-verified sequence
+still shows it), why `assurance.sequence.deletion` can say `"NOT_YET_CHECKED"` — a value not in
+ADR-011's own table — and why `polluters`/`shared_resource` are both suppressed together (not
+just `polluters`) whenever a verdict is withheld.
+
+## 2026-11-18 — W16: verify M2's retire-claims work, finish M3's own part
+
+**What I asked:** Continue Iteration 2 after W19; picked W16 next because both M1 and M2 had
+just pushed their parts (M2's already merged, M1's on an open branch) and M3's own part
+(`eval/`) plus the overall "checks consistency" role were the only pieces left undone.
+
+**What was retained:** The one real fix found — `eval/report.py`'s deletion-check limitation
+text reworded to reuse `runner/cli.py`'s exact approved phrase ("reduced by single-trial delta
+debugging; not deletion-verified") instead of my own paraphrase from W19, plus the matching two
+example JSON files, plus the reports regenerated so the committed files stay consistent with
+the code.
+
+**What I changed:** Nothing generated needed correcting here — this was mostly verification
+(reading M2's already-merged code, confirming it matches ADR-010/011's exact wording) rather
+than new generation. The one thing I pushed back on myself: my first instinct from the grep
+output was to start "fixing" dozens of hits across `docs/01-Literature/`, `claims-ledger.md`
+etc. before actually reading each one in context — stopped and read every hit first, which
+showed almost all of them were already-correct approved wording, historical notes, or another
+paper's own terminology, not FlakeTrace claims. Only the one real inconsistency (above) needed
+a change.
+
+**How it was verified:** `py -m unittest discover -s eval/tests` → 119/119 OK (wording-only
+change, no behaviour change expected or found); real `py -m eval.tools.run_w9_integration`
+re-run → all 8 verdicts unchanged, confirming the fix only touched `limitations` text.
+
+**Rejected / not done:** M1's `evidence/` wording branch not reviewed in depth — it's not
+merged to `main` yet, so there is nothing yet to check for consistency against; flagged to
+re-check once it lands, since her branch and this session's doc edits (`members.md`,
+`iteration-2-plan.md`, `genai-register.md`) touch some of the same files and could conflict.
+
+Ownership checkpoint: be able to explain why `runner/cli.py` already had the correct wording
+before this session (M2's own earlier, separate work) and what exactly W16 added on top of
+that (only a product-wide consistency check plus one small text fix in `eval/report.py`).
+
+## 2026-11-19 — W26a: the first real case (fastjson FJ-03), steps 1-5
+
+**What I asked:** Continue to W26a next (the real-case protocol), since it was flagged as
+startable without anything new per the critical path. Asked to actually fetch, build and run
+the case for real, not just read the protocol document.
+
+**What was retained:** `eval/real-cases/fj03/order.txt` and `premise.json` (the real step-2
+tallies), the protocol document's Findings section, the new risk-register entry, and every
+status-doc update above.
+
+**What I changed / decisions I surfaced rather than made myself:** This session had three real
+forks where I stopped and asked rather than deciding alone:
+1. fastjson needs real JDK 8; this machine has none. Asked whether to download a portable
+   Temurin 8 zip or start Docker Desktop (M1's earlier fastjson work used a container) — the
+   member chose the download, which needed explicit permission anyway (downloading a file).
+2. The real shuffle search found something genuinely surprising (0/31 reproduced, even with
+   the known polluter's methods placed before the victim in several shuffles) before I
+   understood why. Investigated it myself first (checked which shuffles actually had the
+   polluter before the victim, then inspected one in full detail) rather than asking the
+   member to interpret a result I hadn't explained yet — found the real mechanism (other
+   `SerializeWriterTest_N` variants reset the same state) before presenting it.
+3. Two real forks needed the member's call, not mine: how to frame the shuffle-search result
+   (accept it as a finding, or spend more JVM time on a bigger budget first), and how to
+   handle the `runner/discovery.py` blocker (ask M2 to fix it, switch cases, or stop). Both
+   times I laid out the real trade-off with what I'd already found, not a vague "what should I
+   do?" — the member chose: accept the finding, and flag `discovery.py` for M2 rather than
+   patch it myself or avoid it by switching cases.
+
+**How it was verified:** Every number in this session is from a real run, not inferred: the
+build (`BUILD SUCCESS`, exact file counts matching [[evidence-m1]]'s own Phase 5 count), the
+10/10 premise tallies, the natural-order PASS, the 31-shuffle search's real outcome, and the
+one-shuffle inspection's actual intervening test list — all re-checked against
+`POC/results/scan_FJ-03.csv`'s pre-existing real data (its 524-candidate count, its 6
+`od_relevant` rows, all `SerializeWriterTest_14`/`_15`) rather than asserted from memory.
+
+**Rejected / not done:** Did not patch `runner/discovery.py` myself — flagged it instead,
+twice (risk register, evidence log), since reading a project's actual Surefire configuration is
+a real design decision belonging to M2's file, not a 2-line mechanical fix like this session's
+earlier `runner/cli.py` rename. Did not try FJ-04 or the ormlite-core fallback case — reasoned
+(not just guessed) that FJ-04, being in the same fastjson package, would very likely hit the
+identical gap, so trying it would not add information the discovery.py finding doesn't already
+cover.
+
+Ownership checkpoint: be able to explain why the natural discovered order doesn't reproduce the
+bug (alphabetical: M before S), why 31 random shuffles still didn't find it even when some
+placed the right class first (other tests in between reset the state), and why that is a
+genuine result about search quality, not a bug in the fixture or a reason to doubt step 2's
+premise confirmation.

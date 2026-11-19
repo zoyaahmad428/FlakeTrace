@@ -149,6 +149,10 @@ def combine_fields(pairs: list) -> dict:
     fields = [report_fields(pair) for pair in pairs]
     if len(fields) == 1:
         return fields[0]
+    # W21: every polluter's edges, in polluter order, each once.
+    edges = []
+    for single in fields:
+        edges += [edge for edge in single.get("resource_edges", []) if edge not in edges]
     # The first polluter's projected lines, plus only M1's fixed lines from the others: their own
     # "not shown" lines would name a resource a second time.
     lines = list(fields[0]["limitations"])
@@ -158,13 +162,14 @@ def combine_fields(pairs: list) -> dict:
         shown = pairs[0]["edges"][0]["resource_id"]
         others = [f"Polluter {_test(pair['polluter'])}: shared resource {edge['resource_id']} is not shown in this report"
                   + _depth_note(edge) for pair in pairs[1:] for edge in pair["edges"] if edge["resource_id"] != shown]
-        return dict(fields[0], limitations=lines + others)
+        return dict(fields[0], limitations=lines + others, resource_edges=edges)
     found = [f"Polluter {_test(pair['polluter'])}: shared resource {edge['resource_id']} was found, "
              "but not every polluter has evidence" + _depth_note(edge) for pair in pairs for edge in pair["edges"]]
     missing = [f"No polluter-write/victim-read resource edge was found for polluter {_test(pair['polluter'])}"
                for pair in pairs if not pair["edges"]]
     # any_edge_found tells M3's assemble_report not to add its generic "no edge was found" line.
     return dict(fields[0], shared_resource=None, polluter_write_location=None, victim_read_location=None,
+                resource_edges=edges,
                 limitations=lines + found + missing, any_edge_found=bool(found))
 
 
@@ -214,8 +219,9 @@ def summary(report: dict, report_path: Path, minimised: Optional[Tuple[int, int]
         lines.append("              static overlap: a possible mechanism, not confirmed as the cause")
     reproduced, alone = report["reproduction"], report["victim_alone"]
     # The alone count holds only failures matching the reference signature (claims ledger G1, FT003).
-    lines.append(f"  reproduced: {reproduced['successes']}/{reproduced['n']} (lower bound "
-                 f"{reproduced['lower']:.3f})   alone (same failure): {alone['successes']}/{alone['n']}")
+    # ADR-010/schema v2 (W19): "successes" renamed "matched" (M3, flagged for M2's review).
+    lines.append(f"  reproduced: {reproduced['matched']}/{reproduced['n']} (lower bound "
+                 f"{reproduced['lower']:.3f})   alone (same failure): {alone['matched']}/{alone['n']}")
     lines.append(f"  report:     {report_path}")
     lines.append(f"  record:     {report['execution_record_reference']}")
     return "\n".join(lines)

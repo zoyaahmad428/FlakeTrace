@@ -3,23 +3,25 @@
 *The product output. Every member must be able to list its contents and explain its three
 decision classes.*
 
-> **Read this first (2026-11-13).** The Mid review tested the built certificate against this
-> contract and found it claimed more than it had checked. The table below is the honest state.
-> The corrected rules are **proposed** in
-> [[03-Design/decisions/ADR-010-verdict-contract-v2]] and
-> [[03-Design/decisions/ADR-011-deletion-evidence]]; this file is rewritten to match them once
-> they are accepted. Until then, say what the right-hand column says.
+> **Updated 2026-11-18 (W19).** The Mid review (2026-11-13) tested the built certificate against
+> this contract and found it claimed more than it had checked. ADR-010 and ADR-011 were accepted
+> that day to fix it. ADR-010's part (the verdict contract — tallies, the decision table,
+> `assurance`/`candidate_reasons`, schema v2) is now **built** (W19, Member 3,
+> [[evidence-m3]]); the table below reflects the real code. ADR-011's part (repeated-removal
+> deletion checks, claim S3) is **accepted but not yet built** (W20) — until then the report
+> says so honestly (`assurance.sequence.deletion: "NOT_YET_CHECKED"`), never a fabricated
+> `DELETION_VERIFIED`.
 
-| This contract says | The Mid build (`mid-eval-v1`) does | Say today |
+| This contract says | The Mid build (`mid-eval-v1`) did | The build now (W19, `eval/outcome.py`/`eval/report.py`) |
 | --- | --- | --- |
-| Verified: the victim passes alone | Counts only alone failures that **match the reference signature**. A victim failing alone with another exception is treated as passing (FT003) | "It never failed alone *with the same failure* in 20 runs. Other failures alone were not counted — a defect we are fixing" |
-| Verified: "sequence passed deletion checks" | `ddmin` tries each subset **once**; no deletion is repeated (FT004) | "Reduced by single-trial delta debugging. Not yet deletion-verified" |
-| Verified: "carries a resource path" | A static intersection of possible writes and reads; the first edge by depth and name is shown (FT005) | "A static overlap — a possible mechanism, not confirmed as the cause" |
-| Candidate: replays, but a requirement is unmet, "most often the resource path is missing" | No edge gives `UNRESOLVED(NO_SUPPORTED_RESOURCE_EVIDENCE)`; `CANDIDATE` only for a low replay bound (FT017) | Describe the code. ADR-010 proposes to follow this contract |
-| Unresolved always has a typed reason | One runner status produces no report at all (FT010) | "One status has no report yet" |
-| Four abstention reasons: unsupported resource, budget exhausted, unstable build, inconsistent outcomes | Seven different reasons exist; **budget exhausted** and **inconsistent outcomes** do not | ADR-010 adds both |
-| Contents: counterfactual checks, budget account, exact replay command, evidence bundle | None of the four exists | ADR-011, ADR-014, ADR-013 |
-| Checker: a third party re-running the replay command on a clean machine | No replay command; reports point at one machine's files (FT009) | ADR-013 |
+| Verified: the victim passes alone | Counted only alone failures that **matched the reference signature**. A victim failing alone with another exception was treated as passing (FT003) | **Fixed.** Any real alone failure, matching or not, withholds a verdict (`VICTIM_FAILS_ALONE`/`VICTIM_FAILS_ALONE_DIFFERENTLY`, ADR-010 rows 6–7) — confirmed through the real pipeline via fixture case N4 |
+| Verified: "sequence passed deletion checks" | `ddmin` tries each subset **once**; no deletion is repeated (FT004) | **Not yet.** Still single-trial `ddmin`; `assurance.sequence.deletion` reports `"NOT_YET_CHECKED"` rather than claiming `DELETION_VERIFIED` — ADR-011/W20 builds the real check |
+| Verified: "carries a resource path" | A static intersection of possible writes and reads; the first edge by depth and name is shown (FT005) | Unchanged: "a static overlap — a possible mechanism, not confirmed as the cause". `resource_edges` (new) lists every edge found, though still at most one per polluter until Member 1's W21 |
+| Candidate: replays, but a requirement is unmet, "most often the resource path is missing" | No edge gave `UNRESOLVED(NO_SUPPORTED_RESOURCE_EVIDENCE)`; `CANDIDATE` only for a low replay bound (FT017) | **Fixed (Q1, option A).** No edge now gives `CANDIDATE [NO_SUPPORTED_RESOURCE_EVIDENCE]`, matching this contract word for word |
+| Unresolved always has a typed reason | One runner status (`NO_SINGLE_POLLUTER`) produced no report at all (FT010) | **Fixed.** Renamed `INCONSISTENT`; gets a real, schema-valid report (`INCONSISTENT_OUTCOMES`). Exit code 3 ("no report yet") retired |
+| Four abstention reasons: unsupported resource, budget exhausted, unstable build, inconsistent outcomes | Seven different reasons existed; **budget exhausted** and **inconsistent outcomes** did not | `INCONSISTENT_OUTCOMES` is real and reachable. `BUDGET_EXHAUSTED` exists in the enum but is not yet reachable — ADR-014/W24 (the budget ledger) has not landed, so `decide()`'s `budget_exhausted` input always defaults `False` |
+| Contents: counterfactual checks, budget account, exact replay command, evidence bundle | None of the four existed | Still none built — ADR-011 (W20), ADR-014 (W24), ADR-013 (W23) |
+| Checker: a third party re-running the replay command on a clean machine | No replay command; reports point at one machine's files (FT009) | Still pending — ADR-013 (W23) |
 
 ---
 

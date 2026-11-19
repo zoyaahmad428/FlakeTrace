@@ -7,7 +7,11 @@ so re-running the pipeline and this script keeps the report in step.
 Reads only (never writes) eval/reports/. Writes mid-eval-report/tables/generated/.
 
 Run from the repository root:
-    python3 mid-eval-report/scripts/json_to_tex.py
+    python3 mid-eval-report/scripts/json_to_tex.py [--reports DIR]
+
+The Mid report is a closed record: its tables come from the reports as they were at tag
+mid-eval-v1 (schema v1). Since W19 (schema v2) eval/reports/ holds newer runs, so CI passes
+--reports with the tag's copy (.github/workflows/report.yml).
 """
 import json
 import re
@@ -74,6 +78,11 @@ def resource(d):
 
 
 def main():
+    global REPORTS
+    if len(sys.argv) == 3 and sys.argv[1] == "--reports":
+        REPORTS = Path(sys.argv[2])
+    elif len(sys.argv) != 1:
+        sys.exit("usage: json_to_tex.py [--reports DIR]")
     rows = []
     for case in CASES:
         path = REPORTS / f"{case}.json"

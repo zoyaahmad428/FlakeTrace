@@ -48,7 +48,9 @@ in-process and decides nothing itself:
   match the reference signature (claims ledger G1, FT003).
 - **Several polluters** (W10): evidence per polluter, combined by `combine_fields`: the first
   polluter's edge is shown, the others named in `limitations`, and only if **every** polluter has an
-  edge — otherwise no resource is shown (`UNRESOLVED(NO_SUPPORTED_RESOURCE_EVIDENCE)`).
+  edge — otherwise no resource is shown (`CANDIDATE [NO_SUPPORTED_RESOURCE_EVIDENCE]` since
+  ADR-010 Q1). Since W21 (PR #105) `combine_fields` also lists every polluter's edges in
+  `resource_edges`, each with its depth, so the report shows all of them.
 - **Report next to its record**: each report sits with the raw runs that back it, and the record
   path in it is relative when `--records` is (the default).
 
