@@ -6,7 +6,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from eval.baseline import RunTally
-from eval.outcome import DecisionInput, decide
+from eval.outcome import DELETION_VERIFIED, DecisionInput, decide
 from eval.schema_validator import validate_report
 
 EXAMPLES_DIR = Path(__file__).resolve().parents[1] / "examples"
@@ -28,17 +28,17 @@ EXPECTED_INPUTS = {
     "example_f1_verified.json": dict(
         source_integrity_passed=True, reference_established=True, infrastructure_failures_anywhere=0,
         alone=alone(20, 20), sequence=sequence(20, 0, matched=20),
-        resource_edge_exists=True,
+        resource_edge_exists=True, deletion_status=DELETION_VERIFIED,  # one kept polluter: free (ADR-011 s.2)
     ),
-    "example_f3_verified.json": dict(
+    "example_f3_candidate.json": dict(
         source_integrity_passed=True, reference_established=True, infrastructure_failures_anywhere=0,
         alone=alone(20, 20), sequence=sequence(20, 0, matched=20),
-        resource_edge_exists=True,
+        resource_edge_exists=True,  # deletion_status left None: two kept polluters, no free check (A1 fix)
     ),
     "example_candidate.json": dict(
         source_integrity_passed=True, reference_established=True, infrastructure_failures_anywhere=0,
         alone=alone(20, 20), sequence=sequence(20, 8, matched=12),
-        resource_edge_exists=True,
+        resource_edge_exists=True, deletion_status=DELETION_VERIFIED,
     ),
     "example_victim_fails_alone.json": dict(
         source_integrity_passed=True, reference_established=True, infrastructure_failures_anywhere=0,
@@ -68,7 +68,7 @@ EXPECTED_INPUTS = {
     "example_no_resource_evidence.json": dict(
         source_integrity_passed=True, reference_established=True, infrastructure_failures_anywhere=0,
         alone=alone(20, 20), sequence=sequence(20, 1, matched=19),
-        resource_edge_exists=False,
+        resource_edge_exists=False, deletion_status=DELETION_VERIFIED,
     ),
     "example_source_integrity_failed.json": dict(
         source_integrity_passed=False, reference_established=True, infrastructure_failures_anywhere=0,
@@ -84,7 +84,7 @@ EXPECTED_INPUTS = {
 # have (named isolation_successes/sequence_successes there -- "matched" now, same meaning).
 REAL_EXAMPLE_TO_LOG_CASE = {
     "example_f1_verified.json": "F1",
-    "example_f3_verified.json": "F3",
+    "example_f3_candidate.json": "F3",
     "example_victim_fails_alone.json": "N1",
     "example_victim_fails_alone_intermittent.json": "N2",
 }

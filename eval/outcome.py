@@ -35,12 +35,15 @@ assert the resource is the cause of the failure:
   S3 every kept test is needed   deletion checks (ADR-011, W20)
   R1 a static overlap exists     Member 1's edges (ADR-007, unchanged)
 
-S3 and budget (row 3) depend on work packages that have not landed yet (ADR-011/W20 deletion
-checks, ADR-014/W24 budget ledger). Both default to "not yet checked" / "not exhausted", which
-this decision table treats as satisfied -- the same defaulting convention eval/report.py already
-uses for infrastructure_failures and order_exploration, so this change does not regress any
-existing VERIFIED verdict (ADR-010 test T6) ahead of W20/W24 actually landing. See
-DecisionInput.deletion_status and .budget_exhausted below.
+Budget (row 3) depends on a work package that has not landed yet (ADR-014/W24); it defaults to
+"not exhausted", which no caller can report otherwise yet, so it can never regress a verdict on
+its own. S3 is different (A1 fail-safe fix, 2026-11-19): `deletion_status=None` ("not yet
+checked") does NOT satisfy S3 -- an unestablished claim is not an established one. The one case
+where S3 is actually free (ADR-011 section 2): a single kept polluter's deletion check IS the
+alone check, already run by the time row 12 is reached (rows 6-8 already gated alone clean) --
+eval/report.py computes DELETION_VERIFIED for that case and passes it in explicitly. Multiple
+kept polluters have no such free check yet (W20 builds the real one), so decide() correctly
+gives CANDIDATE for them until then -- see fixture F3 (two required polluters).
 """
 
 from dataclasses import dataclass
@@ -112,9 +115,9 @@ DELETION_NOT_YET_CHECKED = "NOT_YET_CHECKED"  # this module's addition -- see no
 VALID_DELETION_STATUSES = (
     DELETION_VERIFIED, DELETION_INCONCLUSIVE, DELETION_INCOMPLETE, DELETION_NOT_APPLICABLE,
 )
-# Values of deletion_status that satisfy claim S3 (do not block VERIFIED at row 12).
-# NOT_YET_CHECKED is deliberately not in VALID_DELETION_STATUSES (it is never a caller-supplied
-# value -- None means the same thing) but is treated the same way here.
+# Values of deletion_status that satisfy claim S3 (do not block VERIFIED at row 12). None and
+# NOT_YET_CHECKED are deliberately NOT here (A1 fail-safe fix, 2026-11-19): "not yet checked"
+# is not a satisfied claim.
 _DELETION_SATISFIES_S3 = (DELETION_VERIFIED, DELETION_NOT_APPLICABLE)
 
 
@@ -144,12 +147,14 @@ class DecisionInput:
     sequence was found. Defaults False until the budget ledger lands -- no caller can report it
     yet, so this can never regress an existing verdict."""
     deletion_status: Optional[str] = None
-    """ADR-011 claim S3 (W20, not yet built): the rolled-up NEEDED/NOT_NEEDED/INCONCLUSIVE
+    """ADR-011 claim S3 (W20, not yet fully built): the rolled-up NEEDED/NOT_NEEDED/INCONCLUSIVE
     outcome of repeated-removal checks on every kept test. One of VALID_DELETION_STATUSES, or
-    None for "not yet checked" (equivalent to DELETION_NOT_YET_CHECKED above) -- which this
-    decision table treats as satisfying S3, so a multi-polluter sequence (e.g. fixture F3) stays
-    VERIFIED exactly as it was before ADR-010/W19, until W20's real checks replace the default
-    (ADR-010 test T6: unchanged verdicts)."""
+    None for "not yet checked" (equivalent to DELETION_NOT_YET_CHECKED above). A1 fail-safe fix
+    (2026-11-19): None does NOT satisfy S3 -- an unestablished claim is not an established one.
+    A single kept polluter's check is free (ADR-011 section 2, the alone check already proves
+    it); eval/report.py computes that and passes a real DELETION_VERIFIED, not None. Multiple
+    kept polluters (e.g. fixture F3) have no free check yet, so they correctly read CANDIDATE
+    until W20 builds the real multi-test check."""
 
     def __post_init__(self):
         if self.alone.n <= 0:
@@ -278,7 +283,7 @@ def decide(d: DecisionInput) -> Decision:
     reasons = []
     if sequence_interval[0] < d.lower_bound_threshold:
         reasons.append(CANDIDATE_BELOW_REPLAY_THRESHOLD)
-    if d.deletion_status is not None and d.deletion_status not in _DELETION_SATISFIES_S3:
+    if d.deletion_status not in _DELETION_SATISFIES_S3:
         reasons.append(
             CANDIDATE_DELETION_EVIDENCE_INCONCLUSIVE if d.deletion_status == DELETION_INCONCLUSIVE
             else CANDIDATE_DELETION_EVIDENCE_INCOMPLETE

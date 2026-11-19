@@ -1224,3 +1224,43 @@ bug (alphabetical: M before S), why 31 random shuffles still didn't find it even
 placed the right class first (other tests in between reset the state), and why that is a
 genuine result about search quality, not a bug in the fixture or a reason to doubt step 2's
 premise confirmation.
+
+## 2026-11-19 — A1 fail-safe fix: F3 now honestly `CANDIDATE`, not `VERIFIED`
+
+**What was asked:** reverse my own W19 design choice (made and flagged for review on
+2026-11-18) where `deletion_status=None` satisfied claim S3 to avoid regressing F1–F4 to
+`CANDIDATE`. The member's explicit instruction: make it fail-safe — an unestablished claim
+should never count as established, even though it changes F3's reported outcome from
+`VERIFIED` to `CANDIDATE`.
+
+**What I kept:** the 13-row decision table's structure and all other rows unchanged — this is a
+one-line guard change (dropped `is not None` from row 12's check) plus one new, real computation
+in `eval/report.py` (ADR-011 §2's free deletion check for a single kept polluter), not a
+redesign.
+
+**What the member changed / decided:** nothing code-level — this was my fix on explicit
+instruction, written test-first (new test asserted CANDIDATE, confirmed it failed against the
+unfixed `VERIFIED`-producing code first, then fixed). The member will decide, when reviewing
+`git diff --staged`, whether the three mid-eval-report chapter edits (below) read right in their
+own words.
+
+**How it was verified:** test-first (ran the new assertions against the unfixed code, saw them
+fail with the wrong outcome, then fixed and reran green); full `eval/tests` suite 120/120; real
+`eval/tools/run_w9_integration.py` rerun confirms F1/F2/F4 stay `VERIFIED` and F3 now reports
+`CANDIDATE [DELETION_EVIDENCE_INCOMPLETE]`, matching `eval/outcome.decide()`'s own table exactly
+— not asserted, checked against the actual real-run output.
+
+**What I rejected / flagged rather than did myself:** did not edit M1's or M2's mid-eval-report
+chapters or `docs/07-Defense/claims-ledger.md` row E14, even though both now contain a stale
+"F3 ... VERIFIED" claim this same fix makes wrong — flagged both in `docs/evidence-m3.md`
+for the owning members, per `mid-eval-report/CLAUDE.md` §2 and root CLAUDE.md §1. Did fix the
+same issue in my own three owned files (`chapter8_testing.tex`, `chapter4_requirements.tex`,
+`appendix_test_cases.tex`) since leaving a known-false claim in my own graded chapter would be
+a bigger honesty problem than a narrow correction.
+
+Ownership checkpoint: be able to explain, without this log, exactly why F1/F2/F4 get a *free*
+deletion check (the alone run, already clean, already proves "removing the only kept polluter
+makes the victim pass" — that is ADR-011 §2's rule) while F3 does not (two required polluters
+means removing either one alone still isn't the full removal-check ADR-011 asks for — no JVM
+runs exist yet that check "remove both together", only the `ddmin` search that *found* them),
+and why that is a real gap (W20), not a bug in `ddmin` or in the fixture.

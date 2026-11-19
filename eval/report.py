@@ -43,6 +43,7 @@ from typing import Optional
 from eval.outcome import (
     CANDIDATE_BELOW_REPLAY_THRESHOLD,
     DELETION_NOT_YET_CHECKED,
+    DELETION_VERIFIED,
     OUTCOME_CANDIDATE,
     OUTCOME_UNRESOLVED,
     OUTCOME_VERIFIED,
@@ -139,6 +140,14 @@ def assemble_report(
         "stack_trace": ref.stack_trace,
     }
 
+    # ADR-011 section 2 (A1 fail-safe fix, 2026-11-19): a single kept polluter's deletion check
+    # IS the alone check, already run -- by the time row 12 is reached, rows 6-8 have already
+    # gated the alone tally fully clean (alone.passed == alone.n), which is exactly NEEDED's
+    # rule. Free, no new JVM runs. Two or more kept polluters have no such free check yet (W20
+    # builds the real repeated-removal one), so deletion_status stays None -- not satisfying,
+    # correctly giving CANDIDATE (e.g. fixture F3, two required polluters).
+    deletion_status = DELETION_VERIFIED if len(diagnosis.polluters) == 1 else None
+
     decision_input = DecisionInput(
         source_integrity_passed=diagnosis.source_integrity.passed,
         reference_established=(ref is not None),
@@ -148,7 +157,7 @@ def assemble_report(
         resource_edge_exists=edge_found,
         confidence=confidence,
         search_inconsistent=(diagnosis.status == INCONSISTENT),
-        deletion_status=None,  # ADR-011/W20 not yet landed -- see module docstring
+        deletion_status=deletion_status,
     )
     decision = decide(decision_input)
     reason = decision.unresolved_reason
@@ -186,11 +195,14 @@ def assemble_report(
                 "list as free text only, not as structured resourceEdge entries (ADR-010 "
                 "section 6; Member 1's W21 is what lists every edge structurally)."
             )
-        if decision.outcome in (OUTCOME_CANDIDATE, OUTCOME_VERIFIED):
+        if decision.outcome in (OUTCOME_CANDIDATE, OUTCOME_VERIFIED) and deletion_status is None:
+            # Two or more kept polluters: no free deletion check (ADR-011 section 2 only covers
+            # one), and W20's real repeated-removal check hasn't landed either.
             limitations.append(
-                "Reduced by single-trial delta debugging; not deletion-verified (ADR-011, W20 "
-                "not yet landed). assurance.sequence.deletion reports this honestly as "
-                "NOT_YET_CHECKED rather than DELETION_VERIFIED."
+                "Reduced by single-trial delta debugging; not deletion-verified for the kept "
+                "tests beyond the single-polluter case (ADR-011, W20 not yet landed). "
+                "assurance.sequence.deletion reports this honestly as NOT_YET_CHECKED rather "
+                "than DELETION_VERIFIED."
             )
 
     order_desc = "given" if getattr(diagnosis, "order_given", True) else "discovered"
@@ -299,7 +311,7 @@ def assemble_report(
                     else "ESTABLISHED"
                 ),
                 "passes_alone": "ESTABLISHED",
-                "deletion": DELETION_NOT_YET_CHECKED,
+                "deletion": deletion_status if deletion_status is not None else DELETION_NOT_YET_CHECKED,
             },
             "resource": {
                 "level": "STATIC_OVERLAP" if edge_found else "NONE",

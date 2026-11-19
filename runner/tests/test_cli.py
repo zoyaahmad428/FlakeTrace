@@ -198,8 +198,12 @@ class TestCombineFields(unittest.TestCase):
         report = assemble_report(runs_, fields)
         # ADR-010 section 4 (Q1, option A, 2026-11-13): a reproducing, passes-alone sequence
         # with no resource edge is CANDIDATE now, not UNRESOLVED (M3, flagged for M2's review).
+        # A1 fix (2026-11-19): two kept polluters also means no free deletion check.
         self.assertEqual((report["outcome"], report["unresolved_reason"]), ("CANDIDATE", None))
-        self.assertEqual(report["candidate_reasons"], ["NO_SUPPORTED_RESOURCE_EVIDENCE"])
+        self.assertEqual(
+            set(report["candidate_reasons"]),
+            {"DELETION_EVIDENCE_INCOMPLETE", "NO_SUPPORTED_RESOURCE_EVIDENCE"},
+        )
         self.assertNotIn("No polluter-write/victim-read resource edge was found by static analysis.",
                          report["limitations"])
 
@@ -493,10 +497,14 @@ class TestCliOnFixture(unittest.TestCase):
         self.assertEqual(report["victim_read_location"],
                          {"class": "odfixture.FeatureFlags", "method": "isTurboEnabled", "bytecode_offset": 2})
 
-    def test_f3_two_polluters_verified(self):
+    def test_f3_two_polluters_candidate(self):
+        # A1 fail-safe fix (2026-11-19, eval/outcome.py): ADR-011 section 2's free deletion
+        # check only covers a single kept polluter (the alone check proves it). F3 keeps two,
+        # so it is honestly CANDIDATE until W20 builds the real multi-test check -- not VERIFIED.
         code, out, err, report = self.diagnose("odfixture.ToggleVictimTest#expectsNotBothFlagsSet", 20)
         self.assertEqual(code, 0, err)
-        self.assertEqual(report["outcome"], "VERIFIED")
+        self.assertEqual(report["outcome"], "CANDIDATE")
+        self.assertEqual(report["candidate_reasons"], ["DELETION_EVIDENCE_INCOMPLETE"])
         self.assertEqual(report["polluters"], [{"class": "odfixture.ToggleAPolluterTest", "method": "setFlagA"},
                                                {"class": "odfixture.ToggleBPolluterTest", "method": "setFlagB"}])
         self.assertEqual(report["shared_resource"], {"kind": "static-field", "class": "odfixture.Toggles", "field": "flagA"})

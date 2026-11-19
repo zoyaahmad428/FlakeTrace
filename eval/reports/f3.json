@@ -158,14 +158,16 @@
     "stack_trace": "org.junit.Assert.fail:87\norg.junit.Assert.assertTrue:42\norg.junit.Assert.assertFalse:65\norg.junit.Assert.assertFalse:75\nodfixture.ToggleVictimTest.expectsNotBothFlagsSet:14"
   },
   "instrumentation_level": "static-only",
-  "execution_record_reference": "C:\\Users\\zarpa\\OneDrive\\Documents\\GitHub\\FlakeTracee\\eval\\reports\\flaketrace-records\\20261118T190908Z-odfixture.ToggleVictimTest#expectsNotBothFlagsSet.jsonl",
+  "execution_record_reference": "C:\\Users\\zarpa\\OneDrive\\Documents\\GitHub\\FlakeTracee\\eval\\reports\\flaketrace-records\\20261119T182152Z-odfixture.ToggleVictimTest#expectsNotBothFlagsSet.jsonl",
   "source_integrity": {
     "passed": true,
     "details": "26 files hashed (SHA-256) before and after; all identical"
   },
-  "outcome": "VERIFIED",
+  "outcome": "CANDIDATE",
   "unresolved_reason": null,
-  "candidate_reasons": [],
+  "candidate_reasons": [
+    "DELETION_EVIDENCE_INCOMPLETE"
+  ],
   "limitations": [
     "instrumentation_level is static-only; runtime instrumentation is not built.",
     "Static analysis only; no runtime evidence (Iteration 2).",
@@ -177,7 +179,7 @@
     "Missing evidence is not proof of independence.",
     "Polluter odfixture.ToggleBPolluterTest#setFlagB: shared resource odfixture.Toggles#flagB is not shown in this report",
     "resource_edges lists only the primary edge: Member 1's extractor reports one edge at a time, so a multi-polluter sequence's other edge(s) are named in this list as free text only, not as structured resourceEdge entries (ADR-010 section 6; Member 1's W21 is what lists every edge structurally).",
-    "Reduced by single-trial delta debugging; not deletion-verified (ADR-011, W20 not yet landed). assurance.sequence.deletion reports this honestly as NOT_YET_CHECKED rather than DELETION_VERIFIED."
+    "Reduced by single-trial delta debugging; not deletion-verified for the kept tests beyond the single-polluter case (ADR-011, W20 not yet landed). assurance.sequence.deletion reports this honestly as NOT_YET_CHECKED rather than DELETION_VERIFIED."
   ],
   "assurance": {
     "sequence": {
