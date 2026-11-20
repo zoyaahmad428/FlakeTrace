@@ -135,5 +135,16 @@ class TestBudgetedRunner(unittest.TestCase):
         self.assertEqual((account.candidates_total, account.candidates_tried), (10, 3))
 
 
+    def test_write_event_forwards_and_the_account_names_the_policy(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "r.jsonl"
+            runner = ledger(RecordingRunner(passing(), path, {}))
+            runner.write_event({"type": "ranking"})
+            self.assertEqual(json.loads(path.read_text(encoding="utf-8").splitlines()[-1]), {"type": "ranking"})
+        ledger(passing()).write_event({"type": "ranking"})  # no recorder: nothing to write, no error
+        account = runner.account(10, policy="ranked", analysis_seconds=2.0)
+        self.assertEqual((account.policy, account.analysis_seconds), ("ranked", 2.0))
+
+
 if __name__ == "__main__":
     unittest.main()

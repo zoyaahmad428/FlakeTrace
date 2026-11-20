@@ -11,6 +11,8 @@ from pathlib import Path
 from eval.baseline import FailureSignature, RunOutcome, RunTally, TestIdentifier
 from eval.tests.fake_runner import FakeOrderRunner
 from runner.budget import Budget
+from runner.policy import SearchPolicy
+from runner.tests.test_policy import FakeRanker
 from runner.deletion import ALONE_CHECK, DELETION_RUN, NEEDED, NOT_NEEDED, NOT_RUN
 from runner.discovery import DEFAULT_SELECTION, DiscoveryConfigError
 from runner.recording import RecordingRunner
@@ -95,7 +97,8 @@ class TestRunSteps(unittest.TestCase):
         record = Path(tempfile.mkdtemp(prefix="flaketrace-rec-")) / "r.jsonl"
         runner = RecordingRunner(victim_fails_when(lambda order: A in order and B in order), record, {})
         run_steps(runner, [A, LATER, B, V], V, n=1)
-        steps = [json.loads(line)["step"] for line in record.read_text(encoding="utf-8").splitlines()[1:]]
+        lines = [json.loads(line) for line in record.read_text(encoding="utf-8").splitlines()[1:]]
+        steps = [line["step"] for line in lines if line["type"] == "run"]  # W25 adds a ranking line
         self.assertIn("minimise", steps)
         self.assertEqual(steps.index("minimise"), steps.index("search") + steps.count("search"))
 
@@ -374,7 +377,8 @@ class TestDeletionChecks(unittest.TestCase):
         record = Path(tempfile.mkdtemp(prefix="flaketrace-rec-")) / "r.jsonl"
         runner = RecordingRunner(victim_fails_when(lambda order: A in order and B in order), record, {})
         run_steps(runner, [A, LATER, B, V], V, n=1)
-        lines = [json.loads(line) for line in record.read_text(encoding="utf-8").splitlines()[1:]]
+        lines = [line for line in (json.loads(x) for x in record.read_text(encoding="utf-8").splitlines()[1:])
+                 if line["type"] == "run"]  # W25 adds a ranking line
         steps = [line["step"] for line in lines]
         # ADR-011 "Consequences": step `deletion`, with the removed test, so ADR-013's recount can redo each tally.
         self.assertEqual(steps.count("deletion"), 2)
@@ -531,7 +535,10 @@ class TestDiagnoseOnFixture(unittest.TestCase):
         self.assertEqual((runs.sequence_tally.matched, runs.sequence_tally.n), (20, 20))
         self.assertEqual((runs.alone_tally.matched, runs.alone_tally.n), (0, 20))
         record = Path(runs.execution_record).read_text(encoding="utf-8").splitlines()
-        self.assertEqual(len(record), 1 + 1 + 20 + runs.search_runs + 20)  # no deletion runs: one polluter
+        types = [json.loads(line)["type"] for line in record]
+        # No deletion runs: one polluter. W25 adds one ranking line (Interface 7, P6).
+        self.assertEqual((types.count("run"), types.count("ranking"), len(types)),
+                         (1 + 20 + runs.search_runs + 20, 1, 1 + 1 + 1 + 20 + runs.search_runs + 20))
         self.assertEqual([(c.status, c.source) for c in runs.deletion_checks], [(NEEDED, ALONE_CHECK)])
         header = json.loads(record[0])
         self.assertRegex(header["project_commit"], r"^[0-9a-f]{40}$")
@@ -749,6 +756,101 @@ class TestBudget(unittest.TestCase):
 class StepAware(FakeOrderRunner):
     """A fake runner that can see the step label, for a ddmin that behaves differently (FT004-style)."""
     step = "unlabelled"
+
+
+class TestSearchPolicy(unittest.TestCase):
+    """W25, Interface 7 (P1-P6) and ADR-014's policy tests, on the fake runner and FakeRanker."""
+
+    C = [TestIdentifier(f"pkg.C{i}Test", "c") for i in range(10)]
+
+    def fails_after(self, test):
+        return victim_fails_when(lambda order: test in order[:-1])
+
+    def ranked(self, edges=None, asked=None):
+        def ranker_for(candidates, victim):
+            if asked is not None:
+                asked.append(list(candidates))
+            return FakeRanker(candidates, edges=edges or {}, cut_off=False, seconds_per_rank=1.25)
+        return ranker_for
+
+    def test_original_policy_changes_nothing(self):
+        runner = self.fails_after(self.C[9])
+        runs = run_steps(runner, self.C + [V], V, n=20)
+        self.assertEqual(len(runner.calls), 51)
+        self.assertEqual((runs.search.policy, runs.budget.policy, runs.budget.analysis_seconds),
+                         ("original", "original", None))
+
+    def test_ranked_tries_one_pair_where_original_tries_nine(self):
+        original = run_steps(self.fails_after(self.C[8]), self.C + [V], V, n=20)
+        ranked = run_steps(self.fails_after(self.C[8]), self.C + [V], V, n=20, policy="ranked",
+                           ranker_for=self.ranked({2: {8: 1}}))
+        self.assertEqual((original.budget.spent["search"], ranked.budget.spent["search"]), (18, 2))
+        self.assertEqual((original.status, original.polluters), (ranked.status, ranked.polluters))
+        self.assertEqual(sum(original.budget.spent.values()) - sum(ranked.budget.spent.values()), 16)
+        self.assertEqual((ranked.search.depths, ranked.search.candidates_with_evidence), ([2], 1))
+
+    def test_candidates_are_the_order_searched(self):
+        asked = []
+        runner = victim_fails_when(lambda order: self.C[9] in order[:-1] and order[0] != self.C[0])
+        runs = run_steps(runner, self.C + [V], V, n=2, shuffles=31, policy="ranked", ranker_for=self.ranked(asked=asked))
+        self.assertIsNotNone(runs.reproducing_seed)
+        self.assertEqual(asked, [runs.original_order[:-1]])
+
+    def test_ranking_line_comes_before_the_first_search_run(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "r.jsonl"
+            run_steps(RecordingRunner(self.fails_after(self.C[8]), path, {}), self.C + [V], V, n=20,
+                      policy="ranked", ranker_for=self.ranked({2: {8: 1}}))
+            lines = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+        at = next(i for i, line in enumerate(lines) if line["type"] == "ranking")
+        self.assertEqual((lines[at - 1]["step"], lines[at + 1]["step"]), ("alone", "search"))
+        ranking = lines[at]
+        self.assertEqual((ranking["policy"], ranking["scope"], ranking["depths"], ranking["note"]),
+                         ("ranked", "module", [2], None))
+        self.assertEqual((ranking["order"][0], len(ranking["order"]), ranking["scores"][0]),
+                         (str(self.C[8]), 10, [1, 2, 8]))
+
+    def test_analysis_seconds_in_the_account(self):
+        runs = run_steps(self.fails_after(self.C[8]), self.C + [V], V, n=20, policy="ranked",
+                         ranker_for=self.ranked({2: {8: 1}}))
+        self.assertEqual((runs.budget.policy, runs.budget.analysis_seconds), ("ranked", 1.25))
+
+    def test_random_policy_uses_the_seed(self):
+        first, second = self.fails_after(self.C[8]), self.fails_after(self.C[8])
+        runs = run_steps(first, self.C + [V], V, n=20, policy="random", seed_base=7)
+        run_steps(second, self.C + [V], V, n=20, policy="random", seed_base=7)
+        self.assertEqual((runs.search.policy, runs.search.seed), ("random", 7))
+        self.assertEqual(first.calls, second.calls)
+
+    def test_status_that_never_searches_still_has_a_search_policy(self):
+        def never(candidates, victim):
+            raise AssertionError("no search, so no ranking")
+        runs = run_steps(victim_fails_when(lambda order: True), self.C + [V], V, n=3, policy="ranked", ranker_for=never)
+        self.assertEqual(runs.status, VICTIM_FAILS_ALONE)
+        self.assertEqual(runs.search, SearchPolicy("ranked", "module", None, [], 0.2, None, None))
+
+
+class TestRunStepsPolicyInputs(unittest.TestCase):
+    """Review findings 5 and 7: wrong policy inputs are refused before any JVM run."""
+
+    def test_ranked_without_a_ranker_and_priority_with_a_policy_are_refused(self):
+        for kwargs in ({"policy": "ranked"}, {"policy": "best"}, {"policy": "random", "priority": [A]},
+                       {"policy": "ranked", "priority": [A], "ranker_for": lambda c, v: None}):
+            runner = victim_fails_when(lambda order: A in order)
+            with self.assertRaises(DiagnoseInputError, msg=kwargs):
+                run_steps(runner, [A, B, V], V, n=2, **kwargs)
+            self.assertEqual(runner.calls, [], kwargs)
+
+
+class TestDiagnosePolicyInputs(unittest.TestCase):
+    def test_scope_package_with_an_order_is_refused(self):
+        empty = Path(tempfile.mkdtemp(prefix="flaketrace-empty-"))
+        with self.assertRaisesRegex(DiagnoseInputError, "cannot be combined with --order"):
+            diagnose(empty, V, original_order=[V], scope="package")
+        with self.assertRaisesRegex(DiagnoseInputError, "policy"):
+            diagnose(empty, V, policy="best")
+        with self.assertRaisesRegex(DiagnoseInputError, "scope"):
+            diagnose(empty, V, scope="class")
 
 
 if __name__ == "__main__":
