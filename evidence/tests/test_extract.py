@@ -593,3 +593,61 @@ class Ft005ControlsTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+SCHEMA_PATH = os.path.join(REPO_ROOT, "eval", "schema", "report.schema.json")
+try:
+    import jsonschema
+    from referencing import Registry, Resource
+    HAS_JSONSCHEMA = True
+except ImportError:
+    HAS_JSONSCHEMA = False
+NO_JSONSCHEMA = "jsonschema not installed: pip install -r eval/requirements.txt"
+
+
+@needs(HAS_JSONSCHEMA, NO_JSONSCHEMA)
+@needs(os.path.isdir(FIXTURE_DIRS[1]),
+       "fixture not compiled: run mvn -B -q -f fixtures/od-fixture/pom.xml test-compile")
+@needs(os.path.isdir(CONTROLS_DIRS[1]), NO_CONTROLS)
+@needs(os.path.isdir(TEST_CLASSES), NO_SELFTEST)
+@needs(HAS_JAVAP, NO_JAVAP)
+class ReportSchemaContractTest(unittest.TestCase):
+    """Every field report_fields returns is valid under the report schema (PR #106, schema v2).
+
+    This is the M1 -> M3 boundary: Member 3's eval/report.py copies these fields into the
+    report, so a field the schema rejects would break every report. The schema is read, never
+    edited, here (docs/contracts/report-schema.md).
+    """
+
+    PAIRS = [  # (class dirs, polluter, victim, edges expected)
+        (FIXTURE_DIRS, "odfixture.ConfigPolluterTest#pollute", "odfixture.ConfigVictimTest#expectsDefaultMode", 1),
+        (FIXTURE_DIRS, "odfixture.FeaturePolluterTest#enableTurbo", "odfixture.FeatureVictimTest#expectsTurboDisabled", 1),
+        (FIXTURE_DIRS, "odfixture.ToggleAPolluterTest#setFlagA", "odfixture.ToggleVictimTest#expectsNotBothFlagsSet", 1),
+        (FIXTURE_DIRS, "odfixture.ZzzLatePolluterTest#setLateFlag", "odfixture.AlwaysEarlyVictimTest#expectsLateFlagUnset", 1),
+        (CONTROLS_DIRS, "controls.RestoringPolluterTest#pollute", "controls.RestoringVictimTest#check", 1),
+        (CONTROLS_DIRS, "controls.TwoFieldPolluterTest#pollute", "controls.TwoFieldVictimTest#check", 2),
+        ([CLASSES, TEST_CLASSES], "m1selftest.M1SelfTest#writesAndReads", "m1selftest.M1LifecycleSelfTest#emptyBody", 1),
+        # No edge: shared_resource and both locations are null, which the schema must also accept.
+        ([CLASSES, TEST_CLASSES], "m1selftest.M1Junit3SelfTest#testNothing", "m1selftest.M1UnsupportedSelfTest#tricky", 0),
+    ]
+
+    @classmethod
+    def setUpClass(cls):
+        with open(SCHEMA_PATH) as f:
+            cls.schema = json.load(f)
+        cls.registry = Registry().with_resource("urn:report", Resource.from_contents(cls.schema))
+
+    def errors(self, key, value):
+        validator = jsonschema.Draft202012Validator({"$ref": "urn:report#/properties/" + key},
+                                                    registry=self.registry)
+        return [e.message for e in validator.iter_errors(value)]
+
+    def test_every_field_is_a_schema_property_and_valid(self):
+        for dirs, polluter, victim, expected_edges in self.PAIRS:
+            with self.subTest(polluter=polluter, victim=victim):
+                fields = extract.report_fields(analyse_pair(dirs, polluter, victim))
+                self.assertEqual(len(fields["resource_edges"]), expected_edges)
+                for key, value in fields.items():
+                    self.assertIn(key, self.schema["properties"], "report_fields returns a field "
+                                  "the schema does not have: " + key)
+                    self.assertEqual(self.errors(key, value), [], key)

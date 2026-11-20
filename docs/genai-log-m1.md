@@ -564,3 +564,29 @@ committing.
 restores the old tests); recorded for M2.
 
 **Rejections:** none.
+
+## 2026-11-20 — PR #106 check: report schema v2 against `report_fields` (A4)
+
+**Assistance level:** L3 (Core-assist): the assistant wrote the contract test and a one-off
+comparison script, ran both in its cloud container, broke `depth` once to show the test can fail,
+and drafted this entry and my PR #106 comment.
+
+**What I asked:** check PR #106's schema change against `evidence/extract.py` output and draft my
+approval comment.
+
+**What was retained:** `ReportSchemaContractTest` in `evidence/tests/test_extract.py`, the entry
+in [[evidence-m1]], and the comment on PR #106.
+
+**What I changed:** ran the test and the full suite myself on my laptop; read the test and the
+diff before committing.
+
+**How it was verified:** test OK and the full evidence suite at 46 OK, both in the container and on
+my laptop (JDK 25, Python 3.11.9); the deliberate `depth = -1` run (container only) failed as
+expected.
+
+**Errors found:** the first draft of the test guessed the edge counts for two self-test pairs, and
+both guesses were wrong (`0 != 1`, `1 != 0`). They were replaced with pairs whose edges
+`PairSelfTest` already asserts.
+
+**Rejections:** editing the schema or `eval/report.py`, which are not mine. A committed comparison
+script, because the unit test covers what needs to stay checked.
