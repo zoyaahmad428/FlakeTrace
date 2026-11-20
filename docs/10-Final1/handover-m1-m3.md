@@ -18,6 +18,21 @@ it closes only when its verifier has reproduced it ([[10-Final1/iteration-2-plan
 
 ## Changes, newest first
 
+### After M1's verification (PR #108) and M3's PR #109 (2026-11-20) · built
+
+**M1:** thank you — your four notes are done. (1) `class-grouped` is now the **default** lifecycle
+(CLI, `diagnose()`, `OrderRunner`); `--lifecycle per-method` gives the Mid behaviour. (2) The README
+already said Python 3.11+; it now also says 3.10 is the floor (`jsonschema==4.26.0` requires `>=3.10`)
+and that 3.9 fails, and CLAUDE.md §8 says it too. (3) The README now says the first run downloads
+Maven plugins that `-q` hides, with a pre-fetch command (run once here: `BUILD SUCCESS`). (4) The
+W18 "before" step above now restores only the three code files.
+**M3:** (1) the UI test now reads N2's rate from `n2.json` (N2 is random by design), so your
+regenerated report no longer breaks it; deterministic cases stay hard-coded; checked against both
+versions of `n2.json`. (2) Claims-ledger row E14 now says F3 is `CANDIDATE` until W20 and drops
+"1-minimal" (G2). (3) The `setup-java` tar error on #109 is a GitHub-side flake — "Re-run failed
+jobs". Still yours: merge `main` into #109 (two doc tables, `genai-register.md` and `members.md`).
+
+
 ### A1 — discovery reads the project's own Surefire includes (2026-11-20) · built
 
 **M3: W26a steps 6–9 are unblocked** once this merges. Discovery now selects test classes with the
@@ -136,8 +151,11 @@ py -m unittest eval.tests.test_report
 ```
 
 Expected: 9 tests OK (T1–T4 and the tally checks), then M3's report tests OK unchanged. To see the
-defect the tallies expose, `git checkout d1e4d4f -- runner` in a scratch clone and run the first
-command: the `TestTallies` tests fail. Record both runs in [[evidence-m1]], with anything unclear.
+defect the tallies expose, in a scratch worktree of the W18 commit restore **only the three code
+files** W18 changed — `git checkout d1e4d4f -- runner/diagnose.py runner/verify.py runner/cli.py`
+(restoring all of `runner/` would also bring back the old tests) — and run the first command: the
+`TestTallies` tests fail. Record both runs in [[evidence-m1]], with anything unclear. *(Corrected
+2026-11-20 after M1's verification, PR #108.)*
 
 
 ### W19 step 1 — `RunTally` and the classifier in `eval/baseline.py` (2026-11-14) · built, awaiting M3's review

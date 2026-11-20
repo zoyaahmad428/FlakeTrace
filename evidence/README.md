@@ -1,6 +1,6 @@
 # evidence/ — resource evidence (Member 1)
 
-**Owner:** Member 1 · **State:** Phases 2–6 done and ADR-006 implemented (2026-10-10): lifecycle attribution, call depth 1–5 (default 2), single-test mode, polluter→victim edges with pair-mode auto-deepening, validated against the fixture's ground truth and real fastjson.
+**Owner:** Member 1 · **State:** Phases 2–6 done and ADR-006 implemented (2026-10-10): lifecycle attribution, call depth 1–5 (default 2), single-test mode, polluter→victim edges with pair-mode auto-deepening, validated against the fixture's ground truth and real fastjson. W25 (2026-11-20): `rank_candidates` orders candidate polluters by static evidence, with a per-test cache. Built and tested on M1's own classes only, and not yet measured on any case.
 
 Reports the resources a polluter may write and a victim may read, from **compiled bytecode
 only**: a **static overlap — a possible mechanism, not confirmed as the cause** (claims ledger G3).
@@ -73,6 +73,21 @@ the three fields of Member 3's report (`shared_resource`, `polluter_write_locati
 in the contract's order, each with its first write and read location and its depth (W21, ADR-010).
 Every edge is a static overlap, not a confirmed cause. In-process callers use
 `extract.analyse_pair(project, polluter_id, victim_id)` to get the pair with deepening.
+
+**Ranking (W25, ADR-014 §5).** `extract.rank_candidates(project, victim, candidates, depth=2,
+cache=None)` returns one `RankedCandidate(test, score, reasons, note)` per candidate, ordered by
+a fixed rule with no weights:
+1. the most resources the candidate writes and the victim reads;
+2. then the shallowest such edge;
+3. then the original position.
+
+`score` is `(resources shared, shallowest depth or None, original position)`; `reasons` are the
+edges in `resource_edges` form. With no evidence the order is unchanged. No candidate is ever
+dropped: one that cannot be analysed is kept and its `note` says why. An `AnalysisCache` analyses
+each test once per depth, so N candidates cost N + 1 analyses; its `analysed` and `seconds` fields
+feed the budget's `analysis_seconds`. Ranking orders the search; it never says what caused a
+failure. This function does not deepen: when to deepen is the planner's decision (ADR-014 §6,
+Member 2).
 
 Depth follows calls into the project's own classes only (never the JDK or other jars),
 breadth-first, each method once per root. A virtual call follows only the method it names;

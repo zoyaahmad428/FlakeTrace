@@ -651,3 +651,132 @@ class ReportSchemaContractTest(unittest.TestCase):
                     self.assertIn(key, self.schema["properties"], "report_fields returns a field "
                                   "the schema does not have: " + key)
                     self.assertEqual(self.errors(key, value), [], key)
+
+
+def fake_analysis(test_id, accesses):
+    """analyse_test's shape for one test, built by hand (no JVM)."""
+    test_class, test_method = test_id.split("#", 1)
+    return {"test": {"class": test_class, "method": test_method}, "accesses": accesses,
+            "unsupported_observations": [], "external_calls_not_followed": []}
+
+
+class RankCandidatesTest(unittest.TestCase):
+    """W25 / ADR-014 section 5: the ranking rule, on hand-built analyses (no JVM).
+
+    The rule: a candidate that WRITES more resources the victim READS comes first; ties go to the
+    shallower edge; then to the original position. A candidate with no edge is kept, never dropped.
+    These tests use no fixture and no real case: the rule is fixed before it meets ground truth
+    (iteration-2-plan rule 4).
+    """
+
+    VICTIM = "p.VictimTest#check"
+
+    def resource(self, name):
+        return {"kind": "static-field", "class": "p.State", "field": name}
+
+    def writer(self, test_id, writes):
+        """A candidate that writes each (field, depth) in `writes`."""
+        cls, method = test_id.split("#")
+        return fake_analysis(test_id, [fake_access("p.State#" + f, self.resource(f), "WRITE", cls, method, i, d)
+                                       for i, (f, d) in enumerate(writes)])
+
+    def cache_with(self, candidates, victim_reads):
+        """An AnalysisCache already holding the victim and every candidate, so nothing runs javap."""
+        cache = extract.AnalysisCache()
+        cache.put(self.VICTIM, extract.DEFAULT_DEPTH, fake_analysis(self.VICTIM, [
+            fake_access("p.State#" + f, self.resource(f), "READ", "p.VictimTest", "check", i, d)
+            for i, (f, d) in enumerate(victim_reads)]))
+        for test_id, writes in candidates:
+            cache.put(test_id, extract.DEFAULT_DEPTH, self.writer(test_id, writes))
+        return cache
+
+    def rank(self, candidates, victim_reads):
+        cache = self.cache_with(candidates, victim_reads)
+        return extract.rank_candidates(None, self.VICTIM, [t for t, _ in candidates], cache=cache)
+
+    def test_the_only_candidate_with_an_edge_goes_first_the_rest_keep_their_order(self):
+        # ADR-014's scripted case: the polluter is candidate 9 of 10 and the only one with an edge.
+        candidates = [("p.T%d#t" % i, [("other%d" % i, 1)]) for i in range(1, 11)]
+        candidates[8] = ("p.T9#t", [("x", 1)])
+        ranked = self.rank(candidates, [("x", 1)])
+        self.assertEqual([r.test for r in ranked],
+                         ["p.T9#t"] + ["p.T%d#t" % i for i in (1, 2, 3, 4, 5, 6, 7, 8, 10)])
+        self.assertEqual(ranked[0].score, (1, 1, 8))
+        self.assertEqual([e["shared_resource"]["field"] for e in ranked[0].reasons], ["x"])
+
+    def test_no_evidence_at_all_gives_exactly_the_original_order(self):
+        candidates = [("p.T%d#t" % i, [("unread%d" % i, 1)]) for i in range(1, 6)]
+        ranked = self.rank(candidates, [("x", 1)])
+        self.assertEqual([r.test for r in ranked], [t for t, _ in candidates])
+        self.assertTrue(all(r.reasons == [] and r.score[0] == 0 and r.score[1] is None for r in ranked))
+
+    def test_more_shared_resources_first_then_shallower_then_earlier(self):
+        candidates = [("p.Late#one", [("x", 1)]),           # 1 resource, depth 1, position 0
+                      ("p.Deep#one", [("x", 2)]),           # 1 resource, depth 2
+                      ("p.Two#both", [("x", 2), ("y", 2)]),  # 2 resources: strongest
+                      ("p.Tie#one", [("y", 1)])]            # 1 resource, depth 1, position 3
+        ranked = self.rank(candidates, [("x", 1), ("y", 1)])
+        self.assertEqual([r.test for r in ranked], ["p.Two#both", "p.Late#one", "p.Tie#one", "p.Deep#one"])
+        self.assertEqual([r.score for r in ranked], [(2, 2, 2), (1, 1, 0), (1, 1, 3), (1, 2, 1)])
+
+    def test_edge_depth_is_the_deeper_side_of_the_edge(self):
+        # Same definition as resource_edges' depth: write at depth 1, read at depth 2 -> depth 2.
+        ranked = self.rank([("p.A#a", [("x", 1)])], [("x", 2)])
+        self.assertEqual(ranked[0].score, (1, 2, 0))
+        self.assertEqual(ranked[0].reasons[0]["depth"], 2)
+
+    def test_ranking_changes_the_order_never_the_candidate_set(self):
+        candidates = [("p.T%d#t" % i, [("x", 1)] if i % 3 == 0 else []) for i in range(1, 10)]
+        ranked = self.rank(candidates, [("x", 1)])
+        self.assertEqual(sorted(r.test for r in ranked), sorted(t for t, _ in candidates))
+        self.assertEqual(len(ranked), len(candidates))
+
+    def test_reasons_are_report_shaped_static_overlaps(self):
+        ranked = self.rank([("p.A#a", [("x", 1)])], [("x", 1)])
+        self.assertEqual(ranked[0].reasons, [{
+            "shared_resource": self.resource("x"),
+            "polluter_write_location": {"class": "p.A", "method": "a", "bytecode_offset": 0},
+            "victim_read_location": {"class": "p.VictimTest", "method": "check", "bytecode_offset": 0},
+            "depth": 1}])
+
+
+@needs(os.path.isdir(CONTROLS_DIRS[1]), NO_CONTROLS)
+@needs(HAS_JAVAP, NO_JAVAP)
+class RankCandidatesControlsTest(unittest.TestCase):
+    """rank_candidates on M1's own FT005 control classes (not a fixture, no ground truth)."""
+
+    VICTIM = "controls.RestoringVictimTest#check"
+    CANDIDATES = ["controls.TwoFieldPolluterTest#pollute", "controls.TwoFieldVictimTest#check",
+                  "controls.RestoringPolluterTest#pollute"]
+
+    def test_the_candidate_with_a_static_overlap_goes_first(self):
+        ranked = extract.rank_candidates(extract.Project(CONTROLS_DIRS), self.VICTIM, self.CANDIDATES)
+        self.assertEqual([r.test for r in ranked], ["controls.RestoringPolluterTest#pollute",
+                                                    "controls.TwoFieldPolluterTest#pollute",
+                                                    "controls.TwoFieldVictimTest#check"])
+        self.assertEqual(ranked[0].score, (1, 1, 2))
+        self.assertEqual([e["shared_resource"]["field"] for e in ranked[0].reasons], ["restored"])
+        # A static overlap ranks first even though this polluter restores the value: ranking orders
+        # the search, it never says what caused the failure (ledger G3).
+
+    def test_each_test_is_analysed_once_n_plus_one(self):
+        cache = extract.AnalysisCache()
+        project = extract.Project(CONTROLS_DIRS)
+        extract.rank_candidates(project, self.VICTIM, self.CANDIDATES, cache=cache)
+        self.assertEqual(cache.analysed, len(self.CANDIDATES) + 1)
+        self.assertGreater(cache.seconds, 0.0)
+        extract.rank_candidates(project, self.VICTIM, self.CANDIDATES, cache=cache)
+        self.assertEqual(cache.analysed, len(self.CANDIDATES) + 1)   # second ranking: all cached
+
+    def test_a_candidate_that_cannot_be_analysed_is_kept_with_a_note(self):
+        ranked = extract.rank_candidates(extract.Project(CONTROLS_DIRS), self.VICTIM,
+                                         ["controls.NoSuchTest#x", "controls.RestoringPolluterTest#pollute"])
+        self.assertEqual([r.test for r in ranked], ["controls.RestoringPolluterTest#pollute",
+                                                    "controls.NoSuchTest#x"])
+        self.assertEqual(ranked[1].reasons, [])
+        self.assertIn("class not found", ranked[1].note)
+        self.assertIsNone(ranked[0].note)
+
+    def test_a_victim_that_cannot_be_analysed_is_an_error(self):
+        with self.assertRaises(extract.ExtractError):
+            extract.rank_candidates(extract.Project(CONTROLS_DIRS), "controls.NoSuchTest#x", self.CANDIDATES)

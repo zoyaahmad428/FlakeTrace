@@ -43,9 +43,9 @@ def main(argv=None) -> int:
     command.add_argument("--shuffles", type=int, default=31,
                          help="distinct shuffled orders to try if the order never fails (default 31)")
     command.add_argument("--seed", type=int, default=0, help="first shuffle seed (default 0)")
-    command.add_argument("--lifecycle", choices=LIFECYCLES, default="per-method",
-                         help="per-method: @BeforeClass per test (default, as at the Mid); class-grouped: once "
-                              "per run of same-class tests, as under Maven Surefire (ADR-012)")
+    command.add_argument("--lifecycle", choices=LIFECYCLES, default="class-grouped",
+                         help="class-grouped (default): @BeforeClass once per run of same-class tests, as under "
+                              "Maven Surefire (ADR-012; verified by M1); per-method: once per test, as at the Mid")
     command.add_argument("--workspace", choices=WORKSPACES, default="copy",
                          help="copy (default): build and run in a temporary copy of the project, deleted "
                               "afterwards, so the project folder is never written to; in-place: as at the Mid")
@@ -60,7 +60,7 @@ def main(argv=None) -> int:
 
 def run_diagnose(project: Path, victim_id: str, n: int, records: str, order_path: Optional[Path] = None,
                  shuffles: int = 31, seed: int = 0, command: Optional[List[str]] = None,
-                 lifecycle: str = "per-method", workspace_mode: str = "copy",
+                 lifecycle: str = "class-grouped", workspace_mode: str = "copy",
                  copy_parent: Optional[Path] = None) -> int:
     # Java names only: the victim also becomes part of the record's file name.
     if not _VICTIM.fullmatch(victim_id):

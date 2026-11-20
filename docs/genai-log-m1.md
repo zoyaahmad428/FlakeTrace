@@ -613,3 +613,33 @@ both guesses were wrong (`0 != 1`, `1 != 0`). They were replaced with pairs whos
 
 **Rejections:** editing the schema or `eval/report.py`, which are not mine. A committed comparison
 script, because the unit test covers what needs to stay checked.
+
+## 2026-11-20 — W25 part 1: `rank_candidates` (ranking rule, test-first)
+
+**Assistance level:** L3 (Core-assist): the assistant designed `AnalysisCache` and
+`rank_candidates` from ADR-014 §5, wrote the 10 tests first, ran them failing, wrote the code, ran
+them passing, and drafted the docs.
+
+**What I asked:** build W25 part 1 test-first, on my own classes only, so the rule is committed
+before it meets any ground truth.
+
+**What was retained:** the code in `evidence/extract.py`; `RankCandidatesTest` and
+`RankCandidatesControlsTest`; the `evidence/README.md` and `04-Implementation` notes; the entry in
+[[evidence-m1]].
+
+**What I changed:** ran the test-first check myself on my laptop (code taken out, 10 errors; code
+put back, 10 OK); read the rule, the tests and the diff before committing.
+
+**How it was verified:** test-first failure (`FAILED (errors=10)`), then 10 OK and the full suite
+at 56 OK, in the container and again on my laptop (before: `FAILED (errors=10)`; after: 10 OK;
+suite 56 OK).
+
+**Errors found:** none in the tests. One sentence in the implementation note overstated what the
+rule guarantees, and was rewritten to say that only measurement can show an improvement.
+
+**Rejections:**
+- The POC's class-initialiser and co-touch terms, which ADR-014 says to add only with a measured
+  comparison.
+- Deepening inside `rank_candidates` (the planner's decision, M2).
+- Running the rule on any fixture or fastjson case before it is committed and reviewed.
+- Editing `docs/contracts/interfaces.md`.

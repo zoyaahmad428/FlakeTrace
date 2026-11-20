@@ -351,8 +351,11 @@ class TestLifecycleControl(unittest.TestCase):
             raise unittest.SkipTest(f"{missing} not on PATH")
         cls.classpath = maven_test_classpath(CONTROL)
 
+    def test_default_is_class_grouped_since_m1s_control_run(self):
+        self.assertEqual(OrderRunner(self.classpath).lifecycle, "class-grouped")
+
     def test_per_method_runs_class_setup_per_test(self):
-        results = OrderRunner(self.classpath).run_ordered([self.FIRST, self.SECOND])
+        results = OrderRunner(self.classpath, lifecycle="per-method").run_ordered([self.FIRST, self.SECOND])
         self.assertTrue(results[self.FIRST].passed)
         self.assertEqual(results[self.SECOND].failure_signature.exception_type, "java.lang.AssertionError")
         self.assertEqual(results[self.SECOND].failure_signature.message, "expected:<<N>> but was:<<N>>")
