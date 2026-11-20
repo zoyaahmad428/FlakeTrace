@@ -394,7 +394,7 @@ SearchPolicy(
 recorded by M2; confirmed by approving the PR that adds this section), with two clarifications agreed the
 same day after a design review: replay bundles carry `reference_signature` for `verify`, and "same"
 includes the same polluters (R2, R5). Built against [ADR-013](../03-Design/decisions/ADR-013-evidence-bundle-recount-and-replay.md),
-accepted 2026-11-13. Not built yet. ADR-013 gives M3 the format and the recount, and M2 the capture and
+accepted 2026-11-13. M2's half (writer and replay) built 2026-11-21; `verify` (M3) not yet. ADR-013 gives M3 the format and the recount, and M2 the capture and
 the replay: so the runner writes bundles, `eval.bundle verify` checks them, and this section fixes the
 files between the two.*
 

@@ -302,16 +302,7 @@ def diagnose(
         raise DiagnoseInputError(f"record_dir {records} is a file, not a folder")
     before_source = snapshot(source) if source is not None else None
     before = snapshot(project)
-    # A1: which classes are tests follows the project's own Surefire includes/excludes.
-    with tempfile.TemporaryDirectory(prefix="flaketrace-pom-") as tmp:
-        effective_pom = Path(tmp) / "effective-pom.xml"
-        runner = OrderRunner(maven_test_classpath(project, effective_pom=effective_pom), working_dir=project,
-                             timeout_s=timeout_s, lifecycle=lifecycle)
-        try:
-            selection = project_selection(effective_pom)
-        except DiscoveryConfigError as error:
-            raise DiagnoseInputError(str(error)) from error
-    discovered = discover_order(runner, project / "target" / "test-classes", selection)
+    runner, discovered, selection = prepare_runner(project, timeout_s, lifecycle)
     if original_order is not None:
         # A typo in a given order would fail with ClassNotFound and could pass for a reproduction.
         known = set(discovered)
@@ -331,25 +322,45 @@ def diagnose(
 
     started = datetime.now(timezone.utc)
     record = Path(record_dir) / f"{started.strftime('%Y%m%dT%H%M%SZ')}-{victim}.jsonl"
-    recorder = RecordingRunner(runner, record, {
-        "victim": str(victim), "n": n, "project": str(source or project),
-        "java_version": java_version(), "started": started.isoformat(), **environment(source or project),
-        "order_given": original_order is not None, "shuffles": shuffles, "seed_base": seed,
-        # ADR-012 section 6: what the runs ran under, so a replay can compare it (W22, W23).
-        **tool_environment(), "jvm": runner.jvm_environment() or None,
-        "lifecycle": runner.lifecycle, "workspace": workspace, "container_image": None, "command": command,
+    recorder = RecordingRunner(runner, record, record_header(
+        runner, victim, n, source or project, started,
+        order_given=original_order is not None, shuffles=shuffles, seed_base=seed, workspace=workspace,
+        command=command,
         # W24 (Interface 6): the limits the runs were made under, for the recount (B8).
-        "budget": {"limit_invocations": budget.limit_invocations if budget else None,
-                   "limit_seconds": budget.limit_seconds if budget else None,
-                   "reserve_invocations": reserve(n)},
-        "policy": policy, "scope": scope,  # W25 (Interface 7)
-    })
+        budget={"limit_invocations": budget.limit_invocations if budget else None,
+                "limit_seconds": budget.limit_seconds if budget else None,
+                "reserve_invocations": reserve(n)},
+        policy=policy, scope=scope))  # W25 (Interface 7)
     result = run_steps(recorder, order, victim, n, priority, shuffles=shuffles, seed_base=seed,
                        order_given=original_order is not None, budget=budget, policy=policy, scope=scope,
                        ranker_for=lambda candidates, v: EvidenceRanker(project, v, candidates))
     integrity = integrity_of(compare(before, snapshot(project)),
                              compare(before_source, snapshot(source)) if source is not None else None)
     return replace(result, source_integrity=integrity, execution_record=str(record))
+
+
+def prepare_runner(project: Path, timeout_s: float, lifecycle: str):
+    """The project's test classpath, an OrderRunner on it and its discovered tests (shared by diagnose and
+    replay, W23). A1: which classes are tests follows the project's own Surefire includes/excludes."""
+    with tempfile.TemporaryDirectory(prefix="flaketrace-pom-") as tmp:
+        effective_pom = Path(tmp) / "effective-pom.xml"
+        runner = OrderRunner(maven_test_classpath(project, effective_pom=effective_pom), working_dir=project,
+                             timeout_s=timeout_s, lifecycle=lifecycle)
+        try:
+            selection = project_selection(effective_pom)
+        except DiscoveryConfigError as error:
+            raise DiagnoseInputError(str(error)) from error
+    return runner, discover_order(runner, project / "target" / "test-classes", selection), selection
+
+
+def record_header(runner, victim: TestIdentifier, n: int, project: Path, started: datetime, **fields) -> dict:
+    """The record's first line (W7, A7, ADR-012 section 6: what the runs ran under, so a replay can compare
+    it), plus the caller's own fields (shared by diagnose and replay, W23)."""
+    return {"victim": str(victim), "n": n, "project": str(project), "java_version": java_version(),
+            "started": started.isoformat(), **environment(project), **tool_environment(),
+            "jvm": (runner.jvm_environment() or None) if hasattr(runner, "jvm_environment") else None,
+            "lifecycle": getattr(runner, "lifecycle", None), "container_image": None,
+            **fields}
 
 
 def environment(project: Path) -> dict:
