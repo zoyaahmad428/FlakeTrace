@@ -1122,3 +1122,14 @@ M2 from an earlier merge — the stale ones were removed. **What I changed:** *t
 
 Ownership checkpoint: why only the first `NOT_NEEDED` test is dropped per round; why one polluter needs
 no deletion runs; why F3 is still `CANDIDATE` today.
+
+## 2026-11-20 — A2: verify M1's W21; stale "not shown" wording
+
+**Tool:** Claude Code (Claude Opus 5.5) · **Level:** L2 · **Branch:** `m2/a2-verify-w21`
+
+**Asked:** independently verify M1's W21 on this machine. **Kept:** reproduction from a clean `main`
+worktree, including running M1's tests on the pre-change code to see them fail; a search of both
+reports for causal wording. **Found:** a line in M1's code and one in mine that became false once
+schema v2 showed every edge; fixed mine test-first, M1's sent to M1. **What I changed:** *to fill in.*
+
+Ownership checkpoint: why a verifier runs the tests on the old code too; why "not shown" was false.

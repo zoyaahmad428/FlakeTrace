@@ -161,7 +161,9 @@ def combine_fields(pairs: list) -> dict:
         lines += [line for line in pair["limitations"] if line not in lines]
     if all(pair["edges"] for pair in pairs):
         shown = pairs[0]["edges"][0]["resource_id"]
-        others = [f"Polluter {_test(pair['polluter'])}: shared resource {edge['resource_id']} is not shown in this report"
+        # Schema v2 shows every edge in resource_edges, so these are named, not hidden (A2, 2026-11-20).
+        others = [f"Polluter {_test(pair['polluter'])}: shared resource {edge['resource_id']} is not the headline "
+                  "resource; it is listed in resource_edges"
                   + _depth_note(edge) for pair in pairs[1:] for edge in pair["edges"] if edge["resource_id"] != shown]
         return dict(fields[0], limitations=lines + others, resource_edges=edges)
     found = [f"Polluter {_test(pair['polluter'])}: shared resource {edge['resource_id']} was found, "
