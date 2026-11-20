@@ -388,6 +388,102 @@ SearchPolicy(
 3. M1: reviews that P2 and P4 use `rank_candidates` and the `DEPTH_LIMIT` kind as Interface 2 and 5
    define them.
 
+## Interface 8 — evidence bundle (W23, ADR-013; M2 writes and replays, M3 verifies, M1 reproduces)
+
+*Proposed by M2 on 2026-11-21. Agreed by M1, M2 and M3 on 2026-11-21 (team WhatsApp group,
+recorded by M2; confirmed by approving the PR that adds this section), with two clarifications agreed the
+same day after a design review: replay bundles carry `reference_signature` for `verify`, and "same"
+includes the same polluters (R2, R5). Built against [ADR-013](../03-Design/decisions/ADR-013-evidence-bundle-recount-and-replay.md),
+accepted 2026-11-13. Not built yet. ADR-013 gives M3 the format and the recount, and M2 the capture and
+the replay: so the runner writes bundles, `eval.bundle verify` checks them, and this section fixes the
+files between the two.*
+
+**Writing a bundle (M2).** `py -m runner diagnose ... --bundle <folder>` writes, after the report, a new
+folder `<folder>/<UTC time>-<victim>/` (the record's own name without `.jsonl`, `Class#method` kept) with exactly five
+files, UTF-8, LF line endings:
+
+| File | Content |
+| --- | --- |
+| `report.json` | the report, schema v2, with `execution_record_reference` = `"record.jsonl"` |
+| `record.jsonl` | the execution record, every line, redacted (below) |
+| `replay.md` | the exact commands to check and re-run it: the tool and subject commits to check out, `python -m eval.bundle verify <bundle>`, `python -m runner replay <bundle> --project <checkout>` |
+| `environment.txt` | the output of `java -version` and `mvn -v`, redacted |
+| `manifest.json` | the fields below |
+
+**`manifest.json`**, every key always present (`null` when unknown):
+
+```json
+{
+  "bundle_version": 1,
+  "kind": "diagnosis",
+  "tool": {"commit": "…", "dirty": false},
+  "subject": {"repository": "fixture", "commit": "…", "dirty": false, "module_path": "fixtures/od-fixture"},
+  "victim": "odfixture.ConfigVictimTest#expectsDefaultMode",
+  "command": ["diagnose", "--project", "<project>", "--victim", "…"],
+  "parameters": {"n": 20, "shuffles": 31, "seed": 0, "budget": {"limit_invocations": null, "limit_seconds": null},
+                 "policy": "original", "scope": "module", "lifecycle": "class-grouped", "workspace": "copy"},
+  "environment": {"os": "…", "jdk": "1.8.0_502", "maven": "3.9.9", "junit": "4.13.2", "python": "3.11.9",
+                  "timezone": "…", "locale": "…", "encoding": "…", "container_image": null},
+  "reset_assumptions": "<ADR-012 section 1's sentence, verbatim>",
+  "fresh_run": true,
+  "run_date": "2026-11-21",
+  "replay_of": null,
+  "files": {"report.json": "<sha256>", "record.jsonl": "<sha256>", "replay.md": "<sha256>", "environment.txt": "<sha256>"}
+}
+```
+
+- `subject.repository`: `"fixture"` for a project inside this repository, else the project's
+  `git remote get-url origin` with any `user:password@` part removed, else `null`. `module_path`: the project folder relative to its git
+  root (`"."` at the root). Values come from the record header, which already holds them (W22).
+- `kind`: `"diagnosis"`, or `"replay"` for a bundle written by `replay`, whose `replay_of` is the
+  original bundle's `files["report.json"]` checksum. `run_date` is the UTC date of the first run.
+- Checksums are SHA-256 of each file's bytes as written (after redaction).
+
+**Redaction (ADR-013 §1, the first use of the rule).** Before writing, every occurrence in every file of
+the analysed project's absolute path (and the original's, under `--workspace copy`) becomes
+`<project>`; the records folder becomes `<records>`; the user's home folder becomes `<home>`; the user
+name **as a path component** becomes `<user>`. Longest first, both `\` and `/` forms. A bundle that still
+contains the home path, or the user name as a path component, is not written (error, exit 1): the check
+runs on the final bytes. Plain-text occurrences of a user name (e.g. inside a test name) are left alone.
+
+**What `verify` (M3) reads.** Only the bundle: the checksums; `report.json` against the schema; the
+recount from `record.jsonl` (`type: "run"` lines by `step`; `budget-stop` and `ranking` lines are not
+runs); `decide()` on the recount. Interface 6 B8 and Interface 4 already make the record sufficient. For
+`kind: "replay"` the reference signature is the record header's `reference_signature` (a replay never
+reproduces), and there are no `reproduce`, `shuffle`, `search` or `minimise` lines.
+
+**Replay (M2).** `py -m runner replay <bundle> --project <checkout> [--bundle <folder>]`:
+
+| # | Rule |
+| --- | --- |
+| R1 | Only a bundle whose report blames polluters (`VERIFIED` or `CANDIDATE`) is replayed; any other is refused with "nothing to replay: no polluter was blamed" (exit 2). No search is re-run: replay checks the evidence, it does not diagnose again |
+| R2 | The reference signature is the report's `failure_signature`. With the recorded `n` and `lifecycle`, it runs the kept sequence `n` times, the victim alone `n` times, and the deletion checks (Interface 4, the same rules) — in `diagnose`'s order: `alone`, `deletion` (which may drop a test), then `verify` on the kept set — under `--workspace copy`, with the source-integrity check, and **no budget**. The record header carries `reference_signature` (the original report's) and `replay_of` |
+| R3 | M1's evidence is extracted again on the checkout (static, deterministic); the report is assembled by `eval.report`, unchanged. The new bundle has `kind: "replay"` |
+| R4 | **Comparison**, printed, and written into the new bundle's `replay.md` under "Comparison with the original bundle": outcome and reasons, sequence `matched/n`, alone `passed/n`, each deletion check's status, then subject commit, tool commit, JDK, OS, Maven, timezone, locale, encoding, lifecycle — each `same` or `DIFFERENT` |
+| R5 | **Same** means ADR-013's tolerance: the same `outcome`, the same `unresolved_reason` / `candidate_reasons`, **and the same polluters** (a deletion check dropping one is `DIFFERENT`). 20/20 and 19/20 are the same claim. Exit 0 when same, **4** when the verdict differs (a new code: a result, not a failure of the tool) |
+| R6 | A checkout at another commit than `subject.commit` is replayed, and the comparison marks it `DIFFERENT` — the person running it decides what that means. An original cut by its budget is named in the comparison (replay runs the full `n`) |
+| R7 | Output goes to `--bundle` (default `flaketrace-bundles/`) and `--records` (default `flaketrace-records/`) in the current folder; never into the original bundle's folder |
+
+**Points decided here** (part of what this section's approval agrees to):
+
+1. **The runner writes bundles; M3's `verify` checks them.** One writer, so the format has one owner in
+   code, and `verify` stays independent of the runner (it reads files only).
+2. **A bundle is opt-in (`--bundle`)**, so a diagnosis without it is unchanged, and the UI is unaffected.
+3. **Replay does not search.** It re-checks the reported sequence; a new search is a new diagnosis.
+4. **Replay needs polluters** (R1): the fixture's F1–F4 and the real FJ-03 case qualify, and these are
+   the cases FT009 and W26b need.
+5. **Which bundles are committed** stays ADR-013 §4: fixture bundles under `eval/bundles/` (M3's folder,
+   made with `--bundle`), real-project bundles committed if under about 1 MB.
+
+**Who does what, in order.**
+
+1. M2: `--bundle` (the writer, redaction, manifest) test-first, then `replay`; real F1 and F3 bundles
+   and replays as evidence.
+2. M3, in parallel: `python -m eval.bundle verify` against this section and ADR-013's tests (tampered
+   count, tampered byte, deleted `alone` line), then the committed fixture bundles.
+3. M1: ADR-013 §5 — on her own machine, alone: clone, `verify`, `replay` one fixture bundle; record it
+   in `docs/evidence-m1.md`, including every step that was unclear.
+
 ## Open integration questions (decide before code is written against them)
 
 | # | Question | Owner to propose | Status |
