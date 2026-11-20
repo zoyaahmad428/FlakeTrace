@@ -2177,3 +2177,38 @@ accordingly, replacing A1's fail-safe stand-in (2026-11-19) with the real check.
   [DELETION_EVIDENCE_INCOMPLETE]`... F3's ground truth `VERIFIED` is W20's target") -- now
   stale a second time, since W20 landed and F3 genuinely reaches `VERIFIED` again. Not mine to
   edit (Owner: M2); raised for him alongside the `test_cli.py` note above.
+
+## 2026-11-20 — Two PR #129 CI failures fixed in M2's files, member's explicit permission
+
+**Requirement:** PR #129's `ui` and `runner` CI checks both failed. Both root-caused to real
+issues, both in M2's files, both fixed with the member's explicit go-ahead (asked first via
+`AskUserQuestion`, chose to fix both rather than flag-only).
+
+- **`ui` (2 failures):** `ui/web/src/lib/report.test.ts` hardcoded `f3: { outcome: "CANDIDATE",
+  ... }` -- stale since my W20 fix (above) made the real committed `eval/reports/f3.json`
+  genuinely `VERIFIED`. Fixed the `EXPECTED` table entry. The other failing test ("says why a
+  result is only a candidate (F3)") asserted a `DELETION_EVIDENCE_INCOMPLETE` candidate reason
+  that no real committed report carries any more (all of F1-F4 are `VERIFIED`, N1-N4
+  `UNRESOLVED`) -- rewrote it to spread F3's real shape with `outcome`/`candidate_reasons`
+  overridden to the state F3 itself was honestly in before W20, rather than deleting the only
+  test that exercises this mapping. **Command:** `npm test` (ui/web) -> 33/33 OK.
+- **`runner` (19 errors, 7 failures, all from the same root cause):**
+  `runner/order_runner.py`'s `maven_test_classpath()` called the short Maven goal prefix
+  `dependency:build-classpath`, which needs Maven to resolve `dependency` ->
+  `org.apache.maven.plugins:maven-dependency-plugin` via plugin-groups metadata (local cache or
+  Maven Central) -- failed on that CI run ("No plugin found for prefix 'dependency'"), and
+  every test calling this function failed identically as a result. Not a logic bug in any
+  test; a tooling-resolution gap. Checked this machine's own `~/.m2` cache
+  (`find ~/.m2/repository/org/apache/maven/plugins/maven-dependency-plugin`) for an
+  already-proven version rather than guessing one from memory -- `3.7.0` is cached and has
+  resolved successfully all session. Pinned the fully-qualified goal
+  (`org.apache.maven.plugins:maven-dependency-plugin:3.7.0:build-classpath`), which skips
+  prefix resolution entirely regardless of cache/network state. **Command:** confirmed the
+  fully-qualified goal resolves for real (`maven_test_classpath(fixtures/od-fixture)` ->
+  4 classpath entries, JUnit jar included); `python3 -m unittest discover -s runner/tests`
+  (real JVM) -> 256 tests, **exactly 1 failure** -- the same, already-flagged
+  `test_f3_two_polluters_are_candidate_until_deletion_checks_exist` (M2's file, expects
+  `CANDIDATE`, F3 is genuinely `VERIFIED` since W20). No new breakage from the plugin pin.
+- **Not done:** did not add a CI retry for this specific failure class (M2 already has one for
+  `setup-java`, PR #120) -- the fully-qualified goal is the more robust fix (removes the
+  failure mode entirely rather than retrying into it), so a retry would be redundant here.
