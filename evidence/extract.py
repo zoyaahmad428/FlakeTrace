@@ -19,11 +19,13 @@ Usage (from the repository root):
         --polluter Class#method --victim Class#method [--depth N] [--no-deepen]
 """
 import argparse
+import collections
 import json
 import os
 import re
 import subprocess
 import sys
+import time
 from dataclasses import dataclass, field
 
 CONTRACT = "flaketrace.resource-evidence/v0-draft"
@@ -668,6 +670,76 @@ def report_fields(pair):
         fields["limitations"].append("%d further write/read location(s) of %s are not shown in this report"
                                      % (dropped, first["resource_id"]))
     return fields
+
+
+# ---------------------------------------------------------------- ranking (W25, ADR-014 section 5)
+
+class AnalysisCache:
+    """Each test is analysed once per depth: ranking N candidates costs N + 1 analyses.
+
+    `analysed` counts the analyse_test calls made and `seconds` their total time, for the
+    budget's `analysis_seconds` (ADR-014). A test that cannot be analysed is remembered too,
+    so it is not retried.
+    """
+
+    def __init__(self):
+        self.analyses = {}
+        self.analysed = 0
+        self.seconds = 0.0
+
+    def put(self, test_id, depth, analysis):
+        self.analyses[(test_id, depth)] = analysis
+
+    def get(self, project, test_id, depth):
+        key = (test_id, depth)
+        if key not in self.analyses:
+            start = time.perf_counter()
+            try:
+                self.analyses[key] = analyse_test(project, test_id, depth)
+            except ExtractError as error:
+                self.analyses[key] = error
+            finally:
+                self.analysed += 1
+                self.seconds += time.perf_counter() - start
+        if isinstance(self.analyses[key], ExtractError):
+            raise self.analyses[key]
+        return self.analyses[key]
+
+
+# score = (resources shared, shallowest edge depth or None, original position)
+RankedCandidate = collections.namedtuple("RankedCandidate", "test score reasons note")
+
+
+def rank_candidates(project, victim, candidates, depth=DEFAULT_DEPTH, cache=None):
+    """Order candidate polluters by static evidence (ADR-014 section 5). Fixed rule, no weights.
+
+    1. more resources the candidate WRITES and the victim READS come first;
+    2. then the shallower edge (an edge's depth is the deeper of its two sides, as in
+       `resource_edges`);
+    3. then the original position, so with no evidence the order is unchanged.
+
+    Ranking changes the order, never the set: a candidate with no edge, or one that cannot be
+    analysed (its `note` says why), is kept. `reasons` are static overlaps in the report's
+    `resource_edges` shape: possible mechanisms, not confirmed causes (claims ledger G3).
+    An unanalysable victim raises ExtractError, since nothing can be ranked against it.
+    """
+    cache = cache if cache is not None else AnalysisCache()
+    victim_analysis = cache.get(project, victim, depth)
+    ranked = []
+    for position, candidate in enumerate(candidates):
+        try:
+            pair = find_edges(candidate, cache.get(project, candidate, depth), victim, victim_analysis)
+        except ExtractError as error:
+            ranked.append(RankedCandidate(candidate, (0, None, position), [], str(error)))
+            continue
+        reasons = report_fields({"edges": pair["edges"], "limitations": []})["resource_edges"]
+        shallowest = min((edge["depth"] for edge in reasons), default=None)
+        ranked.append(RankedCandidate(candidate, (len(reasons), shallowest, position), reasons, None))
+
+    def order(item):
+        shared, shallowest, position = item.score
+        return (-shared, shallowest if shallowest is not None else MAX_DEPTH + 1, position)
+    return sorted(ranked, key=order)
 
 
 # ---------------------------------------------------------------- command line
