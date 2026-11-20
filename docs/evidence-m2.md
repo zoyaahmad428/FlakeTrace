@@ -1563,3 +1563,28 @@ own copy of the code, not from the review's description.
   `eval/tests/test_*.py` → `Ran 410 tests in 612.580s … OK`.
 - **Limitations:** one run of each; scratch records, not committed; the shuffled search and steps 6–9 are
   M3's, not run here.
+
+## A4: remove the old `DiagnosisRuns` count fields and the `NO_SINGLE_POLLUTER` alias (2026-11-20)
+
+- **Requirement:** W18 left five count fields (`sequence_n`, `sequence_successes`, `sequence_any_failures`,
+  `alone_n`, `alone_successes`) beside the ADR-010 tallies "until W19 reads the tallies", and the alias
+  `NO_SINGLE_POLLUTER = INCONSISTENT` for M3's code. W19 is merged; both duplicates go.
+- **Who still read them (searched before changing anything):** `eval/report.py:107` (`alone_n`, a
+  pre-ADR-008 guard), `eval/tests/test_report.py` (3 constructions), comments in `eval/report.py` and
+  `eval/outcome.py`; my runner tests and one UI test string. Nothing imported the alias. The fields were
+  required arguments, so both sides had to change in one PR. **M3 agreed (2026-11-20, via M2) to M2
+  editing those `eval/` files in this PR.** `eval/stats.py` has its own `sequence_successes` field
+  (a different API) and is untouched.
+- **Test first:** `test_old_count_fields_and_alias_are_gone` (replaces `test_old_count_fields_agree_with_the_tallies`)
+  → on the old code `FAILED (failures=1)` (`Items in the first set but not the second`). After: OK.
+- **Change:** `DiagnosisRuns.sequence_tally` and `alone_tally` are now **required** (were `Optional`, default
+  `None`), in place of the five fields; `_runs` builds them directly; the alias is gone. `eval/report.py`'s
+  pre-ADR-008 guard reads `alone_tally.n == 0`, after the existing None-tally guard. Tests read the tallies.
+  `docs/contracts/interfaces.md` Interface 3's wording ("M2 passes raw counts …") now names the tallies —
+  a contract text change: M3 agreed, M1 approves in the PR.
+- **Fast tests:** runner (`TestRunSteps`, `TestTallies`, `TestDeletionChecks`, CLI `TestReports`, `TestCombineFields`,
+  `TestInputErrors`, `test_deletion`) → `Ran 77 tests … OK`; whole `eval/tests` → `Ran 123 tests … OK`;
+  `ui.tests.test_server.TestJobResult` → 7 OK.
+- **Whole suite:** every `runner/tests/test_*.py`, `ui.tests.test_server`, every `eval/tests/test_*.py` and
+  `evidence.tests.test_extract` → `Ran 466 tests in 719.625s … OK` (the UI test's message string was
+  changed after this run started; `TestJobResult` re-run alone afterwards → 7 OK).

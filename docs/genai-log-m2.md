@@ -1146,3 +1146,14 @@ processors; `java_version()` recorded the `JAVA_TOOL_OPTIONS` banner. **What I c
 
 Ownership checkpoint: why fastjson needs JDK 8; why `-proc:none` is safe for FtHarness; why the
 banner broke only `java_version`, not `jvm`.
+
+## 2026-11-20 — A4: remove the old count fields and the alias
+
+**Tool:** Claude Code (Claude Opus 5.5), test-driven-development · **Level:** L2 · **Branch:** `m2/a4-remove-old-counts`
+
+**Asked:** remove the five count fields and `NO_SINGLE_POLLUTER` once `eval/` reads the tallies.
+**Kept:** a search of every reader first; M3 asked before touching `eval/`; tallies made required.
+**Rejected:** a three-step migration (defaults first, then M3, then removal) — one PR with M3's
+agreement is simpler and leaves no half-state. **What I changed:** *to fill in.*
+
+Ownership checkpoint: why both sides had to change in one PR; why the tallies are now required.

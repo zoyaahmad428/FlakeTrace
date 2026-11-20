@@ -50,8 +50,8 @@ class TestRunSteps(unittest.TestCase):
         self.assertEqual(runs.reference_signature, REF)
         self.assertEqual(runs.polluters, [B])
         self.assertEqual(runs.sequence, [B, V])
-        self.assertEqual((runs.sequence_n, runs.sequence_successes, runs.sequence_any_failures), (4, 4, 4))
-        self.assertEqual((runs.alone_n, runs.alone_successes), (4, 0))
+        self.assertEqual((runs.sequence_tally.n, runs.sequence_tally.matched, (runs.sequence_tally.n - runs.sequence_tally.passed)), (4, 4, 4))
+        self.assertEqual((runs.alone_tally.n, runs.alone_tally.matched), (4, 0))
         self.assertEqual(runs.search_runs, 2)
         self.assertEqual(len(runner.calls), 1 + 4 + 2 + 4)
 
@@ -60,8 +60,8 @@ class TestRunSteps(unittest.TestCase):
         runs = run_steps(runner, [A, V], V, n=3)
         self.assertEqual(runs.status, VICTIM_FAILS_ALONE)
         self.assertEqual((runs.polluters, runs.sequence), ([], [V]))
-        self.assertEqual((runs.sequence_n, runs.sequence_successes, runs.sequence_any_failures), (3, 3, 3))
-        self.assertEqual((runs.alone_n, runs.alone_successes, runs.search_runs), (3, 3, 0))
+        self.assertEqual((runs.sequence_tally.n, runs.sequence_tally.matched, (runs.sequence_tally.n - runs.sequence_tally.passed)), (3, 3, 3))
+        self.assertEqual((runs.alone_tally.n, runs.alone_tally.matched, runs.search_runs), (3, 3, 0))
         self.assertEqual(len(runner.calls), 1 + 3)
 
     def test_two_polluters_needed_are_minimised_and_verified(self):
@@ -69,8 +69,8 @@ class TestRunSteps(unittest.TestCase):
         runs = run_steps(runner, [A, B, V], V, n=2)
         self.assertEqual(runs.status, POLLUTER_FOUND)
         self.assertEqual((runs.polluters, runs.sequence), ([A, B], [A, B, V]))
-        self.assertEqual((runs.sequence_n, runs.sequence_successes), (2, 2))
-        self.assertEqual((runs.alone_n, runs.alone_successes, runs.search_runs, runs.minimise_runs), (2, 0, 2, 3))
+        self.assertEqual((runs.sequence_tally.n, runs.sequence_tally.matched), (2, 2))
+        self.assertEqual((runs.alone_tally.n, runs.alone_tally.matched, runs.search_runs, runs.minimise_runs), (2, 0, 2, 3))
         self.assertEqual(len(runner.calls), 1 + 2 + 2 + (1 + 2) + 2 * 2 + 2)  # ..., deletion checks (W20), verify
 
     def test_flaky_failure_is_not_blamed_on_the_whole_prefix(self):
@@ -106,8 +106,8 @@ class TestRunSteps(unittest.TestCase):
         runs = run_steps(runner, [A, V], V, n=3)
         self.assertEqual(runs.status, NOT_REPRODUCED)
         self.assertIsNone(runs.reference_signature)
-        self.assertEqual((runs.sequence, runs.sequence_n, runs.sequence_successes), ([A, V], 3, 0))
-        self.assertEqual((runs.alone_n, runs.alone_successes, runs.search_runs), (3, 0, 0))
+        self.assertEqual((runs.sequence, runs.sequence_tally.n, runs.sequence_tally.matched), ([A, V], 3, 0))
+        self.assertEqual((runs.alone_tally.n, runs.alone_tally.matched, runs.search_runs), (3, 0, 0))
         self.assertEqual(len(runner.calls), 3 + 3)
 
     def test_shuffle_finds_an_order_the_starting_order_could_not(self):
@@ -125,7 +125,7 @@ class TestRunSteps(unittest.TestCase):
         runs = run_steps(victim_fails_when(lambda order: False), [A, B, V], V, n=3, shuffles=31)
         self.assertEqual(runs.status, NOT_REPRODUCED)
         self.assertIsNone(runs.reference_signature)
-        self.assertEqual((runs.sequence_n, runs.alone_n, runs.alone_successes), (3, 3, 0))
+        self.assertEqual((runs.sequence_tally.n, runs.alone_tally.n, runs.alone_tally.matched), (3, 3, 0))
         # Cut orders of three one-method classes: [V], [A,V], [B,V], [A,B,V], [B,A,V]; the starting
         # order [A,B,V] already ran, so 4 are new.
         self.assertEqual(runs.shuffled_orders, 4)
@@ -136,7 +136,7 @@ class TestRunSteps(unittest.TestCase):
         runs = run_steps(runner, [A, V], V, n=3, shuffles=0)
         self.assertEqual(runs.status, VICTIM_FAILS_ALONE)
         self.assertEqual(runs.reference_signature, REF)
-        self.assertEqual((runs.alone_n, runs.alone_successes), (3, 3))
+        self.assertEqual((runs.alone_tally.n, runs.alone_tally.matched), (3, 3))
         # The only order that failed is the victim alone; the starting order never did.
         self.assertEqual(runs.original_order, [V])
 
@@ -180,7 +180,7 @@ class TestRunSteps(unittest.TestCase):
         runner = FakeOrderRunner(lambda order, test: crash if test == V and order != [V] else PASS)
         runs = run_steps(runner, [A, V], V, n=3, shuffles=0)
         self.assertEqual(runs.status, NOT_REPRODUCED)
-        self.assertEqual((runs.sequence_any_failures, runs.infrastructure_failures), (3, 3))
+        self.assertEqual(((runs.sequence_tally.n - runs.sequence_tally.passed), runs.infrastructure_failures), (3, 3))
 
     def test_zero_shuffles_skips_the_phase(self):
         runner = victim_fails_when(lambda order: False)
@@ -243,7 +243,7 @@ class TestRunSteps(unittest.TestCase):
         runner = FakeOrderRunner(lambda order, test: crash if test == V else PASS)
         runs = run_steps(runner, [A, V], V, n=3)
         self.assertEqual(runs.status, NOT_REPRODUCED)
-        self.assertEqual((runs.sequence_n, runs.sequence_successes, runs.sequence_any_failures), (3, 0, 3))
+        self.assertEqual((runs.sequence_tally.n, runs.sequence_tally.matched, (runs.sequence_tally.n - runs.sequence_tally.passed)), (3, 0, 3))
         self.assertEqual(runs.infrastructure_failures, 3)
 
 
@@ -290,13 +290,18 @@ class TestTallies(unittest.TestCase):
         self.assertEqual(runs.status, "INCONSISTENT")
         self.assertEqual(runs.polluters, [])
 
-    def test_old_count_fields_agree_with_the_tallies(self):
-        # Kept for M3's eval/report.py until W19 switches to the tallies.
+    def test_old_count_fields_and_alias_are_gone(self):
+        """A4 (2026-11-20, M3 agreed): eval/ reads the tallies since W19, so the five count fields
+        that duplicated them, and the NO_SINGLE_POLLUTER alias, are removed."""
+        import dataclasses
+        import runner.diagnose as module
+        names = {f.name for f in dataclasses.fields(module.DiagnosisRuns)}
+        old = {"sequence_n", "sequence_successes", "sequence_any_failures", "alone_n", "alone_successes"}
+        self.assertEqual(names & old, set())
+        self.assertFalse(hasattr(module, "NO_SINGLE_POLLUTER"))
         runs = run_steps(scripted([RunOutcome(False, SIG_B)] * 3 + [TIMEOUT]), [P, V], V, n=20)
-        self.assertEqual((runs.alone_n, runs.alone_successes), (runs.alone_tally.n, runs.alone_tally.matched))
-        self.assertEqual((runs.sequence_n, runs.sequence_successes, runs.sequence_any_failures),
-                         (runs.sequence_tally.n, runs.sequence_tally.matched,
-                          runs.sequence_tally.n - runs.sequence_tally.passed))
+        self.assertIsInstance(runs.alone_tally, RunTally)
+        self.assertIsInstance(runs.sequence_tally, RunTally)
 
     def test_victim_failing_alone_has_an_alone_tally(self):
         runs = run_steps(victim_fails_when(lambda order: True), [A, V], V, n=3)
@@ -521,8 +526,8 @@ class TestDiagnoseOnFixture(unittest.TestCase):
         runs = self.diagnose_case("F1", n=20)
         self.assertEqual(runs.status, POLLUTER_FOUND)
         self.assertEqual(runs.polluters, self.expected_polluters("F1"))
-        self.assertEqual((runs.sequence_successes, runs.sequence_n), (20, 20))
-        self.assertEqual((runs.alone_successes, runs.alone_n), (0, 20))
+        self.assertEqual((runs.sequence_tally.matched, runs.sequence_tally.n), (20, 20))
+        self.assertEqual((runs.alone_tally.matched, runs.alone_tally.n), (0, 20))
         record = Path(runs.execution_record).read_text(encoding="utf-8").splitlines()
         self.assertEqual(len(record), 1 + 1 + 20 + runs.search_runs + 20)  # no deletion runs: one polluter
         self.assertEqual([(c.status, c.source) for c in runs.deletion_checks], [(NEEDED, ALONE_CHECK)])
@@ -535,7 +540,7 @@ class TestDiagnoseOnFixture(unittest.TestCase):
         runs = self.diagnose_case("F2", n=5)
         self.assertEqual(runs.status, POLLUTER_FOUND)
         self.assertEqual(runs.polluters, self.expected_polluters("F2"))
-        self.assertEqual(runs.sequence_successes, 5)
+        self.assertEqual(runs.sequence_tally.matched, 5)
 
     def test_f3_two_polluters_are_found_by_minimisation(self):
         runs = self.diagnose_case("F3", n=5)
@@ -544,7 +549,7 @@ class TestDiagnoseOnFixture(unittest.TestCase):
         # One search run per earlier test; counted from the order, so new fixture cases don't break it.
         self.assertEqual(runs.search_runs, len(runs.original_order) - 1)
         self.assertGreater(runs.minimise_runs, 0)
-        self.assertEqual(runs.sequence_successes, 5)
+        self.assertEqual(runs.sequence_tally.matched, 5)
         # ADR-011 T3 at the runner level: both polluters needed (the verdict needs M3's half of W20).
         self.assertEqual([(c.removed, c.status, c.source, c.runs.passed) for c in runs.deletion_checks],
                          [(p, NEEDED, DELETION_RUN, 5) for p in self.expected_polluters("F3")])
@@ -552,19 +557,19 @@ class TestDiagnoseOnFixture(unittest.TestCase):
     def test_n1_fails_alone(self):
         runs = self.diagnose_case("N1", n=20)
         self.assertEqual(runs.status, VICTIM_FAILS_ALONE)
-        self.assertEqual((runs.alone_successes, runs.alone_n), (20, 20))
+        self.assertEqual((runs.alone_tally.matched, runs.alone_tally.n), (20, 20))
 
     def test_f4_only_a_shuffled_order_reproduces(self):
         runs = self.diagnose_case("F4", n=5)
         self.assertEqual(runs.status, POLLUTER_FOUND)
         self.assertEqual(runs.polluters, self.expected_polluters("F4"))
         self.assertIsNotNone(runs.reproducing_seed)
-        self.assertEqual(runs.sequence_successes, 5)
+        self.assertEqual(runs.sequence_tally.matched, 5)
 
     def test_n3_is_not_reproduced_after_shuffles_and_alone(self):
         runs = self.diagnose_case("N3", n=5)
         self.assertEqual(runs.status, NOT_REPRODUCED)
-        self.assertEqual((runs.sequence_n, runs.alone_n, runs.alone_successes), (5, 5, 0))
+        self.assertEqual((runs.sequence_tally.n, runs.alone_tally.n, runs.alone_tally.matched), (5, 5, 0))
         self.assertEqual(runs.shuffled_orders, 31)
         self.assertFalse(runs.orders_exhausted)
 
@@ -573,7 +578,7 @@ class TestDiagnoseOnFixture(unittest.TestCase):
         runs = self.diagnose_case("N2", n=20)
         self.assertEqual(runs.status, VICTIM_FAILS_ALONE)
         self.assertEqual(runs.polluters, [])
-        self.assertGreaterEqual(runs.alone_successes, 1)
+        self.assertGreaterEqual(runs.alone_tally.matched, 1)
 
 
 if __name__ == "__main__":
