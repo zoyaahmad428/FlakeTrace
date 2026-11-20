@@ -2274,3 +2274,44 @@ for M2"; this time, with it genuinely blocking merge, the answer was to fix it).
   evidence items 1-3), is the next step, "together, once merged" -- not yet run; no number for
   it exists anywhere in this repository. M1's independent reproduction of the
   `UNRESOLVED(BUDGET_EXHAUSTED)` case (Interface 6 step 4) has also not happened yet.
+
+## 2026-11-20 — ADR-014 evidence item 2, for real, both halves merged (W24)
+
+**Requirement:** ADR-014's "what must be demonstrated" table, item 2 (owner M2, M3): "A budget
+too small to finish gives `UNRESOLVED(BUDGET_EXHAUSTED)`, a report and a budget account" -- on
+the real fixture, once the runner half (`m2/w24-budget-ledger`, merged PR #132) and the report
+half (above) are both on `main`. Before this, M2's own real run at the same scenario
+(`docs/evidence-m2.md`, `--budget-invocations 70`) got **exit 3, no report** --
+`eval/report.py` still raised `UnhandledStatus` for `BUDGET_EXHAUSTED` at that point. This entry
+is the first time the full pipeline (both halves) has run end to end on this status.
+
+- **B2's minimum for F2** (`odfixture.FeatureVictimTest#expectsTurboDisabled`, n=20): starting
+  order is 8 tests long (`eval/reports/f2.json`'s `original_failing_order`), so
+  `reserve(20) + 8 + 2 = 60 + 10 = 70`. Used `--budget-invocations 72` ("just above the
+  minimum", 2 above 70, distinct from M2's own exactly-at-70 run).
+- **Command (JDK 8 on PATH, real Maven/JVM, no fastjson/mocking):**
+  `python3 -m runner diagnose --project fixtures/od-fixture --victim
+  odfixture.FeatureVictimTest#expectsTurboDisabled --records <tmp> --budget-invocations 72`
+- **Real result:** exit **0** (not 3 any more). `UNRESOLVED (BUDGET_EXHAUSTED)`. CLI:
+  `reproduced: 1/1 (lower bound 0.207)`, `budget: spent 32 of 72 invocations (reserve 60);
+  search tried 2 of 7 candidates; stopped in search`. The written `.report.json` validates
+  against the schema (`eval.schema_validator.validate_report`, confirmed, not assumed) with
+  `outcome: "UNRESOLVED"`, `unresolved_reason: "BUDGET_EXHAUSTED"`, and a real `budget` object:
+  `{"limit_invocations": 72, "reserve_invocations": 60, "spent": {"reproduce": 8, "alone": 20,
+  "search": 4, ...}, "launches": 23, "exhausted": true, "exhausted_phase": "search",
+  "candidates": {"total": 7, "tried": 2}}`. Reproduced identically on a second run (same
+  numbers both times -- F2 is not randomised, unlike N2).
+- **Comparison, no limit** (same victim, same command without `--budget-invocations`): real
+  result `VERIFIED (sequence)`, polluter `odfixture.FeaturePolluterTest#enableTurbo`,
+  `reproduced: 20/20`, `budget: spent 82 invocations, no limit (reserve 60); search tried 7 of
+  7 candidates`, `exhausted: false`, `exhausted_phase: null` -- matches M2's own earlier
+  no-limit numbers in `docs/evidence-m2.md` exactly (spent 82, search tried 7 of 7), confirming
+  determinism and that "without a limit, nothing changes" (Interface 6) holds for real, not
+  just in the unit tests.
+- **Not done / left alone:** did not overwrite the committed `eval/reports/f2.json` with either
+  run -- that file is read by `ui/web`'s tests and `json_to_tex.py` with fixed expectations
+  unrelated to the budget field, and regenerating it was not asked for; these two reports were
+  written to a scratch records folder instead, not committed. Items 1 and 3 of the same table
+  are M2-owned and already covered by his own real runs (`docs/evidence-m2.md`); items 4-5 are
+  W25 (ranking), not this work package. M1's independent reproduction (Interface 6 step 4)
+  still has not happened.
