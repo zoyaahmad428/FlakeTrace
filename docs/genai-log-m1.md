@@ -688,3 +688,27 @@ check, and described the runner's fallback as built. Both were corrected: "the a
 
 **Rejections:** editing the contract without the other two members. The section is a proposal
 until M2 and M3 approve the PR.
+
+## 2026-11-20 — W32: practitioner-check protocol (FT018)
+
+**Assistance level:** L3 (Core-assist): the assistant drafted
+[[10-Final1/practitioner-check]] (purpose, roles, who qualifies, consent text, a 30-minute
+session mapped to FT018's four items, the record template, the blocker path and the attempt log)
+from FT018, [[00-Meta/stakeholder-evidence]] and [[07-Defense/weak-points]] §1.
+
+**What I asked:** continue Iteration 2 with unblocked work.
+
+**What was retained:** the protocol, its links from the Final1 README, the W32 plan row, the FT018
+action-register row and my members row.
+
+**What I changed:** read the protocol and the consent text before committing.
+
+**How it was verified:** nothing was run. The links to the four notes it cites were checked to
+exist on `main` at `adc63ee`.
+
+**Errors found:** none recorded.
+
+**Rejections:**
+- Writing the case and the acceptance task myself: they are M2's and M3's parts, so they are
+  left marked "to be supplied".
+- Choosing a substitute: that is the supervisor's decision, so options are listed for them.

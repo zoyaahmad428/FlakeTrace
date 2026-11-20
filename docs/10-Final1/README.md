@@ -19,6 +19,7 @@ at the Mid.
 | Prepare your own viva | [[10-Final1/ownership-prep]] |
 | Fix the report and worksheet | [[10-Final1/report-v2-plan]] |
 | Plan the Final demo | [[10-Final1/demo-plan]] |
+| Run the Java/Maven practitioner check (W32, FT018) | [[10-Final1/practitioner-check]] |
 | Read the design changes | ADR-010 to ADR-015 in `03-Design/decisions/` |
 
 ---

@@ -62,7 +62,7 @@ grouped; each keeps its FT identifier.
 | FT013, FT014 | Mid | Signatures and personal confirmations | Each member | Before report acceptance | Open | — | |
 | FT015 | Mid | Reconcile GenAI levels | M3, each | Before ownership assessment | Open | — | |
 | FT016, FT017 | Mid | Clipped table; stale status text | M1, chapter owners | Report v2.0 | Open | — | |
-| FT018 | Mid | One Java practitioner check | M1 | Before the Final | Open | — | |
+| FT018 | Mid | One Java practitioner check | M1 | Before the Final | Open | Protocol drafted 2026-11-20 ([[10-Final1/practitioner-check]]); no session held | |
 | FT019 | Mid | Template and abstract interpretation | Supervisor | Next meeting | Open | — | |
 | FT020 | Mid | Cross-member handover | All | Sprint B | Open | — | |
 
