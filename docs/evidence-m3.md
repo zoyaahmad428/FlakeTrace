@@ -2059,3 +2059,41 @@ being the module that assembles every schema-v2 report), `candidate_reasons`,
   explicitly instead, so a future reader doesn't make the same conflation.
 - **Command:** `python3 -m unittest discover -s eval/tests` → 123/123 OK (docs-only change,
   sanity check).
+
+## 2026-11-20 — W26a resumed: full discovery on real fastjson FJ-03 (steps 6-9 unblocked)
+
+**Requirement:** M2's A1 fix (`runner/discovery.py` reads the project's real Surefire
+includes/excludes, PR #110) unblocks W26a steps 6-9. M2 asked, via the member: run a full
+discovery first, confirm `SerializeWriterTest_14#test_writer_1` and
+`MaxBufSizeTest#test_max_buf` are found, record the count, and note the lifecycle default.
+
+- **Setup found reusable:** the fastjson checkout and portable JDK 8 from the 2026-11-19 W26a
+  session survived in an earlier session's scratch folder (outside this repo, as before).
+  **The portable JDK's extraction in that old folder was incomplete** — `jre/lib/security/`
+  was missing (first real symptom: Maven's `help:effective-pom`/`dependency:build-classpath`
+  goals crashed with `SecurityException: Cannot locate policy or framework files`, a JCE
+  initialisation failure, not a code bug). Confirmed the original `.zip` itself was intact
+  (106,490,535 bytes, matches the original download) and does contain `jre/lib/security/*`
+  (`unzip -l`); re-extracted it fresh into this session's own scratchpad (still outside the
+  repo) and the same commands then succeeded — the old extraction's folder had silently lost
+  files, most likely the "routine cleanup can clear it" risk this environment's own scratch
+  directories are explicitly warned to carry, not a download or build problem.
+- **Command** (`runner.discovery.project_selection`/`discover_order` called directly, matching
+  `runner.diagnose.diagnose()`'s own real code path — `maven_test_classpath` with
+  `effective_pom=`, then `project_selection`, then `discover_order` against
+  `target/test-classes`; JDK 8 as `JAVA_HOME`, `class-grouped` lifecycle, the real
+  `OrderRunner`, no fake/mock):
+  - `includes: ('**/bvt/**/*.java',)`, `excludes: ('**/*$*',)` — fastjson's own real Surefire
+    configuration, read correctly (this is exactly the gap W26a found on 2026-11-19).
+  - **Total discovered: 4464 test methods.**
+  - `SerializeWriterTest_14#test_writer_1` — **FOUND.** `MaxBufSizeTest#test_max_buf` —
+    **FOUND.** Both of the protocol's named tests (the known polluter and the victim) are
+    among the discovered set, both by full package-qualified name and by class short name.
+  - Lifecycle: ran with `class-grouped` explicitly, matching the project-wide default since
+    M1's control run (PR #108, 2026-11-20) — noted for M2 as asked.
+  - `git status --short` in the fastjson checkout after the run: no output — no source file
+    changed (CLAUDE.md §4; the build only wrote to `target/`, excluded by convention).
+- **Limitation:** this is discovery only (step 6 of the protocol), not yet the full pipeline
+  run (steps 7-9: the real diagnose through to a report, the baseline/targeted-search
+  comparison). Discovery being correct was the hard blocker; the remaining steps are real JVM
+  runs, not yet attempted this entry.
