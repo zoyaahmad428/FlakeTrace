@@ -1203,3 +1203,14 @@ a contribution claim.
 the dead "no report yet" text removed. **Left:** G2's status, which needs M3's agreement. **What I changed:** *to fill in.*
 
 Ownership checkpoint: why a `BUDGET_EXHAUSTED` report's `reproduced:` numbers are not a verified sequence.
+
+## 2026-11-21 — ranking-line notes, G2, Interface 6 step 3
+
+**Tool:** Claude Code (Claude Opus 5.5), test-driven-development · **Level:** L2 · **Branch:** `m2/ranking-notes`
+
+**Asked:** act on M1's and M3's merged PRs and M1's message. **Kept:** M1's per-candidate note carried into the
+ranking line (agreed by M3); G2 settled with its scope; a real F2 pair at the same limit for items 1–3. **Declined:**
+skipping ranking once the seconds limit is spent (saves little, needs another contract change). **What I changed:**
+*to fill in.*
+
+Ownership checkpoint: why "could not analyse" must not look like "no evidence"; why ranked fits in 70 and original does not.
