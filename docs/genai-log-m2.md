@@ -1094,3 +1094,14 @@ code made lenient, since schema v2 requires `other`. **Checked rather than assum
 showed `other` (CLI-only gap); real N4 and F1 runs under the default. **What I changed:** *to fill in.*
 
 Ownership checkpoint: why `other` is printed even when 0; why the fixtures, not `summary()`, were fixed.
+
+## 2026-11-20 — CI: retry setup-java once
+
+**Tool:** Claude Code (Claude Opus 5.5) · **Level:** L2 · **Branch:** `m2/ci-setup-java-retry`
+
+**Asked:** stop the repeated `setup-java` tar failures. **Kept:** one retry per Java job and
+`setup-java@v5`. **Rejected:** dropping `cache: maven` — unproven, since the log that would say
+whether the cache or the JDK download failed was not readable. **What I changed:** *to fill in.*
+
+Ownership checkpoint: why a retry is acceptable here (the failure is GitHub's, before our code runs)
+and what would show the real cause (the step's log lines before the tar error).
