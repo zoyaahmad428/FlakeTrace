@@ -1942,3 +1942,26 @@ deletion check) through a different, better-engineered mechanism. 13 files confl
   merged cleanly (no conflict), M2's/M1's own files, not reviewed line-by-line here since they
   are outside this entry's scope (the conflict resolution) and their owners already verified
   them in their own commit messages.
+
+## 2026-11-20 — A2: W16 phrase search, repo-wide, including evidence/ now that PR #105 landed
+
+**Requirement:** W16 needed M1's `evidence/` part independently re-verified after PR #105
+merged (last checked 2026-11-18, before it landed). Searched for the retired phrases (ADR-010
+§2/ADR-011 §5/ADR-012 §1, root CLAUDE.md §0): "1-minimal" unqualified, "never modified"
+unqualified, "sandboxed", "found mechanism"/"root cause"/"caused by"/"explains the failure"/"the
+cause" unqualified, "passes alone" asserted as if sufficient on its own.
+
+- `evidence/extract.py:645` and `evidence/README.md:6` are the only hits for
+  mechanism/cause/modified/sandbox/1-minimal under `evidence/` (excluding `tests/`/`target/`) —
+  both already the approved wording ("a possible mechanism, not confirmed as the cause").
+- Repo-wide (`docs/`, `eval/`, `runner/`, `ui/`): every "passes alone" hit is the legitimate
+  glossary/contract term (describing what the word means), not an unqualified certification
+  claim. Every "1-minimal"/"never modified"/"sandboxed" hit is either the approved qualified
+  wording, a literature description of *another tool's* property (iFixFlakies' own 1-minimal
+  guarantee — not our claim), or inside a closed historical record (`docs/08-MidEval/`, dated
+  `evidence-m*.md`/`genai-log-m*.md` entries, `docs/superpowers/plans/`) describing what was
+  claimed or planned at the time — correctly left as-is per the same closed-record principle
+  just re-learned the hard way in the merge-resolution entry above.
+- **Command:** `grep -rn` across `evidence/ eval/ runner/ ui/ docs/` for each phrase (read-only,
+  no code run — this was a text search, not a behavioural check).
+- No violation found. W16 marked fully done in `iteration-2-plan.md`.
