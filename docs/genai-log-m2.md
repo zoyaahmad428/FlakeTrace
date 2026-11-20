@@ -1133,3 +1133,16 @@ reports for causal wording. **Found:** a line in M1's code and one in mine that 
 schema v2 showed every edge; fixed mine test-first, M1's sent to M1. **What I changed:** *to fill in.*
 
 Ownership checkpoint: why a verifier runs the tests on the old code too; why "not shown" was false.
+
+## 2026-11-20 — A3: M3's W26a premise on real fastjson; two runner fixes
+
+**Tool:** Claude Code (Claude Opus 5.5), test-driven-development · **Level:** L3 · **Branch:** `m2/a3-fastjson-findings`
+
+**Asked:** verify M3's fastjson premise independently. **Kept:** a checksum-verified portable JDK 8 in
+the scratchpad (with permission); the real runner, pinned locale and timezone; a real CLI run of the
+case A1 unblocked. **Wrong at first (mine):** the first run used JDK 21 because of a `PATH` mistake —
+which exposed fix 1. **Found and fixed test-first:** the harness compile ran the project's annotation
+processors; `java_version()` recorded the `JAVA_TOOL_OPTIONS` banner. **What I changed:** *to fill in.*
+
+Ownership checkpoint: why fastjson needs JDK 8; why `-proc:none` is safe for FtHarness; why the
+banner broke only `java_version`, not `jvm`.
