@@ -705,3 +705,56 @@ edge that is **not** why the victim fails, and FlakeTrace must not call it the c
     the evidence job's compile step in `.github/workflows/ci.yml` (M2's file).
   - Both controls are hand-made; they show the wording is honest, not how often this happens in
     real projects. Run in the cloud, not yet on my own machine; M2 verifies W21.
+
+## W22 verification: the lifecycle control on my own machine (2026-11-20)
+
+**Requirement:** FT006 / ADR-012 §3: compare normal execution (Maven Surefire) with FlakeTrace's
+harness on the lifecycle control, independently of M2 (I am W22's verifier). Run by me on my own
+laptop, following "W22 job 3" and "job 4" in [[10-Final1/handover-m1-m3]].
+
+- **Machine:** Windows 11 (64-bit), Oracle JDK 25.0.1, Apache Maven 3.9.9, Python 3.11.9
+  (`jsonschema` 4.26.0), repository at `b1843c2` (main, which contains W22). Command Prompt.
+- **Surefire:** `mvn -B -q -f runner/tests/resources/lifecycle-control/pom.xml test` → exit 0;
+  `TEST-LifecycleControlTest.xml`: `tests="2" errors="0" skipped="0" failures="0"`.
+- **Harness, both modes:** `py -3.11 -m unittest -v runner.tests.test_order_runner.TestLifecycleControl`
+  → `Ran 3 tests in 5.304s … OK` (`test_class_grouped_runs_class_setup_once`,
+  `test_per_method_runs_class_setup_per_test`, `test_unknown_lifecycle_is_refused`).
+- **Real command, class-grouped:** `py -3.11 -m runner diagnose --project fixtures/od-fixture
+  --victim odfixture.ConfigVictimTest#expectsDefaultMode --lifecycle class-grouped
+  --records %TEMP%\ft-records` → `VERIFIED (sequence)`, polluter
+  `odfixture.ConfigPolluterTest#pollute`, resource `odfixture.Config mode` (write `pollute@1`,
+  read `expectsDefaultMode@1`) with "static overlap: a possible mechanism, not confirmed as the
+  cause", reproduced 20/20 (lower bound 0.839), alone (same failure) 0/20.
+- **Disposable copy (job 4):** copied `fixtures/od-fixture` without `target\` to
+  `%TEMP%\fixture-copy` (`robocopy … /E /XD target`, 23 files), ran the default
+  `diagnose` on it → the same `VERIFIED (sequence)` result; afterwards `dir %TEMP%\fixture-copy\target`
+  → `File Not Found`: the diagnosis created no `target\` in the project it analysed.
+
+| Path | `first` | `second` | `@BeforeClass` runs |
+| --- | --- | --- | --- |
+| Maven Surefire | pass | pass | once (both pass) |
+| FlakeTrace `per-method` | pass | fail (`AssertionError`, as the test asserts) | once per test |
+| FlakeTrace `class-grouped` | pass | pass | once, as under Surefire |
+
+The `per-method` and `class-grouped` rows are what the three harness tests assert; I did not print
+the harness output separately. Result: matches the handover's expectations on every step, so
+`class-grouped` agrees with Surefire on the control.
+
+**Differences and unclear steps** (for M2):
+1. **First harness run failed on my network, not in the code.** The first
+   `TestLifecycleControl` run took about 33 minutes and ended `Ran 0 tests … FAILED (errors=1)`:
+   `maven_test_classpath` runs `mvn -q … dependency:build-classpath`, and Maven could not download
+   `maven-dependency-plugin` 3.7.0's dependencies from `repo.maven.apache.org` (connect/read
+   timeouts). `-q` hides the download, so it looked stuck. Fixed by pre-fetching once without `-q`
+   and with longer timeouts (`-Daether.connector.connectTimeout=60000
+   -Daether.connector.requestTimeout=180000 -Daether.connector.http.retryHandler.count=5`); then
+   3 tests OK in 5 s. The handover does not say the first run downloads this plugin.
+2. **Python 3.9 does not work.** On my default Python 3.9.13, `pip install -r eval/requirements.txt`
+   fails (`No matching distribution found for jsonschema==4.26.0`; 4.25.1 is the newest for 3.9),
+   and `diagnose` then stops with `ModuleNotFoundError: No module named 'jsonschema'`. With Python
+   3.11.9 everything worked. The README says CI uses 3.11 but gives no minimum version.
+3. JDK 25 makes Maven print `WARNING:` lines about restricted and deprecated methods inside Maven's
+   own libraries; they did not affect any result.
+
+**Limitation:** one run of each command, on one machine. The diagnoses used `%TEMP%` records, which
+are not committed.

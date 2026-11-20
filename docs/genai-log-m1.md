@@ -523,3 +523,24 @@ Java, the tests and `EXPECTED.md` before committing.
 is only in `limitations` until W19.
 
 **Rejections:** editing `.github/workflows/ci.yml` (M2's) or adding cases to `fixtures/` (M3's).
+
+## 2026-11-20 — W22 verification (lifecycle control) on my own machine
+
+**Assistance level:** L2 (Assisted): the assistant gave me the commands from M2's handover, diagnosed
+the two setup failures (Maven download timeouts, Python 3.9 too old for `jsonschema` 4.26.0) and
+drafted this evidence entry from the output I pasted; I ran every command myself on my laptop.
+
+**What I asked:** run the W22 verification on my laptop and record it.
+
+**What was retained:** the evidence entry in [[evidence-m1]], including the three-row table and the
+differences for M2.
+
+**What I changed:** Ran every command; fixed my setup (pre-fetched the Maven plugin, installed
+Python 3.11); read the entry against my terminal output before committing.
+
+**How it was verified:** every number in the entry is copied from my own terminal output.
+
+**Errors found:** the first instructions did not install the Python dependencies before `diagnose`
+(the assistant's omission); found when `diagnose` failed on `jsonschema`.
+
+**Rejections:** loosening the pinned `jsonschema` version (M3's file) to make Python 3.9 work.
