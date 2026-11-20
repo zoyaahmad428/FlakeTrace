@@ -48,6 +48,17 @@ target, but the tool honestly reports `CANDIDATE` today. `deletion_status=None`/
 never satisfies S3 either, by construction (`eval/outcome.py`'s own guard) — an unestablished
 claim must never count as an established one.
 
+**Execution budget (ADR-014, Interface 6, W24):** `DiagnosisRuns.status` can also be
+`BUDGET_EXHAUSTED` -- the search ran out of budget before finding any polluter --
+which `assemble_report()` maps to `UNRESOLVED(BUDGET_EXHAUSTED)`. A polluter can also be found
+but the budget still run out before verification (deletion checks, the final sequence check)
+finished; that reaches `CANDIDATE [BUDGET_EXHAUSTED]` instead, via `DecisionInput.
+verification_budget_exhausted` -- never `VERIFIED`, even if S1/S3/R1 would otherwise all hold.
+The report gains an optional `budget` field (Member 2's `BudgetAccount`, reshaped with
+`candidates` as `{total, tried}`) whenever the diagnosis tracked one; omitted entirely for a
+diagnosis built before W24, same as `order_exploration`. Without a budget limit, nothing
+changes for F1-F4/N1-N4: same verdicts, `budget.exhausted` reads `false`.
+
 Run everything (install the dependency first, or you'll hit
 `ModuleNotFoundError: No module named 'jsonschema'`):
 

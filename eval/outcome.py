@@ -14,7 +14,7 @@ all three members 2026-11-13, PR #101; evaluated top to bottom, first match wins
   9. sequence.matched == 0 and sequence.other >= 1             -> UNRESOLVED(SIGNATURE_MISMATCH)
   10. sequence.matched == 0 and sequence.infra >= 1            -> UNRESOLVED(INFRASTRUCTURE_FAILURE)
   11. sequence.matched == 0                                    -> UNRESOLVED(NOT_REPRODUCED)
-  12. any of S1, S3, R1 not established                        -> CANDIDATE, candidate_reasons lists each
+  12. any of S1, S3, R1 not established, or verification_budget_exhausted -> CANDIDATE, candidate_reasons lists each
   13. otherwise                                                -> VERIFIED
 
 "no real failure anywhere" (rows 4-5) means no reference failure signature was EVER established,
@@ -35,9 +35,12 @@ assert the resource is the cause of the failure:
   S3 every kept test is needed   deletion checks (ADR-011, W20)
   R1 a static overlap exists     Member 1's edges (ADR-007, unchanged)
 
-Budget (row 3) depends on a work package that has not landed yet (ADR-014/W24); it defaults to
-"not exhausted", which no caller can report otherwise yet, so it can never regress a verdict on
-its own. S3 is different (A1 fail-safe fix, 2026-11-19): `deletion_status=None` ("not yet
+Budget (row 3, and the CANDIDATE_BUDGET_EXHAUSTED reason in row 12) is ADR-014/W24 (Interface 6):
+`budget_exhausted` is for a search that never found a polluter at all (runner.diagnose's status
+BUDGET_EXHAUSTED); `verification_budget_exhausted` is for a polluter that WAS found but whose
+verification (deletion checks, final sequence check) the budget ran out before finishing. Both
+default False, so a caller that predates the budget ledger never regresses. S3 is different (A1
+fail-safe fix, 2026-11-19): `deletion_status=None` ("not yet
 checked") does NOT satisfy S3 -- an unestablished claim is not an established one. The one case
 where S3 is actually free (ADR-011 section 2): a single kept polluter's deletion check IS the
 alone check, already run by the time row 12 is reached (rows 6-8 already gated alone clean) --
@@ -85,10 +88,11 @@ CANDIDATE_BELOW_REPLAY_THRESHOLD = "BELOW_REPLAY_THRESHOLD"
 CANDIDATE_DELETION_EVIDENCE_INCOMPLETE = "DELETION_EVIDENCE_INCOMPLETE"
 CANDIDATE_DELETION_EVIDENCE_INCONCLUSIVE = "DELETION_EVIDENCE_INCONCLUSIVE"
 CANDIDATE_NO_SUPPORTED_RESOURCE_EVIDENCE = "NO_SUPPORTED_RESOURCE_EVIDENCE"
-CANDIDATE_BUDGET_EXHAUSTED = "BUDGET_EXHAUSTED"  # reserved: ADR-011 section 3 rolls a mid-run
-# budget exhaustion (during deletion checks) into DELETION_EVIDENCE_INCOMPLETE instead: decide()
-# does not currently emit this value on its own. Kept for forward compatibility, as the old
-# BELOW_CONFIDENCE_THRESHOLD reason was.
+CANDIDATE_BUDGET_EXHAUSTED = "BUDGET_EXHAUSTED"  # W24 (Interface 6): see
+# DecisionInput.verification_budget_exhausted below -- a polluter WAS found, but the budget ran
+# out during verification (deletion checks or the final sequence check), so the result can never
+# be VERIFIED. Distinct from the row-3 budget_exhausted field, which is for a search that never
+# found a polluter at all and short-circuits to UNRESOLVED before this row is reached.
 VALID_CANDIDATE_REASONS = (
     CANDIDATE_BELOW_REPLAY_THRESHOLD,
     CANDIDATE_DELETION_EVIDENCE_INCOMPLETE,
@@ -143,9 +147,17 @@ class DecisionInput:
     single earlier test, not in the full order once more. Defaults False: no pre-ADR-010 caller
     reports it."""
     budget_exhausted: bool = False
-    """ADR-010 row 3 / ADR-014 (W24, not yet built): the execution budget ran out before a
-    sequence was found. Defaults False until the budget ledger lands -- no caller can report it
-    yet, so this can never regress an existing verdict."""
+    """ADR-010 row 3 / ADR-014 (W24): the execution budget ran out before a polluter set was
+    found at all -- runner.diagnose's status BUDGET_EXHAUSTED. Defaults False, so a caller that
+    predates the budget ledger (every existing report before W24) never regresses."""
+    verification_budget_exhausted: bool = False
+    """ADR-014 section 2 / Interface 6 (W24): a polluter WAS found (status POLLUTER_FOUND), but
+    the budget ran out before verification could finish -- BudgetAccount.exhausted is True on a
+    POLLUTER_FOUND diagnosis (a deletion check NOT_RUN for lack of budget, or the final sequence
+    check running fewer than n times). Checked only in the S1/S3/R1 block below, never as an
+    early return like budget_exhausted above: this is about an incomplete verification of a
+    result that WAS found, not a search that found nothing. Defaults False, same reasoning as
+    budget_exhausted."""
     deletion_status: Optional[str] = None
     """ADR-011 claim S3 (W20, not yet fully built): the rolled-up NEEDED/NOT_NEEDED/INCONCLUSIVE
     outcome of repeated-removal checks on every kept test. One of VALID_DELETION_STATUSES, or
@@ -290,6 +302,8 @@ def decide(d: DecisionInput) -> Decision:
         )
     if not d.resource_edge_exists:
         reasons.append(CANDIDATE_NO_SUPPORTED_RESOURCE_EVIDENCE)
+    if d.verification_budget_exhausted:
+        reasons.append(CANDIDATE_BUDGET_EXHAUSTED)
 
     if reasons:
         return result(

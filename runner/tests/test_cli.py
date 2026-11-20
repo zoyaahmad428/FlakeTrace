@@ -521,10 +521,13 @@ class TestBudgetOptions(unittest.TestCase):
                       "stopped in search", out.splitlines())
 
 
-    def test_the_real_report_assembly_refuses_budget_exhausted_for_now(self):
-        """Until M3's W24 half: eval.report must not guess a verdict for the new status."""
-        with self.assertRaises(UnhandledStatus):
-            assemble_report(runs(BUDGET_EXHAUSTED, Path(tempfile.mkdtemp()) / "r.jsonl"), None)
+    def test_the_real_report_assembly_handles_budget_exhausted_now(self):
+        """M3's W24 half landed (Interface 6, 2026-11-20): a real UNRESOLVED(BUDGET_EXHAUSTED)
+        report, no polluter blamed -- not UnhandledStatus any more."""
+        report = assemble_report(runs(BUDGET_EXHAUSTED, Path(tempfile.mkdtemp()) / "r.jsonl"), None)
+        self.assertEqual(report["outcome"], "UNRESOLVED")
+        self.assertEqual(report["unresolved_reason"], "BUDGET_EXHAUSTED")
+        self.assertEqual(report["polluters"], [])
 
 
 class TestPolicyOptions(unittest.TestCase):

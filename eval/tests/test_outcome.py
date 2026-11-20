@@ -7,6 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from eval.baseline import RunTally
 from eval.outcome import (
     CANDIDATE_BELOW_REPLAY_THRESHOLD,
+    CANDIDATE_BUDGET_EXHAUSTED,
     CANDIDATE_DELETION_EVIDENCE_INCOMPLETE,
     CANDIDATE_DELETION_EVIDENCE_INCONCLUSIVE,
     CANDIDATE_NO_SUPPORTED_RESOURCE_EVIDENCE,
@@ -215,6 +216,20 @@ class TestDecisionTableRows(unittest.TestCase):
         d = DecisionInput(**base_kwargs(deletion_status=DELETION_NOT_APPLICABLE))
         decision = decide(d)
         self.assertEqual(decision.outcome, OUTCOME_VERIFIED)
+
+    def test_row12_candidate_budget_exhausted_during_verification(self):
+        """W24 report half (Interface 6): a polluter WAS found (status POLLUTER_FOUND), but
+        the budget ran out before verification could finish (e.g. B5/B6's final sequence
+        check came up short, or a deletion check was NOT_RUN for lack of budget) -- distinct
+        from row 3's budget_exhausted, which is for a diagnosis that never found a polluter at
+        all (status BUDGET_EXHAUSTED) and short-circuits to UNRESOLVED before row 12 is ever
+        reached. This is the CANDIDATE [BUDGET_EXHAUSTED] case Interface 6 describes: 'never
+        VERIFIED' even when S1/S3/R1 would otherwise all hold."""
+        d = DecisionInput(**base_kwargs(verification_budget_exhausted=True))
+        decision = decide(d)
+        self.assertEqual(decision.outcome, OUTCOME_CANDIDATE)
+        self.assertIsNone(decision.unresolved_reason)
+        self.assertIn(CANDIDATE_BUDGET_EXHAUSTED, decision.candidate_reasons)
 
     def test_row12_candidate_when_deletion_not_yet_checked(self):
         """A1 fail-safe fix (2026-11-19): deletion_status=None must NOT satisfy S3. An

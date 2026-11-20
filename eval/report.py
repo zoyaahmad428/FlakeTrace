@@ -34,9 +34,17 @@ reads DiagnosisRuns.deletion_checks -- the checks at the highest round -- and ma
 DELETION_VERIFIED/DELETION_INCONCLUSIVE/DELETION_INCOMPLETE per that interface's own table.
 A kept polluter with no check at all is deliberately never read as VERIFIED (the fail-safe row);
 this subsumes the narrower A1 fix (2026-11-19) that only covered a single kept polluter via the
-alone tally. ADR-014's budget ledger (row 3, W24) has not landed: every report built here still
-passes budget_exhausted=False to eval.outcome.decide(), which treats that as not-exhausted (see
-that module's docstring).
+alone tally.
+
+ADR-014's budget ledger (Interface 6, W24) landed 2026-11-20: a fifth DiagnosisRuns.status,
+BUDGET_EXHAUSTED, is handled the same way NOT_REPRODUCED is (a reference may or may not have
+been established before the cut); it maps to decide(budget_exhausted=True). A POLLUTER_FOUND
+diagnosis whose diagnosis.budget.exhausted is True instead sets
+decide(verification_budget_exhausted=True), which adds BUDGET_EXHAUSTED to candidate_reasons so
+the result is never VERIFIED. The report's own `budget` field (ADR-014 section 3's BudgetAccount
+shape, with `candidates` nested as {"total", "tried"}) is omitted entirely when
+diagnosis.budget is None -- the same optional-field pattern as order_exploration below, for a
+DiagnosisRuns built before W24.
 """
 
 from typing import Optional
@@ -50,6 +58,7 @@ from eval.outcome import (
     OUTCOME_CANDIDATE,
     OUTCOME_UNRESOLVED,
     OUTCOME_VERIFIED,
+    REASON_BUDGET_EXHAUSTED,
     REASON_INCONSISTENT_OUTCOMES,
     REASON_INFRASTRUCTURE_FAILURE,
     REASON_NOT_REPRODUCED,
@@ -59,7 +68,9 @@ from eval.outcome import (
     decide,
 )
 from eval.schema_validator import validate_report
-from runner.diagnose import DiagnosisRuns, INCONSISTENT, NOT_REPRODUCED, POLLUTER_FOUND, VICTIM_FAILS_ALONE
+from runner.diagnose import (
+    BUDGET_EXHAUSTED, DiagnosisRuns, INCONSISTENT, NOT_REPRODUCED, POLLUTER_FOUND, VICTIM_FAILS_ALONE,
+)
 
 SCHEMA_VERSION = 2
 
@@ -90,6 +101,30 @@ def _order_exploration(diagnosis: DiagnosisRuns, infrastructure_failures: int) -
     }
 
 
+def _budget_fields(diagnosis: DiagnosisRuns) -> Optional[dict]:
+    """ADR-014 section 3 / Interface 6 (W24): the BudgetAccount a real diagnose() run always
+    attaches (runner.diagnose.run_steps), reshaped for the report -- candidates_total/
+    candidates_tried nested as {"total", "tried"} (M3's schema bump, Interface 6). None (the
+    key is omitted entirely) for a DiagnosisRuns built before W24, same optional-field pattern
+    as _order_exploration above."""
+    b = diagnosis.budget
+    if b is None:
+        return None
+    return {
+        "limit_invocations": b.limit_invocations,
+        "limit_seconds": b.limit_seconds,
+        "reserve_invocations": b.reserve_invocations,
+        "spent": dict(b.spent),
+        "launches": b.launches,
+        "wall_seconds": b.wall_seconds,
+        "analysis_seconds": b.analysis_seconds,
+        "policy": b.policy,
+        "exhausted": b.exhausted,
+        "exhausted_phase": b.exhausted_phase,
+        "candidates": {"total": b.candidates_total, "tried": b.candidates_tried},
+    }
+
+
 def assemble_report(
     diagnosis: DiagnosisRuns,
     resource_fields: Optional[dict] = None,
@@ -100,8 +135,10 @@ def assemble_report(
     polluter) or a caller's own combination of several such results (W10, several polluters; see
     module docstring for the optional `any_edge_found` key that case can set).
     Raises UnhandledStatus for any status other than POLLUTER_FOUND, VICTIM_FAILS_ALONE,
-    NOT_REPRODUCED or INCONSISTENT -- see module docstring."""
-    if diagnosis.status not in (POLLUTER_FOUND, VICTIM_FAILS_ALONE, NOT_REPRODUCED, INCONSISTENT):
+    NOT_REPRODUCED, INCONSISTENT or BUDGET_EXHAUSTED -- see module docstring."""
+    if diagnosis.status not in (
+        POLLUTER_FOUND, VICTIM_FAILS_ALONE, NOT_REPRODUCED, INCONSISTENT, BUDGET_EXHAUSTED,
+    ):
         raise UnhandledStatus(
             f"assemble_report does not yet handle DiagnosisRuns.status={diagnosis.status!r}; "
             "see eval/report.py's module docstring"
@@ -182,6 +219,10 @@ def assemble_report(
         resource_edge_exists=edge_found,
         confidence=confidence,
         search_inconsistent=(diagnosis.status == INCONSISTENT),
+        budget_exhausted=(diagnosis.status == BUDGET_EXHAUSTED),
+        verification_budget_exhausted=(
+            diagnosis.status == POLLUTER_FOUND and diagnosis.budget is not None and diagnosis.budget.exhausted
+        ),
         deletion_status=deletion_status,
     )
     decision = decide(decision_input)
@@ -260,6 +301,13 @@ def assemble_report(
             f"The failure appeared once in the {order_desc} order{shuffle_note} and could not "
             f"be obtained again in {sequence.n} further run(s); likely not order-dependent. "
             "Re-run with a larger --n, or supply the exact failing order with --order."
+        )
+    elif reason == REASON_BUDGET_EXHAUSTED and diagnosis.budget is not None:  # row 3 (ADR-014, W24)
+        b = diagnosis.budget
+        limitations.append(
+            f"The execution budget ran out in the {b.exhausted_phase} phase, having tried "
+            f"{b.candidates_tried} of {b.candidates_total} candidate(s), before a reproducing "
+            "sequence was found. A larger --budget-invocations may let the search finish."
         )
     elif reason == REASON_NOT_REPRODUCED and reference_established:  # row 11
         limitations.append(
@@ -378,5 +426,8 @@ def assemble_report(
     order_exploration = _order_exploration(diagnosis, infrastructure_failures)
     if order_exploration is not None:
         report["order_exploration"] = order_exploration
+    budget_fields = _budget_fields(diagnosis)
+    if budget_fields is not None:
+        report["budget"] = budget_fields
     validate_report(report)
     return report

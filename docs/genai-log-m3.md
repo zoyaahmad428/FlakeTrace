@@ -1351,3 +1351,48 @@ check at all must never be read as VERIFIED, even though that never happens in t
 pipeline today (every found-polluter diagnosis always produces at least one check per kept
 test). That fail-safe is for a caller that predates W20 or a future budget cutting a check off
 entirely, not a case you can currently trigger through the CLI.
+
+## 2026-11-20 — W24 budget ledger, report half
+
+**What I asked for:** implement M3's half of Interface 6 (`docs/contracts/interfaces.md`) —
+the two report rules and the schema's `budget` field — against M2's already-merged
+`runner/budget.py`, test-first, same as W20.
+
+**What I kept vs. built new:** kept the established shape entirely (a new `DecisionInput`
+field read only in `decide()`'s S1/S3/R1 block; an optional report field that mirrors
+`_order_exploration`'s "omitted when the producing data doesn't exist yet" pattern). Nothing
+here is a new design — it is W20's own pattern applied to a second contract.
+
+**A naming decision I made that the contract leaves implicit:** Interface 6 describes the rule
+in prose ("status `POLLUTER_FOUND` with `exhausted = True` adds `BUDGET_EXHAUSTED` to
+`candidate_reasons`") but does not name the `DecisionInput` field that should carry it. I named
+it `verification_budget_exhausted`, deliberately distinct from the existing `budget_exhausted`
+field (which is for a search that found no polluter at all and short-circuits to `UNRESOLVED`
+at row 3) — reusing one field for both would have made a polluter-found-but-unverified
+diagnosis wrongly route to `UNRESOLVED` instead of `CANDIDATE`. Flagged this naming choice in
+both the code's own docstring and `docs/evidence-m3.md` rather than silently picking it, since
+it is a new symbol the other two members have not seen or agreed to by name (only the
+*behaviour* was agreed, in the WhatsApp thread M2 recorded).
+
+**What I verified rather than assumed:** read M2's actual, already-merged `runner/budget.py`
+and `runner/diagnose.py` before writing anything, to confirm `run_steps` really does attach a
+`BudgetAccount` to *every* diagnosis now (not only one made with an explicit `--budget-
+invocations`) — the contract's own line "without a limit nothing changes ... with
+`budget.exhausted = false`" depends on that. Also confirmed, by reading `_steps`' two call
+sites of its `budget_exhausted()` helper, that a `BUDGET_EXHAUSTED` diagnosis can carry either
+a null or a real failure signature (the cut can happen before or after a reference was
+established during `reproduce`/`shuffle`) — the same row-5-vs-row-11 shape `NOT_REPRODUCED`
+already has — and wrote a test for both, rather than assuming only one shape occurs.
+
+**What I deliberately left out:** did not add the `budget` field to the ui/web TypeScript
+`Report` type or its tests (M2's folder, `ui/`) — out of scope for the report half, and the
+field is optional/additive so the existing UI keeps working unchanged against it. Did not run
+a real F2 diagnosis under a budget limit — Interface 6's own ordering puts that step after
+both halves are merged ("together, once merged"), not before.
+
+Ownership checkpoint: be able to explain, without this log, why `verification_budget_exhausted`
+is checked only inside `decide()`'s `reasons = []` block and never as an early return like
+`budget_exhausted` — a polluter that WAS found with incomplete verification is a *weaker*
+result than one never found at all, not a different category of failure, so it has to compete
+with S1/S3/R1 for CANDIDATE the same way a missing deletion check does, rather than overriding
+every other check the way row 1-3 do.
