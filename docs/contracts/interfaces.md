@@ -164,6 +164,7 @@ RankedCandidate(
 )
 
 AnalysisCache()        # .analysed (count of analyse_test calls), .seconds (their total time)
+AnalysisCache.get(project, test, depth)   # that test's Output 1 (analyse_test's result), analysed on first use
 ```
 
 - **Inputs:** `project` is an `evidence.extract.Project` over the compiled classes. `victim` and
@@ -179,6 +180,12 @@ AnalysisCache()        # .analysed (count of analyse_test calls), .seconds (thei
 - **An unanalysable victim raises `ExtractError`.** Nothing can be ranked against it. Under
   `--policy ranked` the runner (M2, when built) catches it, keeps the original order (the same
   result as "no evidence"), and records a limitation.
+- **`get`.** Returns the cached Output 1 of `analyse_test` for `(test, depth)`, the shape in
+  [resource-evidence.md](resource-evidence.md), analysing it on first use. For a test that could not
+  be analysed it raises the stored `ExtractError` again, without retrying. The planner reads its
+  `unsupported_observations` (kind `DEPTH_LIMIT`) to decide whether to deepen (Interface 7, P4).
+  *Added 2026-11-20 by M1, after reviewing M2's `EvidenceRanker`: `get` was already public and used;
+  this line only names it.*
 - **Cache and cost.** Each test is analysed once per depth, so ranking N candidates costs N + 1
   analyses. A cache passed in is reused across calls. The budget ledger (M2) reads `analysed` and
   `seconds` for `analysis_seconds` (ADR-014 §3). The planner's deeper analyses go through the same
