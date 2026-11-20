@@ -24,7 +24,9 @@ results = runner.run_ordered([
 - `maven_test_classpath(project)` runs `mvn test-compile dependency:build-classpath` on the
   target project and returns `target/test-classes`, `target/classes` and the project's own jars.
   No dependency is added; only the git-ignored `target/` is written.
-- `OrderRunner` compiles `harness/FtHarness.java` once into a temp directory. Pass the project
+- `OrderRunner` compiles `harness/FtHarness.java` once into a temp directory, with `-proc:none` so an
+  annotation processor on the project's classpath is never run (fastjson's old Lombok crashes javac on
+  JDK 9+; found on the real case, A3). Pass the project
   directory as `working_dir` so tests using relative paths behave as under Maven. Each
   `run_ordered` call starts **one fresh JVM** that runs the tests **in exactly the given order**
   with JUnit's `JUnitCore` + `Request.method`.
