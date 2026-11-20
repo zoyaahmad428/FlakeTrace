@@ -174,8 +174,11 @@ class TestCombineFields(unittest.TestCase):
         fields = combine_fields([pair(P, "pkg.T#flagA"), pair(Q, "pkg.T#flagB")])
         self.assertEqual(fields["shared_resource"], {"kind": "static-field", "class": "pkg.T", "field": "flagA"})
         self.assertEqual(fields["polluter_write_location"]["class"], "pkg.PolluterTest")
-        self.assertIn("Polluter pkg.SecondPolluterTest#q: shared resource pkg.T#flagB is not shown in this report",
-                      fields["limitations"])
+        # A2 (2026-11-20): since schema v2 every edge is in resource_edges, so "not shown" would be false.
+        self.assertIn("Polluter pkg.SecondPolluterTest#q: shared resource pkg.T#flagB is not the headline resource; "
+                      "it is listed in resource_edges", fields["limitations"])
+        self.assertIn("flagB", [edge["shared_resource"]["field"] for edge in fields["resource_edges"]])
+        self.assertFalse(any("not shown in this report" in line for line in fields["limitations"]), fields["limitations"])
         self.assertEqual(fields["limitations"].count("Static analysis only; no runtime evidence (Iteration 2)."), 1)
 
     def test_second_polluter_without_edge_shows_no_resource(self):
@@ -191,12 +194,12 @@ class TestCombineFields(unittest.TestCase):
     def test_resource_written_by_both_polluters_is_not_called_hidden(self):
         fields = combine_fields([pair(P, "pkg.T#flag"), pair(Q, "pkg.T#flag")])
         self.assertEqual(fields["shared_resource"]["field"], "flag")
-        self.assertFalse(any("pkg.T#flag is not shown" in line for line in fields["limitations"]), fields["limitations"])
+        self.assertFalse(any("pkg.T#flag is not the headline" in line for line in fields["limitations"]), fields["limitations"])
 
     def test_deep_evidence_of_a_later_polluter_is_named_with_its_depth(self):
         fields = combine_fields([pair(P, "pkg.T#a"), pair(Q, "pkg.T#b", depth=5)])
-        self.assertIn("Polluter pkg.SecondPolluterTest#q: shared resource pkg.T#b is not shown in this report "
-                      "(evidence at depth 5, above the default 2)", fields["limitations"])
+        self.assertIn("Polluter pkg.SecondPolluterTest#q: shared resource pkg.T#b is not the headline resource; "
+                      "it is listed in resource_edges (evidence at depth 5, above the default 2)", fields["limitations"])
 
     def test_mixed_evidence_report_does_not_also_say_no_edge_was_found(self):
         fields = combine_fields([pair(P, "pkg.T#a"), pair(Q)])

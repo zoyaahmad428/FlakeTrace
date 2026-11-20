@@ -52,7 +52,9 @@ in-process and decides nothing itself:
   "other failure: X/N", so a victim that fails alone differently (N4) no longer looks like one
   that passes alone (F1) — found by M1 in the W19 check (PR #114), raised by M3.
 - **Several polluters** (W10): evidence per polluter, combined by `combine_fields`: the first
-  polluter's edge is shown, the others named in `limitations`, and only if **every** polluter has an
+  polluter's edge is shown, the others named in `limitations` as "not the headline resource; it is
+  listed in `resource_edges`" (every polluter's edges are there since schema v2; until 2026-11-20 this
+  line wrongly said "not shown in this report"), and only if **every** polluter has an
   edge — otherwise no resource is shown (`CANDIDATE [NO_SUPPORTED_RESOURCE_EVIDENCE]` since
   ADR-010 Q1). Since W21 (PR #105) `combine_fields` also lists every polluter's edges in
   `resource_edges`, each with its depth, so the report shows all of them.

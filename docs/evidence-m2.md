@@ -1480,3 +1480,41 @@ own copy of the code, not from the review's description.
   0 dropped as not needed, 0 inconclusive`; verdict `CANDIDATE` (M3's half pending). Record: step
   `deletion` × 40, `removed` = `setFlagA` round 1 (victim passed 20/20) and `setFlagB` round 1 (20/20).
   UI: `npm test` → 33 passed; `tsc --noEmit` clean.
+
+## A2: independent verification of M1's W21 (FT005 controls, all edges) (2026-11-20)
+
+- **Requirement:** FT005; W21's verifier is M2 (plan). Reproduce [[evidence-m1]] "W21 part 1" and
+  "W21 part 2" on my own machine, from `main`, not from M1's description.
+- **Machine:** Windows 11, OpenJDK 21.0.9, Apache Maven 3.10.0, Python 3.14.0. A clean worktree of
+  `main` `88e90b5` in my scratchpad (removed afterwards).
+- **Compile:** `mvn -B -q -f <p>/pom.xml test-compile` for `fixtures/od-fixture`,
+  `evidence/tests/resources/m1-selftest`, `evidence/tests/resources/ft005-controls` → exit 0 each.
+- **M1's tests:** `set FLAKETRACE_REQUIRE_JVM=1` + `py -3 -m unittest -v evidence.tests.test_extract.ResourceEdgesTest
+  evidence.tests.test_extract.Ft005ControlsTest` → `Ran 6 tests in 5.476s … OK`.
+- **They fail without the change:** `evidence/extract.py` replaced by `git show 5199ef8^:evidence/extract.py`
+  (the commit before M1's W21 part 1), then restored → `ResourceEdgesTest`: `FAILED (errors=3)`, each
+  `KeyError: 'resource_edges'` — exactly M1's recorded failure.
+- **Whole evidence suite:** `FLAKETRACE_REQUIRE_JVM=1 py -3 -m unittest evidence.tests.test_extract` →
+  `Ran 56 tests in 114.257s … OK` (M1 recorded 45 on 2026-11-18; tests added since).
+- **Real diagnoses** (`py -3 -m runner diagnose --project evidence/tests/resources/ft005-controls --victim … --records <scratch>`):
+  - Control 1 `controls.RestoringVictimTest#check` → `VERIFIED (sequence)`, polluter
+    `RestoringPolluterTest#pollute`, resource `static-field controls.State restored (write …pollute@6 ->
+    read …check@1)`, "static overlap: a possible mechanism, not confirmed as the cause", 20/20, alone 0/20.
+    `resource_edges`: `restored` only — no edge on `State#hidden`, the real reason, as `EXPECTED.md` says.
+  - Control 2 `controls.TwoFieldVictimTest#check` → `VERIFIED (sequence)`, resource `State a`, same
+    static-overlap line, 20/20, alone 0/20. `resource_edges`: **`a` and `b`** — the extra edge is visible.
+  - Both reports: `assurance.resource` = `STATIC_OVERLAP` / `NOT_ASSESSED`; a search of each report for
+    "the cause", "caused by", "mechanism", "root cause" finds only the `mechanism` key itself.
+- **Result:** matches M1's records on every step. FT005's "Closes when" — no causal label for the
+  controls, extra edges disclosed — holds.
+- **Differences and unclear steps** (for M1):
+  1. **A stale line in both our codes.** Control 2's `limitations` still say "Another shared resource is
+     not shown in this report: controls.State#b" (`evidence/extract.py` line 666, M1's), although
+     `State#b` is in `resource_edges` since schema v2. `runner/cli.py`'s several-polluter line said the
+     same ("… is not shown in this report") — mine; fixed here test-first:
+     `runner.tests.test_cli.TestCombineFields` → `FAILED (failures=2)` on the old wording, then the line
+     reads "… is not the headline resource; it is listed in resource_edges" → `TestCombineFields` and
+     `TestReports` `Ran 26 tests … OK`. The committed `eval/reports/f3.json` (M3's) still has the old
+     line until it is regenerated.
+  2. M1's record gives `depth_used 2` (the analysis depth); the reports here show each edge at `depth`
+     1 (the deeper side of a direct read/write). Not a contradiction — two different numbers.
