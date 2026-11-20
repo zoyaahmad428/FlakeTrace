@@ -1398,3 +1398,22 @@ own copy of the code, not from the review's description.
 - **Docs:** handover's W18 step corrected to restore only `runner/diagnose.py`, `runner/verify.py`,
   `runner/cli.py`; claim E14 qualified (F3 `CANDIDATE` until W20, no "1-minimal"); W18 and W22
   rows marked verified by M1 (PR #108).
+
+## CLI alone line names the other failures; N4 under the new default (2026-11-20)
+
+- **Requirement:** FT003 / claims ledger G1. Found by M1's W19 reproduction (PR #114), raised by
+  M3: the summary printed only `alone (same failure): matched/n`, so N4 (`other: 20`) and F1
+  (`other: 0`) looked the same on the console. The report JSON and the UI already showed `other`.
+- **File/function:** `runner/cli.py` `summary()`; test
+  `test_summary_tells_a_different_alone_failure_from_no_alone_failure` in `runner/tests/test_cli.py`.
+  Three older hand-built test reports lacked `other`, which schema v2 requires; they now carry it.
+- **Before (test-first):** `py -3 -m unittest runner.tests.test_cli.TestReports.test_summary_tells_a_different_alone_failure_from_no_alone_failure`
+  → `AssertionError: 'alone (same failure): 0/20, other failure: 0/20' not found` — FAILED (failures=1).
+- **After:** `runner.tests.test_cli.TestReports` → `Ran 14 tests … OK`.
+- **Real runs, default lifecycle (records' header `lifecycle: class-grouped`), Windows 11, local JDK:**
+  - N4 `odfixture.DualFailureVictimTest#expectsStateTwo` → `UNRESOLVED (VICTIM_FAILS_ALONE_DIFFERENTLY)`,
+    `reproduced: 20/20 (lower bound 0.839)   alone (same failure): 0/20, other failure: 20/20`.
+  - F1 `odfixture.ConfigVictimTest#expectsDefaultMode` → `VERIFIED (sequence)`,
+    `… alone (same failure): 0/20, other failure: 0/20`.
+  This answers M1's note that N4 had only been run under the old `per-method` default (PR #114 at `03c9b30`).
+- **Registers:** FT006/FT021 action-register row → `Partly` (W22 reproduced by M1, PR #108).

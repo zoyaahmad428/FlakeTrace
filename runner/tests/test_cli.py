@@ -348,6 +348,14 @@ class TestReports(unittest.TestCase):
         self.assertIn("alone (same failure): 0/20", text)
         self.assertNotIn("alone: 0/20", text)
 
+    def test_summary_tells_a_different_alone_failure_from_no_alone_failure(self):
+        """M1's W19 check (PR #114): N4 (other: 20) and F1 (other: 0) printed the same alone line."""
+        never_fails = summary(self.report_with_resource(), Path("r.report.json"))
+        fails_differently = summary(dict(self.report_with_resource(), victim_alone={"matched": 0, "other": 20, "n": 20}),
+                                    Path("r.report.json"))
+        self.assertIn("alone (same failure): 0/20, other failure: 0/20", never_fails)
+        self.assertIn("alone (same failure): 0/20, other failure: 20/20", fails_differently)
+
     def test_command_shows_the_minimisation_only_when_ddmin_found_polluters(self):
         records = Path(tempfile.mkdtemp(prefix="flaketrace-cli-records-"))
         earlier = [TestIdentifier(f"pkg.T{i}Test", "t") for i in range(10)]
@@ -376,7 +384,7 @@ class TestReports(unittest.TestCase):
         report = dict(self.report_with_resource(), polluters=[], shared_resource=None, outcome="UNRESOLVED",
                       unresolved_reason="NOT_REPRODUCED",
                       reproduction={"matched": 0, "n": 20, "lower": 0.0, "upper": 0.161},
-                      victim_alone={"matched": 0, "n": 20},
+                      victim_alone={"matched": 0, "other": 0, "n": 20},
                       order_exploration={"order_given": True, "shuffled_orders_tried": 31,
                                          "orders_exhausted": False, "seed_base": 0, "reproducing_seed": None})
         text = summary(report, Path("r.report.json")).splitlines()
@@ -387,7 +395,7 @@ class TestReports(unittest.TestCase):
         report = dict(self.report_with_resource(), polluters=[], shared_resource=None, outcome="UNRESOLVED",
                       unresolved_reason="NOT_REPRODUCED",
                       reproduction={"matched": 0, "n": 3, "lower": 0.0, "upper": 0.561},
-                      victim_alone={"matched": 0, "n": 3},
+                      victim_alone={"matched": 0, "other": 0, "n": 3},
                       order_exploration={"order_given": False, "shuffled_orders_tried": 4,
                                          "orders_exhausted": True, "seed_base": 0, "reproducing_seed": None})
         text = summary(report, Path("r.report.json"), crashes=7)
@@ -398,7 +406,7 @@ class TestReports(unittest.TestCase):
         report = dict(self.report_with_resource(), polluters=[], shared_resource=None, outcome="UNRESOLVED",
                       unresolved_reason="NOT_REPRODUCED",
                       reproduction={"matched": 0, "n": 20, "lower": 0.0, "upper": 0.161},
-                      victim_alone={"matched": 0, "n": 20},
+                      victim_alone={"matched": 0, "other": 0, "n": 20},
                       order_exploration={"order_given": False, "shuffled_orders_tried": 31,
                                          "orders_exhausted": False, "seed_base": 0, "reproducing_seed": None})
         text = summary(report, Path("r.report.json")).splitlines()
@@ -425,7 +433,7 @@ class TestReports(unittest.TestCase):
             "polluter_write_location": {"class": "pkg.PolluterTest", "method": "p", "bytecode_offset": 1},
             "victim_read_location": {"class": "pkg.VictimTest", "method": "v", "bytecode_offset": 4},
             "reproduction": {"matched": 20, "n": 20, "lower": 0.839},
-            "victim_alone": {"matched": 0, "n": 20}, "execution_record_reference": "r.jsonl",
+            "victim_alone": {"matched": 0, "other": 0, "n": 20}, "execution_record_reference": "r.jsonl",
         }
 
     def test_inconsistent_writes_a_real_report_now(self):

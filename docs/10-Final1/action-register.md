@@ -53,7 +53,7 @@ grouped; each keeps its FT identifier.
 | FT003 | Mid | No `VERIFIED` when the victim fails alone differently | M2, M3 | Sprint A | Open | — | |
 | FT004 | Mid | Deletion evidence under repetition | M2, M3 | Sprint B | Open | — | |
 | FT005 | Mid | Separate sequence assurance from resource evidence | M1, M3 | Wording: Sprint A · controls: Sprint B | Open | — | |
-| FT006, FT021 | Mid | Lifecycle semantics and the reset boundary | M2 | Sprint B | Open | — | |
+| FT006, FT021 | Mid | Lifecycle semantics and the reset boundary | M2 | Sprint B | Partly | W22 (PR #104), reproduced by M1 2026-11-20 (PR #108): lifecycle control matches Surefire under `class-grouped`, now the default; JUnit 3, `@RunWith` and `suite()` named as per-method (ADR-012 §2); `--workspace copy` wrote no `target/` in the project. **Open:** FT006 on a real project (W26a); FT021's reset-sensitive control and container plan | |
 | FT009 | Mid | Portable, auditable evidence bundle | M3, M2 | Sprint B | Open | — | |
 | FT010 | Mid | A typed report for an inconclusive search | M2, M3 | Sprint A | Open | — | |
 | FT007, FT012 | Mid | Budget and ranking increment; one dated schedule | All | Plan: next meeting · build: Final | Partly | Schedule: [[10-Final1/iteration-2-plan]], [[00-Meta/roadmap]] | |

@@ -150,16 +150,20 @@ py -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVic
 It runs `diagnose()`, then — only when a polluter is found — Member 1's `analyse_pair` once per polluter
 (starts at depth 2, deepens to at most 5 only when needed, ADR-006) and `report_fields`, combined by
 `combine_fields`, and Member 3's `assemble_report()`, then writes `<record>.report.json` next to the record. Real
-output on F1 (local, JDK 21):
+output on F1 (local, Windows 11, 2026-11-20, default `class-grouped` lifecycle):
 
 ```
-VERIFIED  odfixture.ConfigVictimTest#expectsDefaultMode
+VERIFIED (sequence)  odfixture.ConfigVictimTest#expectsDefaultMode
   polluter:   odfixture.ConfigPolluterTest#pollute
   resource:   static-field odfixture.Config mode (write odfixture.ConfigPolluterTest#pollute@1 -> read odfixture.ConfigVictimTest#expectsDefaultMode@1)
-  reproduced: 20/20 (lower bound 0.839)   alone: 0/20
-  report:     flaketrace-records\20261009T213516Z-odfixture.ConfigVictimTest#expectsDefaultMode.report.json
-  record:     flaketrace-records\20261009T213516Z-odfixture.ConfigVictimTest#expectsDefaultMode.jsonl
+              static overlap: a possible mechanism, not confirmed as the cause
+  reproduced: 20/20 (lower bound 0.839)   alone (same failure): 0/20, other failure: 0/20
+  report:     flaketrace-records61120T095632Z-odfixture.ConfigVictimTest#expectsDefaultMode.report.json
+  record:     flaketrace-records61120T095632Z-odfixture.ConfigVictimTest#expectsDefaultMode.jsonl
 ```
+
+`other failure` counts alone runs that failed with a *different* failure: on N4 it is `20/20` and the
+outcome is `UNRESOLVED (VICTIM_FAILS_ALONE_DIFFERENTLY)`.
 
 | Exit | Meaning |
 | --- | --- |
