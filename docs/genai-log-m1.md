@@ -573,8 +573,10 @@ register update from my output; I ran every command myself on my laptop.
 
 **What I asked:** give me the W19 verification commands and record the result.
 
-**What was retained:** the W19 entry in [[evidence-m1]], and the FT003 row in
-[[10-Final1/action-register]].
+**What was retained:** the W19 entry in [[evidence-m1]], including my rerun of M3's integration
+tool on all eight fixture cases (T6), and the FT003 row in [[10-Final1/action-register]]. The
+assistant spotted that the tool overwrites M3's committed reports and had me run it in a
+throwaway worktree.
 
 **What I changed:** ran every command; checked the entry against my terminal output before
 committing.

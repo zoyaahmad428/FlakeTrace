@@ -835,13 +835,54 @@ been independently reproduced. It still needs the supervisor's acceptance.
    count, that tells them apart. The report's `victim_alone` tally shows the different failures
    (`other`), but the one-line summary does not. A reader of the CLI alone could miss why N4 is
    `UNRESOLVED`. Worth a summary line, e.g. `alone (other failure): 20/20` (M2's CLI).
+   *M3 confirmed this on PR #114 (2026-11-20). In M3's own rerun, N4's report has `victim_alone`
+   `{n: 20, passed: 0, matched: 0, other: 20}`, so the data is right and the gap is presentation
+   only: `runner/cli.py` prints only `matched/n`. M3 has raised it with M2.*
 2. I did not copy the N4 `.report.json` fields into this entry; the summary lines above are
    what I recorded.
 3. The T1–T6 names are not in the test names, only in their docstrings, so finding them needs
    `-v`.
 
 **Limitation:** T1–T4 are scripted unit tests. Only T5 (N4) and T6 (F1) went through the real
-runner and JVM. T6 was checked on F1 only, not on all seven cases.
+runner and JVM. T6 is covered on all seven earlier cases by the integration run below.
+
+**T6 on every fixture case: M3's integration tool, rerun by me** (same laptop, same day). The
+tool overwrites `eval/reports/*.json` and calls `diagnose()` in place, so I ran it in a throwaway
+worktree, not in my checkout:
+- `git worktree add --detach %TEMP%\ft-w9 origin/main` → `HEAD is now at 03c9b30`.
+- `py -3.11 eval\tools\run_w9_integration.py > %TEMP%\ft-w9.log 2>&1` → `exit 0`.
+- `findstr /C:"outcome:" %TEMP%\ft-w9.log`:
+
+  | Case | My run | M3's committed report |
+  | --- | --- | --- |
+  | F1 | `VERIFIED None` | `VERIFIED` |
+  | F2 | `VERIFIED None` | `VERIFIED` |
+  | F3 | `CANDIDATE None` | `CANDIDATE` (`DELETION_EVIDENCE_INCOMPLETE`) |
+  | F4 | `VERIFIED None` | `VERIFIED` |
+  | N1 | `UNRESOLVED VICTIM_FAILS_ALONE` | same |
+  | N2 | `UNRESOLVED VICTIM_FAILS_ALONE` | same |
+  | N3 | `UNRESOLVED NOT_REPRODUCED` | same |
+  | N4 | `UNRESOLVED VICTIM_FAILS_ALONE_DIFFERENTLY` | same |
+
+- `findstr /C:"Traceback"` found nothing. "Error" matched only `AssertionError` in the printed
+  diagnoses.
+- Details from the log:
+  - every case: `source_integrity … 26 files hashed (SHA-256) before and after; all identical`;
+  - F3: `minimise_runs=9`;
+  - F4: reproduced through `reproducing_seed=6` after `shuffled_orders=7`;
+  - N2, random by design: `alone_tally` `passed=9, matched=11`.
+- `git status --short` in the worktree listed the eight rewritten `eval/reports/*.json`, as
+  expected. `git worktree remove --force %TEMP%\ft-w9` deleted the worktree, and my own checkout
+  showed no change.
+- **N4 detail:** the runner's own status for N4 is still `POLLUTER_FOUND`, naming
+  `DualFailurePolluterTest#setState`, with `alone_tally=RunTally(n=20, passed=0, matched=0,
+  other=20, infra=0)`. The report is `UNRESOLVED (VICTIM_FAILS_ALONE_DIFFERENTLY)` and blames no
+  test. So the FT003 protection sits in W19's decision step, which reads the alone tally, not in
+  the runner's search. This matches the W18 handover note ("in T1 the runner still names P").
+
+This run used `per-method`, the default at `03c9b30`, which is the same setting as M3's committed
+reports. The verdicts under the new `class-grouped` default (PR #113) have not yet been rerun by
+me.
 
 ## PR #106 check: the report schema v2 against `report_fields` (2026-11-20)
 
