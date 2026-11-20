@@ -98,7 +98,11 @@ in-process and decides nothing itself:
 
 - `--budget-invocations N` and `--budget-seconds S` (ADR-014, Interface 6). A limit below the start minimum (`3n` + the tests up to the victim + 2) exits 2 and names the minimum.
 - Every summary has a `budget:` line: invocations spent (of the limit), the reserve, candidates tried, and the phase it stopped in.
-- `BUDGET_EXHAUSTED` exits 3 with "No report" and the budget line until M3's W24 report half reads it.
+- `BUDGET_EXHAUSTED` is a report since M3's W24 half (PR #135): `UNRESOLVED (BUDGET_EXHAUSTED)`, exit 0. Its
+  `reproduced:` line says "no sequence verified (the starting order failed k of r run(s) before the budget ran
+  out)", so the starting order's runs are not read as a verified reproduction (2026-11-20 follow-up).
+- When every kept test is `NEEDED`, the `deletion:` line says "each kept test confirmed needed" (M1's W20
+  verification, PR #137).
 
 ## W25 additions (2026-11-20)
 

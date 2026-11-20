@@ -1194,3 +1194,12 @@ the existing `priority` hook, so every step after the candidate order is the sam
 
 Ownership checkpoint: why the policies reach the same endpoint; when deepening stops; why a fixture result is not
 a contribution claim.
+
+## 2026-11-20 — CLI follow-ups after #135 and #137
+
+**Tool:** Claude Code (Claude Opus 5.5), test-driven-development · **Level:** L2 · **Branch:** `m2/w24-followups`
+
+**Asked:** analyse M3's #135 and M1's #137 and do the follow-ups. **Kept:** two summary wordings, each test-first;
+the dead "no report yet" text removed. **Left:** G2's status, which needs M3's agreement. **What I changed:** *to fill in.*
+
+Ownership checkpoint: why a `BUDGET_EXHAUSTED` report's `reproduced:` numbers are not a verified sequence.
