@@ -10,6 +10,7 @@ from pathlib import Path
 
 from eval.baseline import FailureSignature, RunOutcome, RunTally, TestIdentifier
 from eval.tests.fake_runner import FakeOrderRunner
+from runner.discovery import DEFAULT_SELECTION, DiscoveryConfigError
 from runner.recording import RecordingRunner
 from runner.diagnose import (
     INCONSISTENT,
@@ -155,12 +156,23 @@ class TestRunSteps(unittest.TestCase):
         project = Path(tempfile.mkdtemp(prefix="flaketrace-project-"))
         with mock.patch("runner.diagnose.maven_test_classpath", return_value=[]), \
                 mock.patch("runner.diagnose.OrderRunner"), \
+                mock.patch("runner.diagnose.project_selection", return_value=DEFAULT_SELECTION), \
                 mock.patch("runner.diagnose.discover_order", return_value=[A, V]):
             with self.assertRaises(DiagnoseInputError) as raised:
                 diagnose(project, V, original_order=[LATER, A, V], record_dir=tempfile.mkdtemp())
         self.assertIn("1 test(s)", str(raised.exception))
         self.assertIn(str(LATER), str(raised.exception))
         self.assertIn("Surefire", str(raised.exception))
+
+    def test_unsupported_surefire_setting_is_an_input_error(self):
+        project = Path(tempfile.mkdtemp(prefix="flaketrace-project-"))
+        refused = DiscoveryConfigError("the project's Surefire configuration sets <test>")
+        with mock.patch("runner.diagnose.maven_test_classpath", return_value=[]), \
+                mock.patch("runner.diagnose.OrderRunner"), \
+                mock.patch("runner.diagnose.project_selection", side_effect=refused):
+            with self.assertRaises(DiagnoseInputError) as raised:
+                diagnose(project, V, record_dir=tempfile.mkdtemp())
+        self.assertIn("<test>", str(raised.exception))
 
     def test_crash_only_not_reproduced_counts_infrastructure_failures(self):
         crash = RunOutcome(passed=False, failure_signature=FailureSignature("flaketrace.JvmCrash", "", "code 1"))
