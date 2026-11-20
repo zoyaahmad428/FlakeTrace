@@ -1,8 +1,11 @@
 # Diagnose command — `runner/cli.py` (Member 2, W9)
 
-*Status (2026-10-10): built and run on the fixture locally (JDK 21): F1 and F2 `VERIFIED`, N1
-`UNRESOLVED(VICTIM_FAILS_ALONE)`; since W10 (ADR-007) F3 `VERIFIED` with two polluters. CI on JDK 8: see
-[[evidence-m2]].
+*Status (2026-11-20): built; verdict contract v2 (ADR-010, W19). The committed reports in `eval/reports/`
+give F1, F2, F4 `VERIFIED (sequence)`, N1 `UNRESOLVED(VICTIM_FAILS_ALONE)`, N4
+`UNRESOLVED(VICTIM_FAILS_ALONE_DIFFERENTLY)`, and F3 `CANDIDATE [DELETION_EVIDENCE_INCOMPLETE]` — two
+polluters, no deletion runs until W20 (ADR-011). Real N4 and F1 runs under the default `class-grouped`
+lifecycle on 2026-11-20: see [[evidence-m2]]. CI on JDK 8: see [[evidence-m2]]. (Until 2026-11-20 this
+line still said F3 `VERIFIED`; flagged by M3, PR #115.)
 Four-point ownership note per [[04-Implementation/README]]. Design:
 [[03-Design/decisions/ADR-005-w9-diagnose-cli]].*
 
