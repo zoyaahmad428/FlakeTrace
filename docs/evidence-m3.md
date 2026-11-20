@@ -2006,3 +2006,31 @@ annotations) before touching anything.
 - **Lesson, stated plainly:** before regenerating a shared, randomized fixture report as part of
   a merge resolution, check every file that hardcodes its exact value — not just the test
   suites in my own folder.
+
+## 2026-11-20 — A3: no live doc claims F3 is `VERIFIED` today
+
+**Requirement:** after A1 made F3 honestly `CANDIDATE`, check every doc for a present-tense
+claim that F3 is `VERIFIED` -- distinct from A2 (retired phrases) and from the frozen Mid
+report (which correctly still says `VERIFIED`, per the 2026-11-20 merge-resolution entry).
+
+- Searched every `.md` under `docs/`, `eval/`, `fixtures/`, `runner/`, `ui/` mentioning "F3",
+  excluding `mid-eval-report/`, `docs/08-MidEval/` and dated evidence/genai logs (all correctly
+  frozen/historical).
+- `docs/05-Testing/fixture-suite.md`'s "Ground truth" table row for F3 says `VERIFIED` --
+  correct, that is literally the ground-truth column, which stays `VERIFIED` as the W20 target
+  by design.
+- `docs/10-Final1/mid-eval-outcome.md`'s "F1 and F3 gave VERIFIED" is a dated record of what
+  the supervisor's reviewer ran at the Mid (tag `mid-eval-v1`) -- correctly historical, not
+  touched.
+- **Real violation, fixed:** `docs/10-Final1/demo-plan.md`'s rehearsal table said, for "Remove
+  one of F3's polluters": "show the deletion check that already answers it" -- wrong, and
+  directly contradicted by A1: F3 has no deletion check at all today, which is exactly why it
+  is `CANDIDATE [DELETION_EVIDENCE_INCOMPLETE]`. Fixed to say so explicitly and distinguish
+  F1/F2/F4's free check (ADR-011 §2) from F3's missing one (W20). This is `docs/` (joint) and
+  directly describes my own component's behaviour, so edited directly rather than flagged.
+- **Flagged, not touched (M2's file):** `docs/04-Implementation/diagnose-cli.md`'s opening
+  "Status (2026-10-10)" line says "F3 `VERIFIED` with two polluters" -- unlike the Mid report
+  or dated logs, this is a live, actively-maintained four-point note (its ADR-008 section was
+  updated as recently as 2026-11-20, PR #108), so this is genuine staleness, not a frozen
+  record. Raised for M2 (file header: "Member 2, W9") rather than edited directly.
+- No other violation found.
