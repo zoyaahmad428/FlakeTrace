@@ -108,6 +108,7 @@ one; each has its own tests in `runner/tests/`.
 | `search.py`, `verify.py` | `reproduce` — run the original order until the victim fails; that failure is the reference signature (a `flaketrace.*` crash/timeout/skip never is; the prefix is `SYNTHETIC_PREFIX` in `eval/baseline.py`, next to ADR-010's `classify`, `RunTally` and `tally`). `find_polluter` — `[candidate, victim]` once per earlier test, `priority` first; first match wins. `repeat` — n runs → a `RunTally` of the victim's outcomes: passed, matched, other, infra (W18, ADR-010) | done |
 | `minimise.py` | `ddmin(runner, prefix, victim, reference)` → a reduced subset of the tests before the victim and the runs used; only the reference failure counts, each subset runs at most once, so the result is not deletion-verified (W10, ADR-007; FT004) | done |
 | `deletion.py` | W20 (ADR-011, Interface 4): `check_deletions(runner, polluters, victim, reference, m, alone_tally)` → (`DeletionCheck` list, final polluters). Each kept test is left out and the rest plus the victim run `m` (= `n`) times; `NEEDED` if the victim passed every run, `NOT_NEEDED` if the failure still reproduces (Wilson lower bound ≥ 0.70, M3's threshold), else `INCONCLUSIVE`. A `NOT_NEEDED` test is dropped (the first only) and the checks restart; one kept test reuses the alone tally (`alone-check`, no runs). Recorded as step `deletion`, each run line naming the `removed` test and its `round` (ADR-011, for ADR-013's recount) | done (W20 runner half) |
+| `budget.py` | W24 (ADR-014, Interface 6): `BudgetedRunner(runner, Budget(limit_invocations, limit_seconds), n, victim)` wraps every run and counts it in test-method invocations (`len(order)`) per phase. A reserve of `3 × n` is kept for verification: exploration (`reproduce`, `shuffle`, `search`, `minimise`) may spend only `limit − 3n`, and a run that would cross that is not started (`BudgetExhausted`). A seconds limit stops exploration only. An `INCONSISTENT` result stays `INCONSISTENT` under a limit: if not one run of the full order fits, its tally is the one full-order re-check it already ran. Deletion checks and the final sequence check ask first (`affords`, `affordable_runs`): a check runs in full or is `NOT_RUN`. A refused run writes a `budget-stop` record line and no `run` line, so the totals recount from the record. `account()` → `BudgetAccount` | done (W24 runner half) |
 | `orders.py` | When the starting order never fails for real: up to 31 distinct valid shuffled orders (classes shuffled, then methods within each class; never interleaved), one run each, seeds recorded; the first real failure becomes the failing order (ADR-008) | done |
 | `diagnose.py` | `diagnose(project, victim, n=20)` → `DiagnosisRuns` (the `alone_tally` / `sequence_tally` of ADR-010 — the five old count fields went in A4, 2026-11-20 — no verdict; the older count fields are filled from the tallies until M3's W19 reads them); `run_steps(runner, order, victim, n)` is the same logic on any runner | done |
 
@@ -120,6 +121,7 @@ runs = diagnose(Path("fixtures/od-fixture"),
                 TestIdentifier("odfixture.ConfigVictimTest", "expectsDefaultMode"), n=20)
 runs.status, runs.polluters, runs.sequence_tally, runs.alone_tally   # RunTally(n, passed, matched, other, infra)
 runs.deletion_checks   # [DeletionCheck(removed, runs, status, source, round)] -- W20, [] unless POLLUTER_FOUND
+runs.budget           # BudgetAccount: spent per phase, launches, exhausted, candidates tried -- W24
 runs.source_integrity.passed, runs.execution_record   # flaketrace-records/<time>-<victim>.jsonl
 ```
 
@@ -128,6 +130,7 @@ runs.source_integrity.passed, runs.execution_record   # flaketrace-records/<time
 | `POLLUTER_FOUND` | one earlier test makes the victim fail with the reference signature — or, when none does alone, `ddmin` reduced the earlier tests to a set that does (F3), with single trials | `polluters + [victim]` |
 | `VICTIM_FAILS_ALONE` | the victim reproduced its failure with nothing before it — no polluter is blamed | `[victim]` (counts = alone counts) |
 | `INCONSISTENT` (called `NO_SINGLE_POLLUTER` before W18; the alias was removed in A4) | a failure was seen (in the starting order or once in a shuffled order) but did not come back: no single earlier test reproduces it and the full order did not fail again (likely flaky; also a victim first in the order) — no test is blamed | the failing order |
+| `BUDGET_EXHAUSTED` | W24: the budget stopped exploration (reproduce, shuffle, search or minimise) before a polluter set was found, or not one final sequence run of the kept tests fitted; the alone check still ran in full, and a victim that fails alone is `VICTIM_FAILS_ALONE` instead — no test is blamed | the order searched |
 | `NOT_REPRODUCED` | the victim never failed for real in `n` runs of the starting order, in up to 31 distinct class-first shuffled orders (ADR-008), or in `n` runs alone; crashes/timeouts are counted in `sequence_any_failures` and `infrastructure_failures` | the starting order |
 
 ## Command line (W9)
@@ -149,6 +152,8 @@ py -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVic
 | `--seed` | `0` | first shuffle seed; every seed tried is in the execution record |
 | `--workspace` | `copy` | `copy`: build, run and extract evidence in a temporary copy of the project, deleted afterwards — the project folder is never written to, not even `target/`; integrity is checked on the copy and on the original. `in-place`: as at the Mid (writes `target/`). **Limits of `copy`:** only the project folder is copied, so a module whose build reads `../pom.xml` (a multi-module child) or other files outside the folder fails — the error then suggests `--workspace in-place`; symbolic links are followed (their targets are copied); the original is hashed after the copy is made, so a change during the copy itself is not seen; Maven's own console output names the temporary path; costs one full copy (including large untracked folders) and one full compile; files a test writes outside the project are not contained |
 | `--copy-parent` | system temp | folder the temporary copy is made in; the UI passes the job's own folder so it can delete a copy left by a timed-out (killed) run |
+| `--budget-invocations` | none | stop at this many test-method invocations; `3 × n` are kept for verification, and a limit below `3n + (tests up to the victim) + 2` exits 2 naming that minimum (W24, ADR-014). Without it every run is still counted and shown on the `budget:` line |
+| `--budget-seconds` | none | stop exploring after this many seconds; verification still runs, so the total time can be longer (W24) |
 | `--lifecycle` | `class-grouped` | `class-grouped` runs class-level setup once per run of same-class tests, as Surefire does (ADR-012; the default since M1's control run matched Surefire, PR #108); `per-method` is the Mid behaviour; recorded in the header |
 
 It runs `diagnose()`, then — only when a polluter is found — Member 1's `analyse_pair` once per polluter
@@ -188,6 +193,7 @@ outcome is `UNRESOLVED (VICTIM_FAILS_ALONE_DIFFERENTLY)`.
 | 6 | Source-integrity check (hash target source before/after) — **done (W7)** | `source_integrity` | Yes |
 | 7 | Execution record (JDK, order, timestamps) — **done (W7)** | `execution_record_reference` | Yes |
 | 8 | CLI entry point — **done (W9)**: `py -m runner diagnose` | the whole report | Yes |
+| 9 | Budget ledger and verification reserve — **done (W24 runner half)** | `budget` (M3's report half) | — |
 
 Test against `fixtures/od-fixture` (F1–F4, N1–N3) — the expected outcomes are in
 `fixtures/od-fixture/ground_truth.json`, written before any run.

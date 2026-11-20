@@ -3,7 +3,7 @@ leave each kept test out, repeat the rest plus the victim m times, and label the
 The labels use M3's Wilson interval and threshold, so there is one policy, not two."""
 
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple
 
 from eval.baseline import FailureSignature, RunTally, TestIdentifier
 from eval.outcome import DEFAULT_LOWER_BOUND_THRESHOLD
@@ -39,18 +39,24 @@ def label(runs: RunTally, m: int) -> str:
 
 def check_deletions(runner, polluters: List[TestIdentifier], victim: TestIdentifier,
                     reference: FailureSignature, m: int,
-                    alone_tally: RunTally) -> Tuple[List[DeletionCheck], List[TestIdentifier]]:
+                    alone_tally: RunTally, can_afford: Callable[[int, int], bool] = lambda cost, kept: True,
+                    ) -> Tuple[List[DeletionCheck], List[TestIdentifier]]:
     """Check every kept test in rounds (ADR-011 sections 1-3). A NOT_NEEDED test is dropped (the first
     one only) and the checks start again on the smaller set; at most len(polluters) rounds. With one
     kept test, "the rest plus the victim" is the victim alone: its alone tally is reused (section 2).
-    Returns every check of every round, and the final kept tests in their original order."""
+    Returns every check of every round, and the final kept tests in their original order.
+    `can_afford(cost, kept)` is the budget (W24, Interface 6 B5): a check that does not fit, and every
+    later check of that round, is NOT_RUN, and nothing is dropped."""
     kept, checks, round_ = list(polluters), [], 1
     while True:
         if len(kept) == 1:
             checks.append(DeletionCheck(kept[0], alone_tally, label(alone_tally, alone_tally.n), ALONE_CHECK, round_))
             return checks, kept
         this_round = []
-        for test in kept:
+        for i, test in enumerate(kept):
+            if not can_afford(m * len(kept), len(kept)):
+                this_round += [DeletionCheck(t, None, NOT_RUN, DELETION_RUN, round_) for t in kept[i:]]
+                return checks + this_round, kept
             # ADR-011 "Consequences": each run line names the removed test, so ADR-013's recount can redo it.
             if hasattr(runner, "note"):
                 runner.note = {"removed": str(test), "round": round_}

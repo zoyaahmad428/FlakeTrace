@@ -10,10 +10,12 @@ from pathlib import Path
 
 from eval.baseline import FailureSignature, RunOutcome, RunTally, TestIdentifier
 from eval.tests.fake_runner import FakeOrderRunner
-from runner.deletion import ALONE_CHECK, DELETION_RUN, NEEDED, NOT_NEEDED
+from runner.budget import Budget
+from runner.deletion import ALONE_CHECK, DELETION_RUN, NEEDED, NOT_NEEDED, NOT_RUN
 from runner.discovery import DEFAULT_SELECTION, DiscoveryConfigError
 from runner.recording import RecordingRunner
 from runner.diagnose import (
+    BUDGET_EXHAUSTED,
     INCONSISTENT,
     NOT_REPRODUCED,
     POLLUTER_FOUND,
@@ -579,6 +581,174 @@ class TestDiagnoseOnFixture(unittest.TestCase):
         self.assertEqual(runs.status, VICTIM_FAILS_ALONE)
         self.assertEqual(runs.polluters, [])
         self.assertGreaterEqual(runs.alone_tally.matched, 1)
+
+
+class TestBudget(unittest.TestCase):
+    """W24, Interface 6 (B1-B8) and ADR-014's tests to write first. TEN: ten candidates, the polluter
+    is the last; n=20, so the reserve is 60 and the start minimum 60 + 11 + 2 = 73."""
+
+    C = [TestIdentifier(f"pkg.C{i}Test", "c") for i in range(10)]
+
+    def ten(self):
+        return victim_fails_when(lambda order: self.C[9] in order[:-1]), self.C + [V]
+
+    def test_no_limit_changes_nothing(self):
+        runner, order = self.ten()
+        runs = run_steps(runner, order, V, n=20)
+        self.assertEqual((runs.status, runs.polluters), (POLLUTER_FOUND, [self.C[9]]))
+        self.assertEqual(len(runner.calls), 51)  # reproduce 1, alone 20, search 10, verify 20
+        b = runs.budget
+        self.assertEqual((b.exhausted, b.limit_invocations, b.spent["search"]), (False, None, 20))
+        self.assertEqual((b.candidates_tried, b.candidates_total, b.reserve_invocations), (10, 10, 60))
+
+    def test_search_stops_at_the_cap_and_the_alone_check_ran_in_full(self):
+        runner, order = self.ten()
+        runs = run_steps(runner, order, V, n=20, budget=Budget(80))
+        self.assertEqual((runs.status, runs.polluters, runs.alone_tally.n), (BUDGET_EXHAUSTED, [], 20))
+        b = runs.budget
+        self.assertEqual(b.spent, {"reproduce": 11, "shuffle": 0, "alone": 20, "search": 8, "minimise": 0,
+                                   "deletion": 0, "verify": 0})
+        self.assertEqual((b.candidates_tried, b.exhausted_phase, b.launches), (4, "search", 25))
+        self.assertEqual((runs.search_runs, runs.sequence, runs.deletion_checks), (4, order, []))
+        self.assertEqual(runs.sequence_tally, RunTally(1, 0, 1, 0, 0))
+
+    def test_limit_below_the_start_minimum_is_refused(self):
+        runner, order = self.ten()
+        with self.assertRaisesRegex(DiagnoseInputError, "73"):
+            run_steps(runner, order, V, n=20, budget=Budget(72))
+        self.assertEqual(runner.calls, [])
+        self.assertEqual(run_steps(runner, order, V, n=20, budget=Budget(73)).status, BUDGET_EXHAUSTED)
+
+    def test_victim_failing_alone_outranks_the_cut(self):
+        runner = victim_fails_when(lambda order: order == [V])
+        runs = run_steps(runner, self.C + [V], V, n=20, budget=Budget(73))
+        self.assertEqual((runs.status, runs.budget.exhausted_phase), (VICTIM_FAILS_ALONE, "reproduce"))
+
+    def test_record_recounts_to_the_ledger(self):
+        runner, order = self.ten()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "r.jsonl"
+            runs = run_steps(RecordingRunner(runner, path, {}), order, V, n=20, budget=Budget(80))
+            lines = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+        recount = {}
+        for line in (x for x in lines if x["type"] == "run"):
+            recount[line["step"]] = recount.get(line["step"], 0) + len(line["order"])
+        self.assertEqual(recount, {k: v for k, v in runs.budget.spent.items() if v})
+        self.assertEqual(sum(x["type"] == "run" for x in lines), runs.budget.launches)
+        stops = [x for x in lines if x["type"] == "budget-stop"]
+        self.assertEqual([(x["phase"], x["would_cost"]) for x in stops], [("search", 2)])
+
+    P, Q, R = (TestIdentifier(f"pkg.{x}Test", x.lower()) for x in "PQR")
+
+    def both(self):
+        return victim_fails_when(lambda order: self.P in order and self.Q in order)
+
+    def test_two_kept_tests_one_deletion_check_fits(self):
+        free = run_steps(self.both(), [self.P, self.Q, V], V, n=20)
+        self.assertEqual(free.budget.spent, {"reproduce": 3, "shuffle": 0, "alone": 20, "search": 4,
+                                             "minimise": 7, "deletion": 80, "verify": 60})
+        runs = run_steps(self.both(), [self.P, self.Q, V], V, n=20, budget=Budget(150))
+        self.assertEqual(runs.status, POLLUTER_FOUND)
+        self.assertEqual([(c.removed, c.status) for c in runs.deletion_checks],
+                         [(self.P, NEEDED), (self.Q, NOT_RUN)])
+        self.assertEqual((runs.sequence_tally.n, runs.budget.exhausted_phase), (20, "deletion"))
+
+    def test_short_verify_when_the_hold_back_cannot_be_paid(self):
+        runs = run_steps(self.both(), [self.P, self.Q, V], V, n=20, budget=Budget(74))
+        self.assertEqual(runs.status, POLLUTER_FOUND)
+        self.assertEqual([c.status for c in runs.deletion_checks], [NOT_RUN, NOT_RUN])
+        self.assertEqual((runs.sequence_tally.n, runs.budget.exhausted), (13, True))
+        self.assertEqual(runs.budget.spent["verify"], 39)
+
+    def test_no_verify_run_fits_is_budget_exhausted(self):
+        three = lambda: victim_fails_when(lambda order: all(t in order for t in (self.P, self.Q, self.R)))
+        order = [self.P, self.Q, self.R, V]
+        free = run_steps(three(), order, V, n=1).budget.spent
+        explore = free["reproduce"] + free["shuffle"] + free["search"] + free["minimise"]
+        runs = run_steps(three(), order, V, n=1, budget=Budget(explore + 3))
+        self.assertEqual((runs.status, runs.polluters, runs.budget.spent["verify"]), (BUDGET_EXHAUSTED, [], 0))
+
+    def test_seconds_limit_stops_the_search(self):
+        runner, order = self.ten()
+        runs = run_steps(runner, order, V, n=20, budget=Budget(None, 2.5),
+                         clock=lambda: float(len(runner.calls)))
+        self.assertEqual((runs.status, runs.alone_tally.n, runs.budget.candidates_tried),
+                         (BUDGET_EXHAUSTED, 20, 0))
+
+
+    # Final review findings (2026-11-20), each seen failing first.
+
+    def sixty(self):
+        """INCONSISTENT with a 60-test prefix: the victim fails on the first run only. Exploration spends
+        reproduce 61 + search 120 + minimise 61 = 242; the full-order check costs 61 a run."""
+        seen = []
+
+        def outcome(order, test):
+            if test != V:
+                return PASS
+            seen.append(1)
+            return FAIL if len(seen) == 1 else PASS
+        return FakeOrderRunner(outcome), [TestIdentifier(f"pkg.T{i}Test", "t") for i in range(60)] + [V]
+
+    def test_inconsistent_under_a_limit_stays_inconsistent(self):
+        runner, order = self.sixty()
+        runs = run_steps(runner, order, V, n=20, budget=Budget(302))
+        self.assertEqual((runs.status, runs.budget.exhausted_phase, runs.budget.spent["verify"]),
+                         (INCONSISTENT, "verify", 0))
+        self.assertEqual(runs.sequence_tally, RunTally(1, 1, 0, 0, 0))  # the full-order re-check, which passed
+        runner, order = self.sixty()
+        self.assertEqual(run_steps(runner, order, V, n=20, budget=Budget(362)).sequence_tally.n, 1)
+
+    def test_short_verify_writes_its_stop_after_the_runs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "r.jsonl"
+            run_steps(RecordingRunner(self.both(), path, {}), [self.P, self.Q, V], V, n=20, budget=Budget(74))
+            lines = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+        stops = [(x["phase"], x["would_cost"], x["spent"]) for x in lines if x["type"] == "budget-stop"]
+        self.assertEqual(stops, [("deletion", 40, 34), ("verify", 3, 73)])
+        self.assertEqual(lines[-1]["type"], "budget-stop")  # after the 13 verify runs, not before
+
+    def test_search_cut_after_a_shuffle_tallies_the_reproducing_order(self):
+        def runner():
+            return victim_fails_when(lambda order: self.C[9] in order[:-1] and order[0] != self.C[0])
+        order = self.C + [V]
+        free = run_steps(runner(), order, V, n=2, shuffles=31).budget.spent
+        self.assertGreater(free["shuffle"], 0)
+        runs = run_steps(runner(), order, V, n=2, shuffles=31,
+                         budget=Budget(free["reproduce"] + free["shuffle"] + 6))
+        self.assertEqual((runs.status, runs.budget.exhausted_phase), (BUDGET_EXHAUSTED, "search"))
+        self.assertIsNotNone(runs.reproducing_seed)
+        self.assertEqual(runs.sequence_tally, RunTally(1, 0, 1, 0, 0))
+
+    def test_the_hold_back_after_a_drop_uses_the_round_two_kept_count(self):
+        """ddmin keeps T2 by mistake (it only matters under minimise); round 1 drops it, round 2 checks
+        T1 and T3. The B5 hold-back must use round 2's two kept tests, not round 1's three."""
+        t = [TestIdentifier(f"pkg.T{i}Test", "t") for i in range(6)]
+
+        def runner():
+            fake = None
+
+            def outcome(order, test):
+                needed = t[1] in order and t[3] in order and (t[2] in order or ledger_step() != "minimise")
+                return FAIL if test == V and needed else PASS
+
+            def ledger_step():
+                return fake.step
+            fake = StepAware(outcome)
+            return fake
+        free = run_steps(runner(), t + [V], V, n=20)
+        self.assertEqual([(c.removed, c.status, c.round) for c in free.deletion_checks][-2:],
+                         [(t[1], NEEDED, 2), (t[3], NEEDED, 2)])
+        base = sum(free.budget.spent.values()) - free.budget.spent["deletion"] - free.budget.spent["verify"]
+        round_two = lambda limit: [c.status for c in run_steps(runner(), t + [V], V, n=20,
+                                                              budget=Budget(limit)).deletion_checks if c.round == 2]
+        self.assertEqual(round_two(base + 280), [NEEDED, NOT_RUN])
+        self.assertEqual(round_two(base + 279), [NOT_RUN, NOT_RUN])
+
+
+class StepAware(FakeOrderRunner):
+    """A fake runner that can see the step label, for a ddmin that behaves differently (FT004-style)."""
+    step = "unlabelled"
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ const NO_SOURCE = "Not in the roadmap or any decision record";
 export const UNBUILT = {
   container: { feature: "Running the project in a container", label: planned("Iteration 2"), source: 'Mid report, Conclusion: "a first container deployment"' },
   remoteSource: { feature: "Loading a project from a GitHub URL or a zip archive", label: NOT_IN_PLAN, source: NO_SOURCE },
-  budget: { feature: "Execution budget", label: planned("a later iteration"), source: 'Mid report, Conclusion: "Later iterations add the execution budget"' },
+  budget: { feature: "Execution budget", label: "IN THE COMMAND LINE ONLY (--budget-invocations, W24) — NOT IN THE UI YET", source: "ADR-014; docs/contracts/interfaces.md Interface 6" },
   ranking: { feature: "Ranking candidate polluters using the evidence module", label: planned("Iteration 2"), source: 'Mid report, Conclusion: "ranks candidates using the evidence module"' },
   filesystem: { feature: "Filesystem evidence", label: planned("FYP-II early"), source: "docs/00-Meta/roadmap.md, FYP-II early" },
   runtime: { feature: "Runtime (dynamic) evidence", label: planned("Iteration 2"), source: "docs/00-Meta/roadmap.md, Iteration 2: dynamic collection" },

@@ -16,8 +16,10 @@ from typing import List, Optional, Sequence, Tuple
 from eval.baseline import TestIdentifier
 from eval.report import UnhandledStatus, assemble_report
 from evidence.extract import DEFAULT_DEPTH, ExtractError, Project, analyse_pair, report_fields
-from runner.diagnose import INCONSISTENT, NOT_REPRODUCED, POLLUTER_FOUND, DiagnoseInputError, diagnose
-from runner.deletion import DELETION_RUN, INCONCLUSIVE, NOT_NEEDED
+from runner.budget import Budget
+from runner.diagnose import (BUDGET_EXHAUSTED, INCONSISTENT, NOT_REPRODUCED, POLLUTER_FOUND,
+                             DiagnoseInputError, diagnose)
+from runner.deletion import DELETION_RUN, INCONCLUSIVE, NOT_NEEDED, NOT_RUN
 from runner.order_runner import LIFECYCLES, ToolError
 from runner.workspace import WORKSPACES, WorkspaceError, workspace
 
@@ -27,6 +29,7 @@ _NO_REPORT_WHY = {
     INCONSISTENT: "the victim failed in the original order but not again (alone, after any single "
                         "earlier test, or in the full order once more), so no test is blamed; likely flaky",
     NOT_REPRODUCED: "the victim never failed with a real failure in n runs of the original order",
+    BUDGET_EXHAUSTED: "the budget ran out before a polluter set was found; no report is built for this result yet",
 }
 
 
@@ -52,17 +55,28 @@ def main(argv=None) -> int:
                               "afterwards, so the project folder is never written to; in-place: as at the Mid")
     command.add_argument("--copy-parent", default=None,
                          help="folder to make the temporary copy in (default: the system temp folder)")
+    command.add_argument("--budget-invocations", type=int, default=None,
+                         help="stop after this many test-method invocations; 3 x n of them are kept for "
+                              "verification (W24, ADR-014). Default: no limit, still counted")
+    command.add_argument("--budget-seconds", type=float, default=None,
+                         help="stop searching after this many seconds; verification still runs (W24)")
     arguments = list(argv if argv is not None else sys.argv[1:])
     args = parser.parse_args(arguments)
+    if args.budget_invocations is not None and args.budget_invocations < 1:
+        return _error(f"--budget-invocations must be >= 1, got {args.budget_invocations}", 2)
+    if args.budget_seconds is not None and args.budget_seconds <= 0:
+        return _error(f"--budget-seconds must be > 0, got {args.budget_seconds:g}", 2)
+    budget = (Budget(args.budget_invocations, args.budget_seconds)
+              if args.budget_invocations is not None or args.budget_seconds is not None else None)
     return run_diagnose(Path(args.project), args.victim, args.n, args.records,
                         Path(args.order) if args.order else None, args.shuffles, args.seed, arguments, args.lifecycle,
-                        args.workspace, Path(args.copy_parent) if args.copy_parent else None)
+                        args.workspace, Path(args.copy_parent) if args.copy_parent else None, budget)
 
 
 def run_diagnose(project: Path, victim_id: str, n: int, records: str, order_path: Optional[Path] = None,
                  shuffles: int = 31, seed: int = 0, command: Optional[List[str]] = None,
                  lifecycle: str = "class-grouped", workspace_mode: str = "copy",
-                 copy_parent: Optional[Path] = None) -> int:
+                 copy_parent: Optional[Path] = None, budget: Optional[Budget] = None) -> int:
     # Java names only: the victim also becomes part of the record's file name.
     if not _VICTIM.fullmatch(victim_id):
         return _error(f"--victim must be Class#method (Java names, no spaces), got {victim_id!r}", 2)
@@ -83,7 +97,7 @@ def run_diagnose(project: Path, victim_id: str, n: int, records: str, order_path
     try:
         with workspace(project, workspace_mode, copy_parent) as work:
             outcome = _diagnose_in(work, project, victim, n, records, order, shuffles, seed, command, lifecycle,
-                                   workspace_mode)
+                                   workspace_mode, budget)
     except WorkspaceError as error:
         return _error(str(error), 1)
     if isinstance(outcome, int):
@@ -95,6 +109,8 @@ def run_diagnose(project: Path, victim_id: str, n: int, records: str, order_path
     except UnhandledStatus:
         why = _NO_REPORT_WHY.get(runs.status, "eval.report cannot build this report yet")
         print(f"No report: {runs.status} - {why}\n  record: {runs.execution_record}")
+        if runs.budget is not None:
+            print(budget_line(runs.budget))
         return 3
 
     report_path = Path(runs.execution_record).with_suffix(".report.json")
@@ -102,12 +118,12 @@ def run_diagnose(project: Path, victim_id: str, n: int, records: str, order_path
     ddmin_ran = runs.minimise_runs and runs.polluters
     crashes = runs.infrastructure_failures + runs.shuffle_infrastructure_failures + runs.alone_infrastructure_failures
     print(summary(report, report_path, (len(runs.original_order) - 1, runs.minimise_runs) if ddmin_ran else None,
-                  crashes, runs.deletion_checks))
+                  crashes, runs.deletion_checks, runs.budget))
     return 0
 
 
 def _diagnose_in(work: Path, project: Path, victim, n, records, order, shuffles, seed, command, lifecycle,
-                 workspace_mode):
+                 workspace_mode, budget=None):
     """The diagnosis and Member 1's evidence, run in `work`. Returns (runs, fields), or an exit code
     after printing the error. Messages name the user's project, never the temporary copy."""
     def own(text: str) -> str:
@@ -118,7 +134,8 @@ def _diagnose_in(work: Path, project: Path, victim, n, records, order, shuffles,
     try:
         runs = diagnose(work, victim, n=n, record_dir=records, original_order=order,
                         shuffles=shuffles, seed=seed, command=command, lifecycle=lifecycle,
-                        workspace=workspace_mode, origin=project if workspace_mode == "copy" else None)
+                        workspace=workspace_mode, origin=project if workspace_mode == "copy" else None,
+                        budget=budget)
     except DiagnoseInputError as error:
         return _error(own(str(error)), 2)
     except subprocess.CalledProcessError as error:
@@ -176,6 +193,16 @@ def combine_fields(pairs: list) -> dict:
                 limitations=lines + found + missing, any_edge_found=bool(found))
 
 
+def budget_line(account) -> str:
+    """W24 (Interface 6): what the diagnosis spent and, if it stopped early, where."""
+    spent = sum(account.spent.values())
+    limit = (f"spent {spent} of {account.limit_invocations} invocations" if account.limit_invocations is not None
+             else f"spent {spent} invocations, no limit")
+    stopped = f"; stopped in {account.exhausted_phase}" if account.exhausted else ""
+    return (f"  budget:     {limit} (reserve {account.reserve_invocations}); search tried "
+            f"{account.candidates_tried} of {account.candidates_total} candidates{stopped}")
+
+
 def _depth_note(edge: dict) -> str:
     """The depth of an edge that is only named, measured like M1's report_fields does for the shown one."""
     depth = max(edge["polluter_write_locations"][0]["depth"], edge["victim_read_locations"][0]["depth"])
@@ -183,7 +210,7 @@ def _depth_note(edge: dict) -> str:
 
 
 def summary(report: dict, report_path: Path, minimised: Optional[Tuple[int, int]] = None,
-            crashes: int = 0, deletion_checks: Sequence = ()) -> str:
+            crashes: int = 0, deletion_checks: Sequence = (), budget=None) -> str:
     """`minimised` = (earlier tests, ddmin runs) when ddmin found the polluters (ADR-007); the report's
     schema has no field for it, so only the summary says how far the order was shrunk.
     `deletion_checks` (W20) may drop tests after ddmin, so ddmin's own count is its round-1 checks."""
@@ -194,7 +221,8 @@ def summary(report: dict, report_path: Path, minimised: Optional[Tuple[int, int]
     if report["polluters"]:
         lines.append("  polluter:   " + ", ".join(_test(p) for p in report["polluters"]))
     first_round = [c for c in deletion_checks if c.round == 1]
-    removals = [c for c in deletion_checks if c.source == DELETION_RUN]
+    removals = [c for c in deletion_checks if c.source == DELETION_RUN and c.status != NOT_RUN]
+    not_run = sum(c.status == NOT_RUN for c in deletion_checks)
     if minimised:
         earlier, runs = minimised
         count = len(first_round) if first_round else len(report["polluters"])
@@ -205,7 +233,8 @@ def summary(report: dict, report_path: Path, minimised: Optional[Tuple[int, int]
         dropped = sum(c.status == NOT_NEEDED for c in removals)
         unsure = sum(c.status == INCONCLUSIVE for c in deletion_checks if c.round == deletion_checks[-1].round)
         lines.append(f"  deletion:   kept tests removed one at a time, {removals[0].runs.n} runs each "
-                     f"({sum(c.runs.n for c in removals)} runs): {dropped} dropped as not needed, {unsure} inconclusive")
+                     f"({sum(c.runs.n for c in removals)} runs): {dropped} dropped as not needed, {unsure} inconclusive"
+                     + (f", {not_run} not run (budget)" if not_run else ""))
     explored = report.get("order_exploration")
     if explored and explored["reproducing_seed"] is not None:
         lines.append(f"  orders:     reproduced in shuffled order (seed {explored['reproducing_seed']}) "
@@ -235,6 +264,8 @@ def summary(report: dict, report_path: Path, minimised: Optional[Tuple[int, int]
     lines.append(f"  reproduced: {reproduced['matched']}/{reproduced['n']} (lower bound "
                  f"{reproduced['lower']:.3f})   alone (same failure): {alone['matched']}/{alone['n']}, "
                  f"other failure: {alone['other']}/{alone['n']}")
+    if budget is not None:
+        lines.append(budget_line(budget))
     lines.append(f"  report:     {report_path}")
     lines.append(f"  record:     {report['execution_record_reference']}")
     return "\n".join(lines)

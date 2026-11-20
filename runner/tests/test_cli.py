@@ -12,10 +12,11 @@ from pathlib import Path
 from unittest import mock
 
 from eval.baseline import FailureSignature, RunTally, TestIdentifier
-from eval.report import assemble_report
+from eval.report import UnhandledStatus, assemble_report
+from runner.budget import Budget, BudgetAccount
 from runner.deletion import DeletionCheck
-from runner.cli import OrderFileError, combine_fields, main, read_order, resource_fields, summary
-from runner.diagnose import (INCONSISTENT, POLLUTER_FOUND, VICTIM_FAILS_ALONE, DiagnoseInputError,
+from runner.cli import OrderFileError, budget_line, combine_fields, main, read_order, resource_fields, summary
+from runner.diagnose import (BUDGET_EXHAUSTED, INCONSISTENT, POLLUTER_FOUND, VICTIM_FAILS_ALONE, DiagnoseInputError,
                              DiagnosisRuns)
 from runner.integrity import SourceIntegrity
 from runner.order_runner import ToolError
@@ -322,6 +323,7 @@ class TestReports(unittest.TestCase):
         self.assertIn("alone (same failure): 20/20", out)
         self.assertIn(str(report_path), out)
         out.encode("ascii")  # the summary must print on any console
+        self.assertNotIn("budget:", out)  # this DiagnosisRuns has no account (built by hand, not by run_steps)
 
     def test_summary_names_the_minimisation_when_ddmin_ran(self):
         report = dict(self.report_with_resource(), polluters=[P.to_dict(), Q.to_dict()])
@@ -342,6 +344,14 @@ class TestReports(unittest.TestCase):
         self.assertIn("  deletion:   kept tests removed one at a time, 20 runs each (40 runs): "
                       "1 dropped as not needed, 0 inconclusive", text)
         self.assertFalse(any("not deletion-verified" in line for line in text))
+
+    def test_summary_counts_checks_the_budget_did_not_run(self):
+        """W24 B5: a NOT_RUN check has no runs; the line counts it apart instead of failing."""
+        checks = [DeletionCheck(P, RunTally(20, 20, 0, 0, 0), "NEEDED", "deletion-run", 1),
+                  DeletionCheck(Q, None, "NOT_RUN", "deletion-run", 1)]
+        text = summary(self.report_with_resource(), Path("r.report.json"), deletion_checks=checks).splitlines()
+        self.assertIn("  deletion:   kept tests removed one at a time, 20 runs each (20 runs): "
+                      "0 dropped as not needed, 0 inconclusive, 1 not run (budget)", text)
 
     def test_summary_without_deletion_runs_has_no_deletion_line(self):
         check = [DeletionCheck(P, RunTally(20, 20, 0, 0, 0), "NEEDED", "alone-check", 1)]
@@ -467,6 +477,70 @@ class TestReports(unittest.TestCase):
         self.assertTrue(out.startswith("UNRESOLVED (INCONSISTENT_OUTCOMES)"), out)
 
 
+class TestBudgetOptions(unittest.TestCase):
+    """W24 (Interface 6): --budget-invocations and --budget-seconds."""
+
+    def run_with(self, *extra):
+        records = Path(tempfile.mkdtemp())
+        with mock.patch("runner.cli.diagnose", return_value=runs(VICTIM_FAILS_ALONE, records / "r.jsonl")) as diagnose:
+            code, out, err = run_cli(["diagnose", "--project", str(project_with_pom()), "--victim", str(V), *extra])
+        return code, diagnose
+
+    def test_budget_flags_reach_diagnose(self):
+        _, diagnose = self.run_with("--budget-invocations", "80")
+        self.assertEqual(diagnose.call_args.kwargs["budget"], Budget(80, None))
+        _, diagnose = self.run_with("--budget-seconds", "2.5")
+        self.assertEqual(diagnose.call_args.kwargs["budget"], Budget(None, 2.5))
+        _, diagnose = self.run_with()
+        self.assertIsNone(diagnose.call_args.kwargs["budget"])
+
+    def test_bad_budget_values_exit_2(self):
+        for extra in (["--budget-invocations", "0"], ["--budget-invocations", "-1"], ["--budget-seconds", "0"]):
+            code, diagnose = self.run_with(*extra)
+            self.assertEqual(code, 2, extra)
+            diagnose.assert_not_called()
+        with self.assertRaises(SystemExit) as raised:
+            self.run_with("--budget-invocations", "abc")
+        self.assertEqual(raised.exception.code, 2)
+
+    def test_budget_exhausted_prints_no_report_and_the_budget(self):
+        records = Path(tempfile.mkdtemp())
+        account = BudgetAccount(80, None, 60, {"reproduce": 11, "shuffle": 0, "alone": 20, "search": 8, "minimise": 0,
+                                               "deletion": 0, "verify": 0}, 25, 1.5, None, "original", True,
+                                "search", 10, 4)
+        exhausted = runs(BUDGET_EXHAUSTED, records / "r.jsonl", budget=account)
+        with mock.patch("runner.cli.diagnose", return_value=exhausted), \
+                mock.patch("runner.cli.assemble_report", side_effect=UnhandledStatus("BUDGET_EXHAUSTED")):
+            code, out, _ = run_cli(["diagnose", "--project", str(project_with_pom()), "--victim", str(V)])
+        self.assertEqual(code, 3)
+        self.assertIn("No report: BUDGET_EXHAUSTED - the budget ran out before a polluter set was found; "
+                      "no report is built for this result yet", out)
+        self.assertIn("  budget:     spent 39 of 80 invocations (reserve 60); search tried 4 of 10 candidates; "
+                      "stopped in search", out.splitlines())
+
+
+    def test_the_real_report_assembly_refuses_budget_exhausted_for_now(self):
+        """Until M3's W24 half: eval.report must not guess a verdict for the new status."""
+        with self.assertRaises(UnhandledStatus):
+            assemble_report(runs(BUDGET_EXHAUSTED, Path(tempfile.mkdtemp()) / "r.jsonl"), None)
+
+
+class TestBudgetLine(unittest.TestCase):
+    SPENT = {"reproduce": 1, "shuffle": 0, "alone": 20, "search": 20, "minimise": 0, "deletion": 0, "verify": 40}
+
+    def account(self, limit=None, phase=None, tried=10):
+        return BudgetAccount(limit, None, 60, self.SPENT, 51, 3.0, None, "original", phase is not None, phase, 10, tried)
+
+    def test_without_a_limit(self):
+        self.assertEqual(budget_line(self.account()),
+                         "  budget:     spent 81 invocations, no limit (reserve 60); search tried 10 of 10 candidates")
+
+    def test_with_a_limit_and_a_stop(self):
+        self.assertEqual(budget_line(self.account(100, "deletion")),
+                         "  budget:     spent 81 of 100 invocations (reserve 60); search tried 10 of 10 candidates; "
+                         "stopped in deletion")
+
+
 class TestCliOnFixture(unittest.TestCase):
     """Real Maven/JVM/javap runs on fixtures/od-fixture, checked against ground_truth.json."""
 
@@ -513,6 +587,15 @@ class TestCliOnFixture(unittest.TestCase):
         self.assertTrue((work / record).is_file())
         self.assertEqual(reports[0], work / record.with_suffix(".report.json"))
         shutil.rmtree(work, ignore_errors=True)
+
+    def test_budget_below_the_start_minimum_exits_2(self):
+        before = set(Path(self.records).glob("*.jsonl"))
+        code, _, err = run_cli(["diagnose", "--project", str(FIXTURE), "--victim",
+                                "odfixture.ConfigVictimTest#expectsDefaultMode", "--records", self.records,
+                                "--budget-invocations", "10"])
+        self.assertEqual(code, 2)
+        self.assertIn("below the minimum", err)
+        self.assertEqual(set(Path(self.records).glob("*.jsonl")), before)  # refused before any record
 
     def test_f2_depth_two_edge(self):
         code, _, err, report = self.diagnose("odfixture.FeatureVictimTest#expectsTurboDisabled", 20)

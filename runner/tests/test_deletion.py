@@ -9,6 +9,7 @@ from runner.deletion import (
     INCONCLUSIVE,
     NEEDED,
     NOT_NEEDED,
+    NOT_RUN,
     DeletionCheck,
     check_deletions,
     label,
@@ -107,6 +108,37 @@ class TestCheckDeletions(unittest.TestCase):
             (R, NEEDED, ALONE_CHECK, 3),
         ])
         self.assertEqual(final, [R])
+
+
+class TestDeletionBudget(unittest.TestCase):
+    """Interface 6 B5: a check runs in full or is NOT_RUN; nothing is dropped in a cut round."""
+
+    def test_a_check_that_does_not_fit_is_not_run_and_nothing_is_dropped(self):
+        runner, answers = fails_after_any_of(P), iter([True, False])
+        checks, final = check_deletions(runner, [P, Q], V, REF, 20, ALONE_PASSED,
+                                        can_afford=lambda cost, kept: next(answers))
+        self.assertEqual(checks, [DeletionCheck(P, RunTally(20, 20, 0, 0, 0), NEEDED, DELETION_RUN, 1),
+                                  DeletionCheck(Q, None, NOT_RUN, DELETION_RUN, 1)])
+        self.assertEqual((final, len(runner.calls)), ([P, Q], 20))
+
+    def test_nothing_fits(self):
+        runner = fails_after_any_of(P)
+        checks, final = check_deletions(runner, [P, Q, R], V, REF, 20, ALONE_PASSED,
+                                        can_afford=lambda cost, kept: False)
+        self.assertEqual([(c.removed, c.status, c.runs) for c in checks],
+                         [(P, NOT_RUN, None), (Q, NOT_RUN, None), (R, NOT_RUN, None)])
+        self.assertEqual((final, runner.calls), ([P, Q, R], []))
+
+    def test_the_alone_check_is_free(self):
+        checks, final = check_deletions(fails_after_any_of(P), [P], V, REF, 20, ALONE_PASSED,
+                                        can_afford=lambda cost, kept: False)
+        self.assertEqual(checks, [DeletionCheck(P, ALONE_PASSED, NEEDED, ALONE_CHECK, 1)])
+
+    def test_cost_passed_is_m_times_the_run_length(self):
+        asked = []
+        check_deletions(fails_after_any_of(P, Q), [P, Q], V, REF, 20, ALONE_PASSED,
+                        can_afford=lambda cost, kept: asked.append((cost, kept)) or True)
+        self.assertEqual(asked, [(40, 2), (40, 2)])
 
 
 if __name__ == "__main__":
