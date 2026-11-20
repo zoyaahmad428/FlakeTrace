@@ -176,7 +176,9 @@ class OrderRunner:
         self._java = _tool("java")
         self._harness_dir = tempfile.mkdtemp(prefix="flaketrace-harness-")
         compiled = subprocess.run(
-            [_tool("javac"), "-source", "8", "-target", "8", "-Xlint:-options",
+            # -proc:none: the project's classpath may carry annotation processors (fastjson: an old
+            # Lombok that crashes javac on JDK 9+); FtHarness needs none (A3, 2026-11-20).
+            [_tool("javac"), "-source", "8", "-target", "8", "-Xlint:-options", "-proc:none",
              "-d", self._harness_dir, str(HARNESS_SOURCE)],
             env=_env_with_classpath(self.classpath),
             capture_output=True,
@@ -253,9 +255,10 @@ class OrderRunner:
 
 
 def java_version() -> str:
-    """First line of `java -version` (printed on stderr), for the execution record."""
+    """First line of `java -version` (printed on stderr), for the execution record. With
+    JAVA_TOOL_OPTIONS set (the real-case protocol pins it) the JVM prints "Picked up ..." first."""
     finished = subprocess.run([_tool("java"), "-version"], capture_output=True, text=True)
-    return finished.stderr.strip().splitlines()[0]
+    return next(line for line in finished.stderr.strip().splitlines() if not line.startswith("Picked up "))
 
 
 def _env_with_classpath(classpath: Sequence[str]) -> Dict[str, str]:

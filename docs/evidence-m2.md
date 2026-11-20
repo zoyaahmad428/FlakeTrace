@@ -1518,3 +1518,48 @@ own copy of the code, not from the review's description.
      line until it is regenerated.
   2. M1's record gives `depth_used 2` (the analysis depth); the reports here show each edge at `depth`
      1 (the deeper side of a direct read/write). Not a contradiction — two different numbers.
+
+## A3: independent check of M3's W26a premise on real fastjson; two runner fixes (2026-11-20)
+
+- **Requirement:** W26a's verifier is M2. Reproduce [[evidence-m3]] "W26a steps 1-5" (2026-11-19): the
+  build and the step-2 premise (`eval/real-cases/fj03/premise.json`), on my machine.
+- **Setup (scratchpad only, nothing installed system-wide, with M2's permission):**
+  - JDK 8: Adoptium's newest Windows x64 JDK 8 (8u512, M3's) was served by GitHub as a 1,867-byte file to
+    both `curl` and PowerShell (SHA-256 mismatch), while the previous releases served in full — so
+    **Temurin 8u502** (`1.8.0_502`, the POC's version that the protocol names), SHA-256
+    `3f193fe5e36409c564eb3b7668cb33cab96aa5879d9b284f25f8653e993b1c49` checked against Adoptium's API → `jdk8.zip: OK`. Patch-level difference from M3's 8u512, recorded.
+  - fastjson: `git fetch --depth 1` of `e05e9c5e4be580691cc55a59f3256595393203a1`, outside this repo.
+- **Why JDK 8:** fastjson's `pom.xml` sets `<jdk.version>1.5</jdk.version>`; JDK 21's javac →
+  `error: Source option 5 is no longer supported. Use 8 or later.` (run here). The protocol pins JDK 8.
+- **Build:** `mvn -B -DskipTests test-compile` (JAVA_HOME = JDK 8; Maven 3.10.0) → `Compiling 172 source files`,
+  `Compiling 2496 source files`, `BUILD SUCCESS` in 2 min 54 s — M3's counts exactly. `git status` in
+  fastjson empty after every step.
+- **Premise** (scratch script, the real `OrderRunner.run_ordered`, `JAVA_TOOL_OPTIONS=-Duser.timezone=UTC
+  -Duser.language=en -Duser.country=US`, lifecycle `class-grouped`):
+  victim alone ×10 → `RunTally(n=10, passed=10, matched=0, other=0, infra=0)`;
+  `[SerializeWriterTest_14#test_writer_1, victim]` ×10 → `RunTally(n=10, passed=0, matched=10, other=0, infra=0)`;
+  reference `junit.framework.AssertionFailedError`, top frame `MaxBufSizeTest.test_max_buf:20`, empty
+  message. **Identical to `premise.json`.**
+- **A1 end to end (the case M3's CLI refused):** `py -3 -m runner diagnose --project <fastjson>
+  --victim com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf --order eval/real-cases/fj03/order.txt`
+  → exit 0 in 3 min 11 s: `CANDIDATE`, polluter `SerializeWriterTest_14#test_writer_1`, reproduced 20/20
+  (lower bound 0.839), alone 0/20 same and 0/20 other; deletion `DELETION_VERIFIED` (alone check);
+  `candidate_reasons` `NO_SUPPORTED_RESOURCE_EVIDENCE`, `resource_edges` `[]` — static analysis finds no
+  edge for this real pair (a fact for M1's W25, not a defect).
+- **Surprise 1 — my environment:** the first premise run compiled FtHarness with JDK 21, because a
+  `C:/…` entry on bash's `PATH` splits at the colon; `cygpath -u` fixed it. It exposed a real defect:
+- **Fix 1, `-proc:none` on the harness compile** (`runner/order_runner.py`). On JDK 9+, javac ran the old
+  Lombok processor on fastjson's test classpath → `IllegalAccessError … lombok.javac.apt.Processor …
+  jdk.compiler` → `ToolError: could not compile FtHarness`. Test
+  `TestRealProjectQuirks.test_an_annotation_processor_on_the_classpath_does_not_break_the_harness`
+  (a processor that throws in `init`, registered in `META-INF/services`).
+- **Surprise 2 — the record header:** `java_version` was `"Picked up JAVA_TOOL_OPTIONS: …"`, not the
+  version (`jvm.java.version` was right: `1.8.0_502`). **Fix 2:** `java_version()` skips "Picked up" lines.
+  Test `test_java_version_skips_the_java_tool_options_banner`.
+- **Test-first for both:** old code → `FAILED (failures=1, errors=1)` on JDK 21 **and** on JDK 8 (CI's);
+  fixed → `Ran 2 tests … OK` on both. On real fastjson after the fix: JDK 21 compiles the harness against
+  fastjson's classpath; JDK 8 + the protocol's `JAVA_TOOL_OPTIONS` → `java_version()` = `openjdk version "1.8.0_502"`.
+- **Whole suite after the fixes:** every `runner/tests/test_*.py`, `ui.tests.test_server`, every
+  `eval/tests/test_*.py` → `Ran 410 tests in 612.580s … OK`.
+- **Limitations:** one run of each; scratch records, not committed; the shuffled search and steps 6–9 are
+  M3's, not run here.

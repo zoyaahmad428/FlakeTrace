@@ -32,6 +32,10 @@ JUnit Platform launcher (needs the Vintage engine, a new dependency).
 
 ## 3. What breaks
 
+- **Real-project quirks (A3, fastjson, 2026-11-20):** an annotation processor on the project's
+  classpath (fastjson's old Lombok) crashed the harness compile on JDK 9+ — now `-proc:none`; and with
+  `JAVA_TOOL_OPTIONS` set the JVM prints "Picked up …" before the version, which `java_version()` took as
+  the version — now skipped. Both tested in `TestRealProjectQuirks`, red on JDK 8 and 21 before the fix.
 - **`java`, `javac` or `mvn` missing from PATH** → `RuntimeError("'mvn' not found on PATH")`;
   the real-JVM tests skip (or fail in CI, where `FLAKETRACE_REQUIRE_JVM` is set).
 - **Different JDKs print different reflection frames** (`sun.reflect.*` on 8,
