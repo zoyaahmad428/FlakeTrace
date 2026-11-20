@@ -42,30 +42,20 @@ def project_with_pom():
     return project
 
 
+# The victim failed alone 20/20 (defaults) / passed alone 20/20; the sequence reproduced 20/20.
+ALONE_FAILED = RunTally(n=20, passed=0, matched=20, other=0, infra=0)
+ALONE_PASSED = RunTally(n=20, passed=20, matched=0, other=0, infra=0)
+REPRODUCED = RunTally(n=20, passed=0, matched=20, other=0, infra=0)
+
+
 def runs(status, record, **overrides):
     fields = dict(
         status=status, victim=V, original_order=[P, V], reference_signature=REF,
-        polluters=[], sequence=[V], sequence_n=20, sequence_successes=20,
-        sequence_any_failures=20, alone_n=20, alone_successes=20, search_runs=0,
+        polluters=[], sequence=[V], sequence_tally=REPRODUCED, alone_tally=ALONE_FAILED, search_runs=0,
         source_integrity=SourceIntegrity(True, "3 files hashed; all identical"),
         execution_record=str(record),
     )
     fields.update(overrides)
-    # ADR-010/schema v2 (W19, M3): assemble_report() now reads alone_tally/sequence_tally
-    # directly. Derived here from the scalar fields above so every existing call site keeps
-    # working unchanged -- "matched" = *_successes, other/infra assumed 0 (no test here
-    # exercises a real-different-signature or crash alone/sequence run), "passed" the rest.
-    if "alone_tally" not in overrides:
-        fields["alone_tally"] = RunTally(
-            n=fields["alone_n"], passed=fields["alone_n"] - fields["alone_successes"],
-            matched=fields["alone_successes"], other=0, infra=0,
-        )
-    if "sequence_tally" not in overrides:
-        matched, any_failures = fields["sequence_successes"], fields["sequence_any_failures"]
-        fields["sequence_tally"] = RunTally(
-            n=fields["sequence_n"], passed=fields["sequence_n"] - any_failures,
-            matched=matched, other=any_failures - matched, infra=0,
-        )
     return DiagnosisRuns(**fields)
 
 
@@ -136,7 +126,7 @@ class TestToolErrors(unittest.TestCase):
     def test_extractor_failure_exits_1(self):
         project = project_with_pom()  # no target/ folders, so Project() raises ExtractError(..., 2)
         found = runs(POLLUTER_FOUND, project / "r.jsonl", polluters=[P], sequence=[P, V],
-                     alone_successes=0, search_runs=1)
+                     alone_tally=ALONE_PASSED, search_runs=1)
         with mock.patch("runner.cli.diagnose", return_value=found):
             code, _, err = run_cli(["diagnose", "--project", str(project), "--victim", str(V)])
         self.assertEqual(code, 1)
@@ -204,7 +194,7 @@ class TestCombineFields(unittest.TestCase):
     def test_mixed_evidence_report_does_not_also_say_no_edge_was_found(self):
         fields = combine_fields([pair(P, "pkg.T#a"), pair(Q)])
         self.assertTrue(fields["any_edge_found"])
-        runs_ = runs(POLLUTER_FOUND, "r.jsonl", polluters=[P, Q], sequence=[P, Q, V], alone_successes=0)
+        runs_ = runs(POLLUTER_FOUND, "r.jsonl", polluters=[P, Q], sequence=[P, Q, V], alone_tally=ALONE_PASSED)
         report = assemble_report(runs_, fields)
         # ADR-010 section 4 (Q1, option A, 2026-11-13): a reproducing, passes-alone sequence
         # with no resource edge is CANDIDATE now, not UNRESOLVED (M3, flagged for M2's review).
@@ -383,14 +373,14 @@ class TestReports(unittest.TestCase):
         records = Path(tempfile.mkdtemp(prefix="flaketrace-cli-records-"))
         earlier = [TestIdentifier(f"pkg.T{i}Test", "t") for i in range(10)]
         found = runs(POLLUTER_FOUND, records / "r.jsonl", original_order=earlier + [P, Q, V],
-                     polluters=[P, Q], sequence=[P, Q, V], alone_successes=0, search_runs=12, minimise_runs=10)
+                     polluters=[P, Q], sequence=[P, Q, V], alone_tally=ALONE_PASSED, search_runs=12, minimise_runs=10)
         fields = combine_fields([pair(P, "pkg.T#a"), pair(Q, "pkg.T#b")])
         with mock.patch("runner.cli.diagnose", return_value=found), \
                 mock.patch("runner.cli.resource_fields", return_value=fields):
             code, out, _ = run_cli(["diagnose", "--project", str(project_with_pom()), "--victim", str(V)])
         self.assertEqual(code, 0)
         self.assertIn("minimised:  12 earlier tests -> 2 polluters in 10 runs", out)
-        single = runs(POLLUTER_FOUND, records / "s.jsonl", polluters=[P], sequence=[P, V], alone_successes=0)
+        single = runs(POLLUTER_FOUND, records / "s.jsonl", polluters=[P], sequence=[P, V], alone_tally=ALONE_PASSED)
         with mock.patch("runner.cli.diagnose", return_value=single), \
                 mock.patch("runner.cli.resource_fields", return_value=combine_fields([pair(P, "pkg.T#a")])):
             _, out, _ = run_cli(["diagnose", "--project", str(project_with_pom()), "--victim", str(V)])
@@ -465,7 +455,7 @@ class TestReports(unittest.TestCase):
         records = Path(tempfile.mkdtemp(prefix="flaketrace-cli-records-"))
         record = records / "20261010T000000Z-pkg.VictimTest#v.jsonl"
         found = runs(INCONSISTENT, record, polluters=[], sequence=[P, V],
-                     alone_successes=0, search_runs=1)
+                     alone_tally=ALONE_PASSED, search_runs=1)
         with mock.patch("runner.cli.diagnose", return_value=found):
             code, out, _ = run_cli(["diagnose", "--project", str(project_with_pom()), "--victim", str(V)])
         self.assertEqual(code, 0)
@@ -588,7 +578,7 @@ class TestWorkspaceOption(unittest.TestCase):
             seen["folder"], seen["kwargs"], seen["existed"] = Path(folder), kwargs, Path(folder).is_dir()
             if side_effect:
                 raise side_effect
-            return runs(status, records / "r.jsonl", polluters=[P], sequence=[P, V], alone_successes=0)
+            return runs(status, records / "r.jsonl", polluters=[P], sequence=[P, V], alone_tally=ALONE_PASSED)
         with mock.patch("runner.cli.diagnose", side_effect=fake_diagnose):
             code, out, err = run_cli(["diagnose", "--project", str(project), "--victim", str(V)] + extra)
         return project, seen, code, err

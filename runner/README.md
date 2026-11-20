@@ -109,7 +109,7 @@ one; each has its own tests in `runner/tests/`.
 | `minimise.py` | `ddmin(runner, prefix, victim, reference)` → a reduced subset of the tests before the victim and the runs used; only the reference failure counts, each subset runs at most once, so the result is not deletion-verified (W10, ADR-007; FT004) | done |
 | `deletion.py` | W20 (ADR-011, Interface 4): `check_deletions(runner, polluters, victim, reference, m, alone_tally)` → (`DeletionCheck` list, final polluters). Each kept test is left out and the rest plus the victim run `m` (= `n`) times; `NEEDED` if the victim passed every run, `NOT_NEEDED` if the failure still reproduces (Wilson lower bound ≥ 0.70, M3's threshold), else `INCONCLUSIVE`. A `NOT_NEEDED` test is dropped (the first only) and the checks restart; one kept test reuses the alone tally (`alone-check`, no runs). Recorded as step `deletion`, each run line naming the `removed` test and its `round` (ADR-011, for ADR-013's recount) | done (W20 runner half) |
 | `orders.py` | When the starting order never fails for real: up to 31 distinct valid shuffled orders (classes shuffled, then methods within each class; never interleaved), one run each, seeds recorded; the first real failure becomes the failing order (ADR-008) | done |
-| `diagnose.py` | `diagnose(project, victim, n=20)` → `DiagnosisRuns` (raw counts and the `alone_tally` / `sequence_tally` of ADR-010, no verdict; the older count fields are filled from the tallies until M3's W19 reads them); `run_steps(runner, order, victim, n)` is the same logic on any runner | done |
+| `diagnose.py` | `diagnose(project, victim, n=20)` → `DiagnosisRuns` (the `alone_tally` / `sequence_tally` of ADR-010 — the five old count fields went in A4, 2026-11-20 — no verdict; the older count fields are filled from the tallies until M3's W19 reads them); `run_steps(runner, order, victim, n)` is the same logic on any runner | done |
 
 ```python
 from pathlib import Path
@@ -127,7 +127,7 @@ runs.source_integrity.passed, runs.execution_record   # flaketrace-records/<time
 | --- | --- | --- |
 | `POLLUTER_FOUND` | one earlier test makes the victim fail with the reference signature — or, when none does alone, `ddmin` reduced the earlier tests to a set that does (F3), with single trials | `polluters + [victim]` |
 | `VICTIM_FAILS_ALONE` | the victim reproduced its failure with nothing before it — no polluter is blamed | `[victim]` (counts = alone counts) |
-| `INCONSISTENT` (was `NO_SINGLE_POLLUTER`, still importable under that name until W19) | a failure was seen (in the starting order or once in a shuffled order) but did not come back: no single earlier test reproduces it and the full order did not fail again (likely flaky; also a victim first in the order) — no test is blamed | the failing order |
+| `INCONSISTENT` (called `NO_SINGLE_POLLUTER` before W18; the alias was removed in A4) | a failure was seen (in the starting order or once in a shuffled order) but did not come back: no single earlier test reproduces it and the full order did not fail again (likely flaky; also a victim first in the order) — no test is blamed | the failing order |
 | `NOT_REPRODUCED` | the victim never failed for real in `n` runs of the starting order, in up to 31 distinct class-first shuffled orders (ADR-008), or in `n` runs alone; crashes/timeouts are counted in `sequence_any_failures` and `infrastructure_failures` | the starting order |
 
 ## Command line (W9)
@@ -181,10 +181,10 @@ outcome is `UNRESOLVED (VICTIM_FAILS_ALONE_DIFFERENTLY)`.
 | # | Component | Produces (report-schema fields) | Needed for Mid demo |
 | --- | --- | --- | --- |
 | 1 | Ordered single-JVM runner for JUnit 4 — **done (W6)** | per-test outcomes, `failure_signature` | Yes |
-| 2 | Victim-alone check, repeated `n` times — **done (W7)** | `victim_alone` raw counts | Yes |
+| 2 | Victim-alone check, repeated `n` times — **done (W7)** | `victim_alone` tally (`alone_tally`) | Yes |
 | 3 | Polluter search over preceding tests — **done (W7, single polluters)** | `polluters`, `original_failing_order` | Yes |
 | 4 | Deletion minimisation — **done (W10)**: `ddmin`, F3 found (`setFlagA`, `setFlagB`) | `polluters`, `reduced_sequence` | Yes |
-| 5 | Repeated-run verification of the reduced sequence — **done (W7)** | `reproduction` raw counts | Yes |
+| 5 | Repeated-run verification of the reduced sequence — **done (W7)** | `reproduction` tally (`sequence_tally`) | Yes |
 | 6 | Source-integrity check (hash target source before/after) — **done (W7)** | `source_integrity` | Yes |
 | 7 | Execution record (JDK, order, timestamps) — **done (W7)** | `execution_record_reference` | Yes |
 | 8 | CLI entry point — **done (W9)**: `py -m runner diagnose` | the whole report | Yes |

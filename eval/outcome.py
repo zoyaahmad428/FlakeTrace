@@ -138,7 +138,7 @@ class DecisionInput:
     confidence: float = DEFAULT_CONFIDENCE
     lower_bound_threshold: float = DEFAULT_LOWER_BOUND_THRESHOLD
     search_inconsistent: bool = False
-    """ADR-010 row 2 (runner status INCONSISTENT, formerly NO_SINGLE_POLLUTER): the failure was
+    """ADR-010 row 2 (runner status INCONSISTENT, called NO_SINGLE_POLLUTER before W18): the failure was
     seen once in the starting order and could not be obtained again -- not alone, not after any
     single earlier test, not in the full order once more. Defaults False: no pre-ADR-010 caller
     reports it."""

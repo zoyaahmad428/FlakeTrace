@@ -89,9 +89,7 @@ def _diagnosis(status, *, alone_tally=None, sequence_tally=None, **overrides):
     defaults = dict(
         status=status, victim=VICTIM, original_order=[POLLUTER, VICTIM],
         reference_signature=REF, polluters=[POLLUTER], sequence=[POLLUTER, VICTIM],
-        sequence_n=sequence_tally.n, sequence_successes=sequence_tally.matched,
-        sequence_any_failures=sequence_tally.n - sequence_tally.passed,
-        alone_n=alone_tally.n, alone_successes=alone_tally.matched, search_runs=1,
+        search_runs=1,
         source_integrity=INTEGRITY_OK, execution_record="/tmp/record.jsonl",
         alone_tally=alone_tally, sequence_tally=sequence_tally,
     )
@@ -359,18 +357,17 @@ class TestAssembleReport(unittest.TestCase):
         validate_report(report)
 
     def test_not_reproduced_with_todays_real_shape_is_unhandled_not_a_crash(self):
-        """A hand-built NOT_REPRODUCED diagnosis with alone_n=0 (the pre-ADR-008 shape) must
+        """A hand-built NOT_REPRODUCED diagnosis with no alone runs (the pre-ADR-008 shape) must
         fail loudly (UnhandledStatus), not with a bare ValueError the CLI does not catch."""
         diagnosis = _diagnosis(
             NOT_REPRODUCED, polluters=[], sequence=[POLLUTER, VICTIM], reference_signature=None,
-            sequence_tally=_tally(5, 5, matched=0), alone_tally=_tally(5, 5, matched=0),
-            alone_n=0, alone_successes=0,
+            sequence_tally=_tally(5, 5, matched=0), alone_tally=_tally(0, 0, matched=0),
         )
         with self.assertRaises(UnhandledStatus):
             assemble_report(diagnosis)
 
     def test_not_reproduced_with_isolation_data_gives_unresolved(self):
-        """ADR-008's real shape: alone_n > 0 even though nothing ever reproduced."""
+        """ADR-008's real shape: alone runs were made even though nothing ever reproduced."""
         diagnosis = _diagnosis(
             NOT_REPRODUCED, polluters=[], sequence=[POLLUTER, VICTIM], reference_signature=None,
             sequence_tally=_tally(20, 20, matched=0), alone_tally=_tally(20, 20, matched=0),
@@ -435,8 +432,7 @@ class TestAssembleReport(unittest.TestCase):
         diagnosis = DiagnosisRuns(
             status=POLLUTER_FOUND, victim=VICTIM, original_order=[POLLUTER, VICTIM],
             reference_signature=REF, polluters=[POLLUTER], sequence=[POLLUTER, VICTIM],
-            sequence_n=20, sequence_successes=20, sequence_any_failures=20,
-            alone_n=20, alone_successes=0, search_runs=1,
+            sequence_tally=None, alone_tally=None, search_runs=1,  # required since A4; None still guarded
             source_integrity=INTEGRITY_OK, execution_record="/tmp/record.jsonl",
         )
         with self.assertRaises(ValueError):
