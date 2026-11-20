@@ -159,16 +159,13 @@ def assemble_report(
         else:
             last_round = max(c.round for c in checks)
             last = [c for c in checks if c.round == last_round]
-            # Interpretation flagged for the team (ambiguous in Interface 4's own table, which
-            # lists "all NEEDED" first but calls the m<10 clause out separately): a NEEDED label
-            # computed from too few runs (m<10, e.g. budget W24 cut a check short) must not
-            # count as established just because every check happens to be labelled NEEDED --
-            # checked first, ahead of the "all NEEDED" row, not as its last-resort fallback.
-            if any(c.status == "NOT_RUN" or c.runs is None or c.runs.n < 10 for c in last):
-                deletion_status = DELETION_INCOMPLETE
-            elif any(c.status == "INCONCLUSIVE" for c in last):
-                # Ranks above INCOMPLETE: evidence against the result outweighs missing evidence.
+            # INCONCLUSIVE ranks above INCOMPLETE: evidence against the result outweighs missing
+            # evidence (Interface 4). A short run count (m<10) or NOT_RUN then rules out VERIFIED
+            # even when every check says NEEDED (agreed by M2 and M3, 2026-11-20).
+            if any(c.status == "INCONCLUSIVE" for c in last):
                 deletion_status = DELETION_INCONCLUSIVE
+            elif any(c.status == "NOT_RUN" or c.runs is None or c.runs.n < 10 for c in last):
+                deletion_status = DELETION_INCOMPLETE
             elif all(c.status == "NEEDED" for c in last):
                 deletion_status = DELETION_VERIFIED
             else:

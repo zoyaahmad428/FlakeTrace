@@ -1,9 +1,9 @@
 # Diagnose command — `runner/cli.py` (Member 2, W9)
 
 *Status (2026-11-20): built; verdict contract v2 (ADR-010, W19). The committed reports in `eval/reports/`
-give F1, F2, F4 `VERIFIED (sequence)`, N1 `UNRESOLVED(VICTIM_FAILS_ALONE)`, N4
-`UNRESOLVED(VICTIM_FAILS_ALONE_DIFFERENTLY)`, and F3 `CANDIDATE [DELETION_EVIDENCE_INCOMPLETE]` — two
-polluters, no deletion runs until W20 (ADR-011). Real N4 and F1 runs under the default `class-grouped`
+give F1, F2, F3, F4 `VERIFIED (sequence)`, N1 `UNRESOLVED(VICTIM_FAILS_ALONE)`, N4
+`UNRESOLVED(VICTIM_FAILS_ALONE_DIFFERENTLY)`. F3 has two polluters; each is removed in turn, 20 runs each,
+and both come back `NEEDED` (W20, ADR-011; `CANDIDATE` before W20). Real N4 and F1 runs under the default `class-grouped`
 lifecycle on 2026-11-20: see [[evidence-m2]]. CI on JDK 8: see [[evidence-m2]]. (Until 2026-11-20 this
 line still said F3 `VERIFIED`; flagged by M3, PR #115.)
 Four-point ownership note per [[04-Implementation/README]]. Design:
