@@ -9,6 +9,7 @@ from unittest import mock
 from eval.baseline import TestIdentifier
 from runner.order_runner import (
     OrderRunner,
+    java_version,
     maven_test_classpath,
     normalise_message,
     normalise_stack,
@@ -334,6 +335,55 @@ class TestOrderRunnerOnProbes(unittest.TestCase):
         self.assertTrue(results[a].passed)
         self.assertEqual(results[exits].failure_signature.exception_type, "flaketrace.JvmCrash")
         self.assertEqual(results[b].failure_signature.exception_type, "flaketrace.JvmCrash")
+
+
+BOOM_PROCESSOR = """
+import java.util.Set;
+import javax.annotation.processing.*;
+import javax.lang.model.element.TypeElement;
+
+@SupportedAnnotationTypes("*")
+public class BoomProcessor extends AbstractProcessor {
+    @Override public synchronized void init(ProcessingEnvironment env) {
+        throw new IllegalStateException("annotation processor ran while compiling FtHarness");
+    }
+    @Override public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment round) {
+        return false;
+    }
+}
+"""
+
+
+class TestRealProjectQuirks(unittest.TestCase):
+    """Found on real fastjson (A3, 2026-11-20): two JVM quirks a fixture never shows."""
+
+    @classmethod
+    def setUpClass(cls):
+        missing = [tool for tool in ("java", "javac", "mvn") if shutil.which(tool) is None]
+        if missing:
+            if os.environ.get("FLAKETRACE_REQUIRE_JVM"):
+                raise RuntimeError(f"FLAKETRACE_REQUIRE_JVM is set but {missing} not on PATH")
+            raise unittest.SkipTest(f"{missing} not on PATH")
+        cls.junit = maven_test_classpath(FIXTURE)[2:]  # the fixture's JUnit jars, as FtHarness needs
+
+    def test_java_version_skips_the_java_tool_options_banner(self):
+        """The real-case protocol pins JAVA_TOOL_OPTIONS; the JVM then prints "Picked up ..." first."""
+        with mock.patch.dict(os.environ, {"JAVA_TOOL_OPTIONS": "-Duser.timezone=UTC"}):
+            version = java_version()
+        self.assertFalse(version.startswith("Picked up"), version)
+        self.assertIn("version", version)
+
+    def test_an_annotation_processor_on_the_classpath_does_not_break_the_harness(self):
+        """fastjson's test classpath carries an old Lombok processor that crashes javac on JDK 9+."""
+        folder = Path(tempfile.mkdtemp(prefix="flaketrace-proc-"))
+        self.addCleanup(shutil.rmtree, folder, True)
+        (folder / "BoomProcessor.java").write_text(BOOM_PROCESSOR, encoding="utf-8")
+        subprocess.run([shutil.which("javac"), "-d", str(folder), str(folder / "BoomProcessor.java")],
+                       check=True, capture_output=True)
+        services = folder / "META-INF" / "services"
+        services.mkdir(parents=True)
+        (services / "javax.annotation.processing.Processor").write_text("BoomProcessor" + chr(10), encoding="utf-8")
+        OrderRunner([str(folder)] + self.junit)  # raises ToolError if javac runs the processor
 
 
 class TestLifecycleControl(unittest.TestCase):
