@@ -144,6 +144,59 @@ deletion evidence, never "minimum").
    polluters `setFlagA`, `setFlagB`). Expected: both `NEEDED`, 20/20 passes each, `VERIFIED`.
 4. M1: reproduces T3 independently on their machine and records it in `docs/evidence-m1.md`.
 
+## Interface 5 — candidate ranking (W25, ADR-014 §5; M1 produces, M2 consumes, M3 measures)
+
+*Proposed by M1 on 2026-11-20 at M2's request. Agreed when M2 and M3 approve the PR that adds this
+section. Built: `evidence/extract.py` (PR #112, merged 2026-11-20). M2 reviewed the ranking rule on
+2026-11-20, before any measurement (iteration-2-plan rule 4). This section describes the merged
+code; it does not change it.*
+
+**What the evidence collector (M1) provides.**
+
+```python
+rank_candidates(project, victim, candidates, depth=DEFAULT_DEPTH, cache=None) -> List[RankedCandidate]
+
+RankedCandidate(
+    test: str,          # "Class#method", one per input candidate
+    score: tuple,       # (resources shared, shallowest edge depth or None, original position)
+    reasons: list,      # the edges behind the score, in the report's resource_edges shape
+    note: Optional[str] # None, or why this candidate could not be analysed
+)
+
+AnalysisCache()        # .analysed (count of analyse_test calls), .seconds (their total time)
+```
+
+- **Inputs:** `project` is an `evidence.extract.Project` over the compiled classes. `victim` and
+  each candidate are `"Class#method"` strings; the caller converts from `TestIdentifier`.
+  `depth` is the analysis depth passed to `analyse_test` (default 2).
+- **The rule, fixed, with no weights.** Sort by: (1) more resources the candidate WRITES and the
+  victim READS first; (2) then the shallower edge, where an edge's depth is the deeper of its two
+  sides, as in `resource_edges`; (3) then the original position. A candidate with no edge has
+  `score = (0, None, position)`. With no evidence anywhere, the output is the input order.
+- **Never drops.** The output has exactly one entry per input candidate, the same set in a new
+  order. A candidate that cannot be analysed (for example, class not found) is kept with
+  `reasons = []`, its `note` set, and a no-evidence score.
+- **An unanalysable victim raises `ExtractError`.** Nothing can be ranked against it. Under
+  `--policy ranked` the runner (M2, when built) catches it, keeps the original order (the same
+  result as "no evidence"), and records a limitation.
+- **Cache and cost.** Each test is analysed once per depth, so ranking N candidates costs N + 1
+  analyses. A cache passed in is reused across calls. The budget ledger (M2) reads `analysed` and
+  `seconds` for `analysis_seconds` (ADR-014 §3). The planner's deeper analyses go through the same
+  cache, so they are counted too.
+- **No deepening here.** `rank_candidates` analyses at exactly `depth`. Whether to deepen is the
+  planner's decision, charged to the ledger (ADR-014 §6, M2).
+- **Wording.** `reasons` are static overlaps, possible mechanisms and not confirmed causes (claims
+  ledger G3). A higher rank orders the search; it never says what caused a failure.
+
+**Who does what.**
+
+1. M1: the function, the cache and their tests (done, PR #112). Any change to the rule after
+   measurement starts is a new rule with its own commit, reviewed by M2 before it is run.
+2. M2: `--policy original|ranked|random`. `ranked` calls `rank_candidates` once on the candidate
+   list, reorders the search, catches `ExtractError` as above, and passes the cache to the ledger.
+3. M3: measures `ranked` against `original` at the same endpoint: offline on the POC's stored scan
+   tables (ADR-014 evidence item 5), then live (item 4).
+
 ## Open integration questions (decide before code is written against them)
 
 | # | Question | Owner to propose | Status |
