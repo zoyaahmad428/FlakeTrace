@@ -63,23 +63,23 @@
   ],
   "reproduction": {
     "n": 20,
-    "passed": 5,
-    "matched": 15,
+    "passed": 8,
+    "matched": 12,
     "other": 0,
     "infra": 0,
     "confidence": 0.95,
-    "lower": 0.5312991221999536,
-    "upper": 0.8881382986646663
+    "lower": 0.3865815006061295,
+    "upper": 0.7811934677397184
   },
   "victim_alone": {
     "n": 20,
-    "passed": 5,
-    "matched": 15,
+    "passed": 8,
+    "matched": 12,
     "other": 0,
     "infra": 0,
     "confidence": 0.95,
-    "lower": 0.5312991221999536,
-    "upper": 0.8881382986646663
+    "lower": 0.3865815006061295,
+    "upper": 0.7811934677397184
   },
   "shared_resource": null,
   "polluter_write_location": null,
@@ -91,7 +91,7 @@
     "stack_trace": "org.junit.Assert.fail:87\norg.junit.Assert.assertTrue:42\norg.junit.Assert.assertTrue:53\nodfixture.NegativeFlakyTest.sometimesFails:24"
   },
   "instrumentation_level": "static-only",
-  "execution_record_reference": "C:\\Users\\raffa\\Desktop\\Semester 7\\FYP-I\\FlakeTrace\\FlakeTrace\\eval\\reports\\flaketrace-records\\20261119T165339Z-odfixture.NegativeFlakyTest#sometimesFails.jsonl",
+  "execution_record_reference": "C:\\Users\\zarpa\\OneDrive\\Documents\\GitHub\\FlakeTracee\\eval\\reports\\flaketrace-records\\20261119T190901Z-odfixture.NegativeFlakyTest#sometimesFails.jsonl",
   "source_integrity": {
     "passed": true,
     "details": "26 files hashed (SHA-256) before and after; all identical"

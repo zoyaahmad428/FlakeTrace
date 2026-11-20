@@ -1719,3 +1719,290 @@ flagged as the largest unknown in the whole Iteration-2 plan.
 - Limitation: FJ-04 and the ormlite-core case (the protocol's fallback cases) were not tried.
   Given FJ-04 is in the same fastjson package, it would very likely hit the identical
   discovery.py gap; not attempted, since the finding (and its fix owner) is already established.
+
+## 2026-11-19 — PR #106 CI fixes: merge conflicts, the Mid report's generated table
+
+**Requirement:** PR #106 (W19/W16/W26a) failed two CI checks and had two merge conflicts after
+M1's `m1/w16-evidence-wording` (PR #105) landed on `main` first. Fix what is mine, flag what
+isn't.
+
+- Merge conflicts in `docs/08-MidEval/genai-register.md` and `docs/10-Final1/iteration-2-plan.md`
+  (both append-only: M1 and I added different rows/text near the same anchor line). Resolved by
+  keeping both sides' content (member ran the real `git merge origin/main`, I resolved the
+  conflict markers via `Edit`, per this project's own established pattern — never ran `git
+  merge` myself). `docs/09-Team/members.md` auto-merged cleanly.
+- `CI / build-report` failing: real cause, not a merge artefact —
+  `mid-eval-report/scripts/json_to_tex.py` (reads `eval/reports/*.json` to generate
+  `tables/generated/fixture_results.tex` for the Mid report's Chapter 7/Appendix C) hardcoded
+  `block['successes']`, renamed `matched` in schema v2. The workflow's own error message says
+  exactly what to do: "Run python3 mid-eval-report/scripts/json_to_tex.py and commit the
+  result." Fixed the field name; **did not** add fixture case N4 to the generated table even
+  though `eval/reports/n4.json` now exists — the Mid Report's prose says "seven cases" in every
+  chapter, written by all three members, describing the frozen, already-submitted `mid-eval-v1`
+  state; adding an 8th row without rewriting that prose everywhere would make the report
+  self-contradictory. Left for `docs/10-Final1/report-v2-plan.md` (the Final-1 report), not
+  done here.
+- Regenerating the table (now correct) also changed real numbers, since `eval/reports/` itself
+  genuinely changed: every case's `original_failing_order` length grew (two new N4 test methods
+  now exist in the whole fixture project, shifting every discovery count), N2's real measured
+  rate changed from 9/20 to 11/20 (it is explicitly, deliberately non-deterministic by design —
+  `java.util.Random().nextBoolean()`), and **F4's reproducing shuffle seed changed from 1 to 6**
+  (14 tests in the reproducing order now, not 3 — the candidate pool shifted enough that a
+  different shuffle seed is first to reproduce it). Found and fixed every place in **my own**
+  chapters citing the old numbers: `mid-eval-report/chapters/appendix_test_cases.tex` (F2/F3/F4's
+  order lengths, F4's seed, N2's rate), `chapter6_module_m3.tex` (N2's rate),
+  `chapter8_testing.tex` (N2's rate). Checked brace balance on all three after editing.
+- Flagged, not touched (M2's files, per `mid-eval-report/CLAUDE.md` §2 — a PR-description-level
+  note here, not a silent edit): three more citations of F4's now-stale "shuffle seed 1" exist
+  in `mid-eval-report/chapters/appendix_action_register.tex`, `chapter6_module_m2.tex`, and
+  `chapter9_contribution_m2.tex`. All three now say "seed 6" in the real regenerated report.
+- `CI / ui` failing: real cause — `ui/web/src/lib/report.test.ts` (and the module it tests,
+  `report.ts`) still assume schema v1 (`successes`, exactly seven committed reports, old
+  limitations wording). **Not a required check** (branch protection requires
+  `fixture-build`/`python-eval`/`runner`/`evidence` only). Already flagged as M2's follow-up in
+  this file's 2026-11-18 entry; Zarpash's explicit decision this session was to leave it for M2
+  rather than have me edit `ui/web/`'s TypeScript.
+- Command: `py -m unittest discover -s eval/tests` → 119/119 OK (text-only report changes,
+  sanity check). Real `mvn`/JDK runs not re-done this entry (no code changed, only report
+  prose and the generated table).
+- Limitation: did not verify the Mid report actually compiles (`latexmk -pdf main.tex`) — no
+  LaTeX toolchain in this environment; relying on `report.yml`'s own CI job for that, same
+  constraint the 2026-10 handoff note recorded for a previous session.
+
+## 2026-11-19 — A1 fail-safe fix: `deletion_status=None` no longer satisfies S3 (ADR-010/ADR-011)
+
+**Requirement (test-first):** the W19 build of `eval/outcome.py` made `deletion_status=None`
+("not yet checked") satisfy claim S3, to avoid regressing F1/F2/F3/F4 to CANDIDATE before
+ADR-011's real deletion check existed. Flagged at the time for team review. Zarpash's explicit
+instruction this session: reverse that, fail-safe. An unestablished claim must not count as an
+established one, even though it changes F3's reported outcome.
+
+- **Test first:** added `test_two_polluters_with_a_real_edge_gives_candidate_not_verified` to
+  `eval/tests/test_report.py` and `test_row12_candidate_when_deletion_not_yet_checked` to
+  `eval/tests/test_outcome.py`. Ran on the unfixed code: both failed (`AssertionError: VERIFIED
+  != CANDIDATE`), confirming the bug existed before fixing it.
+- **Fix:** `eval/outcome.py` — row 12's guard dropped the `is not None` escape hatch, so
+  `deletion_status` not in `_DELETION_SATISFIES_S3` (which is deliberately `(DELETION_VERIFIED,
+  DELETION_NOT_APPLICABLE)` only — `None` and `NOT_YET_CHECKED` excluded on purpose) now always
+  blocks S3. `eval/report.py` — added the actual ADR-011 \S2 "free" check: a single kept polluter's
+  deletion check **is** the alone check, already run and already gated clean by the time row 12
+  is reached, so `deletion_status = DELETION_VERIFIED` is computed with no new JVM runs when
+  `len(diagnosis.polluters) == 1`. Two or more kept polluters (only F3, in the real fixture) get
+  no free check yet — `deletion_status` stays `None`, correctly blocking S3 until W20 builds the
+  real multi-test removal check.
+- **Effect on real reports:** F1, F2, F4 (one polluter each) stay `VERIFIED` — free check covers
+  them. F3 (two required polluters) now reports `CANDIDATE [DELETION_EVIDENCE_INCOMPLETE]`
+  instead of `VERIFIED`. This is the correct, honest behaviour: F3 was never deletion-verified,
+  only search-minimised (claims-ledger row G2, `docs/07-Defense/claims-ledger.md`) —
+  `eval/outcome.py`'s own docstring and `_DELETION_SATISFIES_S3`'s comment now say so.
+  **`fixtures/od-fixture/ground_truth.json` was deliberately NOT changed** — F3's ground truth
+  stays `VERIFIED` as the W20 target; this fix changes what the tool can honestly say *today*,
+  not what F3 is expected to resolve to once W20 lands.
+- **Command:** `py -3 -m unittest eval.tests.test_stats eval.tests.test_outcome
+  eval.tests.test_schema_validator eval.tests.test_examples eval.tests.test_baseline
+  eval.tests.test_yield_report eval.tests.test_report` → 120/120 OK (1 new test in
+  `test_report.py`, counts unchanged elsewhere — row/example renames, not additions).
+- **Real reports regenerated:** `py -3 eval/tools/run_w9_integration.py` → F1/F2/F4 `VERIFIED`,
+  F3 `CANDIDATE [DELETION_EVIDENCE_INCOMPLETE]`, N1/N2 `UNRESOLVED(VICTIM_FAILS_ALONE)`, N3
+  `UNRESOLVED(NOT_REPRODUCED)`, N4 `UNRESOLVED(VICTIM_FAILS_ALONE_DIFFERENTLY)`, all matching
+  `eval/outcome.decide()`'s own table. N2's rate is genuinely random by design
+  (`new Random().nextBoolean()` in the fixture) — observed 9/20, then 11/20 (after N4 was added,
+  2026-11-18 entry above), then 10/20 on this entry's run. **Going forward, avoid re-running
+  `run_w9_integration.py` purely to "refresh" committed reports** — every real rerun changes
+  N2's committed rate and forces another round of citation fixes in the Mid report's prose;
+  only rerun it when a real code change needs the regenerated evidence.
+- **`runner/tests/test_cli.py` and `ui.tests.test_server`: not rerun this entry.** Both were
+  already fixed for F3's CANDIDATE outcome and verified green (63/63, 31/31) earlier in this
+  session, before this compaction boundary, against the same `eval/outcome.py`/`eval/report.py`
+  fix landed here — no runner or ui code changed since, so the result still holds. Flagging
+  this explicitly rather than re-asserting a number I didn't re-measure this entry.
+- **`eval/examples/`:** `example_f3_verified.json` renamed to `example_f3_candidate.json`
+  (outcome corrected `VERIFIED` → `CANDIDATE`), `example_f1_verified.json` and two synthetic
+  examples given an explicit `deletion_status=DELETION_VERIFIED` kwarg to isolate them from this
+  change. `eval/examples/README.md` updated to match.
+- **Mid report (`mid-eval-report/`, my own chapters only):** `chapter8_testing.tex` (Table
+  7.x's F3 row: `VERIFIED` → `CANDIDATE`; the results paragraph rewritten to explain the
+  single-vs-multi-polluter free-check distinction and the A1 fix by name; N2's rate 11/20 →
+  10/20), `chapter4_requirements.tex` (the "Deletion checks" acceptance-criteria row: was
+  claiming "Met... real F3 case confirms it" for 1-minimality, which conflated search-minimality
+  with deletion-verification — corrected to "partially met, corrected in Iteration 2"),
+  `appendix_test_cases.tex` (N2's rate 11/20 → 10/20, with a note that the rate genuinely varies
+  run to run rather than citing one number as if stable). `tables/generated/fixture_results.tex`
+  regenerated to match (F3 row now `CANDIDATE`, N2 now `10/20`). Brace balance checked on all
+  three `.tex` files after editing (equal open/close counts).
+- **Flagged, not touched — M1/M2's files and a joint doc, per `mid-eval-report/CLAUDE.md` §2 and
+  root CLAUDE.md §1:**
+  - `mid-eval-report/chapters/chapter1_introduction.tex:141` ("F1--F4 \texttt{VERIFIED},
+    including F3's two polluters") — M1-owned, now factually wrong for F3.
+  - `mid-eval-report/chapters/appendix_action_register.tex:45` ("...reproduced 20/20,
+    \texttt{VERIFIED}" for F3) — M2-owned, same issue.
+  - `mid-eval-report/chapters/chapter6_iteration1.tex`, `chapter9_development_evidence.tex`
+    (both M2-owned "frame" files) and `chapter2_research.tex` (M1-owned) describe F3 as solved
+    by `ddmin` without naming an outcome directly — lower priority, but worth a pass once M1/M2
+    pick this up.
+  - `docs/07-Defense/claims-ledger.md` row **E14** (Owner: M2) still asserts "the command →
+    `VERIFIED`, 20/20, 0/20 alone" for F3 under status `SETTLED`. Row **G2** (Owner: M2, M3,
+    status `OPEN`) already names exactly this gap ("A `VERIFIED` sequence is deletion-minimal —
+    NOT SUPPORTED when outcomes vary... reduced by single-trial delta debugging; minimal for the
+    trials it saw") and is the correct wording to use instead of E14 until E14 itself is
+    corrected. This fix is real, reproducible progress on G2 for the single-polluter cases
+    (F1/F2/F4 now have a genuine free deletion check, not just an assumption) — raised for M2 to
+    update E14 and for the team to consider whether G2 can move toward closing for the
+    single-polluter case specifically, while staying open for multi-polluter cases until W20.
+  - **Retraction (2026-11-20, see the merge-resolution entry below):** the `chapter1_
+    introduction.tex`/`appendix_action_register.tex`/`chapter6_iteration1.tex`/`chapter9_
+    development_evidence.tex`/`chapter2_research.tex` flags just above were wrong. The Mid
+    report is a closed record checked by CI against tag `mid-eval-v1` (M2's PR #106), where F3
+    genuinely was `VERIFIED` — those chapters are correctly describing that frozen state and
+    must **not** be changed. My own matching edits to my three chapters were wrong for the same
+    reason and were reverted (below). The `claims-ledger.md` row E14 flag stands, unaffected —
+    that document is explicitly live/ongoing (section G's own header), not tied to the tag.
+  - Not a surprise to the team: this exact tension (ddmin's search-minimality vs. a real
+    deletion-verification check) is G2's own description, dated 2026-11-13 — this entry is
+    that gap actually narrowing in code, not a new finding.
+
+## 2026-11-20 — Merge conflict: M2 independently built the same A1 fail-safe fix
+
+**Requirement:** `git push` to the shared branch `m3/w19-verdict-contract-v2` was rejected
+(non-fast-forward); `git pull` (member's own command) surfaced that M2 had pushed real work to
+this same branch — PR #106, "with M3's permission" per M2's commit message — including
+`[M2] eval: list every resource edge and apply ADR-011 deletion rule`, which independently
+reaches the same conclusion as A1 (F3 must not be `VERIFIED` without a real multi-polluter
+deletion check) through a different, better-engineered mechanism. 13 files conflicted.
+
+- **Compared both implementations before choosing, not a coin flip.** M2's `eval/report.py`
+  computes `deletion_status` with: (1) an explicit, defensive re-check that
+  `alone_tally.passed == alone_tally.n` rather than relying on `decide()`'s row ordering as an
+  implicit precondition, and (2) the real ADR-011 four-value vocabulary (`DELETION_VERIFIED`/
+  `DELETION_INCOMPLETE`), never a raw `None` for a found-polluter case. My own A1 version left
+  the multi-polluter case as `None` and relied on fixing `eval/outcome.py`'s guard to reject it
+  — functionally equivalent for F3 today, but less robust and still used my own invented
+  `DELETION_NOT_YET_CHECKED` value where M2's doesn't need to. **Kept M2's `eval/report.py`
+  entirely; kept my own `eval/outcome.py` guard fix too** (it merged with no conflict — M2's
+  branch never touched that file — and is valid, harmless defense-in-depth regardless).
+- **Resolved via `Edit`, never `git merge`/`git checkout --theirs`/`git add` myself** (the
+  member ran the real `git pull`): `eval/report.py`, `eval/tests/test_report.py`,
+  `runner/tests/test_cli.py` — took M2's side for every conflicting hunk. Also fixed one of my
+  own tests (`test_two_polluters_with_a_real_edge_gives_candidate_not_verified`,
+  `eval/tests/test_report.py`) that git did **not** flag as conflicting (no textual overlap)
+  but was now factually wrong under M2's code: asserted `assurance.sequence.deletion ==
+  "NOT_YET_CHECKED"`, corrected to `"INCOMPLETE"` by reasoning through the merged code's actual
+  behaviour, not by trusting the absence of a conflict marker.
+- **`docs/08-MidEval/genai-register.md`:** both members' same-day rows are independent,
+  append-only entries — kept both, plus a new row for this reconciliation itself.
+  **`docs/09-Team/members.md`:** the conflict region spanned two different members' rows (M2's
+  row 2 and my own row 3) because they sit adjacent in the table; took M2's own row 2 (their own
+  description of their own work is authoritative) and my row 3 (mine).
+- **`eval/reports/{f1,f2,f3,f4,n1,n2,n3,n4}.json`:** resolved by regenerating them for real
+  (`py -3 eval/tools/run_w9_integration.py`) against the now-merged code, rather than
+  hand-merging JSON from two different pre-generated snapshots — guarantees the committed
+  files exactly match what the resolved code actually produces. F3 confirmed `CANDIDATE
+  [DELETION_EVIDENCE_INCOMPLETE]`, `assurance.sequence.deletion = "INCOMPLETE"`, now with 2
+  structured `resource_edges` (M1's W21, merged in from M2's side). N2's rate landed at 12/20 on
+  this real rerun (yet another value — 9/20, 11/20, 10/20, now 12/20 across this iteration's
+  reruns, exactly the churn flagged in the 2026-11-19 entry above). Fixed the same two own-
+  chapter N2 citations (`chapter8_testing.tex`, `appendix_test_cases.tex`) a third time; brace
+  balance re-checked.
+- **Command:** `py -m unittest discover -s eval/tests` → 123/123 OK (120 of mine + 3 new from
+  M2's `TestResourceEdgesFromM1`/`TestDeletionEvidenceBeforeW20`). `runner.tests.test_cli`:
+  started, result recorded in the next entry once the real-JVM run finishes (it runs for
+  several minutes; not fabricating a number before it completes).
+- **`runner.tests.test_cli`** (real JVM): 64/64 OK, confirming the merge-resolved `eval/report.py`
+  and `runner/tests/test_cli.py`.
+- **A real bug found by actually reproducing M2's new CI job, not by reading the diff:** M2's
+  other PR #106 commit, `[M2] ci: check the Mid report tables against the mid-eval-v1 reports`,
+  made the Mid report's generated table a genuinely closed record — CI now regenerates it from
+  `mid-eval-v1`'s frozen `eval/reports/` (schema v1, via `git archive`), never the live
+  directory, since the Mid report is a graded, submitted artefact, not something that should
+  track Iteration 2's ongoing changes. Running that CI step locally
+  (`git archive mid-eval-v1 eval/reports | tar -x`, then `json_to_tex.py --reports <that
+  dir>`) crashed: `KeyError: 'matched'`. My own earlier "successes"→"matched" rename (2026-11-19
+  entry above) assumed every report would eventually move to schema v2 — wrong, since the tag's
+  reports are permanently schema v1. Fixed `rate()` in
+  `mid-eval-report/scripts/json_to_tex.py` to accept either key, test-first in spirit (ran the
+  exact CI command before and after the fix, confirmed the crash and then the fix).
+- **This also meant every one of my own "sync the Mid report to live data" edits this session
+  was wrong, not just incomplete.** The Mid report is explicitly a closed record checked against
+  `mid-eval-v1`, not something that should ever describe Iteration 2's state. **Reverted, back
+  to byte-identical with `git diff mid-eval-v1 -- <file>` showing nothing:**
+  `chapter8_testing.tex` (F3's table row and the results paragraph, back to `VERIFIED`/9/20),
+  `chapter4_requirements.tex` (the "Deletion checks" row, back to its original claim),
+  `appendix_test_cases.tex` (F2/F3/F4's order lengths and F4's shuffle seed, back to 6/15/seed
+  1/3 tests; N2's rate back to 9/20), `chapter6_module_m3.tex` (N2's rate citation, back to
+  9/20). All from *both* this session's passes — today's A1 edits and yesterday's N4-driven CI
+  fix — since both predate M2's closed-record architecture landing. `fixture_results.tex`
+  regenerated with `--reports` pointing at the tag, confirmed to reproduce exactly what CI will
+  now check. **What stays correct and current:** the actual code (`eval/outcome.py`,
+  `eval/report.py`) and every Iteration-2 doc (`evidence-m3.md`, `genai-log-m3.md`,
+  `members.md`, `iteration-2-plan.md`) — A1's fix is real and F3 genuinely is `CANDIDATE` today;
+  it is only the *frozen Mid report* that must not say so.
+- **Lesson for next time, stated plainly rather than silently fixed:** I spent real effort this
+  session treating the Mid report's generated table as something that should track live
+  `eval/reports/` data (see the 2026-11-19 CI-fix entry above, and the two rounds of N2-rate
+  chasing before this one) — reasoning from the chapter's own text ("regenerated... so it is
+  current") rather than checking whether the *tag* was the intended source of truth. M2's
+  independent fix answers that question definitively. Should have asked the team before the
+  first regeneration, not after the third.
+- **Not run this entry:** `ui.tests.test_server`, `mvn test-compile` steps, the Mid report's own
+  LaTeX compile (no local toolchain, same standing limitation). `.github/workflows/*`,
+  `ui/web/*`, `runner/cli.py`, `docs/evidence-m2.md`, `docs/genai-log-m2.md`,
+  `docs/10-Final1/handover-m1-m3.md`, `eval/schema/report.schema.json`'s `depth` field — all
+  merged cleanly (no conflict), M2's/M1's own files, not reviewed line-by-line here since they
+  are outside this entry's scope (the conflict resolution) and their owners already verified
+  them in their own commit messages.
+
+## 2026-11-20 — A2: W16 phrase search, repo-wide, including evidence/ now that PR #105 landed
+
+**Requirement:** W16 needed M1's `evidence/` part independently re-verified after PR #105
+merged (last checked 2026-11-18, before it landed). Searched for the retired phrases (ADR-010
+§2/ADR-011 §5/ADR-012 §1, root CLAUDE.md §0): "1-minimal" unqualified, "never modified"
+unqualified, "sandboxed", "found mechanism"/"root cause"/"caused by"/"explains the failure"/"the
+cause" unqualified, "passes alone" asserted as if sufficient on its own.
+
+- `evidence/extract.py:645` and `evidence/README.md:6` are the only hits for
+  mechanism/cause/modified/sandbox/1-minimal under `evidence/` (excluding `tests/`/`target/`) —
+  both already the approved wording ("a possible mechanism, not confirmed as the cause").
+- Repo-wide (`docs/`, `eval/`, `runner/`, `ui/`): every "passes alone" hit is the legitimate
+  glossary/contract term (describing what the word means), not an unqualified certification
+  claim. Every "1-minimal"/"never modified"/"sandboxed" hit is either the approved qualified
+  wording, a literature description of *another tool's* property (iFixFlakies' own 1-minimal
+  guarantee — not our claim), or inside a closed historical record (`docs/08-MidEval/`, dated
+  `evidence-m*.md`/`genai-log-m*.md` entries, `docs/superpowers/plans/`) describing what was
+  claimed or planned at the time — correctly left as-is per the same closed-record principle
+  just re-learned the hard way in the merge-resolution entry above.
+- **Command:** `grep -rn` across `evidence/ eval/ runner/ ui/ docs/` for each phrase (read-only,
+  no code run — this was a text search, not a behavioural check).
+- No violation found. W16 marked fully done in `iteration-2-plan.md`.
+
+## 2026-11-20 — PR #109 CI failures diagnosed: one infra flake, one real cross-boundary regression
+
+**Requirement:** PR #109 (this branch, commit `11c2173`) showed `CI / runner` (required) and
+`CI / ui` (not required) failing. Diagnosed both via the GitHub API (check-runs, job steps,
+annotations) before touching anything.
+
+- **`CI / runner`: transient infrastructure flake, not a code issue.** The job's own
+  `actions/setup-java@v4` step failed (`/usr/bin/tar failed with exit code 2` — a corrupted or
+  interrupted JDK download/extraction on that runner VM). `fixture-build` and `evidence`/
+  `python-eval` use the identical `setup-java@v4` config (`distribution: temurin,
+  java-version: "8"`) on the exact same commit and succeeded, which rules out a config or code
+  cause. **Recommendation: re-run the `runner` job** (GitHub's "Re-run jobs" on the PR), not a
+  code fix.
+- **`CI / ui`: a real regression, caused by my own merge-resolution step, not M2's work.**
+  `ui/web/src/lib/report.test.ts` (M2's file, written during PR #106) hardcodes N2's expected
+  rate as `"15/20"`/`"15/20"` — whatever `eval/reports/n2.json` showed in M2's own branch state
+  when they wrote and verified that test ("ui 33 OK" in their commit message). My merge
+  resolution then regenerated `eval/reports/*.json` fresh (`run_w9_integration.py`, to avoid
+  hand-merging JSON — see the 2026-11-20 entry above), which landed N2 at a *different* random
+  value (12/20) than what M2's test expected, breaking it. This is the same N2-randomness churn
+  flagged repeatedly this session (2026-11-19 entries above), now crossing into M2's file
+  because my regeneration step didn't check every consumer of the exact committed rate, only
+  `eval/tests` and `runner.tests.test_cli`.
+- **Asked the member before touching `ui/` (M2's folder): declined — left for M2.** Not fixed
+  here. `ui` is not a required check (branch protection: `fixture-build`/`python-eval`/
+  `runner`/`evidence` only), so this does not block the PR, but M2 needs to either hardcode the
+  current 12/20 or (better, a design choice that is M2's to make, not mine) read the committed
+  report's own rate dynamically instead of a literal string, so this stops recurring every time
+  `eval/reports/n2.json` is regenerated.
+- **Lesson, stated plainly:** before regenerating a shared, randomized fixture report as part of
+  a merge resolution, check every file that hardcodes its exact value — not just the test
+  suites in my own folder.

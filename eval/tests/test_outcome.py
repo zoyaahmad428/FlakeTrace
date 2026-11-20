@@ -39,7 +39,10 @@ def sequence(n=20, passed=0, matched=20, other=0, infra=0):
 
 
 def base_kwargs(**overrides):
-    """A VERIFIED-shaped baseline; each test overrides just what it needs to hit its own row."""
+    """A VERIFIED-shaped baseline; each test overrides just what it needs to hit its own row.
+    deletion_status defaults to DELETION_VERIFIED (not the DecisionInput default of None) so
+    that row 9-12 tests aimed at ONE specific unmet claim aren't also, incidentally, testing
+    A1's deletion_status=None behaviour -- that has its own dedicated test below."""
     kwargs = dict(
         source_integrity_passed=True,
         reference_established=True,
@@ -47,6 +50,7 @@ def base_kwargs(**overrides):
         alone=alone(),
         sequence=sequence(),
         resource_edge_exists=True,
+        deletion_status=DELETION_VERIFIED,
     )
     kwargs.update(overrides)
     return kwargs
@@ -212,12 +216,16 @@ class TestDecisionTableRows(unittest.TestCase):
         decision = decide(d)
         self.assertEqual(decision.outcome, OUTCOME_VERIFIED)
 
-    def test_row13_verified_when_deletion_not_yet_checked(self):
-        """deletion_status=None (W20 not landed) must not regress an otherwise-VERIFIED verdict
-        -- ADR-010 test T6."""
+    def test_row12_candidate_when_deletion_not_yet_checked(self):
+        """A1 fail-safe fix (2026-11-19): deletion_status=None must NOT satisfy S3. An
+        unchecked claim is not an established one -- VERIFIED requires deletion_status to be
+        an actual DELETION_VERIFIED/NOT_APPLICABLE result, not the absence of one. This is
+        what keeps F3 (two polluters, no per-test deletion check yet) honestly CANDIDATE
+        instead of VERIFIED until W20 builds the real check."""
         d = DecisionInput(**base_kwargs(deletion_status=None))
         decision = decide(d)
-        self.assertEqual(decision.outcome, OUTCOME_VERIFIED)
+        self.assertEqual(decision.outcome, OUTCOME_CANDIDATE)
+        self.assertEqual(decision.candidate_reasons, (CANDIDATE_DELETION_EVIDENCE_INCOMPLETE,))
 
 
 class TestDecisionInputValidation(unittest.TestCase):

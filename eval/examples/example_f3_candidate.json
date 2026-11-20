@@ -41,9 +41,9 @@
   "instrumentation_level": "static-only",
   "execution_record_reference": "eval/benchmark/logs/F3.json",
   "source_integrity": { "passed": true, "details": "No real source-integrity checker exists yet (Member 2's component) -- 'passed: true' is asserted by construction (plain Maven, no instrumentation involved), not independently checked." },
-  "outcome": "VERIFIED",
+  "outcome": "CANDIDATE",
   "unresolved_reason": null,
-  "candidate_reasons": [],
+  "candidate_reasons": ["DELETION_EVIDENCE_INCOMPLETE"],
   "assurance": {
     "sequence": { "reproduces": "ESTABLISHED", "passes_alone": "ESTABLISHED", "deletion": "NOT_YET_CHECKED" },
     "resource": { "level": "STATIC_OVERLAP", "mechanism": "NOT_ASSESSED" }
@@ -53,6 +53,6 @@
     "This is the two-polluter edge case: removing either single polluter (A or B) alone makes the victim pass again -- a one-by-one polluter search cannot find it, only a search that considers polluter combinations (W10, ADR-007).",
     "resource_edges lists only the primary edge (Member 1's extractor reports one edge at a time; ADR-010 section 6/W21 is what lists every edge structurally). The schema's single polluter_write_location field cannot represent both of this case's two required writes (flagA and flagB); only the second write is shown here -- a known Iteration 1/2 limitation for multi-polluter cases.",
     "bytecode_offset values (3, 7) are still placeholders -- no real static-bytecode-evidence extractor exists yet (Member 1's component).",
-    "Reduced by single-trial delta debugging; not deletion-verified (ADR-011, W20 not yet landed) -- especially relevant for a two-polluter case like this one, where neither polluter has been repeated-removal checked yet. assurance.sequence.deletion reports this as NOT_YET_CHECKED."
+    "A1 fail-safe fix (2026-11-19, ADR-010): ADR-011 section 2's free deletion check only covers a SINGLE kept polluter (the alone check, already gated clean, proves it). F3 keeps two polluters, so S3 is not established and the report is honestly CANDIDATE, not VERIFIED, until W20 builds the real multi-test repeated-removal check. F3's GROUND TRUTH stays VERIFIED as the W20 target (fixtures/od-fixture/ground_truth.json) -- this is what the tool can honestly say right now, not a changed expectation."
   ]
 }

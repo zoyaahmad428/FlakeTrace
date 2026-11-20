@@ -145,6 +145,9 @@ def assemble_report(
     # applying ADR-011 sections 2 and 4): with ONE polluter, "the sequence without it" is the victim
     # alone, so the alone check is the deletion check -- verified when the victim passed alone in
     # every run. With two or more, no deletion run has been made: INCOMPLETE, so CANDIDATE.
+    # (A1 fail-safe fix, same day, independently: eval/outcome.py's row 12 no longer lets a raw
+    # None escape this guard either way -- defense in depth, since this function now never
+    # actually passes None through for a found-polluter case.)
     deletion_status = None
     if diagnosis.status == POLLUTER_FOUND and diagnosis.polluters:
         alone_all_passed = diagnosis.alone_tally.passed == diagnosis.alone_tally.n

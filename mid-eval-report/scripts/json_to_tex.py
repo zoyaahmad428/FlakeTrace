@@ -23,6 +23,11 @@ REPORTS = REPO / "eval" / "reports"
 OUT = REPO / "mid-eval-report" / "tables" / "generated"
 
 CASES = ["f1", "f2", "f3", "f4", "n1", "n2", "n3"]
+# N4 (ADR-010 test T5, added Iteration 2/W19) deliberately excluded: the Mid Report's prose
+# says "seven cases" throughout every chapter (frozen historical content, tag mid-eval-v1).
+# Adding an 8th row here without rewriting that prose everywhere would make the submitted
+# report inconsistent with its own generated table. Revisit for report v2 (docs/10-Final1/
+# report-v2-plan.md), not here.
 
 
 def tex(s):
@@ -51,7 +56,12 @@ def breakable(s):
 def rate(block):
     if not block:
         return "--"
-    return f"{block['successes']}/{block['n']}"
+    # ADR-010/schema v2 (W19) renamed "successes" to "matched" -- but the Mid report's own CI
+    # job (M2, 2026-11-19) reads this script against schema v1 reports frozen at tag
+    # mid-eval-v1, which never get a "matched" key, so both names must keep working forever
+    # here (found by actually reproducing that CI job locally: KeyError without this fallback).
+    successes = block["matched"] if "matched" in block else block["successes"]
+    return f"{successes}/{block['n']}"
 
 
 def interval(block):

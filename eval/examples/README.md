@@ -30,10 +30,22 @@ since 18/20's Wilson lower bound (0.699) is actually just below the 0.70
 threshold, which would have triggered `BELOW_REPLAY_THRESHOLD` too and
 muddied what the example is meant to isolate.
 
+A1 fail-safe fix (2026-11-19): `deletion_status=None` ("not yet checked") no longer
+satisfies claim S3 -- an unestablished claim is not an established one.
+ADR-011 section 2's free deletion check (the alone check already proves it)
+only covers a SINGLE kept polluter; `eval/report.py` computes a real
+`DELETION_VERIFIED` for that case. Two or more kept polluters have no free
+check yet, so `example_f3_verified.json` was renamed
+**`example_f3_candidate.json`** and its outcome corrected from `VERIFIED` to
+`CANDIDATE [DELETION_EVIDENCE_INCOMPLETE]` — F3's real, two-polluter case
+cannot honestly be `VERIFIED` until W20 builds the real multi-test check.
+F3's ground truth (`fixtures/od-fixture/ground_truth.json`) stays `VERIFIED`
+as the W20 target; this file shows what the tool can honestly say *now*.
+
 | File | Decision table row | Kind |
 | --- | --- | --- |
-| `example_f1_verified.json` | reproduces strongly, resource edge exists -> VERIFIED | REAL (F1, single polluter) |
-| `example_f3_verified.json` | same row, two-polluter edge case | REAL (F3, both polluters required) |
+| `example_f1_verified.json` | reproduces strongly, one kept polluter (free deletion check), resource edge exists -> VERIFIED | REAL (F1, single polluter) |
+| `example_f3_candidate.json` | same reproduction/resource strength, but TWO kept polluters -> CANDIDATE [DELETION_EVIDENCE_INCOMPLETE] (A1 fix) | REAL (F3, both polluters required) |
 | `example_candidate.json` | reproduces weakly (lower bound < 0.70) -> CANDIDATE [BELOW_REPLAY_THRESHOLD] | SYNTHETIC |
 | `example_victim_fails_alone.json` | victim fails alone, matching the reference -> UNRESOLVED(VICTIM_FAILS_ALONE) | REAL (N1, deterministic 20/20) |
 | `example_victim_fails_alone_intermittent.json` | same row, intermittent alone-failure | REAL (N2, 12/20 -- genuinely measured, not round) |

@@ -204,6 +204,7 @@ class TestCombineFields(unittest.TestCase):
         report = assemble_report(runs_, fields)
         # ADR-010 section 4 (Q1, option A, 2026-11-13): a reproducing, passes-alone sequence
         # with no resource edge is CANDIDATE now, not UNRESOLVED (M3, flagged for M2's review).
+        # A1 fix (2026-11-19): two kept polluters also means no free deletion check.
         self.assertEqual((report["outcome"], report["unresolved_reason"]), ("CANDIDATE", None))
         # Two polluters and no W20 deletion runs yet: also DELETION_EVIDENCE_INCOMPLETE (2026-11-19).
         self.assertEqual(report["candidate_reasons"], ["DELETION_EVIDENCE_INCOMPLETE", "NO_SUPPORTED_RESOURCE_EVIDENCE"])

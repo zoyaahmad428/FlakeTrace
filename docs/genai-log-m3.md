@@ -1224,3 +1224,81 @@ bug (alphabetical: M before S), why 31 random shuffles still didn't find it even
 placed the right class first (other tests in between reset the state), and why that is a
 genuine result about search quality, not a bug in the fixture or a reason to doubt step 2's
 premise confirmation.
+
+## 2026-11-19 — A1 fail-safe fix: F3 now honestly `CANDIDATE`, not `VERIFIED`
+
+**What was asked:** reverse my own W19 design choice (made and flagged for review on
+2026-11-18) where `deletion_status=None` satisfied claim S3 to avoid regressing F1–F4 to
+`CANDIDATE`. The member's explicit instruction: make it fail-safe — an unestablished claim
+should never count as established, even though it changes F3's reported outcome from
+`VERIFIED` to `CANDIDATE`.
+
+**What I kept:** the 13-row decision table's structure and all other rows unchanged — this is a
+one-line guard change (dropped `is not None` from row 12's check) plus one new, real computation
+in `eval/report.py` (ADR-011 §2's free deletion check for a single kept polluter), not a
+redesign.
+
+**What the member changed / decided:** nothing code-level — this was my fix on explicit
+instruction, written test-first (new test asserted CANDIDATE, confirmed it failed against the
+unfixed `VERIFIED`-producing code first, then fixed). The member will decide, when reviewing
+`git diff --staged`, whether the three mid-eval-report chapter edits (below) read right in their
+own words.
+
+**How it was verified:** test-first (ran the new assertions against the unfixed code, saw them
+fail with the wrong outcome, then fixed and reran green); full `eval/tests` suite 120/120; real
+`eval/tools/run_w9_integration.py` rerun confirms F1/F2/F4 stay `VERIFIED` and F3 now reports
+`CANDIDATE [DELETION_EVIDENCE_INCOMPLETE]`, matching `eval/outcome.decide()`'s own table exactly
+— not asserted, checked against the actual real-run output.
+
+**What I rejected / flagged rather than did myself:** did not edit M1's or M2's mid-eval-report
+chapters or `docs/07-Defense/claims-ledger.md` row E14, even though both now contain a stale
+"F3 ... VERIFIED" claim this same fix makes wrong — flagged both in `docs/evidence-m3.md`
+for the owning members, per `mid-eval-report/CLAUDE.md` §2 and root CLAUDE.md §1. Did fix the
+same issue in my own three owned files (`chapter8_testing.tex`, `chapter4_requirements.tex`,
+`appendix_test_cases.tex`) since leaving a known-false claim in my own graded chapter would be
+a bigger honesty problem than a narrow correction.
+
+Ownership checkpoint: be able to explain, without this log, exactly why F1/F2/F4 get a *free*
+deletion check (the alone run, already clean, already proves "removing the only kept polluter
+makes the victim pass" — that is ADR-011 §2's rule) while F3 does not (two required polluters
+means removing either one alone still isn't the full removal-check ADR-011 asks for — no JVM
+runs exist yet that check "remove both together", only the `ddmin` search that *found* them),
+and why that is a real gap (W20), not a bug in `ddmin` or in the fixture.
+
+## 2026-11-20 — Merge with M2's PR #106, and a self-caught mistake about the Mid report
+
+**What was asked:** the member's `git push` was rejected (branch diverged); their own `git pull`
+surfaced that M2 had pushed real, overlapping work to the same shared branch. Resolve the
+conflicts without running `git merge`/`git checkout --theirs`/`git add` myself.
+
+**What I kept vs. changed:** kept M2's `eval/report.py` implementation of the same fail-safe
+over my own (theirs was more complete — real ADR-011 vocabulary, M1's W21 edges, a defensive
+re-check rather than relying on `decide()`'s row order), compared deliberately rather than
+defaulting to "mine wins" or "theirs wins". Kept my own `eval/outcome.py` guard as harmless
+defense-in-depth since it didn't conflict.
+
+**A mistake I caught myself, by testing rather than trusting the diff:** M2's commit also made
+the Mid report's generated table a closed record checked against tag `mid-eval-v1`, not live
+data — I only found this by actually running the new CI step locally
+(`git archive mid-eval-v1 eval/reports`, then the generator against it), which crashed with
+`KeyError: 'matched'` because my own earlier schema-rename fix assumed every report would move
+to schema v2. Fixing that crash made me realize my entire premise for touching the Mid report's
+chapters *at all* this session — both today's F3/N2 edits and yesterday's N4-driven ones — was
+wrong: the chapter's own text ("regenerated... so it is current") misled me into treating a
+closed, graded, tagged document as a living one. Reverted all four touched chapters to
+byte-identical with the tag, verified by `git diff mid-eval-v1 -- <file>` printing nothing.
+
+**How it was verified:** reproduced M2's new CI check locally before and after the `rate()`
+fix (crash, then clean run); `git diff mid-eval-v1 --` on every touched Mid-report chapter
+prints nothing after the revert; `eval/tests` 123/123, `runner.tests.test_cli` 64/64 (real JVM)
+on the merge-resolved code.
+
+**What I rejected:** did not try to "fix" the Mid report's prose to describe current, honest
+behaviour anywhere in these four chapters — the correct place for that is the Iteration-2 docs
+(`evidence-m3.md`, `members.md`) and the future report v2 (W28), not a closed record.
+
+Ownership checkpoint: be able to explain why the Mid report's generated table reads from the
+`mid-eval-v1` *tag* in CI rather than the live `eval/reports/` directory, and why that is a
+correctness requirement (a graded, submitted PDF cannot retroactively change what it reported)
+rather than a stylistic choice — and why my own three earlier attempts to "keep it in sync with
+live data" were a real mistake, not a harmless extra effort.

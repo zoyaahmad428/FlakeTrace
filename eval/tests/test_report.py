@@ -183,6 +183,24 @@ class TestAssembleReport(unittest.TestCase):
         )
         validate_report(report)
 
+    def test_two_polluters_with_a_real_edge_gives_candidate_not_verified(self):
+        """A1 fail-safe fix (2026-11-19): ADR-011 section 2's free deletion check only covers
+        ONE kept polluter (the alone check proves it). Two or more kept polluters -- e.g.
+        fixture F3, both required -- have no such free check and W20's real one hasn't
+        landed, so even a real resource edge and clean reproduction only gives CANDIDATE, not
+        VERIFIED. Never claim F3 is VERIFIED until W20 actually builds the multi-test check."""
+        diagnosis = _diagnosis(POLLUTER_FOUND, polluters=[POLLUTER, TestIdentifier("x", "y")])
+        fields = resource_fields(POLLUTER_ACCESS, VICTIM_ACCESS)
+        report = assemble_report(diagnosis, fields)
+        self.assertEqual(report["outcome"], "CANDIDATE")
+        self.assertIsNone(report["unresolved_reason"])
+        self.assertEqual(report["candidate_reasons"], ["DELETION_EVIDENCE_INCOMPLETE"])
+        # M2's W20-precursor fix (2026-11-19, with M3's permission): two kept polluters get the
+        # real ADR-011 value DELETION_INCOMPLETE now, not a placeholder NOT_YET_CHECKED.
+        self.assertEqual(report["assurance"]["sequence"]["deletion"], "INCOMPLETE")
+        self.assertEqual(report["assurance"]["resource"]["level"], "STATIC_OVERLAP")
+        validate_report(report)
+
     def test_several_polluters_partial_evidence_suppresses_the_generic_no_edge_line(self):
         """W10 (ADR-007): a caller combining several polluters' pair-mode results can set
         shared_resource=None (not every polluter has an edge, so none is shown as the primary
