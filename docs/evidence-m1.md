@@ -794,3 +794,57 @@ counted as passing alone. I am W18's verifier. Run by me on my own laptop (Windo
 
 **Limitation:** these are scripted unit tests (no JVM); they show the counting, not a real
 diagnosis. `decide()` reading the tallies is W19 (M3), verified separately.
+
+## PR #106 check: the report schema v2 against `report_fields` (2026-11-20)
+
+**Requirement:** PR #106 (W19, schema v2) changed the report contract, and contract changes need
+all three members (CONTRIBUTING). I approved it on 2026-11-18 with no written check. This records
+the check behind that approval: every field my `report_fields` hands to Member 3's report must be
+valid under `eval/schema/report.schema.json`, including M2's new optional `depth` on
+`resourceEdge` (minimum 1).
+
+**File/function:** `evidence/tests/test_extract.py`, new `ReportSchemaContractTest`, which reads
+the schema (it does not edit it) and runs `report_fields` on eight pairs:
+- the first polluter of F1 to F4;
+- both FT005 controls (the two-field control has 2 edges);
+- one self-test pair with an edge;
+- one self-test pair with no edge, so `shared_resource` and both locations are `null`.
+
+For each pair, every returned key must be a schema property and must validate against it.
+
+**Run 1, in the assistant's Linux cloud container, not my laptop** (OpenJDK 21.0.13, Maven 3.9.11,
+Python 3.13, `jsonschema` 4.26.0), at `188e1ec` plus this test:
+- `mvn -B -q -f fixtures/od-fixture/pom.xml test-compile`, the same for `m1-selftest` and
+  `ft005-controls` → exit 0 each.
+- `python3 -m unittest -v evidence.tests.test_extract.ReportSchemaContractTest` → `Ran 1 test …
+  OK`.
+- To check that the test can fail, `depth` was set to `-1` in `report_fields` for one run, at
+  `f47b503`, whose `extract.py` is identical (not kept) → `AssertionError: Lists differ: ['-1 is less than the minimum of 1'] != []`. The file was
+  then restored.
+- `FLAKETRACE_REQUIRE_JVM=1 python3 -m unittest evidence.tests.test_extract` → `Ran 46 tests …
+  OK`.
+- A one-off script (not committed) also compared each report's `resource_edges` with the
+  extractor's output for the same pair. F1, F2 and F4 are identical. F3's report holds 2 edges,
+  which is the union of both polluters' edges (one each), as M2's `combine_fields` builds it.
+
+**Run 2, on my laptop, by me** (Windows 11, Oracle JDK 25.0.1, Maven 3.9.9, Python 3.11.9), at
+`188e1ec` plus this test:
+- the three `mvn -B -q … test-compile` commands above → `exit 0` each (checked with
+  `echo %ERRORLEVEL%`);
+- `py -3.11 -m unittest -v evidence.tests.test_extract.ReportSchemaContractTest` → `Ran 1 test in
+  7.728s … OK`;
+- with `set FLAKETRACE_REQUIRE_JVM=1`, `py -3.11 -m unittest evidence.tests.test_extract` → `Ran 46
+  tests in 56.034s … OK`.
+
+Maven printed JDK 25 warnings ("restricted method", "sun.misc.Unsafe") from its own jars (jansi,
+guava). They come from Maven itself, not from FlakeTrace, and did not change any exit code. The
+same tests pass on JDK 21 (container) and JDK 25 (my laptop); CI uses JDK 8.
+
+**Result:** schema v2 accepts everything `evidence/` produces, with no change to the contract or
+to `extract.py`. CI's `evidence` job already installs `jsonschema` and compiles all three class
+sets, so the check now runs on every PR. A future change on either side of this boundary fails CI
+instead of breaking reports.
+
+**Limitation:** this test checks the fields' **shape**, not their meaning. Whether a static
+overlap is the right edge is still covered by `FixturePairTest` and `Ft005ControlsTest`. It also
+does not run `eval/report.py`; that file belongs to M3.
