@@ -1047,3 +1047,23 @@ own `evidence` job — guarded; two test expectations were wrong (case of "Delet
 
 Ownership checkpoint: why one polluter's alone check counts as its deletion check; why F3 is
 `CANDIDATE` now and becomes `VERIFIED` with W20; why the Mid report reads the tag.
+
+## 2026-11-20 — A1: discovery reads the project's own Surefire includes
+
+**Tool:** Claude Code (Claude Opus 5.5), superpowers brainstorming → writing-plans →
+executing-plans (native) with test-driven-development · **Level:** L3 · **Branch:** `m2/a1-discovery-includes`
+
+**Asked:** fix the discovery gap M3 found on fastjson (my standing prompt, item A1). **Decided by
+me:** approved the design (approach A, read the effective POM via Maven, over parsing `pom.xml` or
+dropping the name filter). **Kept:** the selection layer in `runner/discovery.py`,
+`maven_test_classpath(effective_pom=)`, the wiring in `diagnose()`, the custom-includes test
+project, 13 new tests. **Errors found and corrected:** two of Claude's own test expectations were
+wrong (default excludes still apply when only includes are set; JUnit's method order is not
+alphabetical); a Javadoc comment containing `**/` would have closed itself and broken the build —
+caught before compiling. The fresh review found a critical bug Claude had written — the first
+surefire `<plugin>` anywhere was read, so `pluginManagement` could win — and four important gaps;
+all fixed test-first. I then asked for the seven minors to be fixed as well, not deferred; done
+test-first. **What I changed:** *to fill in after reading the diff.*
+
+Ownership checkpoint: why the effective POM and not `pom.xml`; why only `build/plugins` counts; how a pattern becomes a regex;
+why unset excludes keep `**/*$*`; why unsupported settings are refused.

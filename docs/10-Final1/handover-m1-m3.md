@@ -18,6 +18,17 @@ it closes only when its verifier has reproduced it ([[10-Final1/iteration-2-plan
 
 ## Changes, newest first
 
+### A1 — discovery reads the project's own Surefire includes (2026-11-20) · built
+
+**M3: W26a steps 6–9 are unblocked** once this merges. Discovery now selects test classes with the
+project's effective Surefire `includes`/`excludes` (from `help:effective-pom`, in the same Maven
+call that builds the classpath), falling back to Surefire's defaults only when the project sets
+none. On fastjson's real configuration (`e05e9c5`) it selects 2,106 test classes including
+`SerializeWriterTest_14`; the old rule missed it. Not run here: the full `discover_order` on a
+compiled fastjson (needs your JDK 8) — please make it the first check of step 6 and record it.
+Projects using `-Dtest`, `includesFile`, `excludesFile` or `groups` are refused with a clear error.
+
+
 ### PR #106 made mergeable, and the CI line for PR #107 (2026-11-19, M2 with M3's permission)
 
 **M3:** on your branch `m3/w19-verdict-contract-v2` M2 merged `main` (two doc tables), and changed

@@ -1328,3 +1328,49 @@ own copy of the code, not from the review's description.
 - **Limitations:** F3's ground truth stays `VERIFIED` (the target after W20); until then the real F3
   verdict is `CANDIDATE`. The UI shows only the primary edge on the Evidence graph screen; the list
   of all edges is in the report JSON.
+
+## A1: discovery reads the project's own Surefire includes (2026-11-20)
+
+- **Requirement:** risk-register row "Discovery misses real test classes with custom Surefire
+  includes" (found by M3 in W26a, FJ-03); unblocks W26a steps 6–9. Design
+  `docs/superpowers/specs/2026-11-20-discovery-surefire-includes-design.md`, plan
+  `docs/superpowers/plans/2026-11-20-discovery-surefire-includes.md`. Branch
+  `m2/a1-discovery-includes` from `main` `f47b503`.
+- **Probe first:** `mvn -B -q -f fixtures/od-fixture/pom.xml help:effective-pom -Doutput=<scratch>`
+  → exit 0, about 28 s the first time (plugin download), 6 s after; nothing written to the fixture.
+- **Test first:** `py -3 -m unittest runner.tests.test_discovery.TestClassSelection` →
+  `ImportError: cannot import name 'DEFAULT_SELECTION'`; the Task 2 tests →
+  `cannot import name 'project_selection'` / `diagnose` has no `project_selection`. Today's rule on
+  the new test project `runner/tests/resources/custom-includes/` (include `**/bvt/**/*.java`, exclude
+  `**/bvt/**/Skip*.java`): `['pkg.OutsideTest', 'pkg.bvt.SkipMeTest']` — the two classes the project
+  does **not** run, and not `pkg.bvt.PlainCase`, the one it does.
+- **After:** `runner.tests.test_discovery` → **18 OK** (custom project discovers exactly
+  `PlainCase#first`, `#second`; no file written to it outside `target/`; fixture order unchanged).
+  Whole suites: see the hand-over.
+- **Real configuration, fastjson at `e05e9c5`** (shallow fetch into a scratch folder, never
+  committed): `help:effective-pom` → selection `includes=('**/bvt/**/*.java',)`,
+  `excludes=('**/*$*',)`. Applied to its 2,496 test sources: **2,106 selected**; the old default-name
+  rule: 675, of which 76 the project never runs. `SerializeWriterTest_14` (the FJ-03 polluter):
+  selected now, missed by the old rule; `MaxBufSizeTest` (victim): selected by both.
+- **Review** (fresh reviewer, Claude Opus, read-only; it ran the real Surefire 2.22.2 and 3.6.0
+  on scratch projects and compared): 1 critical, 4 important, 7 minor. **Critical, reproduced first:**
+  the first surefire `<plugin>` anywhere was used, and Maven prints `pluginManagement` before
+  `build/plugins` — `AssertionError: ('**/FromManagement*.java',) != ('**/bvt/**/*.java',)`; with a
+  parent that only pins the version, the defaults would have been used silently. Fixed: only
+  `project/build/plugins` is read; a reactor POM is refused. **Important, each test failing first:**
+  patterns without a leading `**/` (an exclude `*Slow*.java` let `SlowThingTest` in); dotted class
+  names (`pkg.a.Bar`); `excludedGroups`, `testClassesDirectory`, `dependenciesToScan`,
+  `skip`/`skipTests`=true and a second test execution are now refused; `%regex[…]` is refused
+  (Surefire's own regex input differs between versions). After: `runner.tests.test_discovery` →
+  **24 OK**; every `runner/tests/test_*.py` → **232 OK** (590 s); fastjson's selection unchanged
+  (2,106 of 2,496, polluter selected). **The 7 minors, fixed at M2's request** (each test failing
+  first — 5 failures: `True is not false`, three `DiscoveryConfigError not raised`, `TypeError not
+  raised`): `**` inside a name stays in one folder; patterns ending `.*` or starting `/` (Surefire
+  2.x and 3.x disagree) are refused with how to write them; `#` method filters and unresolved
+  `${…}` properties are refused, naming the pattern; `selection` is now a required argument of
+  `discover_order`/`test_class_names`. (The other two minors — the spec's inner-class line and the
+  reactor POM — were already fixed in the pass above.) After: `runner.tests.test_discovery` →
+  **29 OK**; every `runner/tests/test_*.py` → **237 OK** (570 s); fastjson unchanged.
+- **Limitations:** not run: full `discover_order` on a compiled fastjson (needs JDK 8; this machine
+  has JDK 21) — M3's W26a step 6. `-Dtest`, `includesFile`, `excludesFile`, `groups` are refused with
+  an input error. Surefire's `runOrder` is still not reproduced (alphabetical, as before).

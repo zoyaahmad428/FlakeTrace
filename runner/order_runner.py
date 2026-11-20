@@ -138,16 +138,19 @@ def _tool(name: str) -> str:
     return path
 
 
-def maven_test_classpath(project_dir) -> List[str]:
+def maven_test_classpath(project_dir, effective_pom=None) -> List[str]:
     """Compile the project's tests and return its test classpath, using only the jars the
-    project itself declares (JUnit included). Writes only to the project's target/."""
+    project itself declares (JUnit included). Writes only to the project's target/. With
+    `effective_pom`, the same Maven call also writes the project's effective POM there (so
+    discovery can read its Surefire includes; A1)."""
     project = Path(project_dir).resolve()
     with tempfile.TemporaryDirectory(prefix="flaketrace-cp-") as tmp:
         cp_file = Path(tmp) / "cp.txt"
+        extra = ["help:effective-pom", f"-Doutput={Path(effective_pom).resolve()}"] if effective_pom else []
         subprocess.run(
             [
                 _tool("mvn"), "-B", "-q", "-f", str(project / "pom.xml"),
-                "test-compile", "dependency:build-classpath", f"-Dmdep.outputFile={cp_file}",
+                "test-compile", "dependency:build-classpath", f"-Dmdep.outputFile={cp_file}", *extra,
             ],
             check=True,
         )
