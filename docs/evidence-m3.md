@@ -2034,3 +2034,28 @@ report (which correctly still says `VERIFIED`, per the 2026-11-20 merge-resoluti
   updated as recently as 2026-11-20, PR #108), so this is genuine staleness, not a frozen
   record. Raised for M2 (file header: "Member 2, W9") rather than edited directly.
 - No other violation found.
+
+## 2026-11-20 — A4: document `eval/README.md` for `RunTally`/schema v2
+
+**Requirement:** `eval/README.md`'s module table and prose still described the schema-v1 world
+entirely — no mention of `RunTally`, `report.py` (missing from the table altogether despite
+being the module that assembles every schema-v2 report), `candidate_reasons`,
+`resource_edges`, `assurance`, or the ADR-011 deletion-evidence claim A1 just fixed.
+
+- Added `report.py` to the module table (previously entirely absent); updated `baseline.py`'s
+  and `outcome.py`'s rows to name `RunTally`/`classify()` and the 13-row table.
+- New section "Schema v2 (ADR-010/ADR-011, W19)" explaining the four-way `PASS`/`MATCH`/
+  `OTHER`/`INFRA` classification, the four `VERIFIED` claims (S1/S2/S3/R1), `candidate_reasons`,
+  `resource_edges`, `assurance`, and the A1 deletion-evidence fix (one kept polluter free via
+  ADR-011 §2, two or more `CANDIDATE [DELETION_EVIDENCE_INCOMPLETE]` until W20).
+- **Caught my own mistake before committing:** first softened the N2-rate line in the
+  "Benchmark yield report" section to "varies run to run, read the live file" — wrong. That
+  specific paragraph is about `benchmark/logs/N2.json`, a one-time **frozen** 2026-10-09
+  measurement (`isolation_successes`/`isolation_n`, old schema), completely unrelated to the
+  live, churning `eval/reports/n2.json` I'd been fixing all session. Checked
+  `benchmark/logs/N2.json`'s actual content (`isolation_successes: 12, isolation_n: 20`) before
+  assuming it was the same churn problem — it is genuinely, permanently 12/20, and the original
+  text was correct. Reverted to the original number, added a note distinguishing the two files
+  explicitly instead, so a future reader doesn't make the same conflation.
+- **Command:** `python3 -m unittest discover -s eval/tests` → 123/123 OK (docs-only change,
+  sanity check).
