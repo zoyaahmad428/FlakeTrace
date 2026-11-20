@@ -2212,3 +2212,23 @@ issues, both in M2's files, both fixed with the member's explicit go-ahead (aske
 - **Not done:** did not add a CI retry for this specific failure class (M2 already has one for
   `setup-java`, PR #120) -- the fully-qualified goal is the more robust fix (removes the
   failure mode entirely rather than retrying into it), so a retry would be redundant here.
+
+## 2026-11-20 — The last blocking test fixed: `runner` CI required check, member's permission
+
+**Requirement:** `runner` is a required check; the one known F3 failure above was actively
+blocking the PR from being mergeable, not just a cosmetic red X. Asked the member explicitly
+before touching this again (the first time this exact test came up, the answer was "leave it
+for M2"; this time, with it genuinely blocking merge, the answer was to fix it).
+
+- **Fix:** `runner/tests/test_cli.py`'s `test_f3_two_polluters_are_candidate_until_deletion_
+  checks_exist` renamed to `test_f3_two_polluters_both_needed_gives_verified`; its one stale
+  assertion (`("CANDIDATE", ["DELETION_EVIDENCE_INCOMPLETE"])`) corrected to
+  `("VERIFIED", [])`. Every other assertion in the test (polluters, shared_resource, the
+  `flagB` limitation line, the minimised-count line) needed no change -- F3's structure is
+  identical, only its deletion-check outcome changed.
+- **Command:** the single test, real JVM -> OK (confirmed before touching anything else in the
+  file). Full `python3 -m unittest discover -s runner/tests` rerun to confirm this was the
+  only casualty, result recorded once it finishes.
+- **Not done:** claims-ledger row E14 (M2's row, also stale for the same reason) is a doc, not
+  a blocking CI check -- left for M2 as before; this entry only fixes what was actually
+  blocking the PR.
