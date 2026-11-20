@@ -194,7 +194,7 @@ docs/                                   Obsidian vault — open this folder in O
 ## 8. Commands
 
 ```bash
-pip install -r eval/requirements.txt
+pip install -r eval/requirements.txt                    # Python 3.11+ (3.10 minimum; 3.9 cannot install jsonschema)
 python3 -m unittest eval.tests.test_stats eval.tests.test_outcome eval.tests.test_schema_validator \
     eval.tests.test_examples eval.tests.test_baseline eval.tests.test_yield_report
 mvn -B -f fixtures/od-fixture/pom.xml test-compile      # needs JDK 8+ and Maven

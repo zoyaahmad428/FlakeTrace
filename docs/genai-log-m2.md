@@ -1067,3 +1067,18 @@ test-first. **What I changed:** *to fill in after reading the diff.*
 
 Ownership checkpoint: why the effective POM and not `pom.xml`; why only `build/plugins` counts; how a pattern becomes a regex;
 why unset excludes keep `**/*$*`; why unsupported settings are refused.
+
+## 2026-11-20 — Follow-ups from M1's verification and M3's PR #109
+
+**Tool:** Claude Code (Claude Opus 5.5), test-driven-development · **Level:** L3 · **Branch:**
+`m2/after-verification`
+
+**Asked:** review M1's PR #108 and M3's PR #109 against the iteration's goals, then act on their
+notes to me. **Kept:** N2's expected rate read from its report; `class-grouped` as the default
+lifecycle; README/CLAUDE.md Python floor and first-run download note; corrected handover step;
+claim E14 qualified. **Checked rather than assumed:** the README already stated Python 3.11+ (M1's
+note was half right); the real floor (3.10) was read from PyPI, not guessed; the pre-fetch command
+was run before documenting it. **What I changed:** *to fill in after reading the diff.*
+
+Ownership checkpoint: why N2 alone reads its rate from the report; why the default could flip only
+after M1's independent control run.
