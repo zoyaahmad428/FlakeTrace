@@ -84,6 +84,65 @@ signature failures); M3's `eval.stats.wilson_interval` and `eval.outcome.decide`
 statistical fields and the verdict; `eval.schema_validator.validate_report` must accept the
 assembled report before it is shown or saved.
 
+## Interface 4 — deletion checks (W20, ADR-011; M2 produces, M3 consumes)
+
+*Agreed by M1, M2 and M3 on 2026-11-20 (messages, recorded by M2; confirmed by approving the PR
+that adds this section). Built against [ADR-011](../03-Design/decisions/ADR-011-deletion-evidence.md),
+accepted 2026-11-13. Not built yet.*
+
+**What the runner (M2) produces.** One new field on `DiagnosisRuns`:
+
+```python
+deletion_checks: List[DeletionCheck]       # empty when no polluter was found
+
+DeletionCheck(
+    removed: TestIdentifier,   # the kept test left out of this run
+    runs: Optional[RunTally],  # the victim's m outcomes without it; None when status is NOT_RUN
+    status: str,               # NEEDED | NOT_NEEDED | INCONCLUSIVE | NOT_RUN
+    source: str,               # "deletion-run" | "alone-check"
+    round: int,                # 1, 2, ... ; +1 each time a NOT_NEEDED test is dropped and checks restart
+)
+```
+
+- **The runner labels each check**, because a `NOT_NEEDED` test is dropped and the checks restart on
+  the smaller set (ADR-011 §3). Rules (ADR-011 §1), using M3's code so there is one policy:
+  `NEEDED` if `runs.passed == m`; `NOT_NEEDED` if the Wilson lower bound
+  (`eval.stats.wilson_interval`) of `runs.matched / m` ≥ `eval.outcome.DEFAULT_LOWER_BOUND_THRESHOLD`
+  (0.70); otherwise `INCONCLUSIVE`. `m` defaults to `n` (20).
+- **`NOT_RUN`** (new; ADR-011 §3 says "recorded as not run" but names no value): the budget ended
+  before this check; `runs` is `None`. Until the budget ledger (W24) lands nothing ends a check
+  early, so it appears only in scripted tests.
+- **One polluter:** one check, `source: "alone-check"`, `runs` = the alone tally, no extra JVM runs
+  (ADR-011 §2).
+- `polluters` and `sequence` hold the **final** set only; checks from earlier rounds stay in the list,
+  so a dropped test is still visible.
+
+**What the report assembly (M3) does with them.** `eval/report.py` replaces its interim S3 block
+(2026-11-19) and sets `assurance.sequence.deletion` from the checks with the highest `round`:
+
+| Checks in the last round | `deletion` | Verdict effect |
+| --- | --- | --- |
+| all `NEEDED` | `DELETION_VERIFIED` | claim S3 established |
+| otherwise, any `INCONCLUSIVE` | `INCONCLUSIVE` | `CANDIDATE [DELETION_EVIDENCE_INCONCLUSIVE]` |
+| otherwise, any `NOT_RUN`, or any `runs.n < 10` | `INCOMPLETE` | `CANDIDATE [DELETION_EVIDENCE_INCOMPLETE]` |
+| no polluter found | `NOT_APPLICABLE` | — |
+| polluters but no checks (fail-safe) | `INCOMPLETE` | never `VERIFIED` |
+
+`INCONCLUSIVE` ranks above `INCOMPLETE`: evidence against the result outweighs missing evidence.
+M3 does not re-label checks. The report carries every check in a new `deletion_checks` field, shaped
+as in ADR-011 §4 plus `round`, with `status: "NOT_RUN"` and `runs: null` allowed — a schema bump M3
+proposes in [report-schema.md](report-schema.md). Wording: ADR-011 §5 (never "1-minimal" without
+deletion evidence, never "minimum").
+
+**Who does what, in order.**
+
+1. M2: scripted tests T1, T2, T5 (fake runner; T1 fails on `7cf453d` first), T4 on F1, then the runner code.
+2. M3, in parallel: the schema field and the aggregation above, tested with a `FakeDeletionCheck`
+   under `eval/tests/` that has exactly these fields — coded against this section, not M2's internals.
+3. Together, once both are merged: T3, the real F3 run (`odfixture.ToggleVictimTest#expectsNotBothFlagsSet`,
+   polluters `setFlagA`, `setFlagB`). Expected: both `NEEDED`, 20/20 passes each, `VERIFIED`.
+4. M1: reproduces T3 independently on their machine and records it in `docs/evidence-m1.md`.
+
 ## Open integration questions (decide before code is written against them)
 
 | # | Question | Owner to propose | Status |
