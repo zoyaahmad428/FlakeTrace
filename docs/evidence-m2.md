@@ -1700,3 +1700,19 @@ own copy of the code, not from the review's description.
   and reach the same endpoint, **not** that ranking helps in general — that is M3's measurement (ADR-014
   evidence items 4–5, the real case W26b). The rule is M1's, fixed before any measured run (PR #112). No report
   field yet: `search_policy` is M3's half.
+
+## Follow-ups after M3's W24 report half (#135) and M1's W20 verification (#137) (2026-11-20)
+
+- **Requirement:** with `BUDGET_EXHAUSTED` now a report, the CLI must not present the starting order's runs as a
+  verified reproduction, and its "no report yet" text is dead; M1 asked (PR #137) that the `deletion:` line say so
+  plainly when every kept test is needed.
+- **Test-first** (`runner/tests/test_cli.py`): `test_budget_exhausted_writes_a_report_that_claims_no_sequence`
+  and `test_summary_says_each_kept_test_was_confirmed_needed` → `FAILED (failures=2)` (the summary printed
+  `reproduced: 1/1 (lower bound 0.207)` and the old deletion line); after → OK.
+- **Suites:** `py -3 -m unittest runner.tests.test_cli` (real fixture) → `Ran 85 tests in 405.650s OK`;
+  `ui.tests.test_server` OK.
+- **Real runs** (od-fixture, JDK 21): F3 → `deletion:   each kept test confirmed needed: removed one at a time, 20
+  runs each (40 runs), the victim passed every run`; F2 with `--budget-invocations 70` → `UNRESOLVED
+  (BUDGET_EXHAUSTED)`, exit 0, `reproduced: no sequence verified (the starting order failed 1 of 1 run(s) before
+  the budget ran out)`.
+- **Not changed:** claims row G2 stays `OPEN` until M3 agrees to settle it (it is M2's and M3's).

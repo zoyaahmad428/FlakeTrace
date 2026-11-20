@@ -15,7 +15,7 @@ from eval.baseline import FailureSignature, RunTally, TestIdentifier
 from eval.report import UnhandledStatus, assemble_report
 from runner.budget import Budget, BudgetAccount
 from runner.deletion import DeletionCheck
-from runner.cli import (OrderFileError, budget_line, combine_fields, main, read_order, resource_fields, search_line,
+from runner.cli import (_NO_REPORT_WHY, OrderFileError, budget_line, combine_fields, main, read_order, resource_fields, search_line,
                         summary)
 from runner.policy import SearchPolicy
 from runner.diagnose import (BUDGET_EXHAUSTED, INCONSISTENT, POLLUTER_FOUND, VICTIM_FAILS_ALONE, DiagnoseInputError,
@@ -355,6 +355,16 @@ class TestReports(unittest.TestCase):
         self.assertIn("  deletion:   kept tests removed one at a time, 20 runs each (20 runs): "
                       "0 dropped as not needed, 0 inconclusive, 1 not run (budget)", text)
 
+    def test_summary_says_each_kept_test_was_confirmed_needed(self):
+        """M1's W20 verification (PR #137): when every kept test is NEEDED, say so, so the minimised line's
+        "single-trial delta debugging" is not read as the only evidence."""
+        checks = [DeletionCheck(P, RunTally(20, 20, 0, 0, 0), "NEEDED", "deletion-run", 1),
+                  DeletionCheck(Q, RunTally(20, 20, 0, 0, 0), "NEEDED", "deletion-run", 1)]
+        text = summary(self.report_with_resource(), Path("r.report.json"), minimised=(16, 9),
+                       deletion_checks=checks).splitlines()
+        self.assertIn("  deletion:   each kept test confirmed needed: removed one at a time, 20 runs each (40 runs), "
+                      "the victim passed every run", text)
+
     def test_summary_without_deletion_runs_has_no_deletion_line(self):
         check = [DeletionCheck(P, RunTally(20, 20, 0, 0, 0), "NEEDED", "alone-check", 1)]
         text = summary(self.report_with_resource(), Path("r.report.json"), deletion_checks=check)
@@ -505,20 +515,26 @@ class TestBudgetOptions(unittest.TestCase):
             self.run_with("--budget-invocations", "abc")
         self.assertEqual(raised.exception.code, 2)
 
-    def test_budget_exhausted_prints_no_report_and_the_budget(self):
+    def test_budget_exhausted_writes_a_report_that_claims_no_sequence(self):
+        """After M3's W24 half: exit 0 with a report; the summary does not present the starting order's
+        runs as a verified reproduction, and the old "no report yet" text is gone."""
         records = Path(tempfile.mkdtemp())
         account = BudgetAccount(80, None, 60, {"reproduce": 11, "shuffle": 0, "alone": 20, "search": 8, "minimise": 0,
                                                "deletion": 0, "verify": 0}, 25, 1.5, None, "original", True,
                                 "search", 10, 4)
-        exhausted = runs(BUDGET_EXHAUSTED, records / "r.jsonl", budget=account)
-        with mock.patch("runner.cli.diagnose", return_value=exhausted), \
-                mock.patch("runner.cli.assemble_report", side_effect=UnhandledStatus("BUDGET_EXHAUSTED")):
+        exhausted = runs(BUDGET_EXHAUSTED, records / "r.jsonl", budget=account, sequence_tally=RunTally(1, 0, 1, 0, 0),
+                         alone_tally=RunTally(20, 20, 0, 0, 0))
+        with mock.patch("runner.cli.diagnose", return_value=exhausted):
             code, out, _ = run_cli(["diagnose", "--project", str(project_with_pom()), "--victim", str(V)])
-        self.assertEqual(code, 3)
-        self.assertIn("No report: BUDGET_EXHAUSTED - the budget ran out before a polluter set was found; "
-                      "no report is built for this result yet", out)
+        self.assertEqual(code, 0)
+        lines = out.splitlines()
+        self.assertEqual(lines[0], "UNRESOLVED (BUDGET_EXHAUSTED)  pkg.VictimTest#v")
+        self.assertIn("  reproduced: no sequence verified (the starting order failed 1 of 1 run(s) before the budget "
+                      "ran out)   alone (same failure): 0/20, other failure: 0/20", lines)
         self.assertIn("  budget:     spent 39 of 80 invocations (reserve 60); search tried 4 of 10 candidates; "
-                      "stopped in search", out.splitlines())
+                      "stopped in search", lines)
+        self.assertNotIn("No report", out)
+        self.assertNotIn(BUDGET_EXHAUSTED, _NO_REPORT_WHY)
 
 
     def test_the_real_report_assembly_handles_budget_exhausted_now(self):

@@ -17,9 +17,8 @@ from eval.baseline import TestIdentifier
 from eval.report import UnhandledStatus, assemble_report
 from evidence.extract import DEFAULT_DEPTH, ExtractError, Project, analyse_pair, report_fields
 from runner.budget import Budget
-from runner.diagnose import (BUDGET_EXHAUSTED, INCONSISTENT, NOT_REPRODUCED, POLLUTER_FOUND,
-                             DiagnoseInputError, diagnose)
-from runner.deletion import DELETION_RUN, INCONCLUSIVE, NOT_NEEDED, NOT_RUN
+from runner.diagnose import INCONSISTENT, NOT_REPRODUCED, POLLUTER_FOUND, DiagnoseInputError, diagnose
+from runner.deletion import DELETION_RUN, INCONCLUSIVE, NEEDED, NOT_NEEDED, NOT_RUN
 from runner.order_runner import LIFECYCLES, ToolError
 from runner.policy import POLICIES, SCOPES
 from runner.workspace import WORKSPACES, WorkspaceError, workspace
@@ -30,7 +29,6 @@ _NO_REPORT_WHY = {
     INCONSISTENT: "the victim failed in the original order but not again (alone, after any single "
                         "earlier test, or in the full order once more), so no test is blamed; likely flaky",
     NOT_REPRODUCED: "the victim never failed with a real failure in n runs of the original order",
-    BUDGET_EXHAUSTED: "the budget ran out before a polluter set was found; no report is built for this result yet",
 }
 
 
@@ -263,7 +261,12 @@ def summary(report: dict, report_path: Path, minimised: Optional[Tuple[int, int]
         checked = "" if deletion_checks else "; not deletion-verified"
         lines.append(f"  minimised:  {earlier} earlier tests -> {count} polluter{'s' if count != 1 else ''} "
                      f"in {runs} runs (reduced by single-trial delta debugging{checked})")
-    if removals:
+    last_round = [c for c in deletion_checks if deletion_checks and c.round == deletion_checks[-1].round]
+    if removals and all(c.status == NEEDED for c in last_round) and not any(c.status == NOT_NEEDED for c in removals):
+        # M1's W20 verification (PR #137): say it plainly when every kept test was confirmed needed.
+        lines.append(f"  deletion:   each kept test confirmed needed: removed one at a time, {removals[0].runs.n} runs "
+                     f"each ({sum(c.runs.n for c in removals)} runs), the victim passed every run")
+    elif removals:
         dropped = sum(c.status == NOT_NEEDED for c in removals)
         unsure = sum(c.status == INCONCLUSIVE for c in deletion_checks if c.round == deletion_checks[-1].round)
         lines.append(f"  deletion:   kept tests removed one at a time, {removals[0].runs.n} runs each "
@@ -295,8 +298,13 @@ def summary(report: dict, report_path: Path, minimised: Optional[Tuple[int, int]
     reproduced, alone = report["reproduction"], report["victim_alone"]
     # The alone count holds only failures matching the reference signature (claims ledger G1, FT003);
     # "other failure" keeps a victim that fails alone differently (N4) apart from one that passes (F1).
-    lines.append(f"  reproduced: {reproduced['matched']}/{reproduced['n']} (lower bound "
-                 f"{reproduced['lower']:.3f})   alone (same failure): {alone['matched']}/{alone['n']}, "
+    if report["unresolved_reason"] == "BUDGET_EXHAUSTED":
+        # W24: these are only the starting order's runs before the budget ran out, not a verified sequence.
+        sequence = (f"no sequence verified (the starting order failed {reproduced['matched']} of {reproduced['n']} "
+                    "run(s) before the budget ran out)")
+    else:
+        sequence = f"{reproduced['matched']}/{reproduced['n']} (lower bound {reproduced['lower']:.3f})"
+    lines.append(f"  reproduced: {sequence}   alone (same failure): {alone['matched']}/{alone['n']}, "
                  f"other failure: {alone['other']}/{alone['n']}")
     if search is not None:
         lines += search_line(search, budget.candidates_total if budget is not None else 0,
