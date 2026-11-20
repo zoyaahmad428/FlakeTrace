@@ -1417,3 +1417,17 @@ own copy of the code, not from the review's description.
     `… alone (same failure): 0/20, other failure: 0/20`.
   This answers M1's note that N4 had only been run under the old `per-method` default (PR #114 at `03c9b30`).
 - **Registers:** FT006/FT021 action-register row → `Partly` (W22 reproduced by M1, PR #108).
+
+## CI: retry `setup-java` once, move to v5 (2026-11-20)
+
+- **Problem:** `actions/setup-java@v4` failed with `The process '/usr/bin/tar' failed with exit code 2`
+  before any test ran — PRs #109, #113, #114, #119's first run and `main` at `9980f97` (`evidence`,
+  `runner`, `fixture-build` at once). Other jobs on the same commits passed the same step, so it is
+  intermittent. Read from the public check-run annotations; the full log needs a sign-in, so whether
+  the JDK download or the Maven cache restore failed is **not known**.
+- **Change (`.github/workflows/ci.yml`):** in all four Java jobs, `setup-java@v5` (GitHub's deprecation
+  warning asks for it) with `continue-on-error: true`, and a second identical step only
+  `if: steps.java.outcome == 'failure'`. A retry, not a root-cause fix: the cause is outside our code.
+- **Checked here:** the workflow parses (`yaml.safe_load`); each of `fixture-build`, `runner`,
+  `evidence`, `ui` has the two steps; no `@v4` left. **Not checked here:** the retry path itself —
+  it runs only when GitHub's download fails. The PR's own CI shows whether v5 works.
