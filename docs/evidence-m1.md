@@ -1124,3 +1124,64 @@ kept tests are each needed in 20 of 20 repeated removals.
 **Unclear steps:** none in the commands. The `minimised:` line still says "reduced by single-trial
 delta debugging" even when the deletion line beneath it confirms both tests. This is correct but
 easy to misread as a weaker claim. The deletion line is the one that carries G2.
+
+## W25 part 2: my review of M2's `EvidenceRanker` and `choose_order` (2026-11-20)
+
+**Requirement:** Interface 7, step 3: "M1 reviews that P2 and P4 use `rank_candidates` and the
+`DEPTH_LIMIT` kind as Interface 2 and 5 define them". The code is M2's `runner/policy.py`
+(PR #136), on `main` at `f30d0b7`.
+
+**What I checked, by reading:**
+- **P2.** `EvidenceRanker.rank` calls `rank_candidates(project, "Class#method" victim, the
+  candidates as "Class#method", depth, one AnalysisCache)`. `TestIdentifier.__str__` gives
+  `Class#method`, as Interface 5 needs. The order comes back as Interface 5's `score` tuples, and
+  `choose_order` refuses any result that is not the same set (a `Counter` check) and falls back to
+  the original order.
+- **P3.** An `ExtractError` at the first depth leads to the original order with a note; at a
+  deeper depth, the last ranking that worked is kept.
+- **P4.** `cut_off` reads each test's Output 1 through `AnalysisCache.get` and looks for
+  `unsupported_observations` of kind `DEPTH_LIMIT`, the shape `resource-evidence.md` defines. It
+  deepens only when no candidate has `score[0] > 0`, a walk was cut off, depth < 5, and (with a
+  seconds limit) analysis time is under 20% of it.
+
+**What I ran, in the assistant's Linux cloud container** (OpenJDK 21, Maven 3.9.11, Python 3.13),
+at `f30d0b7`, after compiling the fixture, `m1-selftest` and `ft005-controls`:
+- `FLAKETRACE_REQUIRE_JVM=1 python3 -m unittest -v runner.tests.test_policy` → `Ran 19 tests …
+  OK`, M2's tests, including the real F1 adapter test.
+- **An independent check on my own classes**, which M2's tests do not use: `choose_order("ranked",
+  …, ranker=EvidenceRanker(m1-selftest))` for victim `M1DepthSelfTest#callsDown`, candidates
+  `M1Junit3SelfTest#testNothing` and `M1SelfTest#writesAndReads`. Result:
+  - `depths [2, 3, 4]`: no edge at 2 or 3, and `cut_off(2)` and `cut_off(3)` were both `True`;
+  - scores `[(1, 4, 0), (1, 4, 1)]`, both edges at depth 4, `candidates_with_evidence 2`,
+    `note None`;
+  - `cache.analysed 9`, which is 3 tests × 3 depths, so N + 1 per depth;
+  - with an unknown victim (`m1selftest.NoSuch#x`), the original order was kept, with the note
+    "ranking fell back to the original order: the victim could not be analysed …".
+
+**On my laptop, by me** (Windows 11, Oracle JDK 25.0.1, Maven 3.9.9, Python 3.11.9), on `main` at
+`f30d0b7`, after `mvn -B -q -f evidence/tests/resources/m1-selftest/pom.xml test-compile`:
+- the same probe, run from a copy in `%TEMP%` with `set PYTHONPATH=D:\FlakeTrace` and
+  `py -3.11 %TEMP%\p4_probe.py`, gave identical output: `depths: [2, 3, 4] with evidence: 2 note:
+  None`, `scores: [(1, 4, 0), (1, 4, 1)]`, `analysed: 9`, `cut_off at 2 = True`, `cut_off at 3 =
+  True`, `fallback order kept: True`;
+- with `set FLAKETRACE_REQUIRE_JVM=1`, `py -3.11 -m unittest runner.tests.test_policy` → `Ran 19
+  tests in 1.224s … OK`.
+
+The probe script is not committed; it lived only in `%TEMP%`. Its code is the
+`EvidenceRanker`/`choose_order` call described above.
+
+**Result:** P2, P3 and P4 use my code as Interfaces 2, 5 and 7 define it.
+
+**Findings:**
+1. **Contract wording (mine, fixed here).** M2 reads `DEPTH_LIMIT` through `AnalysisCache.get`,
+   which is public but was not named in Interface 5. Interface 5 now names `get` and what it
+   returns. No code changed. This replaces my earlier idea of a new `depth_limited` method, which
+   is not needed.
+2. **Minor, M2's call.** `EvidenceRanker.rank` keeps only `test` and `score`. A candidate that
+   could not be analysed (Interface 5's `note`) is recorded the same as one with no evidence. The
+   `ranking` record line could carry those notes, so M3's measurement can tell the two apart.
+3. **Cost, as designed.** Each deeper depth analyses all N + 1 tests again (9 analyses for 3 depths
+   here). This is counted in `analysis_seconds`, and it is what Interface 7's 20% share limits.
+
+**Limitation:** my check used fixture-free classes and two candidates only. It shows the rules
+work; it says nothing about whether ranking saves runs (M3's measurement).
