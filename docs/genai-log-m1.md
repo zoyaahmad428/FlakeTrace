@@ -565,6 +565,27 @@ restores the old tests); recorded for M2.
 
 **Rejections:** none.
 
+## 2026-11-20 — W19 verification (verdict contract v2) on my own machine
+
+**Assistance level:** L3 (Core-assist): the assistant rebuilt the section C commands from the
+repo (CI's eval module list, the T1–T4 test names, N4's victim), and drafted this entry and the
+register update from my output; I ran every command myself on my laptop.
+
+**What I asked:** give me the W19 verification commands and record the result.
+
+**What was retained:** the W19 entry in [[evidence-m1]], and the FT003 row in
+[[10-Final1/action-register]].
+
+**What I changed:** ran every command; checked the entry against my terminal output before
+committing.
+
+**How it was verified:** every number is copied from my own terminal output.
+
+**Errors found:** none in W19. The first version of these commands from an earlier session was
+lost, so they were rebuilt from the repo.
+
+**Rejections:** marking FT003 `Done`. It needs the supervisor's acceptance, so it is `Partly`.
+
 ## 2026-11-20 — PR #106 check: report schema v2 against `report_fields` (A4)
 
 **Assistance level:** L3 (Core-assist): the assistant wrote the contract test and a one-off

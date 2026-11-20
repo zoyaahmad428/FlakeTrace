@@ -50,7 +50,7 @@ grouped; each keeps its FT identifier.
 | M-3 | Mid, official | Real-project validation | M3, M2, M1 | Final | Open | Protocol: [[05-Testing/real-case-protocol]] | |
 | M-4 | Mid, official | Restore the missing abstract | M2, all | Report v2.0 | Open | Our source and the submitted PDF contain a 188-word abstract; meaning of "missing" to be confirmed | |
 | M-5 | Mid, official | Align the report with the template | M2, all | Report v2.0 | Open | [[10-Final1/report-v2-plan]] | |
-| FT003 | Mid | No `VERIFIED` when the victim fails alone differently | M2, M3 | Sprint A | Open | — | |
+| FT003 | Mid | No `VERIFIED` when the victim fails alone differently | M2, M3 | Sprint A | Partly | Fixed in W18 (`e49fa13`) and W19 (PR #106); reproduced by M1 2026-11-20: T1–T4 OK, N4 `UNRESOLVED (VICTIM_FAILS_ALONE_DIFFERENTLY)` ([[evidence-m1]]). Awaiting supervisor acceptance | |
 | FT004 | Mid | Deletion evidence under repetition | M2, M3 | Sprint B | Open | — | |
 | FT005 | Mid | Separate sequence assurance from resource evidence | M1, M3 | Wording: Sprint A · controls: Sprint B | Open | — | |
 | FT006, FT021 | Mid | Lifecycle semantics and the reset boundary | M2 | Sprint B | Open | — | |
