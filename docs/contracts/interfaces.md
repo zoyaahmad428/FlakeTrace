@@ -197,6 +197,106 @@ AnalysisCache()        # .analysed (count of analyse_test calls), .seconds (thei
 3. M3: measures `ranked` against `original` at the same endpoint: offline on the POC's stored scan
    tables (ADR-014 evidence item 5), then live (item 4).
 
+## Interface 6 — budget ledger (W24, ADR-014 §1–§3; M2 produces, M3 consumes)
+
+*Proposed by M2 on 2026-11-20. Agreed by M1, M2 and M3 on 2026-11-20 (team WhatsApp group,
+recorded by M2; confirmed by approving the PR that adds this section). Built against [ADR-014](../03-Design/decisions/ADR-014-budget-ledger-and-ranked-search.md),
+accepted 2026-11-13. Not built yet. `--policy` and ranking are W25 (Interface 5), not this section.*
+
+**Input.** `diagnose()` and `run_steps()` gain `budget: Optional[Budget] = None`; the CLI gains
+`--budget-invocations N` and `--budget-seconds S`.
+
+```python
+Budget(
+    limit_invocations: Optional[int],   # None = unlimited, still counted
+    limit_seconds: Optional[float],     # None = unlimited, still timed
+)
+```
+
+**Cost.** One `run_ordered(order)` costs `len(order)` test-method invocations (frozen definition D7).
+Every JVM run goes through one wrapper, so no search code counts by hand. The seven phases are the
+record's step labels: `reproduce`, `shuffle`, `alone`, `search`, `minimise`, `deletion`, `verify`.
+
+**The rules the runner (M2) follows.**
+
+| # | Rule |
+| --- | --- |
+| B1 | `reserve = 3 × n`: `n` for the alone check plus `2 × n` for one polluter's sequence check `[p, victim]` |
+| B2 | **Start check.** With an invocation limit, the limit must be at least `reserve + len(start) + 2`, where `start` is the starting order up to the victim (one run of it, plus one candidate pair). Otherwise `DiagnoseInputError` naming that minimum for this `n`; nothing runs |
+| B3 | **Exploration** (`reproduce`, `shuffle`, `search`, `minimise`) may spend only `limit − reserve`. A run that would cross that line is **not started** |
+| B4 | **Verification** (`alone`, `deletion`, `verify`) may spend up to the full limit. The alone check always runs in full: B2 and B3 guarantee its `n` invocations |
+| B5 | **Before the deletion checks**, the runner holds back `n × (k + 1)` invocations for the final sequence check of the `k` kept tests. A deletion check (all `m` runs) starts only if it fits in what is left above that hold-back; otherwise it, and every later check, is `NOT_RUN` with `runs = None`. No check is ever cut part-way |
+| B6 | **The final sequence check** runs `min(n, remaining // len(sequence))` times. Fewer than `n` is possible only when B5's hold-back could not be paid in full; `sequence_tally.n` then shows the real count. If not even one run fits (only when `k + 1 > 2 × n`), the status is `BUDGET_EXHAUSTED`, as for a cut in `minimise` |
+| B7 | **Seconds.** A run is not started once `limit_seconds` has passed — **for exploration only**. A JVM run's length is unknown until it ends, so verification is bounded by invocations, and the reserve stays whole. `wall_seconds` can therefore exceed `limit_seconds`; the report shows both |
+| B8 | A refused run writes one record line `{"type": "budget-stop", "phase", "would_cost", "spent"}` and no `run` line. So `spent` per phase equals the sum of `len(order)` over that phase's `run` lines, and `launches` equals the number of `run` lines (ADR-014 §1, "Proof"; checked by W23) |
+
+**New status `BUDGET_EXHAUSTED`.** It is set when exploration stopped (B3 or B7) before a polluter set
+was found: during `reproduce` or `shuffle` with no failing order yet, during `search`, or during
+`minimise` (ddmin's partial set is not reported as a result). The alone check still runs first
+(B4), and if the victim fails alone the status is `VICTIM_FAILS_ALONE` instead, because that result is
+complete. For `BUDGET_EXHAUSTED`: `polluters = []`, `sequence` = the starting (or reproducing) order,
+`sequence_tally` = what the `reproduce` runs saw, as for `NOT_REPRODUCED`, `deletion_checks = []`.
+
+**New field on `DiagnosisRuns`.**
+
+```python
+budget: BudgetAccount
+
+BudgetAccount(
+    limit_invocations: Optional[int],
+    limit_seconds: Optional[float],
+    reserve_invocations: int,        # 3 × n, reported even when there is no limit
+    spent: Dict[str, int],           # all seven phases, 0 when unused
+    launches: int,                   # JVM runs started
+    wall_seconds: float,             # from the first run to the last
+    analysis_seconds: Optional[float],  # None in W24; W25 adds ranking time (Interface 5 cache)
+    policy: str,                     # "original" in W24; W25 adds "ranked", "random"
+    exhausted: bool,                 # True when any run was refused (B3, B5, B6 or B7)
+    exhausted_phase: Optional[str],  # the phase of the first refused run
+    candidates_total: int,           # tests before the victim in the order searched
+    candidates_tried: int,           # [candidate, victim] pairs actually run in `search`
+)
+```
+
+**What the report assembly (M3) does with it.**
+
+- **`UNRESOLVED(BUDGET_EXHAUSTED)`:** status `BUDGET_EXHAUSTED` → `decide(budget_exhausted=True)`
+  (ADR-010 row 3, unchanged). The rationale names `candidates_tried` of `candidates_total` and the
+  phase, and suggests a larger `--budget-invocations`.
+- **`CANDIDATE [BUDGET_EXHAUSTED]`:** status `POLLUTER_FOUND` with `exhausted = True` adds
+  `BUDGET_EXHAUSTED` to `candidate_reasons`, next to the deletion reason Interface 4 already gives
+  for `NOT_RUN`. So a verdict that verification could not finish is **never `VERIFIED`** (ADR-014 §2).
+  This starts emitting the candidate reason that `report-schema.md` lists as "reserved".
+- **The report gains `budget`**, the account above in ADR-014 §3's shape, with `candidates` as
+  `{"total", "tried"}` and `exhausted_phase` added. This is a schema bump that M3 proposes in
+  [report-schema.md](report-schema.md).
+- Without a limit nothing changes for F1–F4 and N1–N4: same verdicts, with `budget.exhausted = false`.
+
+**Points ADR-014 leaves open, decided here** (part of what this section's approval agrees to):
+
+1. **"Sequence check first" is a priority, not an order in time.** Interface 4 runs the deletion checks
+   before the final sequence check, because a dropped test changes the sequence. B5's hold-back keeps
+   the sequence check paid first, while it still runs last.
+2. **A seconds limit stops exploration only** (B7): it cannot be checked before a run starts.
+3. **A cut in `minimise` is `BUDGET_EXHAUSTED`.** ddmin's partial set has had no repeated runs.
+4. **`VICTIM_FAILS_ALONE` outranks `BUDGET_EXHAUSTED` in the runner.** The alone check is always
+   complete, so its answer stands. ADR-010's row order in `decide()` is unchanged.
+5. **No check is cut part-way** (B5), so `runs.n < 10` never comes from the budget; it comes only
+   from a small `-n`.
+
+**Who does what, in order.**
+
+1. M2: ADR-014's scripted tests first (fake runner): a limit just above the reserve stops the search
+   and the alone check ran `n` times; a limit below B2's minimum is refused with that minimum; the
+   recount (B8). Then B5/B6 with two kept tests, and a seconds limit. Then the runner, the record line
+   and the CLI flags.
+2. M3, in parallel: the schema field, the two report rules above, and the rationale, tested with a
+   `FakeBudgetAccount` under `eval/tests/` that has exactly these fields.
+3. Together, once both are merged: ADR-014 evidence items 1–3 on the fixture. A real F2 run with a
+   limit just above B2's minimum, and one with no limit. Results recorded as run, not predicted.
+4. M1: reproduces item 2 (a budget too small to finish gives `UNRESOLVED(BUDGET_EXHAUSTED)` with an
+   account) on their own machine.
+
 ## Open integration questions (decide before code is written against them)
 
 | # | Question | Owner to propose | Status |
