@@ -8,12 +8,13 @@ import re
 import shutil
 import subprocess
 import tempfile
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional, Sequence, Tuple
 
 from eval.baseline import FailureSignature, RunTally, TestIdentifier
+from runner.deletion import DeletionCheck, check_deletions
 from runner.discovery import DiscoveryConfigError, discover_order, project_selection
 from runner.integrity import SourceIntegrity, compare, integrity_of, snapshot
 from runner.minimise import ddmin
@@ -65,6 +66,8 @@ class DiagnosisRuns:
     # fields above are filled from these until M3's W19 reads the tallies; then they are removed.
     alone_tally: Optional[RunTally] = None
     sequence_tally: Optional[RunTally] = None
+    # W20 (ADR-011, Interface 4): every kept test checked by repeated removal; [] unless POLLUTER_FOUND.
+    deletion_checks: List[DeletionCheck] = field(default_factory=list)
 
 
 def _runs(status, victim, order, reference, polluters, sequence, sequence_tally: RunTally,
@@ -142,12 +145,17 @@ def run_steps(
         if not again.passed and again.failure_signature.matches(reference):
             polluters, ddmin_runs = ddmin(runner, order[:-1], victim, reference)
             minimise_runs += ddmin_runs
+    deletion_checks = []
+    if polluters:
+        # ADR-011: ddmin's single trials can keep a test that is not needed; check each one n times.
+        _label(runner, "deletion")
+        deletion_checks, polluters = check_deletions(runner, polluters, victim, reference, n, alone)
     sequence = polluters + [victim] if polluters else order
     _label(runner, "verify")
     verified = repeat(runner, sequence, victim, reference, n)
     status = POLLUTER_FOUND if polluters else INCONSISTENT
     return _runs(status, victim, order, reference, polluters, sequence, verified, alone, search_runs,
-                 minimise_runs=minimise_runs, **explore)
+                 minimise_runs=minimise_runs, deletion_checks=deletion_checks, **explore)
 
 
 def diagnose(

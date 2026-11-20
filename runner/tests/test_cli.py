@@ -13,6 +13,7 @@ from unittest import mock
 
 from eval.baseline import FailureSignature, RunTally, TestIdentifier
 from eval.report import assemble_report
+from runner.deletion import DeletionCheck
 from runner.cli import OrderFileError, combine_fields, main, read_order, resource_fields, summary
 from runner.diagnose import (INCONSISTENT, POLLUTER_FOUND, VICTIM_FAILS_ALONE, DiagnoseInputError,
                              DiagnosisRuns)
@@ -335,6 +336,24 @@ class TestReports(unittest.TestCase):
         self.assertIn("  minimised:  12 earlier tests -> 2 polluters in 10 runs "
                       "(reduced by single-trial delta debugging; not deletion-verified)", text.splitlines())
         self.assertNotIn("minimised:", summary(report, Path("r.report.json")))
+
+    def test_summary_credits_ddmin_and_the_deletion_checks_separately(self):
+        """W20: ddmin kept P and Q; the deletion checks dropped Q (FT004 shape)."""
+        tally = lambda passed, matched: RunTally(20, passed, matched, 0, 0)
+        checks = [DeletionCheck(P, tally(20, 0), "NEEDED", "deletion-run", 1),
+                  DeletionCheck(Q, tally(0, 20), "NOT_NEEDED", "deletion-run", 1),
+                  DeletionCheck(P, tally(20, 0), "NEEDED", "alone-check", 2)]
+        text = summary(self.report_with_resource(), Path("r.report.json"), minimised=(12, 10),
+                       deletion_checks=checks).splitlines()
+        self.assertIn("  minimised:  12 earlier tests -> 2 polluters in 10 runs (reduced by single-trial delta debugging)", text)
+        self.assertIn("  deletion:   kept tests removed one at a time, 20 runs each (40 runs): "
+                      "1 dropped as not needed, 0 inconclusive", text)
+        self.assertFalse(any("not deletion-verified" in line for line in text))
+
+    def test_summary_without_deletion_runs_has_no_deletion_line(self):
+        check = [DeletionCheck(P, RunTally(20, 20, 0, 0, 0), "NEEDED", "alone-check", 1)]
+        text = summary(self.report_with_resource(), Path("r.report.json"), deletion_checks=check)
+        self.assertNotIn("deletion:", text)
 
     def test_summary_shows_verified_with_its_qualifier(self):
         first = summary(self.report_with_resource(), Path("r.report.json")).splitlines()[0]

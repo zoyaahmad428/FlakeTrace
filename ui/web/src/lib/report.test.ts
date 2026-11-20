@@ -76,7 +76,7 @@ describe("details", () => {
   });
   it("says why a result is only a candidate (F3)", () => {
     expect(toView(read("f3")).candidateReasons).toEqual([
-      "the deletion checks for two or more kept tests have not run yet (W20), so not every kept test is shown to be needed",
+      "not every kept test is shown to be needed: at least one deletion check (W20) did not run, ran fewer than 10 times, or is not yet read into the report",
     ]);
     expect(toView(read("f1")).candidateReasons).toEqual([]);
   });
