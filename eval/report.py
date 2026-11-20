@@ -19,8 +19,7 @@ whether the generic line is added.
 
 Four of runner.diagnose's DiagnosisRuns.status values are wired end to end here: POLLUTER_FOUND,
 VICTIM_FAILS_ALONE, NOT_REPRODUCED and (new, ADR-010 section 5, FT010) INCONSISTENT (formerly
-NO_SINGLE_POLLUTER -- the runner keeps that name importable as an alias for callers that have
-not moved yet). Unlike schema v1, INCONSISTENT now gets a real report instead of UnhandledStatus:
+NO_SINGLE_POLLUTER; that alias was removed in A4, 2026-11-20). Unlike schema v1, INCONSISTENT now gets a real report instead of UnhandledStatus:
 it is schema-valid, names no polluter, and exit code 3 ("no report yet") is retired for it.
 
 ADR-010 rows 7/8 (VICTIM_FAILS_ALONE_DIFFERENTLY, and INFRASTRUCTURE_FAILURE from the alone
@@ -107,19 +106,20 @@ def assemble_report(
             f"assemble_report does not yet handle DiagnosisRuns.status={diagnosis.status!r}; "
             "see eval/report.py's module docstring"
         )
-    if diagnosis.status == NOT_REPRODUCED and diagnosis.alone_n == 0:
-        # Pre-ADR-008 shape: today's real runner.diagnose() always runs the alone check, so a
-        # real NOT_REPRODUCED diagnosis never has alone_n == 0 any more. Kept so a DiagnosisRuns
-        # built against that older contract fails loudly here (UnhandledStatus) instead of
-        # raising a bare ValueError out of DecisionInput that the CLI does not catch.
-        raise UnhandledStatus(
-            "assemble_report cannot build a NOT_REPRODUCED report with alone_n == 0 (pre-ADR-008 "
-            "shape). See eval/report.py's module docstring."
-        )
     if diagnosis.alone_tally is None or diagnosis.sequence_tally is None:
         raise ValueError(
             "assemble_report (schema v2) requires DiagnosisRuns.alone_tally/sequence_tally "
             "(ADR-010, W18) -- got None. This DiagnosisRuns predates W18's tallies."
+        )
+    if diagnosis.status == NOT_REPRODUCED and diagnosis.alone_tally.n == 0:
+        # Pre-ADR-008 shape: today's real runner.diagnose() always runs the alone check, so a
+        # real NOT_REPRODUCED diagnosis never has an empty alone tally any more. Kept so a
+        # DiagnosisRuns built against that older contract fails loudly here (UnhandledStatus)
+        # instead of raising a bare ValueError out of DecisionInput that the CLI does not catch.
+        # (Read alone_n until A4, 2026-11-20, which removed the old count fields.)
+        raise UnhandledStatus(
+            "assemble_report cannot build a NOT_REPRODUCED report with no alone runs (pre-ADR-008 "
+            "shape). See eval/report.py's module docstring."
         )
 
     fields = resource_fields if diagnosis.status == POLLUTER_FOUND else None

@@ -1,7 +1,7 @@
 """W7 entry point (ADR-004): reproduce the failure, check the victim alone, search for a single
 polluter, repeat the sequence, check source integrity, record every run. When no single test is
-enough, ddmin shrinks the tests before the victim with single trials (W10, ADR-007). Returns raw
-counts and, since W18, ADR-010 tallies; the verdict is M3's eval.outcome.decide() (W9 builds the report)."""
+enough, ddmin shrinks the tests before the victim with single trials (W10, ADR-007). Returns ADR-010
+tallies (W18); the verdict is M3's eval.outcome.decide() (W9 builds the report)."""
 
 import platform
 import re
@@ -28,7 +28,6 @@ POLLUTER_FOUND = "POLLUTER_FOUND"
 VICTIM_FAILS_ALONE = "VICTIM_FAILS_ALONE"
 # ADR-010 section 5: the failure was seen once and could not be obtained again.
 INCONSISTENT = "INCONSISTENT"
-NO_SINGLE_POLLUTER = INCONSISTENT  # old name, kept for M3's eval/ code until W19 (agreed 2026-11-14)
 NOT_REPRODUCED = "NOT_REPRODUCED"
 
 
@@ -44,11 +43,11 @@ class DiagnosisRuns:
     reference_signature: Optional[FailureSignature]
     polluters: List[TestIdentifier]
     sequence: List[TestIdentifier]
-    sequence_n: int
-    sequence_successes: int
-    sequence_any_failures: int
-    alone_n: int
-    alone_successes: int
+    # ADR-010 section 1 (W18): how the n runs of the sequence and of the victim alone ended. Named
+    # *_tally because `sequence` is already the test list. (The five count fields that duplicated
+    # them were removed in A4, 2026-11-20, once eval/ read only the tallies.)
+    sequence_tally: RunTally
+    alone_tally: RunTally
     search_runs: int
     source_integrity: Optional[SourceIntegrity] = None
     execution_record: Optional[str] = None
@@ -62,21 +61,14 @@ class DiagnosisRuns:
     infrastructure_failures: int = 0
     shuffle_infrastructure_failures: int = 0  # shuffle runs where the victim only crashed/timed out
     alone_infrastructure_failures: int = 0  # same for alone runs when nothing reproduced
-    # ADR-010 section 1 (W18). Named *_tally because `sequence` is already the test list. The count
-    # fields above are filled from these until M3's W19 reads the tallies; then they are removed.
-    alone_tally: Optional[RunTally] = None
-    sequence_tally: Optional[RunTally] = None
     # W20 (ADR-011, Interface 4): every kept test checked by repeated removal; [] unless POLLUTER_FOUND.
     deletion_checks: List[DeletionCheck] = field(default_factory=list)
 
 
 def _runs(status, victim, order, reference, polluters, sequence, sequence_tally: RunTally,
           alone_tally: RunTally, search_runs: int, **more) -> DiagnosisRuns:
-    """A DiagnosisRuns whose old count fields agree with its tallies."""
-    return DiagnosisRuns(status, victim, order, reference, polluters, sequence,
-                         sequence_tally.n, sequence_tally.matched, sequence_tally.n - sequence_tally.passed,
-                         alone_tally.n, alone_tally.matched, search_runs,
-                         alone_tally=alone_tally, sequence_tally=sequence_tally, **more)
+    return DiagnosisRuns(status, victim, order, reference, polluters, sequence, sequence_tally, alone_tally,
+                         search_runs, **more)
 
 
 def run_steps(

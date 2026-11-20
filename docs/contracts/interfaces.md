@@ -79,8 +79,9 @@ it must never be reported as "no dependency exists".
 
 ## Interface 3 — report assembly (M3)
 
-M2 passes raw counts (successes, n for the reduced sequence and for the victim alone, plus any-
-signature failures); M3's `eval.stats.wilson_interval` and `eval.outcome.decide` produce the
+M2 passes `DiagnosisRuns` with ADR-010 tallies, `sequence_tally` and `alone_tally`
+(`RunTally(n, passed, matched, other, infra)`); the five raw count fields that duplicated them were
+removed in A4, 2026-11-20 (agreed by M3; M1's approval in the PR). M3's `eval.stats.wilson_interval` and `eval.outcome.decide` produce the
 statistical fields and the verdict; `eval.schema_validator.validate_report` must accept the
 assembled report before it is shown or saved.
 

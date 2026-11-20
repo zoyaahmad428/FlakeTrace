@@ -55,10 +55,11 @@ class TestJobResult(unittest.TestCase):
         self.assertEqual(result["message"], "no pom.xml in X; --project must be a Maven project folder")
 
     def test_exit_3_names_the_status_and_the_record(self):
-        out = "No report: NO_SINGLE_POLLUTER - ddmin found no polluter set\n  record: R.json\n"
+        # Since W19 the CLI gives exit 3 only for a status eval.report cannot build yet (its fallback text).
+        out = "No report: NEW_STATUS - eval.report cannot build this report yet\n  record: R.json\n"
         result = job_result(3, out, "", self.records)
         self.assertEqual((result["state"], result["kind"]), ("failed", "no_report"))
-        self.assertEqual(result["message"], "No report: NO_SINGLE_POLLUTER - ddmin found no polluter set; record: R.json")
+        self.assertEqual(result["message"], "No report: NEW_STATUS - eval.report cannot build this report yet; record: R.json")
 
     def test_a_crash_without_an_error_line_keeps_the_output(self):
         result = job_result(1, "", "Traceback (most recent call last):\nKeyError: 'x'\n", self.records)
