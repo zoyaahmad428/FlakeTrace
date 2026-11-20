@@ -1849,6 +1849,14 @@ established one, even though it changes F3's reported outcome.
     (F1/F2/F4 now have a genuine free deletion check, not just an assumption) — raised for M2 to
     update E14 and for the team to consider whether G2 can move toward closing for the
     single-polluter case specifically, while staying open for multi-polluter cases until W20.
+  - **Retraction (2026-11-20, see the merge-resolution entry below):** the `chapter1_
+    introduction.tex`/`appendix_action_register.tex`/`chapter6_iteration1.tex`/`chapter9_
+    development_evidence.tex`/`chapter2_research.tex` flags just above were wrong. The Mid
+    report is a closed record checked by CI against tag `mid-eval-v1` (M2's PR #106), where F3
+    genuinely was `VERIFIED` — those chapters are correctly describing that frozen state and
+    must **not** be changed. My own matching edits to my three chapters were wrong for the same
+    reason and were reverted (below). The `claims-ledger.md` row E14 flag stands, unaffected —
+    that document is explicitly live/ongoing (section G's own header), not tied to the tag.
   - Not a surprise to the team: this exact tension (ddmin's search-minimality vs. a real
     deletion-verification check) is G2's own description, dated 2026-11-13 — this entry is
     that gap actually narrowing in code, not a new finding.
@@ -1965,3 +1973,36 @@ cause" unqualified, "passes alone" asserted as if sufficient on its own.
 - **Command:** `grep -rn` across `evidence/ eval/ runner/ ui/ docs/` for each phrase (read-only,
   no code run — this was a text search, not a behavioural check).
 - No violation found. W16 marked fully done in `iteration-2-plan.md`.
+
+## 2026-11-20 — PR #109 CI failures diagnosed: one infra flake, one real cross-boundary regression
+
+**Requirement:** PR #109 (this branch, commit `11c2173`) showed `CI / runner` (required) and
+`CI / ui` (not required) failing. Diagnosed both via the GitHub API (check-runs, job steps,
+annotations) before touching anything.
+
+- **`CI / runner`: transient infrastructure flake, not a code issue.** The job's own
+  `actions/setup-java@v4` step failed (`/usr/bin/tar failed with exit code 2` — a corrupted or
+  interrupted JDK download/extraction on that runner VM). `fixture-build` and `evidence`/
+  `python-eval` use the identical `setup-java@v4` config (`distribution: temurin,
+  java-version: "8"`) on the exact same commit and succeeded, which rules out a config or code
+  cause. **Recommendation: re-run the `runner` job** (GitHub's "Re-run jobs" on the PR), not a
+  code fix.
+- **`CI / ui`: a real regression, caused by my own merge-resolution step, not M2's work.**
+  `ui/web/src/lib/report.test.ts` (M2's file, written during PR #106) hardcodes N2's expected
+  rate as `"15/20"`/`"15/20"` — whatever `eval/reports/n2.json` showed in M2's own branch state
+  when they wrote and verified that test ("ui 33 OK" in their commit message). My merge
+  resolution then regenerated `eval/reports/*.json` fresh (`run_w9_integration.py`, to avoid
+  hand-merging JSON — see the 2026-11-20 entry above), which landed N2 at a *different* random
+  value (12/20) than what M2's test expected, breaking it. This is the same N2-randomness churn
+  flagged repeatedly this session (2026-11-19 entries above), now crossing into M2's file
+  because my regeneration step didn't check every consumer of the exact committed rate, only
+  `eval/tests` and `runner.tests.test_cli`.
+- **Asked the member before touching `ui/` (M2's folder): declined — left for M2.** Not fixed
+  here. `ui` is not a required check (branch protection: `fixture-build`/`python-eval`/
+  `runner`/`evidence` only), so this does not block the PR, but M2 needs to either hardcode the
+  current 12/20 or (better, a design choice that is M2's to make, not mine) read the committed
+  report's own rate dynamically instead of a literal string, so this stops recurring every time
+  `eval/reports/n2.json` is regenerated.
+- **Lesson, stated plainly:** before regenerating a shared, randomized fixture report as part of
+  a merge resolution, check every file that hardcodes its exact value — not just the test
+  suites in my own folder.
