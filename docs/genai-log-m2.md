@@ -1082,3 +1082,15 @@ was run before documenting it. **What I changed:** *to fill in after reading the
 
 Ownership checkpoint: why N2 alone reads its rate from the report; why the default could flip only
 after M1's independent control run.
+
+## 2026-11-20 — CLI "other failure" count; N4 under class-grouped
+
+**Tool:** Claude Code (Claude Opus 5.5), test-driven-development · **Level:** L3 · **Branch:** `m2/alone-summary`
+
+**Asked:** act on M3's message (M1's W19 finding: the CLI alone line hides `other`) and M1's notes
+(N4 not run under the new default; FT006 to `Partly`). **Kept:** one extra count on the existing
+line, always printed so the two cases differ even at 0; test fixtures completed rather than the
+code made lenient, since schema v2 requires `other`. **Checked rather than assumed:** the UI already
+showed `other` (CLI-only gap); real N4 and F1 runs under the default. **What I changed:** *to fill in.*
+
+Ownership checkpoint: why `other` is printed even when 0; why the fixtures, not `summary()`, were fixed.

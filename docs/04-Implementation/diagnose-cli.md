@@ -45,7 +45,9 @@ in-process and decides nothing itself:
 - **Claim wording** (W16, 2026-11-14): a `VERIFIED` headline reads `VERIFIED (sequence)` (ADR-010
   Q3); a shown resource gets the line "static overlap: a possible mechanism, not confirmed as the
   cause"; the alone count is labelled "alone (same failure)", because it counts only failures that
-  match the reference signature (claims ledger G1, FT003).
+  match the reference signature (claims ledger G1, FT003). Since 2026-11-20 the line adds
+  "other failure: X/N", so a victim that fails alone differently (N4) no longer looks like one
+  that passes alone (F1) — found by M1 in the W19 check (PR #114), raised by M3.
 - **Several polluters** (W10): evidence per polluter, combined by `combine_fields`: the first
   polluter's edge is shown, the others named in `limitations`, and only if **every** polluter has an
   edge — otherwise no resource is shown (`CANDIDATE [NO_SUPPORTED_RESOURCE_EVIDENCE]` since
