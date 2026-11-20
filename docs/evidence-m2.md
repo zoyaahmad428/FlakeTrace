@@ -1398,3 +1398,123 @@ own copy of the code, not from the review's description.
 - **Docs:** handover's W18 step corrected to restore only `runner/diagnose.py`, `runner/verify.py`,
   `runner/cli.py`; claim E14 qualified (F3 `CANDIDATE` until W20, no "1-minimal"); W18 and W22
   rows marked verified by M1 (PR #108).
+
+## CLI alone line names the other failures; N4 under the new default (2026-11-20)
+
+- **Requirement:** FT003 / claims ledger G1. Found by M1's W19 reproduction (PR #114), raised by
+  M3: the summary printed only `alone (same failure): matched/n`, so N4 (`other: 20`) and F1
+  (`other: 0`) looked the same on the console. The report JSON and the UI already showed `other`.
+- **File/function:** `runner/cli.py` `summary()`; test
+  `test_summary_tells_a_different_alone_failure_from_no_alone_failure` in `runner/tests/test_cli.py`.
+  Three older hand-built test reports lacked `other`, which schema v2 requires; they now carry it.
+- **Before (test-first):** `py -3 -m unittest runner.tests.test_cli.TestReports.test_summary_tells_a_different_alone_failure_from_no_alone_failure`
+  → `AssertionError: 'alone (same failure): 0/20, other failure: 0/20' not found` — FAILED (failures=1).
+- **After:** `runner.tests.test_cli.TestReports` → `Ran 14 tests … OK`.
+- **Real runs, default lifecycle (records' header `lifecycle: class-grouped`), Windows 11, local JDK:**
+  - N4 `odfixture.DualFailureVictimTest#expectsStateTwo` → `UNRESOLVED (VICTIM_FAILS_ALONE_DIFFERENTLY)`,
+    `reproduced: 20/20 (lower bound 0.839)   alone (same failure): 0/20, other failure: 20/20`.
+  - F1 `odfixture.ConfigVictimTest#expectsDefaultMode` → `VERIFIED (sequence)`,
+    `… alone (same failure): 0/20, other failure: 0/20`.
+  This answers M1's note that N4 had only been run under the old `per-method` default (PR #114 at `03c9b30`).
+- **Registers:** FT006/FT021 action-register row → `Partly` (W22 reproduced by M1, PR #108).
+
+## CI: retry `setup-java` once, move to v5 (2026-11-20)
+
+- **Problem:** `actions/setup-java@v4` failed with `The process '/usr/bin/tar' failed with exit code 2`
+  before any test ran — PRs #109, #113, #114, #119's first run and `main` at `9980f97` (`evidence`,
+  `runner`, `fixture-build` at once). Other jobs on the same commits passed the same step, so it is
+  intermittent. Read from the public check-run annotations; the full log needs a sign-in, so whether
+  the JDK download or the Maven cache restore failed is **not known**.
+- **Change (`.github/workflows/ci.yml`):** in all four Java jobs, `setup-java@v5` (GitHub's deprecation
+  warning asks for it) with `continue-on-error: true`, and a second identical step only
+  `if: steps.java.outcome == 'failure'`. A retry, not a root-cause fix: the cause is outside our code.
+- **Checked here:** the workflow parses (`yaml.safe_load`); each of `fixture-build`, `runner`,
+  `evidence`, `ui` has the two steps; no `@v4` left. **Not checked here:** the retry path itself —
+  it runs only when GitHub's download fails. The PR's own CI shows whether v5 works.
+
+## W20 runner half: deletion checks (2026-11-20)
+
+- **Requirement:** FT004 / ADR-011 / `docs/contracts/interfaces.md` Interface 4 (agreed by M1, M2, M3,
+  PR #119). Every kept test is checked by repeated removal; `DiagnosisRuns.deletion_checks`.
+- **Files:** `runner/deletion.py` (`DeletionCheck`, `label`, `check_deletions`), `runner/diagnose.py`
+  (`run_steps` calls it for `POLLUTER_FOUND`, record step `deletion` with `removed` and `round`, then verifies the **final** set);
+  tests `runner/tests/test_deletion.py` (10) and `runner/tests/test_diagnose.py` `TestDeletionChecks` (3)
+  plus F1/F3 fixture assertions. Branch `m2/w20-deletion-checks` from `main` `88e90b5`.
+- **Test-first (Windows 11, local JDK, Python 3):**
+  - Task 1 before code: `py -3 -m unittest runner.tests.test_deletion` → `ModuleNotFoundError: No module named 'runner.deletion'`. After: 5 OK.
+  - Task 2 before code: → `ImportError: cannot import name 'check_deletions'`. After: 10 OK.
+  - Task 3 before wiring: `runner.tests.test_diagnose.TestDeletionChecks` → `FAILED (failures=2, errors=1)`;
+    the FT004 test (ADR-011 T1) failed with `[P, Q] != [P]` — the old code keeps the unneeded Q, as on
+    `7cf453d` (2026-11-13 entry). After: OK.
+  - One older test's run count changed on purpose: `test_two_polluters_needed_are_minimised_and_verified`
+    now counts the `2 × n` deletion runs.
+- **Labels at the edge (m = 20):** 19 matched → `NOT_NEEDED` (lower bound 0.764); 18 → `INCONCLUSIVE` (0.699).
+- **Whole suite:** every `runner/tests/test_*.py`, `ui.tests.test_server` and every `eval/tests/test_*.py`
+  → `Ran 406 tests in 614.351s … OK` (includes the real F1, F3 fixture runs).
+- **Real CLI runs, default `class-grouped`:**
+  - F3 `odfixture.ToggleVictimTest#expectsNotBothFlagsSet` → record steps `reproduce 1, alone 20, search 16,
+    minimise 9, delete 40, verify 20` (run before the review renamed the step to `deletion`). Without `setFlagA` the victim passed 20/20; without `setFlagB`
+    20/20 → both `NEEDED` (ADR-011 T3, runner half). Verdict still `CANDIDATE [DELETION_EVIDENCE_INCOMPLETE]`:
+    M3's `eval/report.py` does not read `deletion_checks` yet.
+  - F1 → `VERIFIED (sequence)`; record steps `reproduce 1, alone 20, search 2, verify 20` — **no**
+    deletion runs (one polluter: `alone-check`, ADR-011 T4).
+- **Not done:** T5 (budget ends mid-check) — no budget before W24; `NOT_RUN` is defined, not produced.
+- **Fresh review (Claude Opus, whole change) — 0 critical, 3 important, 5 minor; all fixed test-first:**
+  1. Record step was `delete` without the removed test; ADR-011 "Consequences" and ADR-014 §3 say
+     `deletion`. RED: `test_deletion_runs_are_recorded_as_their_own_step` → `AssertionError: 0 != 2`.
+     Now step `deletion`, each run line has `removed` and `round`.
+  2. The CLI `minimised:` line would contradict the report once checks drop a test. RED:
+     `summary() got an unexpected keyword argument 'deletion_checks'` (2 tests). Now the line shows
+     ddmin's own count (its round-1 checks) and drops "not deletion-verified" when checks ran; a new
+     `deletion:` line gives the removal runs, how many dropped and how many inconclusive.
+  3. The UI said the deletion checks "have not run yet (W20)" — false once they run. Reworded to what
+     `DELETION_EVIDENCE_INCOMPLETE` always means. `eval/report.py`'s similar limitation is M3's: sent to M3.
+  - Minors: README state cell; FT004 test now asserts the last 20 runs are `[P, V]`; the other-statuses
+    test asserts `check_deletions` is never called (a deliberate break — the guard changed to `if True:`
+    — made it fail, then the code was restored); deletion runs are counted from the checks on the CLI
+    line; **limitation:** with small `--n`, `NOT_NEEDED` cannot be reached (at `n = 1` a 1/1 match has
+    a Wilson lower bound of about 0.21), so a test `ddmin` kept by mistake shows `INCONCLUSIVE`, not
+    dropped — and `runs.n < 10` makes the report `INCOMPLETE`, so the verdict stays honest.
+- **After the fixes, real F3:** CLI prints `minimised:  16 earlier tests -> 2 polluters in 9 runs (reduced by
+  single-trial delta debugging)` and `deletion:   kept tests removed one at a time, 20 runs each (40 runs):
+  0 dropped as not needed, 0 inconclusive`; verdict `CANDIDATE` (M3's half pending). Record: step
+  `deletion` × 40, `removed` = `setFlagA` round 1 (victim passed 20/20) and `setFlagB` round 1 (20/20).
+  UI: `npm test` → 33 passed; `tsc --noEmit` clean.
+
+## A2: independent verification of M1's W21 (FT005 controls, all edges) (2026-11-20)
+
+- **Requirement:** FT005; W21's verifier is M2 (plan). Reproduce [[evidence-m1]] "W21 part 1" and
+  "W21 part 2" on my own machine, from `main`, not from M1's description.
+- **Machine:** Windows 11, OpenJDK 21.0.9, Apache Maven 3.10.0, Python 3.14.0. A clean worktree of
+  `main` `88e90b5` in my scratchpad (removed afterwards).
+- **Compile:** `mvn -B -q -f <p>/pom.xml test-compile` for `fixtures/od-fixture`,
+  `evidence/tests/resources/m1-selftest`, `evidence/tests/resources/ft005-controls` → exit 0 each.
+- **M1's tests:** `set FLAKETRACE_REQUIRE_JVM=1` + `py -3 -m unittest -v evidence.tests.test_extract.ResourceEdgesTest
+  evidence.tests.test_extract.Ft005ControlsTest` → `Ran 6 tests in 5.476s … OK`.
+- **They fail without the change:** `evidence/extract.py` replaced by `git show 5199ef8^:evidence/extract.py`
+  (the commit before M1's W21 part 1), then restored → `ResourceEdgesTest`: `FAILED (errors=3)`, each
+  `KeyError: 'resource_edges'` — exactly M1's recorded failure.
+- **Whole evidence suite:** `FLAKETRACE_REQUIRE_JVM=1 py -3 -m unittest evidence.tests.test_extract` →
+  `Ran 56 tests in 114.257s … OK` (M1 recorded 45 on 2026-11-18; tests added since).
+- **Real diagnoses** (`py -3 -m runner diagnose --project evidence/tests/resources/ft005-controls --victim … --records <scratch>`):
+  - Control 1 `controls.RestoringVictimTest#check` → `VERIFIED (sequence)`, polluter
+    `RestoringPolluterTest#pollute`, resource `static-field controls.State restored (write …pollute@6 ->
+    read …check@1)`, "static overlap: a possible mechanism, not confirmed as the cause", 20/20, alone 0/20.
+    `resource_edges`: `restored` only — no edge on `State#hidden`, the real reason, as `EXPECTED.md` says.
+  - Control 2 `controls.TwoFieldVictimTest#check` → `VERIFIED (sequence)`, resource `State a`, same
+    static-overlap line, 20/20, alone 0/20. `resource_edges`: **`a` and `b`** — the extra edge is visible.
+  - Both reports: `assurance.resource` = `STATIC_OVERLAP` / `NOT_ASSESSED`; a search of each report for
+    "the cause", "caused by", "mechanism", "root cause" finds only the `mechanism` key itself.
+- **Result:** matches M1's records on every step. FT005's "Closes when" — no causal label for the
+  controls, extra edges disclosed — holds.
+- **Differences and unclear steps** (for M1):
+  1. **A stale line in both our codes.** Control 2's `limitations` still say "Another shared resource is
+     not shown in this report: controls.State#b" (`evidence/extract.py` line 666, M1's), although
+     `State#b` is in `resource_edges` since schema v2. `runner/cli.py`'s several-polluter line said the
+     same ("… is not shown in this report") — mine; fixed here test-first:
+     `runner.tests.test_cli.TestCombineFields` → `FAILED (failures=2)` on the old wording, then the line
+     reads "… is not the headline resource; it is listed in resource_edges" → `TestCombineFields` and
+     `TestReports` `Ran 26 tests … OK`. The committed `eval/reports/f3.json` (M3's) still has the old
+     line until it is regenerated.
+  2. M1's record gives `depth_used 2` (the analysis depth); the reports here show each edge at `depth`
+     1 (the deeper side of a direct read/write). Not a contradiction — two different numbers.

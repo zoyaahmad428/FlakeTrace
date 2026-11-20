@@ -70,7 +70,7 @@ const REASON: Record<string, string> = {
 // ADR-010 section 3 row 12: why a reproducing sequence is CANDIDATE and not VERIFIED.
 const CANDIDATE_REASON: Record<string, string> = {
   BELOW_REPLAY_THRESHOLD: "the failure does not replay reliably enough (Wilson lower bound below 0.70)",
-  DELETION_EVIDENCE_INCOMPLETE: "the deletion checks for two or more kept tests have not run yet (W20), so not every kept test is shown to be needed",
+  DELETION_EVIDENCE_INCOMPLETE: "not every kept test is shown to be needed: at least one deletion check (W20) did not run, ran fewer than 10 times, or is not yet read into the report",
   DELETION_EVIDENCE_INCONCLUSIVE: "removing a kept test sometimes still reproduced the failure, so the sequence is not stable enough to call minimal",
   NO_SUPPORTED_RESOURCE_EVIDENCE: "no static overlap of a supported kind (static field or system property) links every polluter to the victim",
   BUDGET_EXHAUSTED: "the execution budget ran out before every check could run",

@@ -1,8 +1,11 @@
 # Diagnose command — `runner/cli.py` (Member 2, W9)
 
-*Status (2026-10-10): built and run on the fixture locally (JDK 21): F1 and F2 `VERIFIED`, N1
-`UNRESOLVED(VICTIM_FAILS_ALONE)`; since W10 (ADR-007) F3 `VERIFIED` with two polluters. CI on JDK 8: see
-[[evidence-m2]].
+*Status (2026-11-20): built; verdict contract v2 (ADR-010, W19). The committed reports in `eval/reports/`
+give F1, F2, F4 `VERIFIED (sequence)`, N1 `UNRESOLVED(VICTIM_FAILS_ALONE)`, N4
+`UNRESOLVED(VICTIM_FAILS_ALONE_DIFFERENTLY)`, and F3 `CANDIDATE [DELETION_EVIDENCE_INCOMPLETE]` — two
+polluters, no deletion runs until W20 (ADR-011). Real N4 and F1 runs under the default `class-grouped`
+lifecycle on 2026-11-20: see [[evidence-m2]]. CI on JDK 8: see [[evidence-m2]]. (Until 2026-11-20 this
+line still said F3 `VERIFIED`; flagged by M3, PR #115.)
 Four-point ownership note per [[04-Implementation/README]]. Design:
 [[03-Design/decisions/ADR-005-w9-diagnose-cli]].*
 
@@ -45,9 +48,13 @@ in-process and decides nothing itself:
 - **Claim wording** (W16, 2026-11-14): a `VERIFIED` headline reads `VERIFIED (sequence)` (ADR-010
   Q3); a shown resource gets the line "static overlap: a possible mechanism, not confirmed as the
   cause"; the alone count is labelled "alone (same failure)", because it counts only failures that
-  match the reference signature (claims ledger G1, FT003).
+  match the reference signature (claims ledger G1, FT003). Since 2026-11-20 the line adds
+  "other failure: X/N", so a victim that fails alone differently (N4) no longer looks like one
+  that passes alone (F1) — found by M1 in the W19 check (PR #114), raised by M3.
 - **Several polluters** (W10): evidence per polluter, combined by `combine_fields`: the first
-  polluter's edge is shown, the others named in `limitations`, and only if **every** polluter has an
+  polluter's edge is shown, the others named in `limitations` as "not the headline resource; it is
+  listed in `resource_edges`" (every polluter's edges are there since schema v2; until 2026-11-20 this
+  line wrongly said "not shown in this report"), and only if **every** polluter has an
   edge — otherwise no resource is shown (`CANDIDATE [NO_SUPPORTED_RESOURCE_EVIDENCE]` since
   ADR-010 Q1). Since W21 (PR #105) `combine_fields` also lists every polluter's edges in
   `resource_edges`, each with its depth, so the report shows all of them.

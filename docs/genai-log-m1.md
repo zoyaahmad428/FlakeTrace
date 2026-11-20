@@ -565,6 +565,29 @@ restores the old tests); recorded for M2.
 
 **Rejections:** none.
 
+## 2026-11-20 — W19 verification (verdict contract v2) on my own machine
+
+**Assistance level:** L3 (Core-assist): the assistant rebuilt the section C commands from the
+repo (CI's eval module list, the T1–T4 test names, N4's victim), and drafted this entry and the
+register update from my output; I ran every command myself on my laptop.
+
+**What I asked:** give me the W19 verification commands and record the result.
+
+**What was retained:** the W19 entry in [[evidence-m1]], including my rerun of M3's integration
+tool on all eight fixture cases (T6), and the FT003 row in [[10-Final1/action-register]]. The
+assistant spotted that the tool overwrites M3's committed reports and had me run it in a
+throwaway worktree.
+
+**What I changed:** ran every command; checked the entry against my terminal output before
+committing.
+
+**How it was verified:** every number is copied from my own terminal output.
+
+**Errors found:** none in W19. The first version of these commands from an earlier session was
+lost, so they were rebuilt from the repo.
+
+**Rejections:** marking FT003 `Done`. It needs the supervisor's acceptance, so it is `Partly`.
+
 ## 2026-11-20 — PR #106 check: report schema v2 against `report_fields` (A4)
 
 **Assistance level:** L3 (Core-assist): the assistant wrote the contract test and a one-off
@@ -590,3 +613,33 @@ both guesses were wrong (`0 != 1`, `1 != 0`). They were replaced with pairs whos
 
 **Rejections:** editing the schema or `eval/report.py`, which are not mine. A committed comparison
 script, because the unit test covers what needs to stay checked.
+
+## 2026-11-20 — W25 part 1: `rank_candidates` (ranking rule, test-first)
+
+**Assistance level:** L3 (Core-assist): the assistant designed `AnalysisCache` and
+`rank_candidates` from ADR-014 §5, wrote the 10 tests first, ran them failing, wrote the code, ran
+them passing, and drafted the docs.
+
+**What I asked:** build W25 part 1 test-first, on my own classes only, so the rule is committed
+before it meets any ground truth.
+
+**What was retained:** the code in `evidence/extract.py`; `RankCandidatesTest` and
+`RankCandidatesControlsTest`; the `evidence/README.md` and `04-Implementation` notes; the entry in
+[[evidence-m1]].
+
+**What I changed:** ran the test-first check myself on my laptop (code taken out, 10 errors; code
+put back, 10 OK); read the rule, the tests and the diff before committing.
+
+**How it was verified:** test-first failure (`FAILED (errors=10)`), then 10 OK and the full suite
+at 56 OK, in the container and again on my laptop (before: `FAILED (errors=10)`; after: 10 OK;
+suite 56 OK).
+
+**Errors found:** none in the tests. One sentence in the implementation note overstated what the
+rule guarantees, and was rewritten to say that only measurement can show an improvement.
+
+**Rejections:**
+- The POC's class-initialiser and co-touch terms, which ADR-014 says to add only with a measured
+  comparison.
+- Deepening inside `rank_candidates` (the planner's decision, M2).
+- Running the rule on any fixture or fastjson case before it is committed and reviewed.
+- Editing `docs/contracts/interfaces.md`.

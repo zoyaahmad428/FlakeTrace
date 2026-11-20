@@ -11,12 +11,13 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional, Sequence, Tuple
 
 from eval.baseline import TestIdentifier
 from eval.report import UnhandledStatus, assemble_report
 from evidence.extract import DEFAULT_DEPTH, ExtractError, Project, analyse_pair, report_fields
 from runner.diagnose import INCONSISTENT, NOT_REPRODUCED, POLLUTER_FOUND, DiagnoseInputError, diagnose
+from runner.deletion import DELETION_RUN, INCONCLUSIVE, NOT_NEEDED
 from runner.order_runner import LIFECYCLES, ToolError
 from runner.workspace import WORKSPACES, WorkspaceError, workspace
 
@@ -101,7 +102,7 @@ def run_diagnose(project: Path, victim_id: str, n: int, records: str, order_path
     ddmin_ran = runs.minimise_runs and runs.polluters
     crashes = runs.infrastructure_failures + runs.shuffle_infrastructure_failures + runs.alone_infrastructure_failures
     print(summary(report, report_path, (len(runs.original_order) - 1, runs.minimise_runs) if ddmin_ran else None,
-                  crashes))
+                  crashes, runs.deletion_checks))
     return 0
 
 
@@ -160,7 +161,9 @@ def combine_fields(pairs: list) -> dict:
         lines += [line for line in pair["limitations"] if line not in lines]
     if all(pair["edges"] for pair in pairs):
         shown = pairs[0]["edges"][0]["resource_id"]
-        others = [f"Polluter {_test(pair['polluter'])}: shared resource {edge['resource_id']} is not shown in this report"
+        # Schema v2 shows every edge in resource_edges, so these are named, not hidden (A2, 2026-11-20).
+        others = [f"Polluter {_test(pair['polluter'])}: shared resource {edge['resource_id']} is not the headline "
+                  "resource; it is listed in resource_edges"
                   + _depth_note(edge) for pair in pairs[1:] for edge in pair["edges"] if edge["resource_id"] != shown]
         return dict(fields[0], limitations=lines + others, resource_edges=edges)
     found = [f"Polluter {_test(pair['polluter'])}: shared resource {edge['resource_id']} was found, "
@@ -180,20 +183,29 @@ def _depth_note(edge: dict) -> str:
 
 
 def summary(report: dict, report_path: Path, minimised: Optional[Tuple[int, int]] = None,
-            crashes: int = 0) -> str:
+            crashes: int = 0, deletion_checks: Sequence = ()) -> str:
     """`minimised` = (earlier tests, ddmin runs) when ddmin found the polluters (ADR-007); the report's
-    schema has no field for it, so only the summary says how far the order was shrunk."""
+    schema has no field for it, so only the summary says how far the order was shrunk.
+    `deletion_checks` (W20) may drop tests after ddmin, so ddmin's own count is its round-1 checks."""
     reason = f" ({report['unresolved_reason']})" if report["unresolved_reason"] else ""
     # ADR-010 Q3: VERIFIED is about the sequence, never about the resource being the cause.
     qualifier = " (sequence)" if report["outcome"] == "VERIFIED" else ""
     lines = [f"{report['outcome']}{qualifier}{reason}  {_test(report['victim'])}"]
     if report["polluters"]:
         lines.append("  polluter:   " + ", ".join(_test(p) for p in report["polluters"]))
+    first_round = [c for c in deletion_checks if c.round == 1]
+    removals = [c for c in deletion_checks if c.source == DELETION_RUN]
     if minimised:
         earlier, runs = minimised
-        count = len(report["polluters"])
+        count = len(first_round) if first_round else len(report["polluters"])
+        checked = "" if deletion_checks else "; not deletion-verified"
         lines.append(f"  minimised:  {earlier} earlier tests -> {count} polluter{'s' if count != 1 else ''} "
-                     f"in {runs} runs (reduced by single-trial delta debugging; not deletion-verified)")
+                     f"in {runs} runs (reduced by single-trial delta debugging{checked})")
+    if removals:
+        dropped = sum(c.status == NOT_NEEDED for c in removals)
+        unsure = sum(c.status == INCONCLUSIVE for c in deletion_checks if c.round == deletion_checks[-1].round)
+        lines.append(f"  deletion:   kept tests removed one at a time, {removals[0].runs.n} runs each "
+                     f"({sum(c.runs.n for c in removals)} runs): {dropped} dropped as not needed, {unsure} inconclusive")
     explored = report.get("order_exploration")
     if explored and explored["reproducing_seed"] is not None:
         lines.append(f"  orders:     reproduced in shuffled order (seed {explored['reproducing_seed']}) "
@@ -218,10 +230,11 @@ def summary(report: dict, report_path: Path, minimised: Optional[Tuple[int, int]
         lines.append(f"  resource:   {resource}")
         lines.append("              static overlap: a possible mechanism, not confirmed as the cause")
     reproduced, alone = report["reproduction"], report["victim_alone"]
-    # The alone count holds only failures matching the reference signature (claims ledger G1, FT003).
-    # ADR-010/schema v2 (W19): "successes" renamed "matched" (M3, flagged for M2's review).
+    # The alone count holds only failures matching the reference signature (claims ledger G1, FT003);
+    # "other failure" keeps a victim that fails alone differently (N4) apart from one that passes (F1).
     lines.append(f"  reproduced: {reproduced['matched']}/{reproduced['n']} (lower bound "
-                 f"{reproduced['lower']:.3f})   alone (same failure): {alone['matched']}/{alone['n']}")
+                 f"{reproduced['lower']:.3f})   alone (same failure): {alone['matched']}/{alone['n']}, "
+                 f"other failure: {alone['other']}/{alone['n']}")
     lines.append(f"  report:     {report_path}")
     lines.append(f"  record:     {report['execution_record_reference']}")
     return "\n".join(lines)

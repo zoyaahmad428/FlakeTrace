@@ -13,6 +13,7 @@ from unittest import mock
 
 from eval.baseline import FailureSignature, RunTally, TestIdentifier
 from eval.report import assemble_report
+from runner.deletion import DeletionCheck
 from runner.cli import OrderFileError, combine_fields, main, read_order, resource_fields, summary
 from runner.diagnose import (INCONSISTENT, POLLUTER_FOUND, VICTIM_FAILS_ALONE, DiagnoseInputError,
                              DiagnosisRuns)
@@ -173,8 +174,11 @@ class TestCombineFields(unittest.TestCase):
         fields = combine_fields([pair(P, "pkg.T#flagA"), pair(Q, "pkg.T#flagB")])
         self.assertEqual(fields["shared_resource"], {"kind": "static-field", "class": "pkg.T", "field": "flagA"})
         self.assertEqual(fields["polluter_write_location"]["class"], "pkg.PolluterTest")
-        self.assertIn("Polluter pkg.SecondPolluterTest#q: shared resource pkg.T#flagB is not shown in this report",
-                      fields["limitations"])
+        # A2 (2026-11-20): since schema v2 every edge is in resource_edges, so "not shown" would be false.
+        self.assertIn("Polluter pkg.SecondPolluterTest#q: shared resource pkg.T#flagB is not the headline resource; "
+                      "it is listed in resource_edges", fields["limitations"])
+        self.assertIn("flagB", [edge["shared_resource"]["field"] for edge in fields["resource_edges"]])
+        self.assertFalse(any("not shown in this report" in line for line in fields["limitations"]), fields["limitations"])
         self.assertEqual(fields["limitations"].count("Static analysis only; no runtime evidence (Iteration 2)."), 1)
 
     def test_second_polluter_without_edge_shows_no_resource(self):
@@ -190,12 +194,12 @@ class TestCombineFields(unittest.TestCase):
     def test_resource_written_by_both_polluters_is_not_called_hidden(self):
         fields = combine_fields([pair(P, "pkg.T#flag"), pair(Q, "pkg.T#flag")])
         self.assertEqual(fields["shared_resource"]["field"], "flag")
-        self.assertFalse(any("pkg.T#flag is not shown" in line for line in fields["limitations"]), fields["limitations"])
+        self.assertFalse(any("pkg.T#flag is not the headline" in line for line in fields["limitations"]), fields["limitations"])
 
     def test_deep_evidence_of_a_later_polluter_is_named_with_its_depth(self):
         fields = combine_fields([pair(P, "pkg.T#a"), pair(Q, "pkg.T#b", depth=5)])
-        self.assertIn("Polluter pkg.SecondPolluterTest#q: shared resource pkg.T#b is not shown in this report "
-                      "(evidence at depth 5, above the default 2)", fields["limitations"])
+        self.assertIn("Polluter pkg.SecondPolluterTest#q: shared resource pkg.T#b is not the headline resource; "
+                      "it is listed in resource_edges (evidence at depth 5, above the default 2)", fields["limitations"])
 
     def test_mixed_evidence_report_does_not_also_say_no_edge_was_found(self):
         fields = combine_fields([pair(P, "pkg.T#a"), pair(Q)])
@@ -336,6 +340,24 @@ class TestReports(unittest.TestCase):
                       "(reduced by single-trial delta debugging; not deletion-verified)", text.splitlines())
         self.assertNotIn("minimised:", summary(report, Path("r.report.json")))
 
+    def test_summary_credits_ddmin_and_the_deletion_checks_separately(self):
+        """W20: ddmin kept P and Q; the deletion checks dropped Q (FT004 shape)."""
+        tally = lambda passed, matched: RunTally(20, passed, matched, 0, 0)
+        checks = [DeletionCheck(P, tally(20, 0), "NEEDED", "deletion-run", 1),
+                  DeletionCheck(Q, tally(0, 20), "NOT_NEEDED", "deletion-run", 1),
+                  DeletionCheck(P, tally(20, 0), "NEEDED", "alone-check", 2)]
+        text = summary(self.report_with_resource(), Path("r.report.json"), minimised=(12, 10),
+                       deletion_checks=checks).splitlines()
+        self.assertIn("  minimised:  12 earlier tests -> 2 polluters in 10 runs (reduced by single-trial delta debugging)", text)
+        self.assertIn("  deletion:   kept tests removed one at a time, 20 runs each (40 runs): "
+                      "1 dropped as not needed, 0 inconclusive", text)
+        self.assertFalse(any("not deletion-verified" in line for line in text))
+
+    def test_summary_without_deletion_runs_has_no_deletion_line(self):
+        check = [DeletionCheck(P, RunTally(20, 20, 0, 0, 0), "NEEDED", "alone-check", 1)]
+        text = summary(self.report_with_resource(), Path("r.report.json"), deletion_checks=check)
+        self.assertNotIn("deletion:", text)
+
     def test_summary_shows_verified_with_its_qualifier(self):
         first = summary(self.report_with_resource(), Path("r.report.json")).splitlines()[0]
         self.assertEqual(first, "VERIFIED (sequence)  pkg.VictimTest#v")
@@ -348,6 +370,14 @@ class TestReports(unittest.TestCase):
         text = summary(self.report_with_resource(), Path("r.report.json"))
         self.assertIn("alone (same failure): 0/20", text)
         self.assertNotIn("alone: 0/20", text)
+
+    def test_summary_tells_a_different_alone_failure_from_no_alone_failure(self):
+        """M1's W19 check (PR #114): N4 (other: 20) and F1 (other: 0) printed the same alone line."""
+        never_fails = summary(self.report_with_resource(), Path("r.report.json"))
+        fails_differently = summary(dict(self.report_with_resource(), victim_alone={"matched": 0, "other": 20, "n": 20}),
+                                    Path("r.report.json"))
+        self.assertIn("alone (same failure): 0/20, other failure: 0/20", never_fails)
+        self.assertIn("alone (same failure): 0/20, other failure: 20/20", fails_differently)
 
     def test_command_shows_the_minimisation_only_when_ddmin_found_polluters(self):
         records = Path(tempfile.mkdtemp(prefix="flaketrace-cli-records-"))
@@ -377,7 +407,7 @@ class TestReports(unittest.TestCase):
         report = dict(self.report_with_resource(), polluters=[], shared_resource=None, outcome="UNRESOLVED",
                       unresolved_reason="NOT_REPRODUCED",
                       reproduction={"matched": 0, "n": 20, "lower": 0.0, "upper": 0.161},
-                      victim_alone={"matched": 0, "n": 20},
+                      victim_alone={"matched": 0, "other": 0, "n": 20},
                       order_exploration={"order_given": True, "shuffled_orders_tried": 31,
                                          "orders_exhausted": False, "seed_base": 0, "reproducing_seed": None})
         text = summary(report, Path("r.report.json")).splitlines()
@@ -388,7 +418,7 @@ class TestReports(unittest.TestCase):
         report = dict(self.report_with_resource(), polluters=[], shared_resource=None, outcome="UNRESOLVED",
                       unresolved_reason="NOT_REPRODUCED",
                       reproduction={"matched": 0, "n": 3, "lower": 0.0, "upper": 0.561},
-                      victim_alone={"matched": 0, "n": 3},
+                      victim_alone={"matched": 0, "other": 0, "n": 3},
                       order_exploration={"order_given": False, "shuffled_orders_tried": 4,
                                          "orders_exhausted": True, "seed_base": 0, "reproducing_seed": None})
         text = summary(report, Path("r.report.json"), crashes=7)
@@ -399,7 +429,7 @@ class TestReports(unittest.TestCase):
         report = dict(self.report_with_resource(), polluters=[], shared_resource=None, outcome="UNRESOLVED",
                       unresolved_reason="NOT_REPRODUCED",
                       reproduction={"matched": 0, "n": 20, "lower": 0.0, "upper": 0.161},
-                      victim_alone={"matched": 0, "n": 20},
+                      victim_alone={"matched": 0, "other": 0, "n": 20},
                       order_exploration={"order_given": False, "shuffled_orders_tried": 31,
                                          "orders_exhausted": False, "seed_base": 0, "reproducing_seed": None})
         text = summary(report, Path("r.report.json")).splitlines()
@@ -426,7 +456,7 @@ class TestReports(unittest.TestCase):
             "polluter_write_location": {"class": "pkg.PolluterTest", "method": "p", "bytecode_offset": 1},
             "victim_read_location": {"class": "pkg.VictimTest", "method": "v", "bytecode_offset": 4},
             "reproduction": {"matched": 20, "n": 20, "lower": 0.839},
-            "victim_alone": {"matched": 0, "n": 20}, "execution_record_reference": "r.jsonl",
+            "victim_alone": {"matched": 0, "other": 0, "n": 20}, "execution_record_reference": "r.jsonl",
         }
 
     def test_inconsistent_writes_a_real_report_now(self):
