@@ -758,3 +758,39 @@ the harness output separately. Result: matches the handover's expectations on ev
 
 **Limitation:** one run of each command, on one machine. The diagnoses used `%TEMP%` records, which
 are not committed.
+
+## W18 verification: outcome tallies on my own machine (2026-11-20)
+
+**Requirement:** FT003 / ADR-010: the runner counts every repeated phase as a tally (passed,
+matched, other, infra), so a victim that fails alone with a *different* failure is no longer
+counted as passing alone. I am W18's verifier. Run by me on my own laptop (Windows 11, Python
+3.11.9), following "W18" in [[10-Final1/handover-m1-m3]].
+
+- **After the fix**, main `f47b503`:
+  - `py -3.11 -m unittest -v runner.tests.test_diagnose.TestTallies runner.tests.test_search.TestRepeat`
+    → `Ran 9 tests in 0.004s … OK`: T1 (victim failing alone differently counted as `other`),
+    T2 (three different failures in twenty alone runs), T3 (two timeouts alone are `infra`, not
+    passes), T4 (a failure seen once and never again is `INCONSISTENT`), the old count fields
+    agreeing with the tallies, and `repeat()` tallying each run once.
+  - `py -3.11 -m unittest eval.tests.test_report` → `Ran 23 tests in 1.301s … OK` (M3's report
+    tests unchanged).
+- **Before the fix**, in a throwaway worktree: `git worktree add %TEMP%\ft-w18check e49fa13` (the
+  W18 commit, so the new tests are present), then
+  `git checkout d1e4d4f -- runner/diagnose.py runner/verify.py runner/cli.py` (only the three code
+  files W18 changed, put back to their pre-W18 version), same test command →
+  `Ran 2 tests … FAILED (failures=1, errors=1)`:
+  - `TestRepeat.test_tallies_each_run_once`: `AssertionError: (2, 4) != RunTally(n=5, passed=1,
+    matched=2, other=1, infra=1)`: the old `repeat()` returned two overlapping counts.
+  - `TestTallies`: `ImportError: cannot import name 'INCONSISTENT' from 'runner.diagnose'`: the
+    old runner had no status for a failure seen once and never again.
+  The worktree was then removed (`git worktree remove --force %TEMP%\ft-w18check`).
+- **Result:** the tallies behave as ADR-010 specifies, and the tests fail on the code before W18.
+
+**Differences and unclear steps** (for M2):
+1. The handover's "before" step, `git checkout d1e4d4f -- runner`, also restores the old *tests*,
+   which do not contain `TestTallies`, so it cannot show the defect. Checking out only the three
+   changed code files at the W18 commit (above) does what was intended.
+2. The handover says to run from `m2/w18-tallies`; it is merged, so I ran from main.
+
+**Limitation:** these are scripted unit tests (no JVM); they show the counting, not a real
+diagnosis. `decide()` reading the tallies is W19 (M3), verified separately.

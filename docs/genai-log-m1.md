@@ -526,7 +526,7 @@ is only in `limitations` until W19.
 
 ## 2026-11-20 — W22 verification (lifecycle control) on my own machine
 
-**Assistance level:** L2 (Assisted): the assistant gave me the commands from M2's handover, diagnosed
+**Assistance level:** L3 (Core-assist): the assistant gave me the commands from M2's handover, diagnosed
 the two setup failures (Maven download timeouts, Python 3.9 too old for `jsonschema` 4.26.0) and
 drafted this evidence entry from the output I pasted; I ran every command myself on my laptop.
 
@@ -544,3 +544,23 @@ Python 3.11); read the entry against my terminal output before committing.
 (the assistant's omission); found when `diagnose` failed on `jsonschema`.
 
 **Rejections:** loosening the pinned `jsonschema` version (M3's file) to make Python 3.9 work.
+
+## 2026-11-20 — W18 verification (outcome tallies) on my own machine
+
+**Assistance level:** L3 (Core-assist): the assistant gave me the commands, found that the handover's
+"before" step would restore the old tests too, tried the corrected step in the cloud first, and
+drafted this entry from my output; I ran every command myself on my laptop.
+
+**What I asked:** run the W18 verification and record it.
+
+**What was retained:** the W18 entry in [[evidence-m1]].
+
+**What I changed:** Ran every command; checked the entry against my terminal output before
+committing.
+
+**How it was verified:** every number is copied from my own terminal output.
+
+**Errors found:** the handover's `git checkout d1e4d4f -- runner` cannot show the defect (it
+restores the old tests); recorded for M2.
+
+**Rejections:** none.
