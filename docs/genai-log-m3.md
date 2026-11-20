@@ -1396,3 +1396,38 @@ is checked only inside `decide()`'s `reasons = []` block and never as an early r
 result than one never found at all, not a different category of failure, so it has to compete
 with S1/S3/R1 for CANDIDATE the same way a missing deletion check does, rather than overriding
 every other check the way row 1-3 do.
+
+## 2026-11-20 — merging W24, fixing the CI break, and the real evidence run
+
+**What happened:** after handing off the W24 commit, the member reported the `runner` CI check
+failing on the pushed PR. Diagnosed it against the real GitHub API (check-run annotations, job
+step list) rather than guessing, then reproduced the exact failing CI step locally with a
+portable JDK 8 found from an earlier session's scratchpad extraction. The failure was a stale
+placeholder test of M2's own (`runner/tests/test_cli.py`, docstring literally said "Until M3's
+W24 half"), asked and was told to fix it. Two merge conflicts followed (two newer PRs landed on
+`main` meanwhile); resolved both by keeping both sides' table rows, verified with a
+programmatic (not manual, to avoid transcription error on very long lines) row-level Python
+edit for one of them, confirmed no conflict markers remained repo-wide, and had the member
+commit and push. PR merged; all 5 CI checks green.
+
+**What I did once merged, without being asked step-by-step:** the member said "complete the
+rest of the work" — read that against Interface 6's own ordering ("together, once merged: a
+real F2 run with a limit just above B2's minimum, and one with no limit") rather than guessing
+at a bigger scope. Computed B2's minimum for F2 by hand from the real committed report's
+`original_failing_order` length (8) and `reserve(20)=60`, rather than asking the member for it
+or assuming a round number. Ran both diagnoses for real, read the written `.report.json` files
+back and validated them against the schema explicitly (not just trusting `assemble_report`
+didn't raise), and cross-checked the no-limit run's numbers against M2's own earlier recorded
+numbers for the same victim — matched exactly, which is real evidence of determinism, not an
+assumption.
+
+**What I deliberately did not do:** did not overwrite the committed `eval/reports/f2.json`
+with either new run — that file has fixed downstream readers (`ui/web` tests, the Mid report's
+frozen-tag table) unrelated to this change, and nobody asked for it to be regenerated. The two
+new reports stayed in a scratch records folder, referenced only from the evidence doc.
+
+Ownership checkpoint: be able to explain why a budget limit of 72 for F2 gives
+`UNRESOLVED(BUDGET_EXHAUSTED)` at all — the reserve (60, for the alone check plus one
+candidate-pair check) plus the one reproduce run (8) already leaves only 4 invocations for
+search, which buys exactly 2 of the 7 candidate pairs before the ledger refuses the third — not
+a bug, the exact B3/B5 arithmetic Interface 6 specifies.
