@@ -15,7 +15,9 @@ from eval.baseline import FailureSignature, RunTally, TestIdentifier
 from eval.report import UnhandledStatus, assemble_report
 from runner.budget import Budget, BudgetAccount
 from runner.deletion import DeletionCheck
-from runner.cli import OrderFileError, budget_line, combine_fields, main, read_order, resource_fields, summary
+from runner.cli import (OrderFileError, budget_line, combine_fields, main, read_order, resource_fields, search_line,
+                        summary)
+from runner.policy import SearchPolicy
 from runner.diagnose import (BUDGET_EXHAUSTED, INCONSISTENT, POLLUTER_FOUND, VICTIM_FAILS_ALONE, DiagnoseInputError,
                              DiagnosisRuns)
 from runner.integrity import SourceIntegrity
@@ -528,6 +530,68 @@ class TestBudgetOptions(unittest.TestCase):
         self.assertEqual(report["polluters"], [])
 
 
+class TestPolicyOptions(unittest.TestCase):
+    """W25 (Interface 7): --policy and --scope."""
+
+    def run_with(self, *extra):
+        records = Path(tempfile.mkdtemp())
+        with mock.patch("runner.cli.diagnose", return_value=runs(VICTIM_FAILS_ALONE, records / "r.jsonl")) as diagnose:
+            code, out, err = run_cli(["diagnose", "--project", str(project_with_pom()), "--victim", str(V), *extra])
+        return code, diagnose, err
+
+    def test_policy_and_scope_reach_diagnose(self):
+        _, diagnose, _ = self.run_with("--policy", "ranked", "--scope", "package")
+        kwargs = diagnose.call_args.kwargs
+        self.assertEqual((kwargs["policy"], kwargs["scope"]), ("ranked", "package"))
+        _, diagnose, _ = self.run_with()
+        kwargs = diagnose.call_args.kwargs
+        self.assertEqual((kwargs["policy"], kwargs["scope"]), ("original", "module"))
+
+    def test_unknown_policy_is_a_usage_error(self):
+        with self.assertRaises(SystemExit) as raised:
+            self.run_with("--policy", "best")
+        self.assertEqual(raised.exception.code, 2)
+
+    def test_scope_package_with_an_order_exits_2(self):
+        order = Path(tempfile.mkdtemp()) / "order.txt"
+        order.write_text("pkg.PolluterTest#p\npkg.VictimTest#v\n", encoding="utf-8")
+        code, diagnose, err = self.run_with("--scope", "package", "--order", str(order))
+        self.assertEqual(code, 2)
+        self.assertIn("cannot be combined with --order", err)
+        diagnose.assert_not_called()
+
+
+class TestSearchLine(unittest.TestCase):
+    def test_the_three_policies(self):
+        self.assertEqual(search_line(SearchPolicy("original", "module", None, [], 0.2, None, None), 7),
+                         ["  search:     original order"])
+        self.assertEqual(search_line(SearchPolicy("random", "package", 7, [], 0.2, None, None), 7),
+                         ["  search:     random order (seed 7), victim's package only"])
+        self.assertEqual(search_line(SearchPolicy("ranked", "module", None, [2, 3], 0.2, 1, None), 7),
+                         ["  search:     ranked by static evidence at depth 2->3 (1 of 7 candidates with evidence)"])
+
+    def test_no_search_ran(self):
+        """Review finding 3: a diagnosis that never searched does not claim an order."""
+        self.assertEqual(search_line(SearchPolicy("ranked", "module", None, [], 0.2, None, None), 7, searched=False),
+                         ["  search:     no single-polluter search ran (policy ranked)"])
+
+    def test_ranked_without_any_evidence(self):
+        """Review finding 4: no candidate with evidence means the original order was kept."""
+        self.assertEqual(search_line(SearchPolicy("ranked", "module", None, [2], 0.2, 0, None), 7),
+                         ["  search:     ranked at depth 2: no candidate had evidence, original order kept"])
+
+    def test_package_scope_without_other_tests(self):
+        """Review finding 8: the scope left no candidates; Interface 7 point 5 says re-run with module."""
+        self.assertEqual(search_line(SearchPolicy("original", "package", None, [], 0.2, None, None), 0, searched=False),
+                         ["  search:     no single-polluter search ran (policy original), victim's package only",
+                          "              the victim's package has no other test; re-run with --scope module"])
+
+    def test_the_fallback_note_has_its_own_line(self):
+        note = "ranking fell back to the original order: the victim could not be analysed (x)"
+        self.assertEqual(search_line(SearchPolicy("ranked", "module", None, [], 0.2, None, note), 7),
+                         ["  search:     ranked, fell back to the original order", "              " + note])
+
+
 class TestBudgetLine(unittest.TestCase):
     SPENT = {"reproduce": 1, "shuffle": 0, "alone": 20, "search": 20, "minimise": 0, "deletion": 0, "verify": 40}
 
@@ -599,6 +663,18 @@ class TestCliOnFixture(unittest.TestCase):
         self.assertEqual(code, 2)
         self.assertIn("below the minimum", err)
         self.assertEqual(set(Path(self.records).glob("*.jsonl")), before)  # refused before any record
+
+    def test_f1_to_f4_ranked_give_the_same_verdicts(self):
+        """ADR-014: real F1-F4 with --policy ranked reach the same verdicts as the original order."""
+        for victim in ("odfixture.ConfigVictimTest#expectsDefaultMode", "odfixture.FeatureVictimTest#expectsTurboDisabled",
+                       "odfixture.ToggleVictimTest#expectsNotBothFlagsSet",
+                       "odfixture.AlwaysEarlyVictimTest#expectsLateFlagUnset"):
+            code, out, err = run_cli(["diagnose", "--project", str(FIXTURE), "--victim", victim,
+                                      "--records", self.records, "--policy", "ranked"])
+            reports = sorted(Path(self.records).glob(f"*-{victim}.report.json"))
+            report = json.loads(reports[-1].read_text(encoding="utf-8"))
+            self.assertEqual((code, report["outcome"]), (0, "VERIFIED"), victim + err)
+            self.assertIn("  search:     ranked", out)
 
     def test_f2_depth_two_edge(self):
         code, _, err, report = self.diagnose("odfixture.FeatureVictimTest#expectsTurboDisabled", 20)

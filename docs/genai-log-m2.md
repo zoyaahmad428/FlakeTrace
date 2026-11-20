@@ -1181,3 +1181,16 @@ checks either run in full or are `NOT_RUN`. **Found:** the CLI summary would hav
 
 Ownership checkpoint: why the reserve is `3 × n`; why a seconds limit cannot stop verification; why a
 refused run must leave no `run` line (the recount).
+
+## 2026-11-20 — W25 runner half: search policy
+
+**Tool:** Claude Code (Claude Opus 5.5), brainstorming → writing-plans → executing-plans → TDD, one fresh
+reviewer at the end · **Level:** L3 · **Branch:** `m2/w25-policy-code`
+
+**Asked:** build W25's runner half, including ADR-014 §6 deepening (M2's choice, checked against FT007, ADR-014
+and the real-case protocol first). **Kept:** Interface 7 agreed before code; the policy chosen once and passed into
+the existing `priority` hook, so every step after the candidate order is the same (the review showed the blamed test can still differ when several tests pollute alone); the deepening loop tested on a fake ranker.
+**What I changed:** *to fill in.*
+
+Ownership checkpoint: why the policies reach the same endpoint; when deepening stops; why a fixture result is not
+a contribution claim.

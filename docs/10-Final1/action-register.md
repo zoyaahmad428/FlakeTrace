@@ -51,7 +51,7 @@ grouped; each keeps its FT identifier.
 | M-4 | Mid, official | Restore the missing abstract | M2, all | Report v2.0 | Open | Our source and the submitted PDF contain a 188-word abstract; meaning of "missing" to be confirmed | |
 | M-5 | Mid, official | Align the report with the template | M2, all | Report v2.0 | Open | [[10-Final1/report-v2-plan]] | |
 | FT003 | Mid | No `VERIFIED` when the victim fails alone differently | M2, M3 | Sprint A | Partly | Fixed in W18 (`e49fa13`) and W19 (PR #106); reproduced by M1 2026-11-20: T1–T4 OK, N4 `UNRESOLVED (VICTIM_FAILS_ALONE_DIFFERENTLY)` ([[evidence-m1]]). Awaiting supervisor acceptance | |
-| FT004 | Mid | Deletion evidence under repetition | M2, M3 | Sprint B | Open | — | |
+| FT004 | Mid | Deletion evidence under repetition | M2, M3 | Sprint B | Partly | W20 (M2 PR #121, M3 PRs #129, #130); reproduced by M1 2026-11-20: ADR-011 T1–T5, real F3 both kept tests `NEEDED` 20/20 ([[evidence-m1]]). Awaiting supervisor acceptance | |
 | FT005 | Mid | Separate sequence assurance from resource evidence | M1, M3 | Wording: Sprint A · controls: Sprint B | Partly | W16 + W21 (M1, PRs #105, #107) with schema v2 (M3, W19); **reproduced by M2 2026-11-20** ([[evidence-m2]]): both controls `VERIFIED (sequence)`, resource `STATIC_OVERLAP`, mechanism `NOT_ASSESSED`, no causal wording; control 2's report lists both edges in `resource_edges`. Two "not shown in this report" lines that became false once `resource_edges` showed every edge are both fixed: M2's (A2, PR #122) and M1's, test-first (PR #125, [[evidence-m1]]). Evidence for "Closes when" complete; **awaiting supervisor acceptance** | |
 | FT006, FT021 | Mid | Lifecycle semantics and the reset boundary | M2 | Sprint B | Partly | W22 (PR #104), reproduced by M1 2026-11-20 (PR #108): lifecycle control matches Surefire under `class-grouped`, now the default; JUnit 3, `@RunWith` and `suite()` named as per-method (ADR-012 §2); `--workspace copy` wrote no `target/` in the project. **Open:** FT006 on a real project (W26a); FT021's reset-sensitive control and container plan | |
 | FT009 | Mid | Portable, auditable evidence bundle | M3, M2 | Sprint B | Open | — | |
@@ -62,7 +62,7 @@ grouped; each keeps its FT identifier.
 | FT013, FT014 | Mid | Signatures and personal confirmations | Each member | Before report acceptance | Open | — | |
 | FT015 | Mid | Reconcile GenAI levels | M3, each | Before ownership assessment | Open | — | |
 | FT016, FT017 | Mid | Clipped table; stale status text | M1, chapter owners | Report v2.0 | Open | — | |
-| FT018 | Mid | One Java practitioner check | M1 | Before the Final | Open | — | |
+| FT018 | Mid | One Java practitioner check | M1 | Before the Final | Open | Protocol drafted 2026-11-20 ([[10-Final1/practitioner-check]]); no session held | |
 | FT019 | Mid | Template and abstract interpretation | Supervisor | Next meeting | Open | — | |
 | FT020 | Mid | Cross-member handover | All | Sprint B | Open | — | |
 

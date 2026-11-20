@@ -99,3 +99,8 @@ in-process and decides nothing itself:
 - `--budget-invocations N` and `--budget-seconds S` (ADR-014, Interface 6). A limit below the start minimum (`3n` + the tests up to the victim + 2) exits 2 and names the minimum.
 - Every summary has a `budget:` line: invocations spent (of the limit), the reserve, candidates tried, and the phase it stopped in.
 - `BUDGET_EXHAUSTED` exits 3 with "No report" and the budget line until M3's W24 report half reads it.
+
+## W25 additions (2026-11-20)
+
+- `--policy original|ranked|random` and `--scope module|package` (ADR-014, Interface 7). `--scope package` with `--order` exits 2.
+- A `search:` line: `original order`, `random order (seed S)`, or `ranked by static evidence at depth 2 (k of N candidates with evidence)`, with the fallback note on its own line. A rank orders the search; it never says what caused the failure (claims ledger G3).

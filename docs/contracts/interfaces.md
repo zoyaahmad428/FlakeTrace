@@ -306,7 +306,7 @@ BudgetAccount(
 *Proposed by M2 on 2026-11-20. Agreed by M1, M2 and M3 on 2026-11-20 (team WhatsApp group,
 recorded by M2; confirmed by approving the PR that adds this section), together with Interface 6
 point 6. Built against [ADR-014](../03-Design/decisions/ADR-014-budget-ledger-and-ranked-search.md)
-and Interface 5 (M1's `rank_candidates`, merged). Not built yet.*
+and Interface 5 (M1's `rank_candidates`, merged). Runner half built 2026-11-20 (M2, W25); report half: M3.*
 
 **Input.** `diagnose()` and the CLI gain:
 

@@ -667,6 +667,29 @@ kept the "not shown" limitation, and it stopped being true.
 **Rejections:** removing the line entirely. The headline fields still show only one resource, so
 naming the others stays useful.
 
+## 2026-11-20 — W20 verification (deletion checks, ADR-011 T1–T5) on my own machine
+
+**Assistance level:** L3 (Core-assist): the assistant found the W20 tests that cover T1, T2 and
+T5, gave me the real F1 and F3 commands with two one-line checks (report `deletion_checks`,
+record step counts), and drafted this entry and the register updates from my output; I ran
+every command myself on my laptop.
+
+**What I asked:** verify W20 now that both halves are merged.
+
+**What was retained:** the W20 entry in [[evidence-m1]]; the FT004 row in
+[[10-Final1/action-register]]; the G2 row in [[07-Defense/claims-ledger]]; the W20 plan row.
+
+**What I changed:** ran every command; checked the entry against my terminal output before
+committing.
+
+**How it was verified:** every number is copied from my own terminal output.
+
+**Errors found:** none in W20. I typed a test name as a command once; the rerun is the one
+recorded.
+
+**Rejections:** marking G2 `SETTLED` or FT004 `Done` myself. G2 belongs to M2 and M3, and FT004
+also needs the supervisor's acceptance.
+
 ## 2026-11-20 — W25: Interface 5 (rank_candidates) contract proposal
 
 **Assistance level:** L3 (Core-assist): the assistant drafted the Interface 5 section from the
@@ -688,3 +711,27 @@ check, and described the runner's fallback as built. Both were corrected: "the a
 
 **Rejections:** editing the contract without the other two members. The section is a proposal
 until M2 and M3 approve the PR.
+
+## 2026-11-20 — W32: practitioner-check protocol (FT018)
+
+**Assistance level:** L3 (Core-assist): the assistant drafted
+[[10-Final1/practitioner-check]] (purpose, roles, who qualifies, consent text, a 30-minute
+session mapped to FT018's four items, the record template, the blocker path and the attempt log)
+from FT018, [[00-Meta/stakeholder-evidence]] and [[07-Defense/weak-points]] §1.
+
+**What I asked:** continue Iteration 2 with unblocked work.
+
+**What was retained:** the protocol, its links from the Final1 README, the W32 plan row, the FT018
+action-register row and my members row.
+
+**What I changed:** read the protocol and the consent text before committing.
+
+**How it was verified:** nothing was run. The links to the four notes it cites were checked to
+exist on `main` at `adc63ee`.
+
+**Errors found:** none recorded.
+
+**Rejections:**
+- Writing the case and the acceptance task myself: they are M2's and M3's parts, so they are
+  left marked "to be supplied".
+- Choosing a substitute: that is the supervisor's decision, so options are listed for them.

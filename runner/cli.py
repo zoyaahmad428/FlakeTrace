@@ -21,6 +21,7 @@ from runner.diagnose import (BUDGET_EXHAUSTED, INCONSISTENT, NOT_REPRODUCED, POL
                              DiagnoseInputError, diagnose)
 from runner.deletion import DELETION_RUN, INCONCLUSIVE, NOT_NEEDED, NOT_RUN
 from runner.order_runner import LIFECYCLES, ToolError
+from runner.policy import POLICIES, SCOPES
 from runner.workspace import WORKSPACES, WorkspaceError, workspace
 
 _VICTIM = re.compile(r"[\w.$]+#[\w$]+")
@@ -60,23 +61,33 @@ def main(argv=None) -> int:
                               "verification (W24, ADR-014). Default: no limit, still counted")
     command.add_argument("--budget-seconds", type=float, default=None,
                          help="stop searching after this many seconds; verification still runs (W24)")
+    command.add_argument("--policy", choices=POLICIES, default="original",
+                         help="order of the single-polluter search: original (default), ranked by static evidence "
+                              "(M1's ranking, ADR-014), or random (seeded by --seed; for evaluation) (W25)")
+    command.add_argument("--scope", choices=SCOPES, default="module",
+                         help="module (default): every discovered test; package: only tests in the victim's "
+                              "package (the real-case protocol's scope rule; not with --order) (W25)")
     arguments = list(argv if argv is not None else sys.argv[1:])
     args = parser.parse_args(arguments)
     if args.budget_invocations is not None and args.budget_invocations < 1:
         return _error(f"--budget-invocations must be >= 1, got {args.budget_invocations}", 2)
     if args.budget_seconds is not None and args.budget_seconds <= 0:
         return _error(f"--budget-seconds must be > 0, got {args.budget_seconds:g}", 2)
+    if args.scope == "package" and args.order:
+        return _error("--scope package cannot be combined with --order: the order file already fixes the tests", 2)
     budget = (Budget(args.budget_invocations, args.budget_seconds)
               if args.budget_invocations is not None or args.budget_seconds is not None else None)
     return run_diagnose(Path(args.project), args.victim, args.n, args.records,
                         Path(args.order) if args.order else None, args.shuffles, args.seed, arguments, args.lifecycle,
-                        args.workspace, Path(args.copy_parent) if args.copy_parent else None, budget)
+                        args.workspace, Path(args.copy_parent) if args.copy_parent else None, budget,
+                        args.policy, args.scope)
 
 
 def run_diagnose(project: Path, victim_id: str, n: int, records: str, order_path: Optional[Path] = None,
                  shuffles: int = 31, seed: int = 0, command: Optional[List[str]] = None,
                  lifecycle: str = "class-grouped", workspace_mode: str = "copy",
-                 copy_parent: Optional[Path] = None, budget: Optional[Budget] = None) -> int:
+                 copy_parent: Optional[Path] = None, budget: Optional[Budget] = None,
+                 policy: str = "original", scope: str = "module") -> int:
     # Java names only: the victim also becomes part of the record's file name.
     if not _VICTIM.fullmatch(victim_id):
         return _error(f"--victim must be Class#method (Java names, no spaces), got {victim_id!r}", 2)
@@ -97,7 +108,7 @@ def run_diagnose(project: Path, victim_id: str, n: int, records: str, order_path
     try:
         with workspace(project, workspace_mode, copy_parent) as work:
             outcome = _diagnose_in(work, project, victim, n, records, order, shuffles, seed, command, lifecycle,
-                                   workspace_mode, budget)
+                                   workspace_mode, budget, policy, scope)
     except WorkspaceError as error:
         return _error(str(error), 1)
     if isinstance(outcome, int):
@@ -118,12 +129,12 @@ def run_diagnose(project: Path, victim_id: str, n: int, records: str, order_path
     ddmin_ran = runs.minimise_runs and runs.polluters
     crashes = runs.infrastructure_failures + runs.shuffle_infrastructure_failures + runs.alone_infrastructure_failures
     print(summary(report, report_path, (len(runs.original_order) - 1, runs.minimise_runs) if ddmin_ran else None,
-                  crashes, runs.deletion_checks, runs.budget))
+                  crashes, runs.deletion_checks, runs.budget, runs.search))
     return 0
 
 
 def _diagnose_in(work: Path, project: Path, victim, n, records, order, shuffles, seed, command, lifecycle,
-                 workspace_mode, budget=None):
+                 workspace_mode, budget=None, policy="original", scope="module"):
     """The diagnosis and Member 1's evidence, run in `work`. Returns (runs, fields), or an exit code
     after printing the error. Messages name the user's project, never the temporary copy."""
     def own(text: str) -> str:
@@ -135,7 +146,7 @@ def _diagnose_in(work: Path, project: Path, victim, n, records, order, shuffles,
         runs = diagnose(work, victim, n=n, record_dir=records, original_order=order,
                         shuffles=shuffles, seed=seed, command=command, lifecycle=lifecycle,
                         workspace=workspace_mode, origin=project if workspace_mode == "copy" else None,
-                        budget=budget)
+                        budget=budget, policy=policy, scope=scope)
     except DiagnoseInputError as error:
         return _error(own(str(error)), 2)
     except subprocess.CalledProcessError as error:
@@ -193,6 +204,29 @@ def combine_fields(pairs: list) -> dict:
                 limitations=lines + found + missing, any_edge_found=bool(found))
 
 
+def search_line(search, candidates: int, searched: bool = True) -> List[str]:
+    """W25 (Interface 7): how the search ordered its candidates. A rank orders the search; it never says
+    what caused the failure (claims ledger G3)."""
+    scope = ", victim's package only" if search.scope == "package" else ""
+    if not searched:
+        lines = [f"  search:     no single-polluter search ran (policy {search.policy}){scope}"]
+        if search.scope == "package" and candidates == 0:
+            lines.append("              the victim's package has no other test; re-run with --scope module")
+        return lines
+    if search.policy == "random":
+        return [f"  search:     random order (seed {search.seed}){scope}"]
+    if search.policy == "ranked" and search.note:
+        return [f"  search:     ranked, fell back to the original order{scope}", "              " + search.note]
+    if search.policy == "ranked" and search.depths and not search.candidates_with_evidence:
+        depths = "->".join(str(depth) for depth in search.depths)
+        return [f"  search:     ranked at depth {depths}: no candidate had evidence, original order kept{scope}"]
+    if search.policy == "ranked" and search.depths:
+        depths = "->".join(str(depth) for depth in search.depths)
+        return [f"  search:     ranked by static evidence at depth {depths} ({search.candidates_with_evidence} of "
+                f"{candidates} candidates with evidence){scope}"]
+    return [f"  search:     original order{scope}"]
+
+
 def budget_line(account) -> str:
     """W24 (Interface 6): what the diagnosis spent and, if it stopped early, where."""
     spent = sum(account.spent.values())
@@ -210,7 +244,7 @@ def _depth_note(edge: dict) -> str:
 
 
 def summary(report: dict, report_path: Path, minimised: Optional[Tuple[int, int]] = None,
-            crashes: int = 0, deletion_checks: Sequence = (), budget=None) -> str:
+            crashes: int = 0, deletion_checks: Sequence = (), budget=None, search=None) -> str:
     """`minimised` = (earlier tests, ddmin runs) when ddmin found the polluters (ADR-007); the report's
     schema has no field for it, so only the summary says how far the order was shrunk.
     `deletion_checks` (W20) may drop tests after ddmin, so ddmin's own count is its round-1 checks."""
@@ -264,6 +298,9 @@ def summary(report: dict, report_path: Path, minimised: Optional[Tuple[int, int]
     lines.append(f"  reproduced: {reproduced['matched']}/{reproduced['n']} (lower bound "
                  f"{reproduced['lower']:.3f})   alone (same failure): {alone['matched']}/{alone['n']}, "
                  f"other failure: {alone['other']}/{alone['n']}")
+    if search is not None:
+        lines += search_line(search, budget.candidates_total if budget is not None else 0,
+                             searched=budget is None or budget.spent["search"] > 0)
     if budget is not None:
         lines.append(budget_line(budget))
     lines.append(f"  report:     {report_path}")
