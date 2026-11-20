@@ -161,7 +161,7 @@ def diagnose(
     shuffles: int = 31,
     seed: int = 0,
     command: Optional[List[str]] = None,
-    lifecycle: str = "per-method",
+    lifecycle: str = "class-grouped",
     workspace: str = "in-place",
     origin=None,
 ) -> DiagnosisRuns:

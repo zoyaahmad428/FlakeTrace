@@ -1374,3 +1374,27 @@ own copy of the code, not from the review's description.
 - **Limitations:** not run: full `discover_order` on a compiled fastjson (needs JDK 8; this machine
   has JDK 21) — M3's W26a step 6. `-Dtest`, `includesFile`, `excludesFile`, `groups` are refused with
   an input error. Surefire's `runOrder` is still not reproduced (alphabetical, as before).
+
+## Follow-ups after M1's verification (PR #108) and M3's PR #109 (2026-11-20)
+
+- **Inputs:** M1's four notes (W22 and W18 verified; Python floor; hidden first-run download; the
+  handover's W18 "before" step restored the old tests too) and M3's three (UI test hard-codes N2;
+  claim E14 stale; a `setup-java` flake). Branch `m2/after-verification` from `main` `843ef3d`.
+- **UI test, N2.** Reproduced first: with #109's regenerated `n2.json`,
+  `npx vitest run src/lib/report.test.ts` → `Expected: "15/20" Received: "12/20"`. N2
+  (`NegativeFlakyTest`) fails at random by design, so its expected rate is now read from the report;
+  every deterministic case stays hard-coded. After: `npm test` → **33 passed** with `main`'s
+  `n2.json` **and** with #109's; typecheck clean.
+- **Lifecycle default → `class-grouped`** (CLI, `diagnose()`, `OrderRunner`). Test first:
+  `test_lifecycle_reaches_diagnose_and_defaults_to_class_grouped` and
+  `test_default_is_class_grouped_since_m1s_control_run` → `AssertionError: 'per-method' !=
+  'class-grouped'` (2 failures). After: see the hand-over for the whole runner suite.
+- **Python floor:** PyPI says `jsonschema 4.26.0` `requires_python >=3.10`; the README already said
+  3.11+ (CI) and now also says 3.10 is the floor and 3.9 fails; CLAUDE.md §8 says it too.
+- **First-run download note** with a pre-fetch command, run once here:
+  `mvn -B -f fixtures/od-fixture/pom.xml test-compile dependency:build-classpath help:effective-pom
+  -Daether.connector.connectTimeout=60000 -Daether.connector.requestTimeout=180000` → `BUILD SUCCESS`.
+- **Also found:** the README's Windows test list missed `runner.tests.test_workspace` — added.
+- **Docs:** handover's W18 step corrected to restore only `runner/diagnose.py`, `runner/verify.py`,
+  `runner/cli.py`; claim E14 qualified (F3 `CANDIDATE` until W20, no "1-minimal"); W18 and W22
+  rows marked verified by M1 (PR #108).

@@ -13,7 +13,9 @@ const EXPECTED: Record<string, { outcome: string; polluters: number; order: numb
   f3: { outcome: "CANDIDATE", polluters: 2, order: 17, reduced: 3, reproduction: "20/20", alone: "0/20" },
   f4: { outcome: "VERIFIED (sequence)", polluters: 1, order: 14, reduced: 2, reproduction: "20/20", alone: "0/20" },
   n1: { outcome: "UNRESOLVED(VICTIM_FAILS_ALONE)", polluters: 0, order: 11, reduced: 1, reproduction: "20/20", alone: "20/20" },
-  n2: { outcome: "UNRESOLVED(VICTIM_FAILS_ALONE)", polluters: 0, order: 12, reduced: 1, reproduction: "15/20", alone: "15/20" },
+  // N2 fails at random by design (NegativeFlakyTest), so its rate changes on every regeneration:
+  // "from report" means the expected rate is read from n2.json itself (M3's request, PR #109).
+  n2: { outcome: "UNRESOLVED(VICTIM_FAILS_ALONE)", polluters: 0, order: 12, reduced: 1, reproduction: "from report", alone: "from report" },
   n3: { outcome: "UNRESOLVED(NOT_REPRODUCED)", polluters: 0, order: 6, reduced: 6, reproduction: "0/20", alone: "0/20" },
   n4: { outcome: "UNRESOLVED(VICTIM_FAILS_ALONE_DIFFERENTLY)", polluters: 0, order: 5, reduced: 1, reproduction: "20/20", alone: "0/20" },
 };
@@ -26,8 +28,10 @@ describe("toView on the eight committed reports", () => {
       expect(v.polluters).toHaveLength(e.polluters);
       expect(v.originalOrder).toHaveLength(e.order);
       expect(v.reducedSequence).toHaveLength(e.reduced);
-      expect(v.reproduction).toBe(e.reproduction);
-      expect(v.alone).toBe(e.alone);
+      const r = read(name);
+      const rate = (c: { matched: number; n: number }) => `${c.matched}/${c.n}`;
+      expect(v.reproduction).toBe(e.reproduction === "from report" ? rate(r.reproduction) : e.reproduction);
+      expect(v.alone).toBe(e.alone === "from report" ? rate(r.victim_alone) : e.alone);
     });
   }
 });

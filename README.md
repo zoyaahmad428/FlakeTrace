@@ -43,7 +43,18 @@ replays — without needing application logs and without modifying the project's
 ## Run the checks
 
 Needs Python 3.11+, a JDK 8 or newer (`java`, `javac`, `javap`) and Maven on `PATH`. Run from the
-repository root.
+repository root. Python 3.11 is what CI tests; 3.10 is the lowest that can install the pinned
+`jsonschema==4.26.0` (its own requirement is `>=3.10`), and **Python 3.9 does not work** — `pip`
+finds no matching `jsonschema` and `diagnose` then fails on import (found by M1, 2026-11-20).
+
+**The first run downloads Maven plugins** (`maven-dependency-plugin`, `maven-help-plugin`, Surefire)
+into `~/.m2`. FlakeTrace calls Maven with `-q`, which hides that download, so on a slow network the
+first diagnosis or test run can look stuck for many minutes. To see the download, or to pre-fetch
+once with longer timeouts:
+
+```
+mvn -B -f fixtures/od-fixture/pom.xml test-compile dependency:build-classpath help:effective-pom -Daether.connector.connectTimeout=60000 -Daether.connector.requestTimeout=180000
+```
 
 Linux, macOS, WSL or Git Bash:
 
@@ -64,7 +75,7 @@ Windows (cmd or PowerShell):
 py -m pip install -r eval/requirements.txt
 py -m unittest -v eval.tests.test_baseline eval.tests.test_examples eval.tests.test_outcome eval.tests.test_report eval.tests.test_schema_validator eval.tests.test_stats eval.tests.test_yield_report
 mvn -B -f fixtures/od-fixture/pom.xml test-compile
-py -m unittest -v runner.tests.test_cli runner.tests.test_diagnose runner.tests.test_discovery runner.tests.test_integrity runner.tests.test_minimise runner.tests.test_order_runner runner.tests.test_orders runner.tests.test_recording runner.tests.test_search
+py -m unittest -v runner.tests.test_cli runner.tests.test_diagnose runner.tests.test_discovery runner.tests.test_integrity runner.tests.test_minimise runner.tests.test_order_runner runner.tests.test_orders runner.tests.test_recording runner.tests.test_search runner.tests.test_workspace
 mvn -B -q -f runner/tests/resources/lifecycle-control/pom.xml test   # lifecycle control under Surefire (ADR-012)
 py -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode
 py -m unittest -v ui.tests.test_server

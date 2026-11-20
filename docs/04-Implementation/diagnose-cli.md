@@ -76,7 +76,7 @@ in-process and decides nothing itself:
 ## ADR-008 additions (2026-10-11)
 
 - `--order <file>` (the real failing order), `--shuffles N` (default 31), `--seed S` (default 0),
-  `--lifecycle per-method|class-grouped` (default `per-method` until M1's control run; W22, ADR-012),
+  `--lifecycle class-grouped|per-method` (default `class-grouped` since M1's control run matched Surefire on 2026-11-20, PR #108; W22, ADR-012),
   `--workspace copy|in-place` (default `copy`: everything runs in a temporary copy that is deleted
   afterwards, inside one `with workspace(...)` block around `diagnose()` and the evidence
   extraction, which needs the copy's compiled classes; W22, ADR-012 §4). A bad
