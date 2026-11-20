@@ -10,6 +10,7 @@ from pathlib import Path
 
 from eval.baseline import FailureSignature, RunOutcome, RunTally, TestIdentifier
 from eval.tests.fake_runner import FakeOrderRunner
+from runner.deletion import ALONE_CHECK, DELETION_RUN, NEEDED, NOT_NEEDED
 from runner.discovery import DEFAULT_SELECTION, DiscoveryConfigError
 from runner.recording import RecordingRunner
 from runner.diagnose import (
@@ -70,7 +71,7 @@ class TestRunSteps(unittest.TestCase):
         self.assertEqual((runs.polluters, runs.sequence), ([A, B], [A, B, V]))
         self.assertEqual((runs.sequence_n, runs.sequence_successes), (2, 2))
         self.assertEqual((runs.alone_n, runs.alone_successes, runs.search_runs, runs.minimise_runs), (2, 0, 2, 3))
-        self.assertEqual(len(runner.calls), 1 + 2 + 2 + (1 + 2) + 2)
+        self.assertEqual(len(runner.calls), 1 + 2 + 2 + (1 + 2) + 2 * 2 + 2)  # ..., deletion checks (W20), verify
 
     def test_flaky_failure_is_not_blamed_on_the_whole_prefix(self):
         # The victim fails only in the very first run (the reproduce step), never again.
@@ -319,6 +320,64 @@ class TestTallies(unittest.TestCase):
         self.assertEqual(runs.alone_tally, RunTally(3, 0, 0, 0, 3))
 
 
+Q = TestIdentifier("pkg.QTest", "q")
+
+
+class TestDeletionChecks(unittest.TestCase):
+    """W20, ADR-011: every kept test is checked by repeated removal."""
+
+    def test_ft004_counterexample_drops_the_unneeded_test(self):
+        """ADR-011 T1, the FT004 probe of 2026-11-13 (evidence-m2): P alone is enough, but [P, V]
+        passes its first two runs (the search's and ddmin's single trials) and fails after."""
+        trials = []
+
+        def outcome(order, test):
+            if test != V:
+                return PASS
+            before = order[:-1]
+            if P in before and Q in before:
+                return FAIL
+            if before == [P]:
+                trials.append(1)
+                return FAIL if len(trials) > 2 else PASS
+            return PASS
+        runner = FakeOrderRunner(outcome)
+        runs = run_steps(runner, [P, Q, V], V, n=20)
+        self.assertEqual(runs.status, POLLUTER_FOUND)
+        self.assertEqual(runs.polluters, [P])
+        self.assertEqual(runner.calls[-20:], [[P, V]] * 20)  # the final set is verified, not ddmin's
+        self.assertEqual(runs.sequence, [P, V])
+        self.assertEqual(runs.sequence_tally, RunTally(20, 0, 20, 0, 0))
+        self.assertEqual([(c.removed, c.status, c.source, c.round) for c in runs.deletion_checks],
+                         [(P, NEEDED, DELETION_RUN, 1), (Q, NOT_NEEDED, DELETION_RUN, 1), (P, NEEDED, ALONE_CHECK, 2)])
+
+    def test_other_statuses_have_no_deletion_checks(self):
+        calls = []
+        inconsistent = FakeOrderRunner(lambda order, test: (calls.append(1) or FAIL) if test == V and not calls else PASS)
+        for runner, order in ((victim_fails_when(lambda order: True), [A, V]),
+                              (victim_fails_when(lambda order: False), [A, V]),
+                              (inconsistent, [A, B, LATER, V])):
+            with mock.patch("runner.diagnose.check_deletions") as check:
+                runs = run_steps(runner, order, V, n=2)
+            self.assertNotEqual(runs.status, POLLUTER_FOUND)
+            self.assertEqual(runs.deletion_checks, [])
+            check.assert_not_called()
+
+    def test_deletion_runs_are_recorded_as_their_own_step(self):
+        record = Path(tempfile.mkdtemp(prefix="flaketrace-rec-")) / "r.jsonl"
+        runner = RecordingRunner(victim_fails_when(lambda order: A in order and B in order), record, {})
+        run_steps(runner, [A, LATER, B, V], V, n=1)
+        lines = [json.loads(line) for line in record.read_text(encoding="utf-8").splitlines()[1:]]
+        steps = [line["step"] for line in lines]
+        # ADR-011 "Consequences": step `deletion`, with the removed test, so ADR-013's recount can redo each tally.
+        self.assertEqual(steps.count("deletion"), 2)
+        self.assertEqual(steps.index("deletion"), steps.index("minimise") + steps.count("minimise"))
+        self.assertEqual(steps.index("verify"), steps.index("deletion") + 2)
+        deletions = [line for line in lines if line["step"] == "deletion"]
+        self.assertEqual([(line["removed"], line["round"]) for line in deletions], [(str(A), 1), (str(B), 1)])
+        self.assertTrue(all("removed" not in line for line in lines if line["step"] != "deletion"))
+
+
 class TestEnvironment(unittest.TestCase):
     """Panel action A7: each execution record names the project's commit and the OS."""
 
@@ -465,7 +524,8 @@ class TestDiagnoseOnFixture(unittest.TestCase):
         self.assertEqual((runs.sequence_successes, runs.sequence_n), (20, 20))
         self.assertEqual((runs.alone_successes, runs.alone_n), (0, 20))
         record = Path(runs.execution_record).read_text(encoding="utf-8").splitlines()
-        self.assertEqual(len(record), 1 + 1 + 20 + runs.search_runs + 20)
+        self.assertEqual(len(record), 1 + 1 + 20 + runs.search_runs + 20)  # no deletion runs: one polluter
+        self.assertEqual([(c.status, c.source) for c in runs.deletion_checks], [(NEEDED, ALONE_CHECK)])
         header = json.loads(record[0])
         self.assertRegex(header["project_commit"], r"^[0-9a-f]{40}$")
         self.assertIsInstance(header["project_dirty"], bool)
@@ -485,6 +545,9 @@ class TestDiagnoseOnFixture(unittest.TestCase):
         self.assertEqual(runs.search_runs, len(runs.original_order) - 1)
         self.assertGreater(runs.minimise_runs, 0)
         self.assertEqual(runs.sequence_successes, 5)
+        # ADR-011 T3 at the runner level: both polluters needed (the verdict needs M3's half of W20).
+        self.assertEqual([(c.removed, c.status, c.source, c.runs.passed) for c in runs.deletion_checks],
+                         [(p, NEEDED, DELETION_RUN, 5) for p in self.expected_polluters("F3")])
 
     def test_n1_fails_alone(self):
         runs = self.diagnose_case("N1", n=20)

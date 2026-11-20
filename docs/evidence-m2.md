@@ -1417,3 +1417,52 @@ own copy of the code, not from the review's description.
     `… alone (same failure): 0/20, other failure: 0/20`.
   This answers M1's note that N4 had only been run under the old `per-method` default (PR #114 at `03c9b30`).
 - **Registers:** FT006/FT021 action-register row → `Partly` (W22 reproduced by M1, PR #108).
+
+## W20 runner half: deletion checks (2026-11-20)
+
+- **Requirement:** FT004 / ADR-011 / `docs/contracts/interfaces.md` Interface 4 (agreed by M1, M2, M3,
+  PR #119). Every kept test is checked by repeated removal; `DiagnosisRuns.deletion_checks`.
+- **Files:** `runner/deletion.py` (`DeletionCheck`, `label`, `check_deletions`), `runner/diagnose.py`
+  (`run_steps` calls it for `POLLUTER_FOUND`, record step `deletion` with `removed` and `round`, then verifies the **final** set);
+  tests `runner/tests/test_deletion.py` (10) and `runner/tests/test_diagnose.py` `TestDeletionChecks` (3)
+  plus F1/F3 fixture assertions. Branch `m2/w20-deletion-checks` from `main` `88e90b5`.
+- **Test-first (Windows 11, local JDK, Python 3):**
+  - Task 1 before code: `py -3 -m unittest runner.tests.test_deletion` → `ModuleNotFoundError: No module named 'runner.deletion'`. After: 5 OK.
+  - Task 2 before code: → `ImportError: cannot import name 'check_deletions'`. After: 10 OK.
+  - Task 3 before wiring: `runner.tests.test_diagnose.TestDeletionChecks` → `FAILED (failures=2, errors=1)`;
+    the FT004 test (ADR-011 T1) failed with `[P, Q] != [P]` — the old code keeps the unneeded Q, as on
+    `7cf453d` (2026-11-13 entry). After: OK.
+  - One older test's run count changed on purpose: `test_two_polluters_needed_are_minimised_and_verified`
+    now counts the `2 × n` deletion runs.
+- **Labels at the edge (m = 20):** 19 matched → `NOT_NEEDED` (lower bound 0.764); 18 → `INCONCLUSIVE` (0.699).
+- **Whole suite:** every `runner/tests/test_*.py`, `ui.tests.test_server` and every `eval/tests/test_*.py`
+  → `Ran 406 tests in 614.351s … OK` (includes the real F1, F3 fixture runs).
+- **Real CLI runs, default `class-grouped`:**
+  - F3 `odfixture.ToggleVictimTest#expectsNotBothFlagsSet` → record steps `reproduce 1, alone 20, search 16,
+    minimise 9, delete 40, verify 20` (run before the review renamed the step to `deletion`). Without `setFlagA` the victim passed 20/20; without `setFlagB`
+    20/20 → both `NEEDED` (ADR-011 T3, runner half). Verdict still `CANDIDATE [DELETION_EVIDENCE_INCOMPLETE]`:
+    M3's `eval/report.py` does not read `deletion_checks` yet.
+  - F1 → `VERIFIED (sequence)`; record steps `reproduce 1, alone 20, search 2, verify 20` — **no**
+    deletion runs (one polluter: `alone-check`, ADR-011 T4).
+- **Not done:** T5 (budget ends mid-check) — no budget before W24; `NOT_RUN` is defined, not produced.
+- **Fresh review (Claude Opus, whole change) — 0 critical, 3 important, 5 minor; all fixed test-first:**
+  1. Record step was `delete` without the removed test; ADR-011 "Consequences" and ADR-014 §3 say
+     `deletion`. RED: `test_deletion_runs_are_recorded_as_their_own_step` → `AssertionError: 0 != 2`.
+     Now step `deletion`, each run line has `removed` and `round`.
+  2. The CLI `minimised:` line would contradict the report once checks drop a test. RED:
+     `summary() got an unexpected keyword argument 'deletion_checks'` (2 tests). Now the line shows
+     ddmin's own count (its round-1 checks) and drops "not deletion-verified" when checks ran; a new
+     `deletion:` line gives the removal runs, how many dropped and how many inconclusive.
+  3. The UI said the deletion checks "have not run yet (W20)" — false once they run. Reworded to what
+     `DELETION_EVIDENCE_INCOMPLETE` always means. `eval/report.py`'s similar limitation is M3's: sent to M3.
+  - Minors: README state cell; FT004 test now asserts the last 20 runs are `[P, V]`; the other-statuses
+    test asserts `check_deletions` is never called (a deliberate break — the guard changed to `if True:`
+    — made it fail, then the code was restored); deletion runs are counted from the checks on the CLI
+    line; **limitation:** with small `--n`, `NOT_NEEDED` cannot be reached (at `n = 1` a 1/1 match has
+    a Wilson lower bound of about 0.21), so a test `ddmin` kept by mistake shows `INCONCLUSIVE`, not
+    dropped — and `runs.n < 10` makes the report `INCOMPLETE`, so the verdict stays honest.
+- **After the fixes, real F3:** CLI prints `minimised:  16 earlier tests -> 2 polluters in 9 runs (reduced by
+  single-trial delta debugging)` and `deletion:   kept tests removed one at a time, 20 runs each (40 runs):
+  0 dropped as not needed, 0 inconclusive`; verdict `CANDIDATE` (M3's half pending). Record: step
+  `deletion` × 40, `removed` = `setFlagA` round 1 (victim passed 20/20) and `setFlagB` round 1 (20/20).
+  UI: `npm test` → 33 passed; `tsc --noEmit` clean.

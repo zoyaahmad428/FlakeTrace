@@ -1094,3 +1094,20 @@ code made lenient, since schema v2 requires `other`. **Checked rather than assum
 showed `other` (CLI-only gap); real N4 and F1 runs under the default. **What I changed:** *to fill in.*
 
 Ownership checkpoint: why `other` is printed even when 0; why the fixtures, not `summary()`, were fixed.
+
+## 2026-11-20 — W20 runner half: deletion checks
+
+**Tool:** Claude Code (Claude Opus 5.5), brainstorming → writing-plans → executing-plans, test-driven
+development · **Level:** L3 · **Branch:** `m2/w20-deletion-checks` · **Spec/plan:**
+`docs/superpowers/specs/2026-11-20-w20-deletion-checks-design.md`, `docs/superpowers/plans/2026-11-20-w20-deletion-checks.md`
+
+**Asked:** build the runner half of W20 against the agreed Interface 4. **Kept:** a separate
+`runner/deletion.py`; labels from M3's `wilson_interval` and threshold, not a copy; drop only the
+first `NOT_NEEDED` per round; verify the final set. **Rejected:** checks inside `run_steps` (too long to
+test); repeating `ddmin` trials (ADR-011 §6). **Wrong and caught by the fresh review:** my design
+named the record step `delete`, contradicting ADR-011 and ADR-014 (`deletion`, with the removed
+test); the CLI and UI would have said things the new checks made false. All fixed test-first. **Also fixed:** `members.md` had duplicate rows for M1 and
+M2 from an earlier merge — the stale ones were removed. **What I changed:** *to fill in.*
+
+Ownership checkpoint: why only the first `NOT_NEEDED` test is dropped per round; why one polluter needs
+no deletion runs; why F3 is still `CANDIDATE` today.
