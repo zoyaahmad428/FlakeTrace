@@ -283,6 +283,10 @@ BudgetAccount(
    complete, so its answer stands. ADR-010's row order in `decide()` is unchanged.
 5. **No check is cut part-way** (B5), so `runs.n < 10` never comes from the budget; it comes only
    from a small `-n`.
+6. **`INCONSISTENT` stays `INCONSISTENT` under a limit** (added 2026-11-20, after W24's review; agreed
+   with Interface 7). Exploration finished, so it is not `BUDGET_EXHAUSTED`. The full order can cost more
+   than the reserve pays for; if not one run of it fits, `sequence_tally` is the one full-order re-check
+   already run in `minimise` (it passed), because `eval.outcome` refuses `sequence.n == 0`.
 
 **Who does what, in order.**
 
@@ -296,6 +300,86 @@ BudgetAccount(
    limit just above B2's minimum, and one with no limit. Results recorded as run, not predicted.
 4. M1: reproduces item 2 (a budget too small to finish gives `UNRESOLVED(BUDGET_EXHAUSTED)` with an
    account) on their own machine.
+
+## Interface 7 — search policy (W25, ADR-014 §4–§6; M2 produces, M3 consumes and measures)
+
+*Proposed by M2 on 2026-11-20. Agreed by M1, M2 and M3 on 2026-11-20 (team WhatsApp group,
+recorded by M2; confirmed by approving the PR that adds this section), together with Interface 6
+point 6. Built against [ADR-014](../03-Design/decisions/ADR-014-budget-ledger-and-ranked-search.md)
+and Interface 5 (M1's `rank_candidates`, merged). Not built yet.*
+
+**Input.** `diagnose()` and the CLI gain:
+
+| Option | Values | Default | Meaning |
+| --- | --- | --- | --- |
+| `--policy` | `original`, `ranked`, `random` | `original` | the order the single-polluter search tries candidates in (ADR-014 §4) |
+| `--scope` | `module`, `package` | `module` | `module`: every discovered test (today). `package`: only tests whose class is in the victim's own package (not sub-packages) — the real-case protocol's frozen scope rule. Refused with `--order`, which already fixes the tests |
+
+`random` shuffles the candidates with `random.Random(seed)`, where `seed` is `--seed` (the same value
+the shuffled-order search starts from). Five fixed seeds give the protocol's step 8.
+
+**The rules the runner (M2) follows.**
+
+| # | Rule |
+| --- | --- |
+| P1 | **One candidate order per diagnosis**, chosen after the alone check and before `search`: the tests before the victim in the order searched (the starting order, or the shuffled order that reproduced). Everything else — the budget, `minimise`, deletion checks, the sequence check — is identical for all three policies (ADR-014 §4: the same endpoint) |
+| P2 | `original` keeps that order. `random` is a seeded shuffle of it. `ranked` is `rank_candidates(project, victim, candidates, depth, cache)` (Interface 5) — the same set in a new order, never fewer |
+| P3 | **Fallback.** If `rank_candidates` raises `ExtractError` (the victim cannot be analysed), the order is `original` and `note` says why. The policy stays `ranked` in the record and the report, so the comparison counts the case honestly |
+| P4 | **Deepening (ADR-014 §6), `ranked` only.** Start at depth 2. Rank again one level deeper only while **all** hold: no candidate has an edge at this depth; the victim's or a candidate's analysis at this depth has a `DEPTH_LIMIT` observation (Interface 2, `resource-evidence.md`); depth < 5; and, when there is a seconds limit, the analysis time so far is below `deepen_share × limit_seconds`, with `deepen_share = 0.20`. Without a seconds limit it may go to depth 5. An `ExtractError` at a deeper depth keeps the last ranking that worked |
+| P5 | **Cost.** Ranking runs no JVM, so it costs no invocations. Its time is `AnalysisCache.seconds`, reported as `analysis_seconds`, and it is part of `wall_seconds`. A seconds limit therefore stops exploration sooner after a long analysis (B7) |
+| P6 | **Record line.** One `{"type": "ranking", "policy", "scope", "seed", "depths", "order", "scores", "note"}` line before the first `search` run (`order` as `Class#method`, `scores` as Interface 5's tuples; `[]` unless `ranked`). M3's measurement reads where the relevant tests sat from it |
+
+**New field on `DiagnosisRuns`**, and two `BudgetAccount` fields now filled (Interface 6):
+
+```python
+search: SearchPolicy
+
+SearchPolicy(
+    policy: str,                       # "original" | "ranked" | "random"
+    scope: str,                        # "module" | "package"
+    seed: Optional[int],               # random only
+    depths: List[int],                 # depths ranked at, in order, e.g. [2, 3]; [] unless ranked
+    deepen_share: float,               # 0.20 (ADR-014 §6: a policy value, recorded)
+    candidates_with_evidence: Optional[int],  # candidates with an edge at the last depth; None unless ranked
+    note: Optional[str],               # why ranking fell back, else None
+)
+# BudgetAccount.policy = SearchPolicy.policy; BudgetAccount.analysis_seconds = cache seconds (None unless ranked)
+```
+
+**What the report assembly (M3) does with it.**
+
+- The report gains `search_policy` with the fields above (a schema bump M3 proposes in
+  [report-schema.md](report-schema.md)). A `note` is also added to `limitations`.
+- The verdict never depends on the policy: the same evidence gives the same `decide()` input.
+- Wording (claims ledger G3): a higher rank orders the search; it never says what caused a failure.
+  `reasons` stay out of the report; they are in the record line.
+
+**Points ADR-014 leaves open, decided here** (part of what this section's approval agrees to):
+
+1. **Ranking happens once**, on the order searched. ddmin and the deletion checks do not re-rank:
+   they do not use a candidate order.
+2. **Deepening is for `ranked` only and only when no candidate has any edge.** One edge at depth 2
+   is enough to order the search; going deeper would only re-sort ties.
+3. **The 20% share applies only with a seconds limit.** With an invocation limit only, analysis is
+   free in invocations, so the limit is the depth (5).
+4. **`random` reuses `--seed`.** One seed makes the whole diagnosis repeatable.
+5. **The scope fallback is a re-run, not automatic.** "The whole module if the package yields
+   nothing" means: if `--scope package` gives no polluter, the user runs again with `--scope module`.
+   An automatic second search would spend the budget twice and blur the same-budget comparison.
+
+**Who does what, in order.**
+
+1. M2: ADR-014's scripted tests first (fake runner, fake ranker): the polluter is candidate 9 of 10 and
+   the only one with an edge → `original` tries 9 pairs, `ranked` 1, the same verdict, totals 16
+   invocations apart; no candidate has an edge → `ranked` keeps the original order; the fallback; the
+   deepening stops (edge found, no `DEPTH_LIMIT`, depth 5, the 20% share); `random` is repeatable; the
+   scope filter. Then the runner, the record line and the CLI flags. Then real F1–F4 with
+   `--policy ranked`: the same verdicts as `original` (ADR-014's test).
+2. M3, in parallel: the `search_policy` schema field and the limitation, tested with a
+   `FakeSearchPolicy` with exactly these fields; then the offline comparison (ADR-014 evidence
+   item 5) and, once this lands, the live one (item 4).
+3. M1: reviews that P2 and P4 use `rank_candidates` and the `DEPTH_LIMIT` kind as Interface 2 and 5
+   define them.
 
 ## Open integration questions (decide before code is written against them)
 
