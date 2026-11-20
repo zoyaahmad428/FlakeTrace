@@ -79,6 +79,36 @@
       "required": ["shared_resource", "polluter_write_location", "victim_read_location"],
       "additionalProperties": false
     },
+    "deletionCheck": {
+      "type": "object",
+      "description": "ADR-011 section 4 / Interface 4 (W20, PR #121): one kept test left out and the rest plus the victim repeated m times. Earlier rounds' checks stay in the list (a dropped test's own entry is still visible) -- the verdict reads only the checks at the highest round.",
+      "properties": {
+        "removed": { "$ref": "#/$defs/testIdentifier" },
+        "runs": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "properties": {
+                "n": { "type": "integer", "minimum": 1 },
+                "passed": { "type": "integer", "minimum": 0 },
+                "matched": { "type": "integer", "minimum": 0 },
+                "other": { "type": "integer", "minimum": 0 },
+                "infra": { "type": "integer", "minimum": 0 }
+              },
+              "required": ["n", "passed", "matched", "other", "infra"],
+              "additionalProperties": false
+            }
+          ],
+          "description": "The victim's m outcomes without this test; null exactly when status is NOT_RUN."
+        },
+        "status": { "type": "string", "enum": ["NEEDED", "NOT_NEEDED", "INCONCLUSIVE", "NOT_RUN"] },
+        "source": { "type": "string", "enum": ["deletion-run", "alone-check"] },
+        "round": { "type": "integer", "minimum": 1 }
+      },
+      "required": ["removed", "runs", "status", "source", "round"],
+      "additionalProperties": false
+    },
     "failureSignature": {
       "oneOf": [
         { "type": "null" },
@@ -171,6 +201,11 @@
       "items": { "$ref": "#/$defs/resourceEdge" },
       "minItems": 0
     },
+    "deletion_checks": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/deletionCheck" },
+      "minItems": 0
+    },
     "failure_signature": { "$ref": "#/$defs/failureSignature" },
     "order_exploration": { "$ref": "#/$defs/orderExploration" },
     "assurance": { "$ref": "#/$defs/assurance" },
@@ -235,9 +270,9 @@
   "required": [
     "schema_version", "victim", "polluters", "original_failing_order", "reduced_sequence",
     "reproduction", "victim_alone", "shared_resource", "polluter_write_location",
-    "victim_read_location", "resource_edges", "failure_signature", "instrumentation_level",
-    "execution_record_reference", "source_integrity", "outcome", "unresolved_reason",
-    "candidate_reasons", "limitations"
+    "victim_read_location", "resource_edges", "deletion_checks", "failure_signature",
+    "instrumentation_level", "execution_record_reference", "source_integrity", "outcome",
+    "unresolved_reason", "candidate_reasons", "limitations"
   ],
   "additionalProperties": false,
   "allOf": [

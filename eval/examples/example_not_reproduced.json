@@ -19,6 +19,7 @@
   "polluter_write_location": { "class": "com.example.SuspectedPolluterTest", "method": "mutatesSomething", "bytecode_offset": 2 },
   "victim_read_location": { "class": "com.example.OrderInsensitiveTest", "method": "checksSomething", "bytecode_offset": 4 },
   "resource_edges": [],
+  "deletion_checks": [],
   "failure_signature": null,
   "instrumentation_level": "static-only",
   "execution_record_reference": "illustrative-only: no real execution record backs this example",

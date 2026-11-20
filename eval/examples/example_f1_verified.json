@@ -43,14 +43,19 @@
   "outcome": "VERIFIED",
   "unresolved_reason": null,
   "candidate_reasons": [],
+  "deletion_checks": [
+    { "removed": { "class": "odfixture.ConfigPolluterTest", "method": "pollute" },
+      "runs": { "n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0 },
+      "status": "NEEDED", "source": "alone-check", "round": 1 }
+  ],
   "assurance": {
-    "sequence": { "reproduces": "ESTABLISHED", "passes_alone": "ESTABLISHED", "deletion": "NOT_YET_CHECKED" },
+    "sequence": { "reproduces": "ESTABLISHED", "passes_alone": "ESTABLISHED", "deletion": "DELETION_VERIFIED" },
     "resource": { "level": "STATIC_OVERLAP", "mechanism": "NOT_ASSESSED" }
   },
   "limitations": [
     "reproduction and victim_alone are REAL measured counts: od-fixture's F1 case was actually run 20 times each way via plain Maven inside maven:3.9-eclipse-temurin-8 on 2026-10-09 (eval/tools/run_real_reps.sh) -- not hand-picked. other/infra are 0 by construction: this case is deterministic, confirmed 20/20 or 0/20 every time, never a crash or a different exception. See docs/evidence-m3.md and eval/benchmark/logs/F1.json for the raw run.",
     "polluter_write_location/victim_read_location's bytecode_offset values (1, 1) are real -- verified independently via `javap -c -p` on the compiled classes (putstatic at offset 1 in ConfigPolluterTest#pollute, getstatic at offset 1 in ConfigVictimTest#expectsDefaultMode; JDK 8, 2026-10-09). No real static-bytecode-evidence EXTRACTOR exists yet in this repo (Member 1's component is still being built) -- these offsets were read by hand from javap, not produced by that component.",
     "original_failing_order includes two benign noise tests to illustrate what the minimiser would reduce away; reduced_sequence is what was actually run.",
-    "Reduced by single-trial delta debugging; not deletion-verified (ADR-011, W20 not yet landed) -- assurance.sequence.deletion reports this as NOT_YET_CHECKED."
+    "Deletion check from the alone runs (ADR-011 section 2, W20): without its one polluter the victim passed 20 of 20 runs alone."
   ]
 }

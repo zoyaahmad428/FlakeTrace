@@ -151,7 +151,13 @@ def maven_test_classpath(project_dir, effective_pom=None) -> List[str]:
         subprocess.run(
             [
                 _tool("mvn"), "-B", "-q", "-f", str(project / "pom.xml"),
-                "test-compile", "dependency:build-classpath", f"-Dmdep.outputFile={cp_file}", *extra,
+                # Fully-qualified goal, not the short "dependency:" prefix: the prefix needs
+                # Maven to resolve it via plugin-groups metadata (local cache or Maven
+                # Central), which can fail on a cold CI runner ("No plugin found for prefix
+                # 'dependency'") even though the plugin jar itself downloads fine once named
+                # directly. 3.7.0 already resolves in this project's own CI/local caches.
+                "test-compile", "org.apache.maven.plugins:maven-dependency-plugin:3.7.0:build-classpath",
+                f"-Dmdep.outputFile={cp_file}", *extra,
             ],
             check=True,
         )

@@ -27,6 +27,7 @@ handles, so no new code was needed here -- just adding the case.
 
 import json
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -43,10 +44,25 @@ REPORTS_DIR = REPO_ROOT / "eval" / "reports"
 RECORD_DIR = REPO_ROOT / "eval" / "reports" / "flaketrace-records"
 
 
+def _diagnose(victim, n=20):
+    """diagnose() plus one fix: runner.diagnose.diagnose() always writes
+    execution_record as an absolute path (runner/diagnose.py's own str(record), never
+    relativised there -- a real design choice for a real end-user installation, where an
+    absolute path IS the right thing to log). This script commits its reports to the repo,
+    so an absolute path would leak this machine's own username/filesystem layout into
+    version control -- not allowed. Made relative to REPO_ROOT before anything downstream
+    (assemble_report, the committed JSON) ever sees it."""
+    diagnosis = diagnose(FIXTURE, victim, n=n, record_dir=str(RECORD_DIR))
+    record = Path(diagnosis.execution_record)
+    if record.is_absolute():
+        diagnosis = replace(diagnosis, execution_record=str(record.relative_to(REPO_ROOT)))
+    return diagnosis
+
+
 def run_f1():
     victim = TestIdentifier("odfixture.ConfigVictimTest", "expectsDefaultMode")
     print("=== F1: running diagnose() for real (n=20) ===")
-    diagnosis = diagnose(FIXTURE, victim, n=20, record_dir=str(RECORD_DIR))
+    diagnosis = _diagnose(victim, n=20)
     print(diagnosis)
 
     print("=== F1: running evidence.extract's real pair mode (analyse_pair/report_fields) ===")
@@ -67,7 +83,7 @@ def run_f1():
 def run_f2():
     victim = TestIdentifier("odfixture.FeatureVictimTest", "expectsTurboDisabled")
     print("=== F2: running diagnose() for real (n=20) ===")
-    diagnosis = diagnose(FIXTURE, victim, n=20, record_dir=str(RECORD_DIR))
+    diagnosis = _diagnose(victim, n=20)
     print(diagnosis)
 
     print("=== F2: running evidence.extract's real pair mode (analyse_pair/report_fields) ===")
@@ -88,7 +104,7 @@ def run_f2():
 def run_f3():
     victim = TestIdentifier("odfixture.ToggleVictimTest", "expectsNotBothFlagsSet")
     print("=== F3: running diagnose() for real (n=20) ===")
-    diagnosis = diagnose(FIXTURE, victim, n=20, record_dir=str(RECORD_DIR))
+    diagnosis = _diagnose(victim, n=20)
     print(diagnosis)
 
     print("=== F3: resource evidence for both polluters, combined (ADR-007) ===")
@@ -106,7 +122,7 @@ def run_f4():
     victim = TestIdentifier("odfixture.AlwaysEarlyVictimTest", "expectsLateFlagUnset")
     print("=== F4: running diagnose() for real (n=20) -- the discovered order never "
           "reproduces this; ADR-008's shuffle search must find it ===")
-    diagnosis = diagnose(FIXTURE, victim, n=20, record_dir=str(RECORD_DIR))
+    diagnosis = _diagnose(victim, n=20)
     print(diagnosis)
 
     print("=== F4: resource evidence for its polluter (ADR-007's combine_fields, one polluter) ===")
@@ -123,7 +139,7 @@ def run_f4():
 def run_n3():
     victim = TestIdentifier("odfixture.EnvDependentNegativeTest", "onlyFailsUnderCI")
     print("=== N3: running diagnose() for real (n=20) -- expected to never reproduce ===")
-    diagnosis = diagnose(FIXTURE, victim, n=20, record_dir=str(RECORD_DIR))
+    diagnosis = _diagnose(victim, n=20)
     print(diagnosis)
 
     report = assemble_report(diagnosis)  # no resource edge: N3 needs none
@@ -136,7 +152,7 @@ def run_n3():
 def run_n4():
     victim = TestIdentifier("odfixture.DualFailureVictimTest", "expectsStateTwo")
     print("=== N4: running diagnose() for real (n=20) -- ADR-010 T5, FT003 regression ===")
-    diagnosis = diagnose(FIXTURE, victim, n=20, record_dir=str(RECORD_DIR))
+    diagnosis = _diagnose(victim, n=20)
     print(diagnosis)
 
     report = assemble_report(diagnosis)  # no resource edge: N4 needs none
@@ -149,7 +165,7 @@ def run_n4():
 def run_n1():
     victim = TestIdentifier("odfixture.NegativeAloneFailTest", "alwaysFails")
     print("=== N1: running diagnose() for real (n=20) ===")
-    diagnosis = diagnose(FIXTURE, victim, n=20, record_dir=str(RECORD_DIR))
+    diagnosis = _diagnose(victim, n=20)
     print(diagnosis)
 
     report = assemble_report(diagnosis)  # no resource edge: N1 needs none
@@ -162,7 +178,7 @@ def run_n1():
 def run_n2():
     victim = TestIdentifier("odfixture.NegativeFlakyTest", "sometimesFails")
     print("=== N2: running diagnose() for real (n=20) ===")
-    diagnosis = diagnose(FIXTURE, victim, n=20, record_dir=str(RECORD_DIR))
+    diagnosis = _diagnose(victim, n=20)
     print(diagnosis)
 
     report = assemble_report(diagnosis)  # no resource edge: N2 needs none

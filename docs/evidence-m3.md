@@ -2097,3 +2097,138 @@ discovery first, confirm `SerializeWriterTest_14#test_writer_1` and
   run (steps 7-9: the real diagnose through to a report, the baseline/targeted-search
   comparison). Discovery being correct was the hard blocker; the remaining steps are real JVM
   runs, not yet attempted this entry.
+
+## 2026-11-20 — W20: eval/report.py reads the real deletion_checks (Interface 4, PR #121)
+
+**Requirement:** M2's W20 runner half merged (PR #121): `DiagnosisRuns.deletion_checks`, the
+real repeated-removal check per kept polluter, per Interface 4
+(`docs/contracts/interfaces.md`). M3's half: `eval/report.py` reads it and sets `deletion_status`
+accordingly, replacing A1's fail-safe stand-in (2026-11-19) with the real check.
+
+- **Test-first.** Added `TestDeletionChecksW20` to `eval/tests/test_report.py` with a
+  `FakeDeletionCheck` dataclass matching Interface 4's shape exactly (not
+  `runner.deletion.DeletionCheck` -- coded against the contract, per its own instruction).
+  Confirmed every new/changed assertion failed against the unfixed code first (3 real
+  failures: two-polluters-both-needed expecting `CANDIDATE` instead of `VERIFIED`, and
+  INCONCLUSIVE falling back to `INCOMPLETE`) before implementing the fix.
+- **Logic** (`eval/report.py`): reads `diagnosis.deletion_checks`, takes only the checks at the
+  highest `round` (earlier rounds, including a dropped test's own entry, stay in the list per
+  Interface 4 but are not the verdict), then: any `NOT_RUN`/`runs is None`/`runs.n < 10` ->
+  `DELETION_INCOMPLETE`; else any `INCONCLUSIVE` -> `DELETION_INCONCLUSIVE` (ranks above
+  incomplete); else all `NEEDED` -> `DELETION_VERIFIED`; no checks at all (a stale caller, or
+  the budget ended before any ran) -> `DELETION_INCOMPLETE`, fail-safe, never `VERIFIED`.
+  **Interpretation flagged for the team:** Interface 4's own table lists "all NEEDED" before
+  the `runs.n < 10` clause, which read literally would let an all-NEEDED set with a short run
+  count still reach `VERIFIED`. Implemented the stricter reading instead (short-run checked
+  first) since a `NEEDED` label from too few trials (e.g. W24 cutting a check short) should
+  not count as established just because every check happens to agree -- raised with M2/M1 for
+  confirmation, not decided unilaterally.
+- **Schema bump** (`eval/schema/report.schema.json`, as Interface 4 asked M3 to propose): new
+  `deletionCheck` def and a required `deletion_checks` array field, shaped as ADR-011 section 4
+  plus `round`, `runs: null` allowed when `status: "NOT_RUN"`. Updated every example fixture
+  (10 files) and `test_schema_validator.py`'s shared `VALID_REPORT` to carry a real-shaped
+  `deletion_checks` entry -- all were missing the new required field.
+- **Real result, the actual F3 case (ADR-011 T3):** regenerated all 8 reports
+  (`eval/tools/run_w9_integration.py`). F3: both `setFlagA` and `setFlagB` come back `NEEDED`,
+  20/20 each, round 1, source `deletion-run` -- 40 real JVM runs. **F3 is honestly `VERIFIED`
+  again**, matching its ground truth for the first time with a real, not fail-safe, basis.
+  F1/F2/F4 (one polluter each, `alone-check` source) also `VERIFIED`; N1-N4 unchanged. All 8
+  match `fixtures/od-fixture/ground_truth.json` exactly.
+- **Renamed `eval/examples/example_f3_candidate.json` back to `example_f3_verified.json`** --
+  not a reversion to the pre-A1 state, but the real check now existing and confirming the
+  ground truth where A1 could only fail safe without one. Content rewritten to the real
+  `deletion_checks`/`resource_edges` shape (M1's extractor and M2's deletion check both ran for
+  real this time, not placeholder values). `eval/tests/test_examples.py`'s
+  `EXPECTED_INPUTS`/`REAL_EXAMPLE_TO_LOG_CASE` keys updated to match.
+- **A real, separate bug found and fixed: personal-path leak in my own
+  `eval/tools/run_w9_integration.py`.** `execution_record_reference` in the regenerated reports
+  was an absolute path (`C:\Users\...\flaketrace-records\...`) -- confirmed via
+  `git show HEAD:eval/reports/f1.json` that this was **already committed on `main`**, from my
+  own earlier regenerations this session (the A1 fix, the merge resolutions). `RECORD_DIR` in
+  the script has always been built from `Path(__file__).resolve()` (absolute by construction);
+  `runner.diagnose.diagnose()` never relativises it either (a real design choice for a real
+  end-user installation, where an absolute path is correct to log locally) -- nothing wrong in
+  either member's own file, just a gap in my own tool that commits reports to the repo. Fixed
+  with a `_diagnose()` wrapper that relativises `execution_record` to `REPO_ROOT` before
+  `assemble_report()` ever sees it; re-ran the regeneration, confirmed `grep` for the local
+  username finds nothing in any of the 8 committed reports now. **Flag for the team:** the
+  already-committed history (several commits on `main`) still has the leaked path in old
+  diffs -- not rewriting history to fix it (destructive, against the "member commits" rule's
+  spirit), but worth knowing it is there if anyone great-reps the git log.
+- **Command:** `python3 -m unittest discover -s eval/tests` -> 128/128 OK, several times
+  across this entry (after the logic fix, after the schema bump, after the path fix, after the
+  rename). Real `eval/tools/run_w9_integration.py` run (and a second, clean re-run after the
+  path fix): F1/F2/F3/F4 `VERIFIED`, N1/N2 `UNRESOLVED(VICTIM_FAILS_ALONE)`, N3
+  `UNRESOLVED(NOT_REPRODUCED)`, N4 `UNRESOLVED(VICTIM_FAILS_ALONE_DIFFERENTLY)` -- matches
+  ground truth exactly.
+- **Flagged, not touched (M2's file) -- member's explicit choice:**
+  `runner/tests/test_cli.py`'s `test_f3_two_polluters_are_candidate_until_deletion_checks_exist`
+  now fails (F3 is `VERIFIED`, not `CANDIDATE`) -- real, expected breakage from this change,
+  left for M2 to update since he is actively working the related PR. Confirmed this is the
+  *only* casualty: `python3 -m unittest discover -s runner/tests` (real JVM) -> 254 tests,
+  **1 failure, exactly this one** -- no cascading breakage anywhere else in his 254-test suite.
+- **Not done this entry:** `claims-ledger.md` row G2 progress noted in `members.md`/
+  `iteration-2-plan.md` but its `OPEN` status left alone -- Interface 4's own plan names step 4
+  as "M1 reproduces T3 independently on her machine", which has not happened yet; closing G2
+  before that would be exactly the "closed without independent reproduction" mistake CLAUDE.md
+  §5 warns against.
+- **Flagged, not touched (M2's row): claims-ledger row E14 is stale again.** M2 already
+  qualified it once for A1 (2026-11-19: "F3's command gives `CANDIDATE
+  [DELETION_EVIDENCE_INCOMPLETE]`... F3's ground truth `VERIFIED` is W20's target") -- now
+  stale a second time, since W20 landed and F3 genuinely reaches `VERIFIED` again. Not mine to
+  edit (Owner: M2); raised for him alongside the `test_cli.py` note above.
+
+## 2026-11-20 — Two PR #129 CI failures fixed in M2's files, member's explicit permission
+
+**Requirement:** PR #129's `ui` and `runner` CI checks both failed. Both root-caused to real
+issues, both in M2's files, both fixed with the member's explicit go-ahead (asked first via
+`AskUserQuestion`, chose to fix both rather than flag-only).
+
+- **`ui` (2 failures):** `ui/web/src/lib/report.test.ts` hardcoded `f3: { outcome: "CANDIDATE",
+  ... }` -- stale since my W20 fix (above) made the real committed `eval/reports/f3.json`
+  genuinely `VERIFIED`. Fixed the `EXPECTED` table entry. The other failing test ("says why a
+  result is only a candidate (F3)") asserted a `DELETION_EVIDENCE_INCOMPLETE` candidate reason
+  that no real committed report carries any more (all of F1-F4 are `VERIFIED`, N1-N4
+  `UNRESOLVED`) -- rewrote it to spread F3's real shape with `outcome`/`candidate_reasons`
+  overridden to the state F3 itself was honestly in before W20, rather than deleting the only
+  test that exercises this mapping. **Command:** `npm test` (ui/web) -> 33/33 OK.
+- **`runner` (19 errors, 7 failures, all from the same root cause):**
+  `runner/order_runner.py`'s `maven_test_classpath()` called the short Maven goal prefix
+  `dependency:build-classpath`, which needs Maven to resolve `dependency` ->
+  `org.apache.maven.plugins:maven-dependency-plugin` via plugin-groups metadata (local cache or
+  Maven Central) -- failed on that CI run ("No plugin found for prefix 'dependency'"), and
+  every test calling this function failed identically as a result. Not a logic bug in any
+  test; a tooling-resolution gap. Checked this machine's own `~/.m2` cache
+  (`find ~/.m2/repository/org/apache/maven/plugins/maven-dependency-plugin`) for an
+  already-proven version rather than guessing one from memory -- `3.7.0` is cached and has
+  resolved successfully all session. Pinned the fully-qualified goal
+  (`org.apache.maven.plugins:maven-dependency-plugin:3.7.0:build-classpath`), which skips
+  prefix resolution entirely regardless of cache/network state. **Command:** confirmed the
+  fully-qualified goal resolves for real (`maven_test_classpath(fixtures/od-fixture)` ->
+  4 classpath entries, JUnit jar included); `python3 -m unittest discover -s runner/tests`
+  (real JVM) -> 256 tests, **exactly 1 failure** -- the same, already-flagged
+  `test_f3_two_polluters_are_candidate_until_deletion_checks_exist` (M2's file, expects
+  `CANDIDATE`, F3 is genuinely `VERIFIED` since W20). No new breakage from the plugin pin.
+- **Not done:** did not add a CI retry for this specific failure class (M2 already has one for
+  `setup-java`, PR #120) -- the fully-qualified goal is the more robust fix (removes the
+  failure mode entirely rather than retrying into it), so a retry would be redundant here.
+
+## 2026-11-20 — The last blocking test fixed: `runner` CI required check, member's permission
+
+**Requirement:** `runner` is a required check; the one known F3 failure above was actively
+blocking the PR from being mergeable, not just a cosmetic red X. Asked the member explicitly
+before touching this again (the first time this exact test came up, the answer was "leave it
+for M2"; this time, with it genuinely blocking merge, the answer was to fix it).
+
+- **Fix:** `runner/tests/test_cli.py`'s `test_f3_two_polluters_are_candidate_until_deletion_
+  checks_exist` renamed to `test_f3_two_polluters_both_needed_gives_verified`; its one stale
+  assertion (`("CANDIDATE", ["DELETION_EVIDENCE_INCOMPLETE"])`) corrected to
+  `("VERIFIED", [])`. Every other assertion in the test (polluters, shared_resource, the
+  `flagB` limitation line, the minimised-count line) needed no change -- F3's structure is
+  identical, only its deletion-check outcome changed.
+- **Command:** the single test, real JVM -> OK (confirmed before touching anything else in the
+  file). Full `python3 -m unittest discover -s runner/tests` rerun to confirm this was the
+  only casualty, result recorded once it finishes.
+- **Not done:** claims-ledger row E14 (M2's row, also stale for the same reason) is a doc, not
+  a blocking CI check -- left for M2 as before; this entry only fixes what was actually
+  blocking the PR.

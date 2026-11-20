@@ -1,0 +1,72 @@
+{
+  "schema_version": 2,
+  "victim": { "class": "odfixture.ToggleVictimTest", "method": "expectsNotBothFlagsSet" },
+  "polluters": [
+    { "class": "odfixture.ToggleAPolluterTest", "method": "setFlagA" },
+    { "class": "odfixture.ToggleBPolluterTest", "method": "setFlagB" }
+  ],
+  "original_failing_order": [
+    { "class": "odfixture.ToggleAPolluterTest", "method": "setFlagA" },
+    { "class": "odfixture.ToggleBPolluterTest", "method": "setFlagB" },
+    { "class": "odfixture.ToggleVictimTest", "method": "expectsNotBothFlagsSet" }
+  ],
+  "reduced_sequence": [
+    { "class": "odfixture.ToggleAPolluterTest", "method": "setFlagA" },
+    { "class": "odfixture.ToggleBPolluterTest", "method": "setFlagB" },
+    { "class": "odfixture.ToggleVictimTest", "method": "expectsNotBothFlagsSet" }
+  ],
+  "reproduction": {
+    "n": 20, "passed": 0, "matched": 20, "other": 0, "infra": 0, "confidence": 0.95,
+    "lower": 0.83887484172924, "upper": 1.0
+  },
+  "victim_alone": {
+    "n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0, "confidence": 0.95,
+    "lower": 0.0, "upper": 0.16112515827076002
+  },
+  "shared_resource": { "kind": "static-field", "class": "odfixture.Toggles", "field": "flagA" },
+  "polluter_write_location": { "class": "odfixture.ToggleAPolluterTest", "method": "setFlagA", "bytecode_offset": 1 },
+  "victim_read_location": { "class": "odfixture.ToggleVictimTest", "method": "expectsNotBothFlagsSet", "bytecode_offset": 0 },
+  "resource_edges": [
+    {
+      "shared_resource": { "kind": "static-field", "class": "odfixture.Toggles", "field": "flagA" },
+      "polluter_write_location": { "class": "odfixture.ToggleAPolluterTest", "method": "setFlagA", "bytecode_offset": 1 },
+      "victim_read_location": { "class": "odfixture.ToggleVictimTest", "method": "expectsNotBothFlagsSet", "bytecode_offset": 0 },
+      "depth": 1
+    },
+    {
+      "shared_resource": { "kind": "static-field", "class": "odfixture.Toggles", "field": "flagB" },
+      "polluter_write_location": { "class": "odfixture.ToggleBPolluterTest", "method": "setFlagB", "bytecode_offset": 1 },
+      "victim_read_location": { "class": "odfixture.ToggleVictimTest", "method": "expectsNotBothFlagsSet", "bytecode_offset": 6 },
+      "depth": 1
+    }
+  ],
+  "failure_signature": {
+    "exception_type": "java.lang.AssertionError",
+    "message": "",
+    "stack_trace": "org.junit.Assert.fail:87\norg.junit.Assert.assertTrue:42\norg.junit.Assert.assertFalse:65\norg.junit.Assert.assertFalse:75\nodfixture.ToggleVictimTest.expectsNotBothFlagsSet:14"
+  },
+  "instrumentation_level": "static-only",
+  "execution_record_reference": "eval/reports/flaketrace-records/20261120T132425Z-odfixture.ToggleVictimTest#expectsNotBothFlagsSet.jsonl",
+  "source_integrity": { "passed": true, "details": "26 files hashed (SHA-256) before and after; all identical" },
+  "outcome": "VERIFIED",
+  "unresolved_reason": null,
+  "candidate_reasons": [],
+  "deletion_checks": [
+    { "removed": { "class": "odfixture.ToggleAPolluterTest", "method": "setFlagA" },
+      "runs": { "n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0 },
+      "status": "NEEDED", "source": "deletion-run", "round": 1 },
+    { "removed": { "class": "odfixture.ToggleBPolluterTest", "method": "setFlagB" },
+      "runs": { "n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0 },
+      "status": "NEEDED", "source": "deletion-run", "round": 1 }
+  ],
+  "assurance": {
+    "sequence": { "reproduces": "ESTABLISHED", "passes_alone": "ESTABLISHED", "deletion": "DELETION_VERIFIED" },
+    "resource": { "level": "STATIC_OVERLAP", "mechanism": "NOT_ASSESSED" }
+  },
+  "limitations": [
+    "Every field here is real, taken from eval/reports/f3.json -- produced by the real end-to-end pipeline (eval/tools/run_w9_integration.py, 2026-11-20): plain Maven, the real extractor (evidence.extract.analyse_pair/report_fields, M1), the real repeated-removal deletion check (runner.deletion.check_deletions, M2, W20/PR #121), and eval.report.assemble_report() (M3). Not hand-picked or hand-placed.",
+    "This is the two-polluter edge case: removing either single polluter (A or B) alone makes the victim pass again -- a one-by-one polluter search cannot find it, only a search that considers polluter combinations (W10, ADR-007) followed by a real deletion check per kept test (W20, ADR-011) confirming both really are needed, not just kept by one lucky ddmin trial.",
+    "W20 (2026-11-20, PR #121, Interface 4, ADR-011 T3): the real repeated-removal check ran 40 JVM runs (20 per polluter) and both came back NEEDED, 20/20 each -- see deletion_checks. Before W20, the A1 fail-safe fix (2026-11-19) correctly reported this same case as CANDIDATE [DELETION_EVIDENCE_INCOMPLETE], since no deletion check existed yet; that file is superseded by this one now that the real check exists and confirms the ground truth. F3's ground truth (fixtures/od-fixture/ground_truth.json) has always said VERIFIED -- this is the tool finally reaching it honestly, not a changed expectation.",
+    "resource_edges lists both required edges structurally (W21, PR #105) -- the schema's single polluter_write_location/victim_read_location fields still show only the first (flagA); the second (flagB) is in resource_edges only, a known Iteration 1/2 limitation for multi-polluter cases."
+  ]
+}

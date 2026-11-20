@@ -1,6 +1,8 @@
 import sys
 import unittest
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
@@ -10,6 +12,18 @@ from eval.schema_validator import validate_report
 from evidence.extract import find_edges, report_fields
 from runner.diagnose import DiagnosisRuns, INCONSISTENT, NOT_REPRODUCED, POLLUTER_FOUND, VICTIM_FAILS_ALONE
 from runner.integrity import SourceIntegrity
+
+
+@dataclass(frozen=True)
+class FakeDeletionCheck:
+    """Exactly Interface 4's DeletionCheck shape (docs/contracts/interfaces.md), not
+    runner.deletion.DeletionCheck -- this module is coded against the contract, not M2's
+    internals (Interface 4's own instruction)."""
+    removed: TestIdentifier
+    runs: Optional[RunTally]
+    status: str
+    source: str
+    round: int
 
 POLLUTER = TestIdentifier("odfixture.ConfigPolluterTest", "pollute")
 VICTIM = TestIdentifier("odfixture.ConfigVictimTest", "expectsDefaultMode")
@@ -120,9 +134,14 @@ class TestResourceEdgesFromM1(unittest.TestCase):
         validate_report(report)
 
 
-class TestDeletionEvidenceBeforeW20(unittest.TestCase):
-    """ADR-010 claim S3 with ADR-011 sections 2 and 4, decided 2026-11-19 (M2, with M3's permission):
-    one polluter is deletion-verified by the alone check; two or more are INCOMPLETE until W20."""
+Q = TestIdentifier("x", "y")
+
+
+class TestDeletionChecksW20(unittest.TestCase):
+    """Interface 4 (docs/contracts/interfaces.md), ADR-011: eval/report.py reads
+    DiagnosisRuns.deletion_checks -- the checks at the highest round, in priority order
+    (all NEEDED -> VERIFIED; else any INCONCLUSIVE -> INCONCLUSIVE; else any NOT_RUN/short
+    run -> INCOMPLETE; no checks at all -> INCOMPLETE, fail-safe, never VERIFIED)."""
 
     def edge_fields(self):
         return {"shared_resource": EDGE_A["shared_resource"],
@@ -131,23 +150,105 @@ class TestDeletionEvidenceBeforeW20(unittest.TestCase):
                 "instrumentation_level": "static-only", "limitations": [], "resource_edges": [EDGE_A, EDGE_B]}
 
     def test_one_polluter_passing_alone_is_deletion_verified(self):
-        report = assemble_report(_diagnosis(POLLUTER_FOUND), resource_fields(POLLUTER_ACCESS, VICTIM_ACCESS))
+        alone = _tally(20, 20)
+        checks = [FakeDeletionCheck(POLLUTER, alone, "NEEDED", "alone-check", 1)]
+        diagnosis = _diagnosis(POLLUTER_FOUND, alone_tally=alone, deletion_checks=checks)
+        report = assemble_report(diagnosis, resource_fields(POLLUTER_ACCESS, VICTIM_ACCESS))
         self.assertEqual((report["outcome"], report["assurance"]["sequence"]["deletion"]), ("VERIFIED", "DELETION_VERIFIED"))
         self.assertTrue(any("alone" in line.lower() and "deletion" in line.lower() for line in report["limitations"]), report["limitations"])
 
-    def test_two_polluters_without_deletion_runs_are_candidate_incomplete(self):
-        diagnosis = _diagnosis(POLLUTER_FOUND, polluters=[POLLUTER, TestIdentifier("x", "y")])
+    def test_two_polluters_both_needed_gives_verified(self):
+        """The real F3 case (ADR-011 T3, 2026-11-20): ddmin keeps setFlagA and setFlagB; the
+        real repeated-removal check runs 40 deletion runs and both come back NEEDED, 20/20
+        each. F3 is honestly VERIFIED now, not CANDIDATE -- W20 is the real check A1 (2026-11-19)
+        was a fail-safe stand-in for."""
+        runs = _tally(20, 20)
+        checks = [FakeDeletionCheck(POLLUTER, runs, "NEEDED", "deletion-run", 1),
+                  FakeDeletionCheck(Q, runs, "NEEDED", "deletion-run", 1)]
+        diagnosis = _diagnosis(POLLUTER_FOUND, polluters=[POLLUTER, Q], deletion_checks=checks)
+        report = assemble_report(diagnosis, self.edge_fields())
+        self.assertEqual(report["outcome"], "VERIFIED")
+        self.assertEqual(report["candidate_reasons"], [])
+        self.assertEqual(report["assurance"]["sequence"]["deletion"], "DELETION_VERIFIED")
+        validate_report(report)
+
+    def test_no_deletion_checks_at_all_is_incomplete_fail_safe(self):
+        """A kept polluter with no check at all (a stale caller, or the budget ended before any
+        check ran) must never be read as VERIFIED -- the fail-safe row of Interface 4's table."""
+        diagnosis = _diagnosis(POLLUTER_FOUND, polluters=[POLLUTER, Q], deletion_checks=[])
         report = assemble_report(diagnosis, self.edge_fields())
         self.assertEqual(report["outcome"], "CANDIDATE")
         self.assertEqual(report["candidate_reasons"], ["DELETION_EVIDENCE_INCOMPLETE"])
         self.assertEqual(report["assurance"]["sequence"]["deletion"], "INCOMPLETE")
         validate_report(report)
 
+    def test_one_inconclusive_check_outranks_incomplete(self):
+        """Interface 4: INCONCLUSIVE ranks above INCOMPLETE -- evidence against the result
+        outweighs missing evidence."""
+        runs = _tally(20, 20)
+        messy = _tally(20, 10, matched=5, other=5)
+        checks = [FakeDeletionCheck(POLLUTER, runs, "NEEDED", "deletion-run", 1),
+                  FakeDeletionCheck(Q, messy, "INCONCLUSIVE", "deletion-run", 1)]
+        diagnosis = _diagnosis(POLLUTER_FOUND, polluters=[POLLUTER, Q], deletion_checks=checks)
+        report = assemble_report(diagnosis, self.edge_fields())
+        self.assertEqual(report["outcome"], "CANDIDATE")
+        self.assertEqual(report["candidate_reasons"], ["DELETION_EVIDENCE_INCONCLUSIVE"])
+        self.assertEqual(report["assurance"]["sequence"]["deletion"], "INCONCLUSIVE")
+        validate_report(report)
+
+    def test_a_not_run_check_is_incomplete(self):
+        """NOT_RUN (the budget ended first, ADR-011 section 3) is incomplete, not a failure."""
+        runs = _tally(20, 20)
+        checks = [FakeDeletionCheck(POLLUTER, runs, "NEEDED", "deletion-run", 1),
+                  FakeDeletionCheck(Q, None, "NOT_RUN", "deletion-run", 1)]
+        diagnosis = _diagnosis(POLLUTER_FOUND, polluters=[POLLUTER, Q], deletion_checks=checks)
+        report = assemble_report(diagnosis, self.edge_fields())
+        self.assertEqual(report["outcome"], "CANDIDATE")
+        self.assertEqual(report["candidate_reasons"], ["DELETION_EVIDENCE_INCOMPLETE"])
+        self.assertEqual(report["assurance"]["sequence"]["deletion"], "INCOMPLETE")
+
+    def test_a_short_run_count_is_incomplete(self):
+        """Interface 4: any runs.n < 10 is incomplete even if every observed run was NEEDED --
+        too few trials to call it established."""
+        short = _tally(5, 5)
+        checks = [FakeDeletionCheck(POLLUTER, _tally(20, 20), "NEEDED", "deletion-run", 1),
+                  FakeDeletionCheck(Q, short, "NEEDED", "deletion-run", 1)]
+        diagnosis = _diagnosis(POLLUTER_FOUND, polluters=[POLLUTER, Q], deletion_checks=checks)
+        report = assemble_report(diagnosis, self.edge_fields())
+        self.assertEqual(report["candidate_reasons"], ["DELETION_EVIDENCE_INCOMPLETE"])
+
+    def test_only_the_highest_round_counts_after_a_drop(self):
+        """Interface 4: 'checks from earlier rounds stay in the list, so a dropped test is
+        still visible' -- but the verdict reads only the highest round. Round 1 drops Q
+        (NOT_NEEDED); round 2 re-checks the survivor P alone, which (as the only kept test)
+        reuses the alone tally and comes back NEEDED. Reading round 1 by mistake would see Q's
+        NOT_NEEDED and (wrongly) treat it as still-kept evidence; reading the max round
+        correctly reports VERIFIED on the real, final one-polluter set."""
+        round1_runs = _tally(20, 0, matched=20)  # round 1: without Q, the victim still fails -> NOT_NEEDED for Q
+        alone = _tally(20, 20)
+        checks = [
+            FakeDeletionCheck(POLLUTER, _tally(20, 20), "NEEDED", "deletion-run", 1),
+            FakeDeletionCheck(Q, round1_runs, "NOT_NEEDED", "deletion-run", 1),
+            FakeDeletionCheck(POLLUTER, alone, "NEEDED", "alone-check", 2),
+        ]
+        diagnosis = _diagnosis(POLLUTER_FOUND, polluters=[POLLUTER], alone_tally=alone, deletion_checks=checks)
+        report = assemble_report(diagnosis, resource_fields(POLLUTER_ACCESS, VICTIM_ACCESS))
+        self.assertEqual(report["outcome"], "VERIFIED")
+        self.assertEqual(report["assurance"]["sequence"]["deletion"], "DELETION_VERIFIED")
+
+
+def _alone_checked(diagnosis_kwargs=None):
+    """A _diagnosis() for the common single-polluter, alone-check-is-the-deletion-check shape
+    (ADR-011 section 2) -- real runner output always carries this check, never deletion_checks=[]."""
+    alone = (diagnosis_kwargs or {}).get("alone_tally", _tally(20, 20))
+    checks = [FakeDeletionCheck(POLLUTER, alone, "NEEDED", "alone-check", 1)]
+    return _diagnosis(POLLUTER_FOUND, deletion_checks=checks, **(diagnosis_kwargs or {}))
+
 
 class TestAssembleReport(unittest.TestCase):
     def test_polluter_found_with_edge_gives_verified(self):
         fields = resource_fields(POLLUTER_ACCESS, VICTIM_ACCESS)
-        report = assemble_report(_diagnosis(POLLUTER_FOUND), fields)
+        report = assemble_report(_alone_checked(), fields)
         self.assertEqual(report["schema_version"], 2)
         self.assertEqual(report["outcome"], "VERIFIED")
         self.assertIsNone(report["unresolved_reason"])
@@ -168,7 +269,7 @@ class TestAssembleReport(unittest.TestCase):
         """ADR-010 section 4 (Q1, option A, agreed 2026-11-13): a reproducing, passes-alone
         sequence with no resource edge is CANDIDATE now, not UNRESOLVED -- the Mid's
         NO_SUPPORTED_RESOURCE_EVIDENCE abstention is retired."""
-        report = assemble_report(_diagnosis(POLLUTER_FOUND), resource_fields=None)
+        report = assemble_report(_alone_checked(), resource_fields=None)
         self.assertEqual(report["outcome"], "CANDIDATE")
         self.assertIsNone(report["unresolved_reason"])
         self.assertEqual(report["candidate_reasons"], ["NO_SUPPORTED_RESOURCE_EVIDENCE"])
@@ -181,21 +282,20 @@ class TestAssembleReport(unittest.TestCase):
         )
         validate_report(report)
 
-    def test_two_polluters_with_a_real_edge_gives_candidate_not_verified(self):
-        """A1 fail-safe fix (2026-11-19): ADR-011 section 2's free deletion check only covers
-        ONE kept polluter (the alone check proves it). Two or more kept polluters -- e.g.
-        fixture F3, both required -- have no such free check and W20's real one hasn't
-        landed, so even a real resource edge and clean reproduction only gives CANDIDATE, not
-        VERIFIED. Never claim F3 is VERIFIED until W20 actually builds the multi-test check."""
-        diagnosis = _diagnosis(POLLUTER_FOUND, polluters=[POLLUTER, TestIdentifier("x", "y")])
+    def test_two_polluters_both_needed_with_a_real_edge_gives_verified(self):
+        """W20 landed (2026-11-20, PR #121, Interface 4): the real repeated-removal check,
+        not A1's fail-safe stand-in. Two kept polluters both NEEDED -- the real F3 shape
+        (ADR-011 T3) -- now honestly reaches VERIFIED, same as a single kept polluter does."""
+        q = TestIdentifier("x", "y")
+        checks = [FakeDeletionCheck(POLLUTER, _tally(20, 20), "NEEDED", "deletion-run", 1),
+                  FakeDeletionCheck(q, _tally(20, 20), "NEEDED", "deletion-run", 1)]
+        diagnosis = _diagnosis(POLLUTER_FOUND, polluters=[POLLUTER, q], deletion_checks=checks)
         fields = resource_fields(POLLUTER_ACCESS, VICTIM_ACCESS)
         report = assemble_report(diagnosis, fields)
-        self.assertEqual(report["outcome"], "CANDIDATE")
+        self.assertEqual(report["outcome"], "VERIFIED")
         self.assertIsNone(report["unresolved_reason"])
-        self.assertEqual(report["candidate_reasons"], ["DELETION_EVIDENCE_INCOMPLETE"])
-        # M2's W20-precursor fix (2026-11-19, with M3's permission): two kept polluters get the
-        # real ADR-011 value DELETION_INCOMPLETE now, not a placeholder NOT_YET_CHECKED.
-        self.assertEqual(report["assurance"]["sequence"]["deletion"], "INCOMPLETE")
+        self.assertEqual(report["candidate_reasons"], [])
+        self.assertEqual(report["assurance"]["sequence"]["deletion"], "DELETION_VERIFIED")
         self.assertEqual(report["assurance"]["resource"]["level"], "STATIC_OVERLAP")
         validate_report(report)
 
@@ -250,7 +350,7 @@ class TestAssembleReport(unittest.TestCase):
         validate_report(report)
 
     def test_polluter_found_weak_reproduction_gives_candidate(self):
-        diagnosis = _diagnosis(POLLUTER_FOUND, sequence_tally=_tally(20, 8, matched=12))
+        diagnosis = _alone_checked({"sequence_tally": _tally(20, 8, matched=12)})
         fields = resource_fields(POLLUTER_ACCESS, VICTIM_ACCESS)
         report = assemble_report(diagnosis, fields)
         self.assertEqual(report["outcome"], "CANDIDATE")

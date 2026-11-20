@@ -10,7 +10,7 @@ const read = (name: string) => JSON.parse(readFileSync(`${REPORTS}${name}.json`,
 const EXPECTED: Record<string, { outcome: string; polluters: number; order: number; reduced: number; reproduction: string; alone: string }> = {
   f1: { outcome: "VERIFIED (sequence)", polluters: 1, order: 3, reduced: 2, reproduction: "20/20", alone: "0/20" },
   f2: { outcome: "VERIFIED (sequence)", polluters: 1, order: 8, reduced: 2, reproduction: "20/20", alone: "0/20" },
-  f3: { outcome: "CANDIDATE", polluters: 2, order: 17, reduced: 3, reproduction: "20/20", alone: "0/20" },
+  f3: { outcome: "VERIFIED (sequence)", polluters: 2, order: 17, reduced: 3, reproduction: "20/20", alone: "0/20" },
   f4: { outcome: "VERIFIED (sequence)", polluters: 1, order: 14, reduced: 2, reproduction: "20/20", alone: "0/20" },
   n1: { outcome: "UNRESOLVED(VICTIM_FAILS_ALONE)", polluters: 0, order: 11, reduced: 1, reproduction: "20/20", alone: "20/20" },
   // N2 fails at random by design (NegativeFlakyTest), so its rate changes on every regeneration:
@@ -74,8 +74,13 @@ describe("details", () => {
     expect(toView(read("n4")).aloneDetail).toBe("passed 0 · failed differently 20 · crashed or not run 0");
     expect(toView(read("n4")).reason).toMatch(/fails when run alone with a different failure/);
   });
-  it("says why a result is only a candidate (F3)", () => {
-    expect(toView(read("f3")).candidateReasons).toEqual([
+  it("says why a result is only a candidate (F3-shaped, before W20's deletion check)", () => {
+    // F3 itself is VERIFIED now (W20 landed, 2026-11-20): both polluters' real deletion
+    // checks come back NEEDED. No real committed report is CANDIDATE any more, so this
+    // reuses F3's real shape with outcome/candidate_reasons overridden to the state F3
+    // itself was in before W20 -- still a faithful DELETION_EVIDENCE_INCOMPLETE case.
+    const stillIncomplete: Report = { ...read("f3"), outcome: "CANDIDATE", candidate_reasons: ["DELETION_EVIDENCE_INCOMPLETE"] };
+    expect(toView(stillIncomplete).candidateReasons).toEqual([
       "not every kept test is shown to be needed: at least one deletion check (W20) did not run, ran fewer than 10 times, or is not yet read into the report",
     ]);
     expect(toView(read("f1")).candidateReasons).toEqual([]);

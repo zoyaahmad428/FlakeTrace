@@ -19,6 +19,7 @@
   "polluter_write_location": null,
   "victim_read_location": null,
   "resource_edges": [],
+  "deletion_checks": [],
   "failure_signature": {
     "exception_type": "java.lang.AssertionError",
     "message": "expected the originally-observed failure to recur",

@@ -34,18 +34,23 @@ A1 fail-safe fix (2026-11-19): `deletion_status=None` ("not yet checked") no lon
 satisfies claim S3 -- an unestablished claim is not an established one.
 ADR-011 section 2's free deletion check (the alone check already proves it)
 only covers a SINGLE kept polluter; `eval/report.py` computes a real
-`DELETION_VERIFIED` for that case. Two or more kept polluters have no free
-check yet, so `example_f3_verified.json` was renamed
-**`example_f3_candidate.json`** and its outcome corrected from `VERIFIED` to
-`CANDIDATE [DELETION_EVIDENCE_INCOMPLETE]` — F3's real, two-polluter case
-cannot honestly be `VERIFIED` until W20 builds the real multi-test check.
-F3's ground truth (`fixtures/od-fixture/ground_truth.json`) stays `VERIFIED`
-as the W20 target; this file shows what the tool can honestly say *now*.
+`DELETION_VERIFIED` for that case. Two or more kept polluters had no free
+check at the time, so F3 was `example_f3_candidate.json`,
+`CANDIDATE [DELETION_EVIDENCE_INCOMPLETE]`, pending W20's real multi-test check.
+
+**Superseded 2026-11-20 (W20, ADR-011, Interface 4, PR #121):** `eval/report.py` now
+reads `DiagnosisRuns.deletion_checks` -- the real repeated-removal check -- for any
+number of kept polluters, not just one. On real F3 this is 40 JVM runs (20 per
+polluter) and both come back `NEEDED`; F3 is honestly `VERIFIED` again, the same
+verdict its ground truth (`fixtures/od-fixture/ground_truth.json`) always named as
+the target. `example_f3_candidate.json` is renamed back to
+**`example_f3_verified.json`** -- not a reversion, the real check now exists and
+confirms the ground truth, where A1 could only fail safe without one.
 
 | File | Decision table row | Kind |
 | --- | --- | --- |
 | `example_f1_verified.json` | reproduces strongly, one kept polluter (free deletion check), resource edge exists -> VERIFIED | REAL (F1, single polluter) |
-| `example_f3_candidate.json` | same reproduction/resource strength, but TWO kept polluters -> CANDIDATE [DELETION_EVIDENCE_INCOMPLETE] (A1 fix) | REAL (F3, both polluters required) |
+| `example_f3_verified.json` | same reproduction/resource strength, TWO kept polluters, both confirmed NEEDED by the real W20 deletion check -> VERIFIED | REAL (F3, both polluters required) |
 | `example_candidate.json` | reproduces weakly (lower bound < 0.70) -> CANDIDATE [BELOW_REPLAY_THRESHOLD] | SYNTHETIC |
 | `example_victim_fails_alone.json` | victim fails alone, matching the reference -> UNRESOLVED(VICTIM_FAILS_ALONE) | REAL (N1, deterministic 20/20) |
 | `example_victim_fails_alone_intermittent.json` | same row, intermittent alone-failure | REAL (N2, 12/20 -- genuinely measured, not round) |

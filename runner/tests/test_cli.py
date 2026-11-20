@@ -522,12 +522,14 @@ class TestCliOnFixture(unittest.TestCase):
         self.assertEqual(report["victim_read_location"],
                          {"class": "odfixture.FeatureFlags", "method": "isTurboEnabled", "bytecode_offset": 2})
 
-    def test_f3_two_polluters_are_candidate_until_deletion_checks_exist(self):
-        # Ground truth for F3 is VERIFIED; it is reached once W20's deletion runs show both
-        # polluters are needed (ADR-011 test T3). Until then the honest verdict is CANDIDATE.
+    def test_f3_two_polluters_both_needed_gives_verified(self):
+        # W20 landed (2026-11-20, PR #121/Interface 4): the real repeated-removal deletion
+        # check now runs for both kept polluters, and both come back NEEDED -- F3 reaches
+        # its ground truth, VERIFIED, through a real check (ADR-011 T3), not a fail-safe
+        # stand-in (A1, 2026-11-19, which honestly gave CANDIDATE before this check existed).
         code, out, err, report = self.diagnose("odfixture.ToggleVictimTest#expectsNotBothFlagsSet", 20)
         self.assertEqual(code, 0, err)
-        self.assertEqual((report["outcome"], report["candidate_reasons"]), ("CANDIDATE", ["DELETION_EVIDENCE_INCOMPLETE"]))
+        self.assertEqual((report["outcome"], report["candidate_reasons"]), ("VERIFIED", []))
         self.assertEqual(report["polluters"], [{"class": "odfixture.ToggleAPolluterTest", "method": "setFlagA"},
                                                {"class": "odfixture.ToggleBPolluterTest", "method": "setFlagB"}])
         self.assertEqual(report["shared_resource"], {"kind": "static-field", "class": "odfixture.Toggles", "field": "flagA"})
