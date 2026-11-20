@@ -999,3 +999,48 @@ measured by M3). M2 is asked to review the rule before any measurement.
 - `docs/contracts/interfaces.md` does not yet list `rank_candidates`. ADR-014 §5 defines its
   signature, and I added an optional `cache` argument. Adding it to the contract needs all three
   members, so it is proposed in the PR, not edited here.
+
+## Fix: the second-edge limitation said "not shown" for a listed edge (2026-11-20)
+
+**Requirement:** FT005 and ledger G3: a report must say exactly what it shows. M2's independent
+verification of W21 ([[evidence-m2]], "A2", 2026-11-20) found that `report_fields` still wrote
+"Another shared resource is not shown in this report: controls.State#b" for control 2. Since
+schema v2, `State#b` **is** in `resource_edges`, so that line was false. M2 fixed the same wording
+in `runner/cli.py`; this is my half.
+
+**File/function:** `evidence/extract.py` `report_fields`. The line now reads "Shared resource
+`<id>` is not the headline resource; it is listed in resource_edges", the same wording as M2's
+CLI line. "N further write/read location(s) … are not shown in this report" is unchanged,
+because it is still true: `resource_edges` keeps only the first location of each edge.
+
+**Test-first, in the assistant's Linux cloud container** (OpenJDK 21, Maven 3.9.11, Python 3.13),
+on `main` at `69cf36f`:
+- New test `ResourceEdgesTest.test_a_second_edge_is_named_as_listed_not_as_hidden` (no JVM), and
+  `Ft005ControlsTest.test_unrelated_overlap_…` changed to expect the new line.
+- **Before the fix:** `python3 -m unittest evidence.tests.test_extract.ResourceEdgesTest
+  evidence.tests.test_extract.Ft005ControlsTest` → `Ran 7 tests … FAILED (failures=2)`. Both
+  failures were `AssertionError: 'Shared resource … is not the headline resource; it is listed in
+  resource_edges' not found in [...]`.
+- **After:** the same command → `OK`.
+- `FLAKETRACE_REQUIRE_JVM=1 python3 -m unittest evidence.tests.test_extract` → `Ran 57 tests … OK`.
+- M2's and M3's consumers still pass: `python3 -m unittest runner.tests.test_cli.TestCombineFields
+  eval.tests.test_report` → `Ran 34 tests … OK`.
+- A search of `*.py`, `*.ts`, `*.tsx` and `*.json` files for "Another shared resource" finds
+  nothing.
+
+**On my laptop, by me** (Windows 11, Oracle JDK 25.0.1, Maven 3.9.9, Python 3.11.9), on
+`m1/fix-listed-edge-wording` based on `a8f2ab0`:
+- Fix taken out: the patch was applied, its `evidence/extract.py` change saved
+  (`git diff evidence/extract.py > %TEMP%\wording-fix.diff`), then only that file put back
+  (`git checkout -- evidence/extract.py`). `py -3.11 -m unittest
+  evidence.tests.test_extract.ResourceEdgesTest evidence.tests.test_extract.Ft005ControlsTest` →
+  `Ran 7 tests in 2.678s … FAILED (failures=2)`. The old limitations list held `'Another shared
+  resource is not shown in this report: p.State#b'` and `'… controls.State#b'`.
+- Fix put back: `git apply %TEMP%\wording-fix.diff`, then `git diff --stat` → `evidence/extract.py |
+  6 ++++--`. The same command → `Ran 7 tests in 2.755s … OK`.
+- With `set FLAKETRACE_REQUIRE_JVM=1`, `py -3.11 -m unittest evidence.tests.test_extract` → `Ran 57
+  tests in 63.044s … OK`.
+
+**Limitation:** M3's committed `eval/reports/f3.json` still holds M2's old CLI line until M3
+regenerates the reports (noted by M2). No committed report holds my old line; I checked by the
+search above.

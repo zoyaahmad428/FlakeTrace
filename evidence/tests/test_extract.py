@@ -551,6 +551,15 @@ class ResourceEdgesTest(unittest.TestCase):
         self.assertEqual(fields["polluter_write_location"],
                          fields["resource_edges"][0]["polluter_write_location"])
 
+    def test_a_second_edge_is_named_as_listed_not_as_hidden(self):
+        # A2 (M2's W21 verification, 2026-11-20): since schema v2 every edge is in resource_edges,
+        # so a limitation must not say the second resource is "not shown in this report".
+        fields = extract.report_fields(self.two_edge_pair())
+        self.assertIn("Shared resource p.State#b is not the headline resource; it is listed in resource_edges",
+                      fields["limitations"])
+        self.assertFalse([line for line in fields["limitations"] if "p.State#b" in line
+                          and "not shown in this report" in line])
+
     def test_no_edge_gives_an_empty_list(self):
         fields = extract.report_fields({"edges": [], "limitations": list(extract.FIXED_LIMITATIONS)})
         self.assertEqual(fields["resource_edges"], [])
@@ -587,8 +596,8 @@ class Ft005ControlsTest(unittest.TestCase):
         self.assertEqual([e["shared_resource"]["field"] for e in fields["resource_edges"]], ["a", "b"])
         self.assertEqual(fields["shared_resource"],
                          {"kind": "static-field", "class": "controls.State", "field": "a"})
-        self.assertIn("Another shared resource is not shown in this report: controls.State#b",
-                      fields["limitations"])
+        self.assertIn("Shared resource controls.State#b is not the headline resource; it is listed in "
+                      "resource_edges", fields["limitations"])
 
 
 if __name__ == "__main__":

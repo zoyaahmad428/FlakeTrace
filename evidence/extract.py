@@ -662,9 +662,11 @@ def report_fields(pair):
         fields["limitations"].append(
             "This evidence is %d calls deep (depth %d, above the default %d); deeper evidence is more "
             "likely to be code that is reachable but never runs." % (deepest - 1, deepest, DEFAULT_DEPTH))
+    # Schema v2 lists every edge in resource_edges, so the others are named as listed, not hidden
+    # (found by M2 verifying W21, 2026-11-20; same wording as runner/cli.py's several-polluter line).
     for edge in pair["edges"][1:]:
-        fields["limitations"].append("Another shared resource is not shown in this report: "
-                                     + edge["resource_id"])
+        fields["limitations"].append("Shared resource %s is not the headline resource; it is listed in "
+                                     "resource_edges" % edge["resource_id"])
     dropped = len(first["polluter_write_locations"]) - 1 + len(first["victim_read_locations"]) - 1
     if dropped:
         fields["limitations"].append("%d further write/read location(s) of %s are not shown in this report"
