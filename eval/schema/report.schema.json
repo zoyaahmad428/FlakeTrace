@@ -142,6 +142,40 @@
       "additionalProperties": false,
       "description": "ADR-008: how many orders were tried beyond the given/discovered one, and which (if any) reproduced. Optional on the report -- omitted entirely until the producing fields exist."
     },
+    "budgetAccount": {
+      "type": "object",
+      "description": "ADR-014 section 3 / Interface 6 (W24): what a diagnosis spent against its execution budget. Optional on the report -- omitted entirely for a DiagnosisRuns built before W24 landed, same as order_exploration above. `candidates` is {\"total\", \"tried\"} here, not the flat candidates_total/candidates_tried of runner.budget.BudgetAccount (M3's schema bump, Interface 6).",
+      "properties": {
+        "limit_invocations": { "type": ["integer", "null"], "minimum": 0 },
+        "limit_seconds": { "type": ["number", "null"], "minimum": 0 },
+        "reserve_invocations": { "type": "integer", "minimum": 0 },
+        "spent": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": 0 },
+          "description": "All seven phases (reproduce, shuffle, alone, search, minimise, deletion, verify); 0 when unused."
+        },
+        "launches": { "type": "integer", "minimum": 0 },
+        "wall_seconds": { "type": "number", "minimum": 0 },
+        "analysis_seconds": { "type": ["number", "null"], "minimum": 0 },
+        "policy": { "type": "string" },
+        "exhausted": { "type": "boolean" },
+        "exhausted_phase": { "type": ["string", "null"] },
+        "candidates": {
+          "type": "object",
+          "properties": {
+            "total": { "type": "integer", "minimum": 0 },
+            "tried": { "type": "integer", "minimum": 0 }
+          },
+          "required": ["total", "tried"],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "limit_invocations", "limit_seconds", "reserve_invocations", "spent", "launches",
+        "wall_seconds", "analysis_seconds", "policy", "exhausted", "exhausted_phase", "candidates"
+      ],
+      "additionalProperties": false
+    },
     "assurance": {
       "type": "object",
       "description": "ADR-010 section 6: the report's own evidence levels, separate from the headline outcome word.",
@@ -208,6 +242,7 @@
     },
     "failure_signature": { "$ref": "#/$defs/failureSignature" },
     "order_exploration": { "$ref": "#/$defs/orderExploration" },
+    "budget": { "$ref": "#/$defs/budgetAccount" },
     "assurance": { "$ref": "#/$defs/assurance" },
     "instrumentation_level": {
       "type": "string",

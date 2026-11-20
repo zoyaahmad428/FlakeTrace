@@ -10,8 +10,42 @@ from eval.baseline import FailureSignature, RunTally, TestIdentifier
 from eval.report import UnhandledStatus, assemble_report
 from eval.schema_validator import validate_report
 from evidence.extract import find_edges, report_fields
-from runner.diagnose import DiagnosisRuns, INCONSISTENT, NOT_REPRODUCED, POLLUTER_FOUND, VICTIM_FAILS_ALONE
+from runner.diagnose import (
+    BUDGET_EXHAUSTED, DiagnosisRuns, INCONSISTENT, NOT_REPRODUCED, POLLUTER_FOUND, VICTIM_FAILS_ALONE,
+)
 from runner.integrity import SourceIntegrity
+
+
+@dataclass(frozen=True)
+class FakeBudgetAccount:
+    """Exactly Interface 6's BudgetAccount shape (docs/contracts/interfaces.md) -- not
+    runner.budget.BudgetAccount -- this module is coded against the contract, not M2's
+    internals (same rule as FakeDeletionCheck above)."""
+    limit_invocations: Optional[int]
+    limit_seconds: Optional[float]
+    reserve_invocations: int
+    spent: dict
+    launches: int
+    wall_seconds: float
+    analysis_seconds: Optional[float]
+    policy: str
+    exhausted: bool
+    exhausted_phase: Optional[str]
+    candidates_total: int
+    candidates_tried: int
+
+
+def _budget(**overrides):
+    """A not-exhausted, no-limit FakeBudgetAccount; each test overrides what it needs."""
+    kwargs = dict(
+        limit_invocations=None, limit_seconds=None, reserve_invocations=60,
+        spent={"reproduce": 2, "shuffle": 0, "alone": 20, "search": 2, "minimise": 0,
+               "deletion": 0, "verify": 40},
+        launches=5, wall_seconds=12.5, analysis_seconds=None, policy="original",
+        exhausted=False, exhausted_phase=None, candidates_total=1, candidates_tried=1,
+    )
+    kwargs.update(overrides)
+    return FakeBudgetAccount(**kwargs)
 
 
 @dataclass(frozen=True)
@@ -245,6 +279,98 @@ class TestDeletionChecksW20(unittest.TestCase):
         report = assemble_report(diagnosis, resource_fields(POLLUTER_ACCESS, VICTIM_ACCESS))
         self.assertEqual(report["outcome"], "VERIFIED")
         self.assertEqual(report["assurance"]["sequence"]["deletion"], "DELETION_VERIFIED")
+
+
+class TestBudgetLedgerW24(unittest.TestCase):
+    """W24 report half (Interface 6, docs/contracts/interfaces.md): the schema's budget field,
+    and the two report rules -- UNRESOLVED(BUDGET_EXHAUSTED) for a search that found no
+    polluter, CANDIDATE [BUDGET_EXHAUSTED] for one that did but whose verification the budget
+    ran out before finishing."""
+
+    def test_budget_exhausted_status_gives_unresolved_with_a_rationale(self):
+        account = _budget(exhausted=True, exhausted_phase="search", candidates_total=5, candidates_tried=2)
+        diagnosis = _diagnosis(
+            BUDGET_EXHAUSTED, polluters=[], sequence=[POLLUTER, VICTIM], reference_signature=None,
+            sequence_tally=_tally(2, 2, matched=0), alone_tally=_tally(20, 20, matched=0),
+            budget=account,
+        )
+        report = assemble_report(diagnosis)
+        self.assertEqual(report["outcome"], "UNRESOLVED")
+        self.assertEqual(report["unresolved_reason"], "BUDGET_EXHAUSTED")
+        self.assertEqual(report["polluters"], [])
+        self.assertTrue(
+            any("tried 2 of 5" in line and "search" in line for line in report["limitations"]),
+            report["limitations"],
+        )
+        validate_report(report)
+
+    def test_budget_exhausted_status_with_a_reference_established_during_search(self):
+        """BUDGET_EXHAUSTED can carry a real reference signature too (the cut happened during
+        search/minimise, after reproduce already established one) -- same as NOT_REPRODUCED's
+        row 5 vs row 11 distinction."""
+        account = _budget(exhausted=True, exhausted_phase="minimise", candidates_total=3, candidates_tried=3)
+        diagnosis = _diagnosis(
+            BUDGET_EXHAUSTED, polluters=[], sequence=[POLLUTER, VICTIM],
+            sequence_tally=_tally(20, 0, matched=20), alone_tally=_tally(20, 20, matched=0),
+            budget=account,
+        )
+        report = assemble_report(diagnosis)
+        self.assertEqual(report["unresolved_reason"], "BUDGET_EXHAUSTED")
+        self.assertIsNotNone(report["failure_signature"])
+        validate_report(report)
+
+    def test_polluter_found_with_exhausted_budget_is_candidate_never_verified(self):
+        """Interface 6: 'a verdict that verification could not finish is never VERIFIED.'
+        Everything else about this diagnosis (deletion checks all NEEDED) would otherwise
+        reach VERIFIED -- only the exhausted budget account should hold it to CANDIDATE."""
+        account = _budget(exhausted=True, exhausted_phase="verify", candidates_total=1, candidates_tried=1)
+        diagnosis = _alone_checked({"budget": account})
+        fields = resource_fields(POLLUTER_ACCESS, VICTIM_ACCESS)
+        report = assemble_report(diagnosis, fields)
+        self.assertEqual(report["outcome"], "CANDIDATE")
+        self.assertEqual(report["candidate_reasons"], ["BUDGET_EXHAUSTED"])
+        validate_report(report)
+
+    def test_a_not_exhausted_budget_does_not_affect_the_verdict(self):
+        """Interface 6: 'without a limit nothing changes ... same verdicts, with
+        budget.exhausted = false.'"""
+        diagnosis = _alone_checked({"budget": _budget(exhausted=False)})
+        fields = resource_fields(POLLUTER_ACCESS, VICTIM_ACCESS)
+        report = assemble_report(diagnosis, fields)
+        self.assertEqual(report["outcome"], "VERIFIED")
+        self.assertEqual(report["budget"]["exhausted"], False)
+        validate_report(report)
+
+    def test_budget_field_has_the_contracts_shape_with_candidates_nested(self):
+        account = _budget(
+            limit_invocations=200, limit_seconds=60.0, reserve_invocations=60,
+            spent={"reproduce": 2, "shuffle": 0, "alone": 20, "search": 10, "minimise": 0,
+                   "deletion": 40, "verify": 40},
+            launches=9, wall_seconds=30.25, analysis_seconds=1.5, policy="original",
+            exhausted=False, exhausted_phase=None, candidates_total=4, candidates_tried=3,
+        )
+        diagnosis = _alone_checked({"budget": account})
+        fields = resource_fields(POLLUTER_ACCESS, VICTIM_ACCESS)
+        report = assemble_report(diagnosis, fields)
+        self.assertEqual(report["budget"], {
+            "limit_invocations": 200, "limit_seconds": 60.0, "reserve_invocations": 60,
+            "spent": {"reproduce": 2, "shuffle": 0, "alone": 20, "search": 10, "minimise": 0,
+                      "deletion": 40, "verify": 40},
+            "launches": 9, "wall_seconds": 30.25, "analysis_seconds": 1.5, "policy": "original",
+            "exhausted": False, "exhausted_phase": None,
+            "candidates": {"total": 4, "tried": 3},
+        })
+        validate_report(report)
+
+    def test_no_budget_omits_the_field_entirely(self):
+        """A DiagnosisRuns built before W24 landed (budget=None, the dataclass default) must not
+        get a fabricated budget -- the field is omitted, same pattern as order_exploration."""
+        diagnosis = _alone_checked()
+        self.assertIsNone(diagnosis.budget)
+        fields = resource_fields(POLLUTER_ACCESS, VICTIM_ACCESS)
+        report = assemble_report(diagnosis, fields)
+        self.assertNotIn("budget", report)
+        validate_report(report)
 
 
 def _alone_checked(diagnosis_kwargs=None):

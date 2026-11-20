@@ -2232,3 +2232,45 @@ for M2"; this time, with it genuinely blocking merge, the answer was to fix it).
 - **Not done:** claims-ledger row E14 (M2's row, also stale for the same reason) is a doc, not
   a blocking CI check -- left for M2 as before; this entry only fixes what was actually
   blocking the PR.
+
+## 2026-11-20 — W24 budget ledger, report half (Interface 6, `m3/w24-report-budget`)
+
+**Requirement:** `docs/10-Final1/iteration-2-plan.md`'s W24 row, "Report half: M3" --
+`eval/outcome.py` and `eval/report.py` consume M2's already-merged `runner/budget.py`
+(`m2/w24-budget-ledger`, PR #132) per Interface 6
+(`docs/contracts/interfaces.md`): the `UNRESOLVED(BUDGET_EXHAUSTED)` and
+`CANDIDATE [BUDGET_EXHAUSTED]` report rules, and the schema's new `budget` field.
+
+- **File/function:** `eval/outcome.py` -- `DecisionInput.verification_budget_exhausted`
+  (new field; distinct from the existing `budget_exhausted`, which is for a search that found
+  no polluter at all), checked only in the S1/S3/R1 block so a POLLUTER_FOUND diagnosis whose
+  budget ran out during verification can reach `CANDIDATE [BUDGET_EXHAUSTED]` but never
+  `VERIFIED`. `eval/report.py` -- `assemble_report` now handles
+  `runner.diagnose.DiagnosisRuns.status == BUDGET_EXHAUSTED` (the same way `NOT_REPRODUCED` is
+  handled: a reference may or may not have been established before the cut), sets
+  `decide(budget_exhausted=True)` for it and `decide(verification_budget_exhausted=True)` for
+  an exhausted POLLUTER_FOUND diagnosis, and adds the new `_budget_fields()` helper that reads
+  `diagnosis.budget` (M2's `runner.budget.BudgetAccount`, Interface 6) into the report's
+  `budget` field -- omitted entirely when `diagnosis.budget is None` (a DiagnosisRuns built
+  before W24), same optional-field pattern as the existing `order_exploration`.
+  `eval/schema/report.schema.json` -- new `$defs.budgetAccount` and an optional `budget`
+  property, with `candidates_total`/`candidates_tried` nested as `{"total", "tried"}` per
+  Interface 6's own instruction to M3.
+- **Test-first:** added `FakeBudgetAccount` to `eval/tests/test_report.py` (Interface 6's own
+  shape, not `runner.budget.BudgetAccount` -- coded against the contract, same rule as
+  `FakeDeletionCheck`), one new row test in `eval/tests/test_outcome.py`
+  (`test_row12_candidate_budget_exhausted_during_verification`) and six in a new
+  `TestBudgetLedgerW24` class in `eval/tests/test_report.py`. Confirmed every one of these 7
+  tests fails against the pre-fix code first (`TypeError: ... unexpected keyword argument
+  'verification_budget_exhausted'` for the outcome test; `UnhandledStatus`, `KeyError:
+  'budget'`, and one wrong-outcome assertion for the six report tests), then implemented.
+- **Command:** `python3 -m unittest eval.tests.test_stats eval.tests.test_outcome
+  eval.tests.test_schema_validator eval.tests.test_examples eval.tests.test_baseline
+  eval.tests.test_yield_report eval.tests.test_report` (every module CLAUDE.md lists, plus
+  `test_report` since CI's `python-eval` job globs every `eval/tests/test_*.py` anyway) ->
+  **136 tests, OK**, 0 failures.
+- **Limitation:** this is the "M3, in parallel" half only (Interface 6's own ordering). The
+  real F2 run with a budget limit just above B2's minimum, and one with no limit (ADR-014
+  evidence items 1-3), is the next step, "together, once merged" -- not yet run; no number for
+  it exists anywhere in this repository. M1's independent reproduction of the
+  `UNRESOLVED(BUDGET_EXHAUSTED)` case (Interface 6 step 4) has also not happened yet.
