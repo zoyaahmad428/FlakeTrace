@@ -37,6 +37,10 @@ class RecordingRunner:
         self._write(entry)
         return results
 
+    def write_event(self, entry: dict) -> None:
+        """A line that is not a run, e.g. the budget ledger's budget-stop (W24, Interface 6 B8)."""
+        self._write(entry)
+
     def _write(self, entry: dict) -> None:
         with self.path.open("a", encoding="utf-8") as f:
             f.write(json.dumps(entry) + "\n")

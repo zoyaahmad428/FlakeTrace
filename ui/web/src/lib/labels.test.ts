@@ -6,7 +6,7 @@ describe("labels for unbuilt parts (spec section 5)", () => {
     expect(Object.fromEntries(Object.entries(UNBUILT).map(([id, item]) => [id, item.label]))).toEqual({
       container: "NOT BUILT YET — PLANNED FOR Iteration 2",
       remoteSource: "NOT BUILT — NOT IN CURRENT PLAN",
-      budget: "NOT BUILT YET — PLANNED FOR a later iteration",
+      budget: "IN THE COMMAND LINE ONLY (--budget-invocations, W24) — NOT IN THE UI YET",
       ranking: "NOT BUILT YET — PLANNED FOR Iteration 2",
       filesystem: "NOT BUILT YET — PLANNED FOR FYP-II early",
       runtime: "NOT BUILT YET — PLANNED FOR Iteration 2",

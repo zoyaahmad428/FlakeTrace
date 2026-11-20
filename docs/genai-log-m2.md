@@ -1168,3 +1168,16 @@ Ownership checkpoint: why both sides had to change in one PR; why the tallies ar
 docs fixed; dated hand-over notes left as history. **What I changed:** *to fill in.*
 
 Ownership checkpoint: why evidence against outranks missing evidence; why `-n 5` makes every check short.
+
+## 2026-11-20 — W24 runner half: budget ledger
+
+**Tool:** Claude Code (Claude Opus 5.5), brainstorming → writing-plans → executing-plans → TDD, one
+fresh reviewer at the end · **Level:** L3 · **Branch:** `m2/w24-budget-ledger`
+
+**Asked:** build W24's runner half. **Kept:** Interface 6 written first and agreed by M1 and M3 before
+any code; the ledger as a wrapper around the runner (ADR-014 §1), so the search code does not count;
+checks either run in full or are `NOT_RUN`. **Found:** the CLI summary would have crashed on a
+`NOT_RUN` check. **What I changed:** *to fill in.*
+
+Ownership checkpoint: why the reserve is `3 × n`; why a seconds limit cannot stop verification; why a
+refused run must leave no `run` line (the recount).

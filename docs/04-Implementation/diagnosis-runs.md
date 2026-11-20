@@ -68,6 +68,7 @@ verdict stays with M3's `decide()`, so the statistics and decision rules live in
   returns `None` and the prefix is not empty.
 - **Change the default `n`**: the `n=20` default of `diagnose`; also update ADR-004 and the
   report (it is open question I3, agreed with M3).
+- **Change the budget rules** (W24, Interface 6): they live in `runner/budget.py` (`reserve`, `_fits`) and in `run_steps` (start check `check_budget`, the deletion hold-back `n × (kept + 1)`, the verify count). They are a contract: change Interface 6 with M1 and M3 first. Tests: `runner/tests/test_budget.py` and `TestBudget` in `test_diagnose.py` (fake runner, exact invocation counts).
 - **Add a step**: set `_label(runner, "<step>")` before its runs so the execution record names
   it, and add its counts as new `DiagnosisRuns` fields with defaults so existing callers keep
   working.

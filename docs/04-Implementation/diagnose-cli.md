@@ -93,3 +93,9 @@ in-process and decides nothing itself:
 - `NOT_REPRODUCED` is now a report (exit 0) with `failure_signature: null`, `order_exploration`, and the
   summary lines `orders:` (which order — "given" only with `--order`, else "discovered") and `bound:`
   (Wilson upper bound, "not proof of reliability").
+
+## W24 additions (2026-11-20)
+
+- `--budget-invocations N` and `--budget-seconds S` (ADR-014, Interface 6). A limit below the start minimum (`3n` + the tests up to the victim + 2) exits 2 and names the minimum.
+- Every summary has a `budget:` line: invocations spent (of the limit), the reserve, candidates tried, and the phase it stopped in.
+- `BUDGET_EXHAUSTED` exits 3 with "No report" and the budget line until M3's W24 report half reads it.

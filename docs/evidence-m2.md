@@ -1607,3 +1607,53 @@ own copy of the code, not from the review's description.
   from "F3 is `CANDIDATE`".
 - **Limitations:** the short-`INCONCLUSIVE` case is tested with a fake check, not a real `-n 5` run; G2
   stays open until M1 reproduces T3.
+
+## W24 runner half: budget ledger (2026-11-20)
+
+- **Requirement:** Interface 6 (agreed by M1, M2, M3 on 2026-11-20; PR #131), ADR-014 §1–§3: every run
+  counted in test-method invocations; a `3 × n` verification reserve; a run that would cross the
+  exploration cap not started; `BUDGET_EXHAUSTED`; `DiagnosisRuns.budget`; a `budget-stop` record line.
+- **Code:** `runner/budget.py` (new: `Budget`, `BudgetAccount`, `BudgetedRunner`, `BudgetExhausted`),
+  `runner/diagnose.py` (`check_budget`, `run_steps` → `_steps`, status `BUDGET_EXHAUSTED`, header key
+  `budget`), `runner/deletion.py` (`can_afford(cost, kept)` → `NOT_RUN`), `runner/recording.py`
+  (`write_event`), `runner/cli.py` (`--budget-invocations`, `--budget-seconds`, `budget:` line).
+- **Test-first (each seen failing first, fake runner, Windows 11, Python 3.14, JDK 21.0.9):**
+  - `py -3 -m unittest runner.tests.test_budget` → `ModuleNotFoundError: No module named 'runner.budget'`;
+    after → `Ran 11 tests … OK`.
+  - `py -3 -m unittest runner.tests.test_deletion` → `FAILED (errors=4)` (`unexpected keyword argument
+    'can_afford'`); after → `Ran 14 tests … OK`.
+  - `py -3 -m unittest runner.tests.test_diagnose.TestBudget` → `ImportError` (`BUDGET_EXHAUSTED`); after →
+    `Ran 9 tests … OK`. These are ADR-014's tests to write first: ten candidates with the polluter last,
+    n=20, limit 80 → `BUDGET_EXHAUSTED`, alone 20/20 runs, spent reproduce 11 / alone 20 / search 8,
+    4 of 10 candidates tried; limit 72 → refused naming 73; the recount from the record; B5 (limit 150:
+    one deletion check `NEEDED`, the other `NOT_RUN`); B6 (limit 74: verify 13 runs); B6 zero; a seconds
+    limit.
+  - CLI: `TestBudgetOptions`, `TestBudgetLine`, a summary test with a `NOT_RUN` check → `ImportError`
+    (`budget_line`); after → `Ran 22 tests … OK`.
+- **Found while planning:** the summary's deletion line read `runs.n` of every check, so a `NOT_RUN`
+  check (`runs = None`) would have crashed it; now counted apart ("1 not run (budget)"), with a test.
+- **Whole suites after the change:** `py -3 -m unittest discover -s runner/tests` (real JVM) →
+  `Ran 287 tests in 622.208s OK`; `py -3 -m unittest discover -s eval/tests` → `Ran 129 tests OK`;
+  `py -3 -m unittest ui.tests.test_server` → `Ran 31 tests OK`.
+- **Real runs, od-fixture F2** (`odfixture.FeatureVictimTest#expectsTurboDisabled`, default options):
+  - no limit → `VERIFIED (sequence)`, `budget: spent 82 invocations, no limit (reserve 60); search tried
+    7 of 7 candidates`; 48 `run` lines (1 + 20 + 7 + 20);
+  - `--budget-invocations 69` → exit 2, `below the minimum 70 for n=20` (reserve 60 + 8 tests + 2); no
+    record file written;
+  - `--budget-invocations 70` → exit 3, `No report: BUDGET_EXHAUSTED`, `spent 30 of 70 invocations …
+    search tried 1 of 7 candidates; stopped in search`; 22 `run` lines and one
+    `{"type": "budget-stop", "phase": "search", "would_cost": 2, "spent": 30}`.
+- **Fresh review (one reviewer, Claude Opus 5.5) and fixes, each test-first:** (1, Important) an `INCONSISTENT`
+  diagnosis with a long prefix (60 tests, n=20, limit 302) became `BUDGET_EXHAUSTED` at the verify step,
+  although exploration had finished — now stays `INCONSISTENT`, tallied by its full-order re-check when no
+  verify run fits (`sequence.n` 0 is refused by `eval.outcome`; checked); Interface 6 does not cover this case,
+  flagged to M1/M3; (2) the B6 `budget-stop` line came before the short verify and stated `len × n` — now after
+  the runs, with the first refused run's cost (3); (3) a search cut after a shuffled order reproduced tallied the
+  starting order — now the reproducing run; (4) `candidates_tried` counts search runs; (5) new tests: the round-2
+  hold-back (a mutation using round 1's count fails it), the B6 line, no record file on a refused limit, the real
+  `assemble_report` refusing `BUDGET_EXHAUSTED`; (6) the no-report text drops a developer note, and the UI's
+  budget label says "in the command line only". Each new test failed on the code before its fix (4 failures).
+  After the fixes: runner `Ran 292 tests in 537.158s OK` (real JVM), eval `Ran 129 tests OK`,
+  `ui.tests.test_server` `Ran 31 tests OK`, `ui/web` `npm test` → `33 passed`.
+- **Limitations:** no report for `BUDGET_EXHAUSTED` until M3's half (exit 3); `analysis_seconds` is
+  `None` until W25; the seconds limit is tested with a fake clock only; one real run of each.
