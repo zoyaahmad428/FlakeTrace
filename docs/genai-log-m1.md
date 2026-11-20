@@ -735,3 +735,26 @@ exist on `main` at `adc63ee`.
 - Writing the case and the acceptance task myself: they are M2's and M3's parts, so they are
   left marked "to be supplied".
 - Choosing a substitute: that is the supervisor's decision, so options are listed for them.
+
+## 2026-11-20 — W25 part 2: review of M2's `EvidenceRanker` (Interface 7, step 3)
+
+**Assistance level:** L3 (Core-assist): the assistant read `runner/policy.py` against Interfaces 2,
+5 and 7, ran M2's policy tests and an independent probe on my self-test classes in its container,
+drafted the one-line Interface 5 clarification, and drafted this entry and my review comment.
+
+**What I asked:** continue Iteration 2. The review is my step in Interface 7.
+
+**What was retained:** the review entry in [[evidence-m1]], the `get` line in Interface 5, the
+W25 plan row and my members row.
+
+**What I changed:** ran the probe and M2's policy tests myself on my laptop; read the review and
+the contract line before committing.
+
+**How it was verified:** M2's 19 policy tests OK, and the independent probe on my classes, with
+identical results in the container and on my laptop.
+
+**Errors found:** my earlier proposal (a new `depth_limited` method) was unnecessary.
+`AnalysisCache.get` already gives M2 what P4 needs. The proposal was withdrawn.
+
+**Rejections:** editing `runner/policy.py` (M2's) for the `note` point. It is left as a
+suggestion for him.
