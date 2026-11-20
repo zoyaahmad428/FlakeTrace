@@ -667,6 +667,29 @@ kept the "not shown" limitation, and it stopped being true.
 **Rejections:** removing the line entirely. The headline fields still show only one resource, so
 naming the others stays useful.
 
+## 2026-11-20 — W20 verification (deletion checks, ADR-011 T1–T5) on my own machine
+
+**Assistance level:** L3 (Core-assist): the assistant found the W20 tests that cover T1, T2 and
+T5, gave me the real F1 and F3 commands with two one-line checks (report `deletion_checks`,
+record step counts), and drafted this entry and the register updates from my output; I ran
+every command myself on my laptop.
+
+**What I asked:** verify W20 now that both halves are merged.
+
+**What was retained:** the W20 entry in [[evidence-m1]]; the FT004 row in
+[[10-Final1/action-register]]; the G2 row in [[07-Defense/claims-ledger]]; the W20 plan row.
+
+**What I changed:** ran every command; checked the entry against my terminal output before
+committing.
+
+**How it was verified:** every number is copied from my own terminal output.
+
+**Errors found:** none in W20. I typed a test name as a command once; the rerun is the one
+recorded.
+
+**Rejections:** marking G2 `SETTLED` or FT004 `Done` myself. G2 belongs to M2 and M3, and FT004
+also needs the supervisor's acceptance.
+
 ## 2026-11-20 — W25: Interface 5 (rank_candidates) contract proposal
 
 **Assistance level:** L3 (Core-assist): the assistant drafted the Interface 5 section from the
