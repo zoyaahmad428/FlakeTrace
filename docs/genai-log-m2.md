@@ -1157,3 +1157,14 @@ banner broke only `java_version`, not `jvm`.
 agreement is simpler and leaves no half-state. **What I changed:** *to fill in.*
 
 Ownership checkpoint: why both sides had to change in one PR; why the tallies are now required.
+
+## 2026-11-20 — review of PR #129; deletion-status order; F3 docs
+
+**Tool:** Claude Code (Claude Opus 5.5), test-driven-development · **Level:** L2 · **Branch:** `m2/f3-verified-followups`
+
+**Asked:** analyse the merged PRs #125–#129. **Found:** #129 checked a short run count before
+`INCONCLUSIVE`, against Interface 4's own ranking. **Kept:** M3's reading that a short run never gives
+`VERIFIED`; only the order changed, test-first, with M3's agreement. Stale "F3 is `CANDIDATE`" lines in my
+docs fixed; dated hand-over notes left as history. **What I changed:** *to fill in.*
+
+Ownership checkpoint: why evidence against outranks missing evidence; why `-n 5` makes every check short.

@@ -1588,3 +1588,22 @@ own copy of the code, not from the review's description.
 - **Whole suite:** every `runner/tests/test_*.py`, `ui.tests.test_server`, every `eval/tests/test_*.py` and
   `evidence.tests.test_extract` → `Ran 466 tests in 719.625s … OK` (the UI test's message string was
   changed after this run started; `TestJobResult` re-run alone afterwards → 7 OK).
+
+## Review of M3's W20 report half (PR #129); deletion-status order fixed in `eval/report.py` (2026-11-20)
+
+- **Requirement:** Interface 4 — "`INCONCLUSIVE` ranks above `INCOMPLETE`: evidence against the result
+  outweighs missing evidence." M3 flagged one reading (a short run count rules out `VERIFIED` even when
+  every check says `NEEDED`); I agree with it as ADR-011's author.
+- **Defect found in review:** `eval/report.py` checked "any `NOT_RUN` or `runs.n < 10`" before "any
+  `INCONCLUSIVE`". With `-n 5` every check is short, so a set holding an `INCONCLUSIVE` check was reported
+  `INCOMPLETE` (missing evidence) instead of `INCONCLUSIVE` (evidence against). Edited with M3's agreement.
+- **Test-first:** new `TestDeletionChecksW20.test_inconclusive_outranks_a_short_run_count` (one `NEEDED` 5/5,
+  one `INCONCLUSIVE` 2 passed/3 matched). Unfixed: `py -3 -m unittest eval.tests.test_report.TestDeletionChecksW20.test_inconclusive_outranks_a_short_run_count`
+  → `FAILED (failures=1)`, got `['DELETION_EVIDENCE_INCOMPLETE']`. Fixed (order: `INCONCLUSIVE`, then
+  `NOT_RUN`/short, then all `NEEDED`) → `OK`. `py -3 -m unittest discover -s eval/tests` → `Ran 129 tests … OK`.
+- **F3 re-checked on `main` `bb85513`:** `py -3 -m unittest runner.tests.test_cli.TestCliOnFixture.test_f3_two_polluters_both_needed_gives_verified`
+  (real JVM, JDK 21.0.9) → `Ran 1 test in 107.439s … OK`; committed `eval/reports/f3.json`: `VERIFIED`, two
+  checks `NEEDED` n=20. Claims row E14, `docs/04-Implementation/diagnose-cli.md` and the demo plan updated
+  from "F3 is `CANDIDATE`".
+- **Limitations:** the short-`INCONCLUSIVE` case is tested with a fake check, not a real `-n 5` run; G2
+  stays open until M1 reproduces T3.

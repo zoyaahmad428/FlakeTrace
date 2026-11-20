@@ -196,6 +196,16 @@ class TestDeletionChecksW20(unittest.TestCase):
         self.assertEqual(report["assurance"]["sequence"]["deletion"], "INCONCLUSIVE")
         validate_report(report)
 
+    def test_inconclusive_outranks_a_short_run_count(self):
+        """With -n 5 every check is short; one INCONCLUSIVE must still read INCONCLUSIVE,
+        because evidence against the result outweighs missing evidence (Interface 4)."""
+        checks = [FakeDeletionCheck(POLLUTER, _tally(5, 5), "NEEDED", "deletion-run", 1),
+                  FakeDeletionCheck(Q, _tally(5, 2, matched=3), "INCONCLUSIVE", "deletion-run", 1)]
+        diagnosis = _diagnosis(POLLUTER_FOUND, polluters=[POLLUTER, Q], deletion_checks=checks)
+        report = assemble_report(diagnosis, self.edge_fields())
+        self.assertEqual(report["candidate_reasons"], ["DELETION_EVIDENCE_INCONCLUSIVE"])
+        self.assertEqual(report["assurance"]["sequence"]["deletion"], "INCONCLUSIVE")
+
     def test_a_not_run_check_is_incomplete(self):
         """NOT_RUN (the budget ended first, ADR-011 section 3) is incomplete, not a failure."""
         runs = _tally(20, 20)
