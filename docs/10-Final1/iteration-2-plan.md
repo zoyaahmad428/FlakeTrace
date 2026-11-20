@@ -58,7 +58,7 @@ for them.
 | **W26b** | Real case, steps 6–9: `original`, `ranked`, `random` under one budget; independent repeat | M3 | M1 or M2 | W23, W24, W25, W26a | Bundles for every run, favourable or not; the yield table |
 | **W27** | Pinned container image and one documented command | M3, M2 reviews *(see note)* | M1 runs it | W23 | A fixture diagnosis runs in the container on a second machine |
 | **W28** | Report v2.0 | Chapter owners; M2 compiles | M3 checks status against code; M1 the abstract | W19–W26 results | [[10-Final1/report-v2-plan]] checklist |
-| **W32** | One Java/Maven practitioner workflow check | M1; M2 supplies the case, M3 the acceptance task | M3 | A stable demo | A dated, consented record, or the blocker and an agreed substitute |
+| **W32** | One Java/Maven practitioner workflow check. *Protocol, consent text and record template drafted by M1 2026-11-20 ([[10-Final1/practitioner-check]]); no participant contacted yet; the case (M2) and the acceptance task (M3) still to be supplied* | M1; M2 supplies the case, M3 the acceptance task | M3 | A stable demo | A dated, consented record, or the blocker and an agreed substitute |
 | **W33** | Tag `final1-v1`. Deck. Demo rehearsed on the demo machine. Each member rehearses their own viva | M2 the tag; all | Each rehearses with another member asking | Everything above | [[10-Final1/demo-plan]] steps marked rehearsed; [[10-Final1/ownership-prep]] tasks done without AI |
 | **W34** | *Stretch:* resource intervention spike (ADR-015) | M1, M2 | M3 | W16–W26 on track | Go / no-go written up |
 
