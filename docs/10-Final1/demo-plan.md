@@ -39,7 +39,7 @@ The supervisor's briefing lists what a panel should try. Rehearse each:
 | They may ask | Be ready to |
 | --- | --- |
 | "Change the budget and predict what happens" | State the minimum for `n`, then run it |
-| "Remove one of F3's polluters" | Predict the verdict; show the deletion check that already answers it |
+| "Remove one of F3's polluters" | Predict that the victim passes again — ground truth says both are required. **Updated 2026-11-20 (A1 fail-safe fix):** there is no deletion check that already answers this for F3; that is exactly why F3 reports `CANDIDATE [DELETION_EVIDENCE_INCOMPLETE]` today, not `VERIFIED` — F1/F2/F4 (one polluter each) get a free deletion check from the alone run (ADR-011 §2), F3 does not (W20 builds the real one). Say that distinction aloud if asked |
 | "Analyse F2 at depth 1 with deepening off" | Predict that the edge disappears — the property is read one call down, in `FeatureFlags.isTurboEnabled` — and say what the verdict would then be |
 | "Show me the run behind this number" | Open the record line from the bundle |
 | "What does VERIFIED not tell me?" | The four claims, and the resource sentence |
