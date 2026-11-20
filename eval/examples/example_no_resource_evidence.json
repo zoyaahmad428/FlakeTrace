@@ -35,8 +35,13 @@
   "outcome": "CANDIDATE",
   "unresolved_reason": null,
   "candidate_reasons": ["NO_SUPPORTED_RESOURCE_EVIDENCE"],
+  "deletion_checks": [
+    { "removed": { "class": "com.example.MysteryPolluterTest", "method": "doesSomething" },
+      "runs": { "n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0 },
+      "status": "NEEDED", "source": "alone-check", "round": 1 }
+  ],
   "assurance": {
-    "sequence": { "reproduces": "ESTABLISHED", "passes_alone": "ESTABLISHED", "deletion": "NOT_YET_CHECKED" },
+    "sequence": { "reproduces": "ESTABLISHED", "passes_alone": "ESTABLISHED", "deletion": "DELETION_VERIFIED" },
     "resource": { "level": "NONE", "mechanism": "NOT_ASSESSED" }
   },
   "limitations": [

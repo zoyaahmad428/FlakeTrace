@@ -177,16 +177,14 @@
     "stack_trace": "org.junit.Assert.fail:87\norg.junit.Assert.assertTrue:42\norg.junit.Assert.assertFalse:65\norg.junit.Assert.assertFalse:75\nodfixture.ToggleVictimTest.expectsNotBothFlagsSet:14"
   },
   "instrumentation_level": "static-only",
-  "execution_record_reference": "C:\\Users\\zarpa\\OneDrive\\Documents\\GitHub\\FlakeTracee\\eval\\reports\\flaketrace-records\\20261119T190705Z-odfixture.ToggleVictimTest#expectsNotBothFlagsSet.jsonl",
+  "execution_record_reference": "eval\\reports\\flaketrace-records\\20261120T132425Z-odfixture.ToggleVictimTest#expectsNotBothFlagsSet.jsonl",
   "source_integrity": {
     "passed": true,
     "details": "26 files hashed (SHA-256) before and after; all identical"
   },
-  "outcome": "CANDIDATE",
+  "outcome": "VERIFIED",
   "unresolved_reason": null,
-  "candidate_reasons": [
-    "DELETION_EVIDENCE_INCOMPLETE"
-  ],
+  "candidate_reasons": [],
   "limitations": [
     "instrumentation_level is static-only; runtime instrumentation is not built.",
     "Static analysis only; no runtime evidence (Iteration 2).",
@@ -196,14 +194,48 @@
     "Written values are not modelled: a polluter that writes and then restores the original value still produces a WRITE.",
     "Execution timing is not modelled (e.g. a victim <clinit> read that happens before the polluter runs).",
     "Missing evidence is not proof of independence.",
-    "Polluter odfixture.ToggleBPolluterTest#setFlagB: shared resource odfixture.Toggles#flagB is not shown in this report",
-    "Reduced by single-trial delta debugging; not deletion-verified (ADR-011; the repeated deletion runs for two or more polluters are W20, not yet landed)."
+    "Polluter odfixture.ToggleBPolluterTest#setFlagB: shared resource odfixture.Toggles#flagB is not the headline resource; it is listed in resource_edges",
+    "Deletion-verified (ADR-011, W20): each kept test was removed and the failure did not return in m of m runs."
+  ],
+  "deletion_checks": [
+    {
+      "removed": {
+        "class": "odfixture.ToggleAPolluterTest",
+        "method": "setFlagA"
+      },
+      "runs": {
+        "n": 20,
+        "passed": 20,
+        "matched": 0,
+        "other": 0,
+        "infra": 0
+      },
+      "status": "NEEDED",
+      "source": "deletion-run",
+      "round": 1
+    },
+    {
+      "removed": {
+        "class": "odfixture.ToggleBPolluterTest",
+        "method": "setFlagB"
+      },
+      "runs": {
+        "n": 20,
+        "passed": 20,
+        "matched": 0,
+        "other": 0,
+        "infra": 0
+      },
+      "status": "NEEDED",
+      "source": "deletion-run",
+      "round": 1
+    }
   ],
   "assurance": {
     "sequence": {
       "reproduces": "ESTABLISHED",
       "passes_alone": "ESTABLISHED",
-      "deletion": "INCOMPLETE"
+      "deletion": "DELETION_VERIFIED"
     },
     "resource": {
       "level": "STATIC_OVERLAP",

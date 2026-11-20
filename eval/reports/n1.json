@@ -87,7 +87,7 @@
     "stack_trace": "org.junit.Assert.fail:89\norg.junit.Assert.failNotEquals:835\norg.junit.Assert.assertEquals:647\norg.junit.Assert.assertEquals:633\nodfixture.NegativeAloneFailTest.alwaysFails:10"
   },
   "instrumentation_level": "static-only",
-  "execution_record_reference": "C:\\Users\\zarpa\\OneDrive\\Documents\\GitHub\\FlakeTracee\\eval\\reports\\flaketrace-records\\20261119T190838Z-odfixture.NegativeAloneFailTest#alwaysFails.jsonl",
+  "execution_record_reference": "eval\\reports\\flaketrace-records\\20261120T132743Z-odfixture.NegativeAloneFailTest#alwaysFails.jsonl",
   "source_integrity": {
     "passed": true,
     "details": "26 files hashed (SHA-256) before and after; all identical"
@@ -98,6 +98,7 @@
   "limitations": [
     "instrumentation_level is static-only; runtime instrumentation is not built."
   ],
+  "deletion_checks": [],
   "order_exploration": {
     "order_given": false,
     "shuffled_orders_tried": 0,

@@ -113,7 +113,7 @@
     "stack_trace": "org.junit.Assert.fail:87\norg.junit.Assert.assertTrue:42\norg.junit.Assert.assertFalse:65\norg.junit.Assert.assertFalse:75\nodfixture.FeatureVictimTest.expectsTurboDisabled:10"
   },
   "instrumentation_level": "static-only",
-  "execution_record_reference": "C:\\Users\\zarpa\\OneDrive\\Documents\\GitHub\\FlakeTracee\\eval\\reports\\flaketrace-records\\20261119T190637Z-odfixture.FeatureVictimTest#expectsTurboDisabled.jsonl",
+  "execution_record_reference": "eval\\reports\\flaketrace-records\\20261120T132314Z-odfixture.FeatureVictimTest#expectsTurboDisabled.jsonl",
   "source_integrity": {
     "passed": true,
     "details": "26 files hashed (SHA-256) before and after; all identical"
@@ -131,6 +131,24 @@
     "Execution timing is not modelled (e.g. a victim <clinit> read that happens before the polluter runs).",
     "Missing evidence is not proof of independence.",
     "Deletion check from the alone runs (ADR-011 section 2): without its one polluter the victim passed 20 of 20 runs alone."
+  ],
+  "deletion_checks": [
+    {
+      "removed": {
+        "class": "odfixture.FeaturePolluterTest",
+        "method": "enableTurbo"
+      },
+      "runs": {
+        "n": 20,
+        "passed": 20,
+        "matched": 0,
+        "other": 0,
+        "infra": 0
+      },
+      "status": "NEEDED",
+      "source": "alone-check",
+      "round": 1
+    }
   ],
   "assurance": {
     "sequence": {

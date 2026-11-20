@@ -30,12 +30,14 @@ different signature or only crashes, so the report can still say what was observ
 polluter. This module is what hides that polluter from the OUTPUT report in that case ("no test
 is blamed", ADR-010 row 7) -- `diagnosis.polluters` itself is left alone.
 
-ADR-011's deletion checks (claim S3, W20) and ADR-014's budget ledger (row 3, W24) have not
-landed: every report built here passes deletion_status=None and budget_exhausted=False to
-eval.outcome.decide(), which treats both as satisfied/not-exhausted (see that module's
-docstring) so this change does not regress any existing VERIFIED verdict (ADR-010 test T6). The
-report says so honestly via assurance.sequence.deletion = "NOT_YET_CHECKED" rather than
-fabricating DELETION_VERIFIED.
+ADR-011's deletion checks (claim S3) landed 2026-11-20 (W20, Interface 4, PR #121): this module
+reads DiagnosisRuns.deletion_checks -- the checks at the highest round -- and maps them to
+DELETION_VERIFIED/DELETION_INCONCLUSIVE/DELETION_INCOMPLETE per that interface's own table.
+A kept polluter with no check at all is deliberately never read as VERIFIED (the fail-safe row);
+this subsumes the narrower A1 fix (2026-11-19) that only covered a single kept polluter via the
+alone tally. ADR-014's budget ledger (row 3, W24) has not landed: every report built here still
+passes budget_exhausted=False to eval.outcome.decide(), which treats that as not-exhausted (see
+that module's docstring).
 """
 
 from typing import Optional
@@ -43,6 +45,7 @@ from typing import Optional
 from eval.outcome import (
     CANDIDATE_BELOW_REPLAY_THRESHOLD,
     DELETION_INCOMPLETE,
+    DELETION_INCONCLUSIVE,
     DELETION_NOT_YET_CHECKED,
     DELETION_VERIFIED,
     OUTCOME_CANDIDATE,
@@ -141,18 +144,37 @@ def assemble_report(
         "stack_trace": ref.stack_trace,
     }
 
-    # Claim S3 before W20's deletion runs exist (decided 2026-11-19 by M2 with M3's permission,
-    # applying ADR-011 sections 2 and 4): with ONE polluter, "the sequence without it" is the victim
-    # alone, so the alone check is the deletion check -- verified when the victim passed alone in
-    # every run. With two or more, no deletion run has been made: INCOMPLETE, so CANDIDATE.
-    # (A1 fail-safe fix, same day, independently: eval/outcome.py's row 12 no longer lets a raw
-    # None escape this guard either way -- defense in depth, since this function now never
-    # actually passes None through for a found-polluter case.)
+    # Claim S3 (W20, ADR-011, Interface 4, PR #121, 2026-11-20): the real repeated-removal
+    # deletion check. diagnosis.deletion_checks accumulates every round's checks (a dropped
+    # test's own NOT_NEEDED entry stays in the list, Interface 4), but the verdict reads only
+    # the checks at the highest round -- those are exactly the final kept polluters' last word.
     deletion_status = None
     if diagnosis.status == POLLUTER_FOUND and diagnosis.polluters:
-        alone_all_passed = diagnosis.alone_tally.passed == diagnosis.alone_tally.n
-        deletion_status = (DELETION_VERIFIED if len(diagnosis.polluters) == 1 and alone_all_passed
-                           else DELETION_INCOMPLETE)
+        checks = diagnosis.deletion_checks
+        if not checks:
+            # A kept polluter with no check at all -- a caller that predates W20, or the budget
+            # ended before any check ran -- must never be read as VERIFIED (Interface 4's own
+            # fail-safe row; same principle as A1, 2026-11-19).
+            deletion_status = DELETION_INCOMPLETE
+        else:
+            last_round = max(c.round for c in checks)
+            last = [c for c in checks if c.round == last_round]
+            # Interpretation flagged for the team (ambiguous in Interface 4's own table, which
+            # lists "all NEEDED" first but calls the m<10 clause out separately): a NEEDED label
+            # computed from too few runs (m<10, e.g. budget W24 cut a check short) must not
+            # count as established just because every check happens to be labelled NEEDED --
+            # checked first, ahead of the "all NEEDED" row, not as its last-resort fallback.
+            if any(c.status == "NOT_RUN" or c.runs is None or c.runs.n < 10 for c in last):
+                deletion_status = DELETION_INCOMPLETE
+            elif any(c.status == "INCONCLUSIVE" for c in last):
+                # Ranks above INCOMPLETE: evidence against the result outweighs missing evidence.
+                deletion_status = DELETION_INCONCLUSIVE
+            elif all(c.status == "NEEDED" for c in last):
+                deletion_status = DELETION_VERIFIED
+            else:
+                # A NOT_NEEDED test surviving into the final round should not happen by
+                # construction (it would have been dropped) -- fail-safe, never VERIFIED.
+                deletion_status = DELETION_INCOMPLETE
 
     decision_input = DecisionInput(
         source_integrity_passed=diagnosis.source_integrity.passed,
@@ -195,15 +217,30 @@ def assemble_report(
         if not any_edge_found:
             limitations.append("No polluter-write/victim-read resource edge was found by static analysis.")
         if decision.outcome in (OUTCOME_CANDIDATE, OUTCOME_VERIFIED):
-            if deletion_status == DELETION_VERIFIED:
+            # W20 landed (ADR-011, Interface 4, PR #121, 2026-11-20) -- reworded per M2's note:
+            # it is no longer true that the repeated deletion runs don't exist for several
+            # polluters; the previous wording claiming that is retired.
+            if deletion_status == DELETION_VERIFIED and len(diagnosis.polluters) == 1:
                 limitations.append(
                     f"Deletion check from the alone runs (ADR-011 section 2): without its one polluter the "
                     f"victim passed {diagnosis.alone_tally.passed} of {diagnosis.alone_tally.n} runs alone."
                 )
+            elif deletion_status == DELETION_VERIFIED:
+                limitations.append(
+                    "Deletion-verified (ADR-011, W20): each kept test was removed and the "
+                    "failure did not return in m of m runs."
+                )
+            elif deletion_status == DELETION_INCONCLUSIVE:
+                limitations.append(
+                    "Not deletion-verified (ADR-011, W20): removing at least one kept test gave "
+                    "an inconclusive result -- sometimes reproducing the failure, sometimes not, "
+                    "or with a different signature."
+                )
             else:
                 limitations.append(
-                    "Reduced by single-trial delta debugging; not deletion-verified (ADR-011; the "
-                    "repeated deletion runs for two or more polluters are W20, not yet landed)."
+                    "Reduced by single-trial delta debugging; not deletion-verified (ADR-011). "
+                    "The repeated-removal check (W20) did not confirm every kept test is needed "
+                    "-- not run for this sequence, or ended before enough trials completed."
                 )
 
     order_desc = "given" if getattr(diagnosis, "order_given", True) else "discovered"
@@ -309,6 +346,22 @@ def assemble_report(
         "unresolved_reason": decision.unresolved_reason,
         "candidate_reasons": list(decision.candidate_reasons),
         "limitations": limitations,
+        # W20 (ADR-011 section 4, Interface 4): every deletion check, including earlier rounds'
+        # (a dropped test's own entry stays visible). Suppressed under no_blame, same as
+        # polluters/reduced_sequence -- "no test is blamed" extends to who was checked.
+        "deletion_checks": [] if no_blame else [
+            {
+                "removed": check.removed.to_dict(),
+                "runs": None if check.runs is None else {
+                    "n": check.runs.n, "passed": check.runs.passed, "matched": check.runs.matched,
+                    "other": check.runs.other, "infra": check.runs.infra,
+                },
+                "status": check.status,
+                "source": check.source,
+                "round": check.round,
+            }
+            for check in diagnosis.deletion_checks
+        ],
     }
     if decision.outcome in (OUTCOME_CANDIDATE, OUTCOME_VERIFIED):
         report["assurance"] = {

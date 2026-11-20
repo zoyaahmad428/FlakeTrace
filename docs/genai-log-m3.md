@@ -1302,3 +1302,52 @@ Ownership checkpoint: be able to explain why the Mid report's generated table re
 correctness requirement (a graded, submitted PDF cannot retroactively change what it reported)
 rather than a stylistic choice — and why my own three earlier attempts to "keep it in sync with
 live data" were a real mistake, not a harmless extra effort.
+
+## 2026-11-20 — W20: the real deletion check lands, F3 reaches VERIFIED for real
+
+**What was asked:** M2 (relayed by the member) landed W20's runner half (PR #121,
+`DiagnosisRuns.deletion_checks`, Interface 4) and asked me to build the report half: read the
+real checks, set `deletion_status` accordingly. He noted real F3 gives both polluters `NEEDED`,
+so F3 should reach `VERIFIED` once my half reads it, and flagged two specific things to fix:
+the now-false "W20, not yet landed" limitation text, and the new per-run `removed`/`round`
+fields on the record.
+
+**What I kept vs. built new:** kept A1's overall shape (compute `deletion_status`, feed it to
+`decide()`) but replaced its single-polluter-only logic entirely with Interface 4's real rule —
+read every check, use only the highest round, map to VERIFIED/INCONCLUSIVE/INCOMPLETE by the
+contract's own priority table. Test-first throughout: wrote `FakeDeletionCheck` and a new test
+class before touching `eval/report.py`, confirmed the real failures, then implemented.
+
+**A judgment call I flagged rather than guessed past:** Interface 4's table lists "all NEEDED"
+before the "any `runs.n < 10`" row, which read literally lets an all-NEEDED set with too few
+trials still reach VERIFIED. I implemented the stricter reading (short-run disqualifies
+VERIFIED regardless of label) since that matches the statistical reasoning ADR-011 itself gives
+for why `m` matters — but this is my own interpretation of an ambiguous contract, not something
+M2 or M1 confirmed, so I wrote it into both the code comment and `docs/evidence-m3.md`
+explicitly as open for correction, rather than silently picking one reading and moving on.
+
+**A real bug I found and fixed in my own tooling, not anyone else's:** regenerating the real
+reports, I noticed `execution_record_reference` was an absolute path with my own Windows
+username in it. Checked `git show HEAD:eval/reports/f1.json` before assuming it was new —
+it was already committed, from my own earlier regenerations this session. Traced it to
+`eval/tools/run_w9_integration.py`'s `RECORD_DIR` (always absolute by construction) and
+confirmed `runner.diagnose.diagnose()` itself never relativises it either (correctly, for a
+real end-user installation — the bug is specific to a script that commits its output to a
+shared repo). Fixed with a small wrapper, re-ran, confirmed clean with a repo-wide grep for the
+username rather than trusting the fix by inspection alone.
+
+**What I rejected / left for others:** did not fix `runner/tests/test_cli.py`'s now-failing F3
+test or claims-ledger row E14 (both now stale, both M2's) — asked the member each time rather
+than deciding for myself whether a cross-boundary fix was "small enough"; both times the answer
+was to leave it for M2, so I documented the exact break instead of guessing at the fix. Did not
+close claims-ledger row G2 despite the real check now existing — Interface 4's own plan names
+M1's independent reproduction as the last step, which hasn't happened.
+
+Ownership checkpoint: be able to explain, without this log, exactly why `eval/report.py` reads
+only the checks at the *highest round* (not every check ever recorded) — a dropped test's own
+`NOT_NEEDED` entry from an earlier round stays in `deletion_checks` for visibility, but the
+final kept polluters' last word is what decides the verdict — and why a kept polluter with *no*
+check at all must never be read as VERIFIED, even though that never happens in the real
+pipeline today (every found-polluter diagnosis always produces at least one check per kept
+test). That fail-safe is for a caller that predates W20 or a future budget cutting a check off
+entirely, not a case you can currently trigger through the CLI.

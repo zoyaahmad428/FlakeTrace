@@ -41,8 +41,13 @@
   "outcome": "CANDIDATE",
   "unresolved_reason": null,
   "candidate_reasons": ["BELOW_REPLAY_THRESHOLD"],
+  "deletion_checks": [
+    { "removed": { "class": "com.example.IntermittentPolluterTest", "method": "bumpsCounterUnderContention" },
+      "runs": { "n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0 },
+      "status": "NEEDED", "source": "alone-check", "round": 1 }
+  ],
   "assurance": {
-    "sequence": { "reproduces": "NOT_ESTABLISHED", "passes_alone": "ESTABLISHED", "deletion": "NOT_YET_CHECKED" },
+    "sequence": { "reproduces": "NOT_ESTABLISHED", "passes_alone": "ESTABLISHED", "deletion": "DELETION_VERIFIED" },
     "resource": { "level": "STATIC_OVERLAP", "mechanism": "NOT_ASSESSED" }
   },
   "limitations": [

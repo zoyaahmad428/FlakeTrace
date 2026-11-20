@@ -30,6 +30,7 @@
       "victim_read_location": { "class": "odfixture.ConfigVictimTest", "method": "expectsDefaultMode", "bytecode_offset": 5 }
     }
   ],
+  "deletion_checks": [],
   "failure_signature": {
     "exception_type": "java.lang.AssertionError",
     "message": "expected:<0> but was:<1>",

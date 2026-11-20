@@ -2097,3 +2097,83 @@ discovery first, confirm `SerializeWriterTest_14#test_writer_1` and
   run (steps 7-9: the real diagnose through to a report, the baseline/targeted-search
   comparison). Discovery being correct was the hard blocker; the remaining steps are real JVM
   runs, not yet attempted this entry.
+
+## 2026-11-20 — W20: eval/report.py reads the real deletion_checks (Interface 4, PR #121)
+
+**Requirement:** M2's W20 runner half merged (PR #121): `DiagnosisRuns.deletion_checks`, the
+real repeated-removal check per kept polluter, per Interface 4
+(`docs/contracts/interfaces.md`). M3's half: `eval/report.py` reads it and sets `deletion_status`
+accordingly, replacing A1's fail-safe stand-in (2026-11-19) with the real check.
+
+- **Test-first.** Added `TestDeletionChecksW20` to `eval/tests/test_report.py` with a
+  `FakeDeletionCheck` dataclass matching Interface 4's shape exactly (not
+  `runner.deletion.DeletionCheck` -- coded against the contract, per its own instruction).
+  Confirmed every new/changed assertion failed against the unfixed code first (3 real
+  failures: two-polluters-both-needed expecting `CANDIDATE` instead of `VERIFIED`, and
+  INCONCLUSIVE falling back to `INCOMPLETE`) before implementing the fix.
+- **Logic** (`eval/report.py`): reads `diagnosis.deletion_checks`, takes only the checks at the
+  highest `round` (earlier rounds, including a dropped test's own entry, stay in the list per
+  Interface 4 but are not the verdict), then: any `NOT_RUN`/`runs is None`/`runs.n < 10` ->
+  `DELETION_INCOMPLETE`; else any `INCONCLUSIVE` -> `DELETION_INCONCLUSIVE` (ranks above
+  incomplete); else all `NEEDED` -> `DELETION_VERIFIED`; no checks at all (a stale caller, or
+  the budget ended before any ran) -> `DELETION_INCOMPLETE`, fail-safe, never `VERIFIED`.
+  **Interpretation flagged for the team:** Interface 4's own table lists "all NEEDED" before
+  the `runs.n < 10` clause, which read literally would let an all-NEEDED set with a short run
+  count still reach `VERIFIED`. Implemented the stricter reading instead (short-run checked
+  first) since a `NEEDED` label from too few trials (e.g. W24 cutting a check short) should
+  not count as established just because every check happens to agree -- raised with M2/M1 for
+  confirmation, not decided unilaterally.
+- **Schema bump** (`eval/schema/report.schema.json`, as Interface 4 asked M3 to propose): new
+  `deletionCheck` def and a required `deletion_checks` array field, shaped as ADR-011 section 4
+  plus `round`, `runs: null` allowed when `status: "NOT_RUN"`. Updated every example fixture
+  (10 files) and `test_schema_validator.py`'s shared `VALID_REPORT` to carry a real-shaped
+  `deletion_checks` entry -- all were missing the new required field.
+- **Real result, the actual F3 case (ADR-011 T3):** regenerated all 8 reports
+  (`eval/tools/run_w9_integration.py`). F3: both `setFlagA` and `setFlagB` come back `NEEDED`,
+  20/20 each, round 1, source `deletion-run` -- 40 real JVM runs. **F3 is honestly `VERIFIED`
+  again**, matching its ground truth for the first time with a real, not fail-safe, basis.
+  F1/F2/F4 (one polluter each, `alone-check` source) also `VERIFIED`; N1-N4 unchanged. All 8
+  match `fixtures/od-fixture/ground_truth.json` exactly.
+- **Renamed `eval/examples/example_f3_candidate.json` back to `example_f3_verified.json`** --
+  not a reversion to the pre-A1 state, but the real check now existing and confirming the
+  ground truth where A1 could only fail safe without one. Content rewritten to the real
+  `deletion_checks`/`resource_edges` shape (M1's extractor and M2's deletion check both ran for
+  real this time, not placeholder values). `eval/tests/test_examples.py`'s
+  `EXPECTED_INPUTS`/`REAL_EXAMPLE_TO_LOG_CASE` keys updated to match.
+- **A real, separate bug found and fixed: personal-path leak in my own
+  `eval/tools/run_w9_integration.py`.** `execution_record_reference` in the regenerated reports
+  was an absolute path (`C:\Users\...\flaketrace-records\...`) -- confirmed via
+  `git show HEAD:eval/reports/f1.json` that this was **already committed on `main`**, from my
+  own earlier regenerations this session (the A1 fix, the merge resolutions). `RECORD_DIR` in
+  the script has always been built from `Path(__file__).resolve()` (absolute by construction);
+  `runner.diagnose.diagnose()` never relativises it either (a real design choice for a real
+  end-user installation, where an absolute path is correct to log locally) -- nothing wrong in
+  either member's own file, just a gap in my own tool that commits reports to the repo. Fixed
+  with a `_diagnose()` wrapper that relativises `execution_record` to `REPO_ROOT` before
+  `assemble_report()` ever sees it; re-ran the regeneration, confirmed `grep` for the local
+  username finds nothing in any of the 8 committed reports now. **Flag for the team:** the
+  already-committed history (several commits on `main`) still has the leaked path in old
+  diffs -- not rewriting history to fix it (destructive, against the "member commits" rule's
+  spirit), but worth knowing it is there if anyone great-reps the git log.
+- **Command:** `python3 -m unittest discover -s eval/tests` -> 128/128 OK, several times
+  across this entry (after the logic fix, after the schema bump, after the path fix, after the
+  rename). Real `eval/tools/run_w9_integration.py` run (and a second, clean re-run after the
+  path fix): F1/F2/F3/F4 `VERIFIED`, N1/N2 `UNRESOLVED(VICTIM_FAILS_ALONE)`, N3
+  `UNRESOLVED(NOT_REPRODUCED)`, N4 `UNRESOLVED(VICTIM_FAILS_ALONE_DIFFERENTLY)` -- matches
+  ground truth exactly.
+- **Flagged, not touched (M2's file) -- member's explicit choice:**
+  `runner/tests/test_cli.py`'s `test_f3_two_polluters_are_candidate_until_deletion_checks_exist`
+  now fails (F3 is `VERIFIED`, not `CANDIDATE`) -- real, expected breakage from this change,
+  left for M2 to update since he is actively working the related PR. Confirmed this is the
+  *only* casualty: `python3 -m unittest discover -s runner/tests` (real JVM) -> 254 tests,
+  **1 failure, exactly this one** -- no cascading breakage anywhere else in his 254-test suite.
+- **Not done this entry:** `claims-ledger.md` row G2 progress noted in `members.md`/
+  `iteration-2-plan.md` but its `OPEN` status left alone -- Interface 4's own plan names step 4
+  as "M1 reproduces T3 independently on her machine", which has not happened yet; closing G2
+  before that would be exactly the "closed without independent reproduction" mistake CLAUDE.md
+  §5 warns against.
+- **Flagged, not touched (M2's row): claims-ledger row E14 is stale again.** M2 already
+  qualified it once for A1 (2026-11-19: "F3's command gives `CANDIDATE
+  [DELETION_EVIDENCE_INCOMPLETE]`... F3's ground truth `VERIFIED` is W20's target") -- now
+  stale a second time, since W20 landed and F3 genuinely reaches `VERIFIED` again. Not mine to
+  edit (Owner: M2); raised for him alongside the `test_cli.py` note above.

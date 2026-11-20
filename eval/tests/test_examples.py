@@ -30,10 +30,10 @@ EXPECTED_INPUTS = {
         alone=alone(20, 20), sequence=sequence(20, 0, matched=20),
         resource_edge_exists=True, deletion_status=DELETION_VERIFIED,  # one kept polluter: free (ADR-011 s.2)
     ),
-    "example_f3_candidate.json": dict(
+    "example_f3_verified.json": dict(
         source_integrity_passed=True, reference_established=True, infrastructure_failures_anywhere=0,
         alone=alone(20, 20), sequence=sequence(20, 0, matched=20),
-        resource_edge_exists=True,  # deletion_status left None: two kept polluters, no free check (A1 fix)
+        resource_edge_exists=True, deletion_status=DELETION_VERIFIED,  # W20: both kept polluters NEEDED, real check (ADR-011 T3)
     ),
     "example_candidate.json": dict(
         source_integrity_passed=True, reference_established=True, infrastructure_failures_anywhere=0,
@@ -84,7 +84,7 @@ EXPECTED_INPUTS = {
 # have (named isolation_successes/sequence_successes there -- "matched" now, same meaning).
 REAL_EXAMPLE_TO_LOG_CASE = {
     "example_f1_verified.json": "F1",
-    "example_f3_candidate.json": "F3",
+    "example_f3_verified.json": "F3",
     "example_victim_fails_alone.json": "N1",
     "example_victim_fails_alone_intermittent.json": "N2",
 }

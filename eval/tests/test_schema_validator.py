@@ -32,6 +32,11 @@ VALID_REPORT = {
         "polluter_write_location": {"class": "odfixture.ConfigPolluterTest", "method": "pollute", "bytecode_offset": 3},
         "victim_read_location": {"class": "odfixture.ConfigVictimTest", "method": "expectsDefaultMode", "bytecode_offset": 5},
     }],
+    "deletion_checks": [{
+        "removed": {"class": "odfixture.ConfigPolluterTest", "method": "pollute"},
+        "runs": {"n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0},
+        "status": "NEEDED", "source": "alone-check", "round": 1,
+    }],
     "failure_signature": {
         "exception_type": "java.lang.AssertionError",
         "message": "expected:<0> but was:<1>",
@@ -45,7 +50,7 @@ VALID_REPORT = {
     "candidate_reasons": [],
     "limitations": [],
     "assurance": {
-        "sequence": {"reproduces": "ESTABLISHED", "passes_alone": "ESTABLISHED", "deletion": "NOT_YET_CHECKED"},
+        "sequence": {"reproduces": "ESTABLISHED", "passes_alone": "ESTABLISHED", "deletion": "DELETION_VERIFIED"},
         "resource": {"level": "STATIC_OVERLAP", "mechanism": "NOT_ASSESSED"},
     },
 }
