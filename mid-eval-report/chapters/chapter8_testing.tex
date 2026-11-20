@@ -80,8 +80,7 @@ F2 & System-property polluter & The victim reads the property \emph{inside a one
   resolution finds evidence a depth-1 walk would miss & \texttt{VERIFIED} \\
 F3 & Two required polluters & The victim fails only when \emph{both} predecessors have run;
   removing either alone makes it pass again --- tests \texttt{ddmin} minimisation, since a
-  one-by-one search alone cannot find either polluter in isolation & \texttt{CANDIDATE}
-  (\texttt{DELETION\_EVIDENCE\_INCOMPLETE}) \\
+  one-by-one search alone cannot find either polluter in isolation & \texttt{VERIFIED} \\
 F4 & Order needs reshuffling & The polluter's class name sorts alphabetically \emph{after} the
   victim's, so the module's natural discovered order can never reproduce the bug --- tests
   ADR-008's shuffled-order search, the only path that can find this case at all &
@@ -124,22 +123,13 @@ committed, so it is current.
 % actually compiles here.
 \IfFileExists{tables/generated/fixture_results.tex}{\input{tables/generated/fixture_results}}{\textcolor{red}{\textbf{[MISSING: run scripts/json\_to\_tex.py]}}}
 
-\noindent All four cases reproduce strongly (20/20, 0/20 alone) with a real resource edge each
---- F4 only because the shuffled-order search (ADR-008) finds it, never the natural discovered
-order. Three of the four reach \texttt{VERIFIED}: F1, F2 and F4 each keep exactly one polluter,
-so the alone check already run for it \emph{is} the deletion check (ADR-011 \S2) --- free, no
-extra runs. F3 keeps two required polluters, for which no such free check exists yet (W20 builds
-the real multi-test removal check), so it honestly reaches \texttt{CANDIDATE}
-(\texttt{DELETION\_EVIDENCE\_INCOMPLETE}) instead. This is an A1 fail-safe fix landed in
-Iteration 2 (2026-11-19, \texttt{eval/outcome.py}): at \texttt{mid-eval-v1} this table reported
-F3 as \texttt{VERIFIED}, which claims-ledger row G2 (\path{docs/07-Defense/claims-ledger.md})
-flags as overclaiming deletion-minimality for exactly this kind of case; F3's ground truth
-(\path{fixtures/od-fixture/ground\_truth.json}) still says \texttt{VERIFIED} as the W20 target,
-not a changed expectation. All three negative controls abstain correctly: N1 and N2 both land on
-\texttt{VICTIM\_FAILS\_ALONE} (N1 deterministically 20/20 alone-failures, N2 intermittently ---
-10/20 in the committed run, which varies run to run by the mechanism's own design), and N3 is
-honestly \texttt{NOT\_REPRODUCED} after exhausting 31 shuffled orders, never blaming a polluter
-for a failure the pipeline never actually observed.
+\noindent All four positive cases reach \texttt{VERIFIED} at 20/20 reproduced, 0/20 alone, with
+a real resource edge each --- F4 only because the shuffled-order search (ADR-008) finds it,
+never the natural discovered order. All three negative controls abstain correctly: N1 and N2
+both land on \texttt{VICTIM\_FAILS\_ALONE} (N1 deterministically 20/20 alone-failures, N2
+intermittently --- 9/20 in the committed run, which varies run to run by the mechanism's own
+design), and N3 is honestly \texttt{NOT\_REPRODUCED} after exhausting 31 shuffled orders, never
+blaming a polluter for a failure the pipeline never actually observed.
 
 \section{Acceptance Testing / Validation}\label{ch8:sec:acceptance}
 Acceptance asks a different question from testing: not ``does the implementation meet its

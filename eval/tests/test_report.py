@@ -99,6 +99,53 @@ def _diagnosis(status, *, alone_tally=None, sequence_tally=None, **overrides):
     return DiagnosisRuns(**defaults)
 
 
+EDGE_A = {"shared_resource": {"kind": "static-field", "class": "odfixture.Toggles", "field": "flagA"},
+          "polluter_write_location": {"class": "odfixture.ToggleAPolluterTest", "method": "setFlagA", "bytecode_offset": 1},
+          "victim_read_location": {"class": "odfixture.ToggleVictimTest", "method": "v", "bytecode_offset": 1},
+          "depth": 2}
+EDGE_B = dict(EDGE_A, shared_resource={"kind": "static-field", "class": "odfixture.Toggles", "field": "flagB"},
+              polluter_write_location={"class": "odfixture.ToggleBPolluterTest", "method": "setFlagB", "bytecode_offset": 1})
+
+
+class TestResourceEdgesFromM1(unittest.TestCase):
+    """W21 (PR #105) + W19: the report lists every edge Member 1's report_fields gives, with depth."""
+
+    def test_two_polluters_two_edges_are_both_listed(self):
+        fields = {"shared_resource": EDGE_A["shared_resource"],
+                  "polluter_write_location": EDGE_A["polluter_write_location"],
+                  "victim_read_location": EDGE_A["victim_read_location"],
+                  "instrumentation_level": "static-only", "limitations": [],
+                  "resource_edges": [EDGE_A, EDGE_B]}
+        report = assemble_report(_diagnosis(POLLUTER_FOUND, polluters=[POLLUTER, TestIdentifier("x", "y")]), fields)
+        self.assertEqual(report["resource_edges"], [EDGE_A, EDGE_B])
+        self.assertFalse([line for line in report["limitations"] if "lists only the primary edge" in line])
+        validate_report(report)
+
+
+class TestDeletionEvidenceBeforeW20(unittest.TestCase):
+    """ADR-010 claim S3 with ADR-011 sections 2 and 4, decided 2026-11-19 (M2, with M3's permission):
+    one polluter is deletion-verified by the alone check; two or more are INCOMPLETE until W20."""
+
+    def edge_fields(self):
+        return {"shared_resource": EDGE_A["shared_resource"],
+                "polluter_write_location": EDGE_A["polluter_write_location"],
+                "victim_read_location": EDGE_A["victim_read_location"],
+                "instrumentation_level": "static-only", "limitations": [], "resource_edges": [EDGE_A, EDGE_B]}
+
+    def test_one_polluter_passing_alone_is_deletion_verified(self):
+        report = assemble_report(_diagnosis(POLLUTER_FOUND), resource_fields(POLLUTER_ACCESS, VICTIM_ACCESS))
+        self.assertEqual((report["outcome"], report["assurance"]["sequence"]["deletion"]), ("VERIFIED", "DELETION_VERIFIED"))
+        self.assertTrue(any("alone" in line.lower() and "deletion" in line.lower() for line in report["limitations"]), report["limitations"])
+
+    def test_two_polluters_without_deletion_runs_are_candidate_incomplete(self):
+        diagnosis = _diagnosis(POLLUTER_FOUND, polluters=[POLLUTER, TestIdentifier("x", "y")])
+        report = assemble_report(diagnosis, self.edge_fields())
+        self.assertEqual(report["outcome"], "CANDIDATE")
+        self.assertEqual(report["candidate_reasons"], ["DELETION_EVIDENCE_INCOMPLETE"])
+        self.assertEqual(report["assurance"]["sequence"]["deletion"], "INCOMPLETE")
+        validate_report(report)
+
+
 class TestAssembleReport(unittest.TestCase):
     def test_polluter_found_with_edge_gives_verified(self):
         fields = resource_fields(POLLUTER_ACCESS, VICTIM_ACCESS)
@@ -108,14 +155,12 @@ class TestAssembleReport(unittest.TestCase):
         self.assertIsNone(report["unresolved_reason"])
         self.assertEqual(report["candidate_reasons"], [])
         self.assertEqual(report["shared_resource"], fields["shared_resource"])
-        self.assertEqual(report["resource_edges"], [{
-            "shared_resource": fields["shared_resource"],
-            "polluter_write_location": fields["polluter_write_location"],
-            "victim_read_location": fields["victim_read_location"],
-        }])
+        # W21 (PR #105): every edge Member 1 found, each with its depth (ADR-010 section 6).
+        self.assertEqual(report["resource_edges"], fields["resource_edges"])
+        self.assertEqual(report["resource_edges"][0]["shared_resource"], fields["shared_resource"])
+        self.assertIn("depth", report["resource_edges"][0])
         self.assertEqual(report["polluters"], [POLLUTER.to_dict()])
-        # A1 fail-safe fix (2026-11-19): a single kept polluter's deletion check is free
-        # (ADR-011 section 2 -- the alone check, already gated clean by rows 6-8, proves it).
+        # ADR-011 section 2: for one polluter the alone check IS the deletion check.
         self.assertEqual(report["assurance"]["sequence"]["deletion"], "DELETION_VERIFIED")
         self.assertEqual(report["assurance"]["resource"]["level"], "STATIC_OVERLAP")
         self.assertIn("Static analysis only; no runtime evidence (Iteration 2).", report["limitations"])
@@ -150,7 +195,9 @@ class TestAssembleReport(unittest.TestCase):
         self.assertEqual(report["outcome"], "CANDIDATE")
         self.assertIsNone(report["unresolved_reason"])
         self.assertEqual(report["candidate_reasons"], ["DELETION_EVIDENCE_INCOMPLETE"])
-        self.assertEqual(report["assurance"]["sequence"]["deletion"], "NOT_YET_CHECKED")
+        # M2's W20-precursor fix (2026-11-19, with M3's permission): two kept polluters get the
+        # real ADR-011 value DELETION_INCOMPLETE now, not a placeholder NOT_YET_CHECKED.
+        self.assertEqual(report["assurance"]["sequence"]["deletion"], "INCOMPLETE")
         self.assertEqual(report["assurance"]["resource"]["level"], "STATIC_OVERLAP")
         validate_report(report)
 
@@ -169,17 +216,14 @@ class TestAssembleReport(unittest.TestCase):
                 "odfixture.ToggleBPolluterTest#setFlagB",
             ],
         }
+        fields["resource_edges"] = [EDGE_A]
         diagnosis = _diagnosis(POLLUTER_FOUND, polluters=[POLLUTER, TestIdentifier("x", "y")])
         report = assemble_report(diagnosis, fields)
-        # any_edge_found=True still gives no resource_edges entry (shared_resource is None, the
-        # edge Member 1 DID find for the other polluter is only free text in limitations today).
-        # Two kept polluters also means no free deletion check (A1 fix) -- both reasons apply.
-        self.assertEqual(
-            set(report["candidate_reasons"]),
-            {"DELETION_EVIDENCE_INCOMPLETE", "NO_SUPPORTED_RESOURCE_EVIDENCE"},
-        )
+        # W21: the edge Member 1 DID find is listed structurally, though not every polluter has one.
+        # Two polluters and no W20 deletion runs: also DELETION_EVIDENCE_INCOMPLETE (2026-11-19).
+        self.assertEqual(report["candidate_reasons"], ["DELETION_EVIDENCE_INCOMPLETE", "NO_SUPPORTED_RESOURCE_EVIDENCE"])
         self.assertIsNone(report["shared_resource"])
-        self.assertEqual(report["resource_edges"], [])
+        self.assertEqual(report["resource_edges"], [EDGE_A])
         self.assertNotIn(
             "No polluter-write/victim-read resource edge was found by static analysis.",
             report["limitations"],

@@ -103,7 +103,8 @@
         "class": "odfixture.FeatureFlags",
         "method": "isTurboEnabled",
         "bytecode_offset": 2
-      }
+      },
+      "depth": 2
     }
   ],
   "failure_signature": {
@@ -112,7 +113,7 @@
     "stack_trace": "org.junit.Assert.fail:87\norg.junit.Assert.assertTrue:42\norg.junit.Assert.assertFalse:65\norg.junit.Assert.assertFalse:75\nodfixture.FeatureVictimTest.expectsTurboDisabled:10"
   },
   "instrumentation_level": "static-only",
-  "execution_record_reference": "C:\\Users\\zarpa\\OneDrive\\Documents\\GitHub\\FlakeTracee\\eval\\reports\\flaketrace-records\\20261119T182113Z-odfixture.FeatureVictimTest#expectsTurboDisabled.jsonl",
+  "execution_record_reference": "C:\\Users\\zarpa\\OneDrive\\Documents\\GitHub\\FlakeTracee\\eval\\reports\\flaketrace-records\\20261119T190637Z-odfixture.FeatureVictimTest#expectsTurboDisabled.jsonl",
   "source_integrity": {
     "passed": true,
     "details": "26 files hashed (SHA-256) before and after; all identical"
@@ -128,7 +129,8 @@
     "Only static fields and constant-key system properties are modelled. Files, environment variables, network, databases, singletons reached through instance fields, etc. are not.",
     "Written values are not modelled: a polluter that writes and then restores the original value still produces a WRITE.",
     "Execution timing is not modelled (e.g. a victim <clinit> read that happens before the polluter runs).",
-    "Missing evidence is not proof of independence."
+    "Missing evidence is not proof of independence.",
+    "Deletion check from the alone runs (ADR-011 section 2): without its one polluter the victim passed 20 of 20 runs alone."
   ],
   "assurance": {
     "sequence": {

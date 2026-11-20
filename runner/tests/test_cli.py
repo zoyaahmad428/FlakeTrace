@@ -158,6 +158,12 @@ Q = TestIdentifier("pkg.SecondPolluterTest", "q")
 
 
 class TestCombineFields(unittest.TestCase):
+    def test_every_polluters_edges_are_listed(self):
+        # W21 (PR #105): each pair's report_fields lists its edges; combined, the report lists all.
+        fields = combine_fields([pair(P, "pkg.T#a"), pair(Q, "pkg.T#b")])
+        self.assertEqual([edge["shared_resource"]["field"] for edge in fields["resource_edges"]], ["a", "b"])
+        self.assertTrue(all("depth" in edge for edge in fields["resource_edges"]))
+
     def test_one_polluter_is_unchanged(self):
         from evidence.extract import report_fields
         single = pair(P, "pkg.T#flagA")
@@ -200,10 +206,8 @@ class TestCombineFields(unittest.TestCase):
         # with no resource edge is CANDIDATE now, not UNRESOLVED (M3, flagged for M2's review).
         # A1 fix (2026-11-19): two kept polluters also means no free deletion check.
         self.assertEqual((report["outcome"], report["unresolved_reason"]), ("CANDIDATE", None))
-        self.assertEqual(
-            set(report["candidate_reasons"]),
-            {"DELETION_EVIDENCE_INCOMPLETE", "NO_SUPPORTED_RESOURCE_EVIDENCE"},
-        )
+        # Two polluters and no W20 deletion runs yet: also DELETION_EVIDENCE_INCOMPLETE (2026-11-19).
+        self.assertEqual(report["candidate_reasons"], ["DELETION_EVIDENCE_INCOMPLETE", "NO_SUPPORTED_RESOURCE_EVIDENCE"])
         self.assertNotIn("No polluter-write/victim-read resource edge was found by static analysis.",
                          report["limitations"])
 
@@ -497,14 +501,12 @@ class TestCliOnFixture(unittest.TestCase):
         self.assertEqual(report["victim_read_location"],
                          {"class": "odfixture.FeatureFlags", "method": "isTurboEnabled", "bytecode_offset": 2})
 
-    def test_f3_two_polluters_candidate(self):
-        # A1 fail-safe fix (2026-11-19, eval/outcome.py): ADR-011 section 2's free deletion
-        # check only covers a single kept polluter (the alone check proves it). F3 keeps two,
-        # so it is honestly CANDIDATE until W20 builds the real multi-test check -- not VERIFIED.
+    def test_f3_two_polluters_are_candidate_until_deletion_checks_exist(self):
+        # Ground truth for F3 is VERIFIED; it is reached once W20's deletion runs show both
+        # polluters are needed (ADR-011 test T3). Until then the honest verdict is CANDIDATE.
         code, out, err, report = self.diagnose("odfixture.ToggleVictimTest#expectsNotBothFlagsSet", 20)
         self.assertEqual(code, 0, err)
-        self.assertEqual(report["outcome"], "CANDIDATE")
-        self.assertEqual(report["candidate_reasons"], ["DELETION_EVIDENCE_INCOMPLETE"])
+        self.assertEqual((report["outcome"], report["candidate_reasons"]), ("CANDIDATE", ["DELETION_EVIDENCE_INCOMPLETE"]))
         self.assertEqual(report["polluters"], [{"class": "odfixture.ToggleAPolluterTest", "method": "setFlagA"},
                                                {"class": "odfixture.ToggleBPolluterTest", "method": "setFlagB"}])
         self.assertEqual(report["shared_resource"], {"kind": "static-field", "class": "odfixture.Toggles", "field": "flagA"})

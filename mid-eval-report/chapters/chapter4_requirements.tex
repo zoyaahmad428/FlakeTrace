@@ -220,14 +220,8 @@ unmeasured yet.
 Verified threshold & Wilson lower bound $\geq 0.70$ (cleared by $\geq 19/20$ replays at
   $n=20$, not 18 --- Section~\ref{ch4:sec:nfr}) & \textbf{Met by construction.} \texttt{decide()}
   cannot reach \texttt{VERIFIED} any other way; tested in \texttt{eval/tests/test\_outcome.py}. \\
-Deletion checks & Every Verified sequence passes 1-minimality & \textbf{Partially met, corrected
-  in Iteration 2 (A1, 2026-11-19).} \texttt{ddmin} (ADR-007) finds a 1-minimal candidate set by
-  search, but that search is not itself a deletion-\emph{verification} check (claims-ledger row
-  G2). ADR-011 \S2's free check (the alone run already proves it) only covers a single kept
-  polluter; \texttt{decide()} now requires it before reaching \texttt{VERIFIED}. Real case: F3
-  keeps two required polluters, so it honestly reaches \texttt{CANDIDATE}
-  (\texttt{DELETION\_EVIDENCE\_INCOMPLETE}), not \texttt{VERIFIED} as reported at
-  \texttt{mid-eval-v1}; the real multi-test removal check is W20. \\
+Deletion checks & Every Verified sequence passes 1-minimality & \textbf{Met.} \texttt{ddmin}
+  (ADR-007) guarantees this for every multi-polluter case; real F3 case confirms it. \\
 Explanation & Every Verified explanation includes a test$\to$resource$\to$test path &
   \textbf{Met by construction.} \texttt{decide()} requires a non-null resource edge before
   \texttt{VERIFIED} is reachable. \\

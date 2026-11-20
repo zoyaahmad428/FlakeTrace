@@ -1852,3 +1852,93 @@ established one, even though it changes F3's reported outcome.
   - Not a surprise to the team: this exact tension (ddmin's search-minimality vs. a real
     deletion-verification check) is G2's own description, dated 2026-11-13 — this entry is
     that gap actually narrowing in code, not a new finding.
+
+## 2026-11-20 — Merge conflict: M2 independently built the same A1 fail-safe fix
+
+**Requirement:** `git push` to the shared branch `m3/w19-verdict-contract-v2` was rejected
+(non-fast-forward); `git pull` (member's own command) surfaced that M2 had pushed real work to
+this same branch — PR #106, "with M3's permission" per M2's commit message — including
+`[M2] eval: list every resource edge and apply ADR-011 deletion rule`, which independently
+reaches the same conclusion as A1 (F3 must not be `VERIFIED` without a real multi-polluter
+deletion check) through a different, better-engineered mechanism. 13 files conflicted.
+
+- **Compared both implementations before choosing, not a coin flip.** M2's `eval/report.py`
+  computes `deletion_status` with: (1) an explicit, defensive re-check that
+  `alone_tally.passed == alone_tally.n` rather than relying on `decide()`'s row ordering as an
+  implicit precondition, and (2) the real ADR-011 four-value vocabulary (`DELETION_VERIFIED`/
+  `DELETION_INCOMPLETE`), never a raw `None` for a found-polluter case. My own A1 version left
+  the multi-polluter case as `None` and relied on fixing `eval/outcome.py`'s guard to reject it
+  — functionally equivalent for F3 today, but less robust and still used my own invented
+  `DELETION_NOT_YET_CHECKED` value where M2's doesn't need to. **Kept M2's `eval/report.py`
+  entirely; kept my own `eval/outcome.py` guard fix too** (it merged with no conflict — M2's
+  branch never touched that file — and is valid, harmless defense-in-depth regardless).
+- **Resolved via `Edit`, never `git merge`/`git checkout --theirs`/`git add` myself** (the
+  member ran the real `git pull`): `eval/report.py`, `eval/tests/test_report.py`,
+  `runner/tests/test_cli.py` — took M2's side for every conflicting hunk. Also fixed one of my
+  own tests (`test_two_polluters_with_a_real_edge_gives_candidate_not_verified`,
+  `eval/tests/test_report.py`) that git did **not** flag as conflicting (no textual overlap)
+  but was now factually wrong under M2's code: asserted `assurance.sequence.deletion ==
+  "NOT_YET_CHECKED"`, corrected to `"INCOMPLETE"` by reasoning through the merged code's actual
+  behaviour, not by trusting the absence of a conflict marker.
+- **`docs/08-MidEval/genai-register.md`:** both members' same-day rows are independent,
+  append-only entries — kept both, plus a new row for this reconciliation itself.
+  **`docs/09-Team/members.md`:** the conflict region spanned two different members' rows (M2's
+  row 2 and my own row 3) because they sit adjacent in the table; took M2's own row 2 (their own
+  description of their own work is authoritative) and my row 3 (mine).
+- **`eval/reports/{f1,f2,f3,f4,n1,n2,n3,n4}.json`:** resolved by regenerating them for real
+  (`py -3 eval/tools/run_w9_integration.py`) against the now-merged code, rather than
+  hand-merging JSON from two different pre-generated snapshots — guarantees the committed
+  files exactly match what the resolved code actually produces. F3 confirmed `CANDIDATE
+  [DELETION_EVIDENCE_INCOMPLETE]`, `assurance.sequence.deletion = "INCOMPLETE"`, now with 2
+  structured `resource_edges` (M1's W21, merged in from M2's side). N2's rate landed at 12/20 on
+  this real rerun (yet another value — 9/20, 11/20, 10/20, now 12/20 across this iteration's
+  reruns, exactly the churn flagged in the 2026-11-19 entry above). Fixed the same two own-
+  chapter N2 citations (`chapter8_testing.tex`, `appendix_test_cases.tex`) a third time; brace
+  balance re-checked.
+- **Command:** `py -m unittest discover -s eval/tests` → 123/123 OK (120 of mine + 3 new from
+  M2's `TestResourceEdgesFromM1`/`TestDeletionEvidenceBeforeW20`). `runner.tests.test_cli`:
+  started, result recorded in the next entry once the real-JVM run finishes (it runs for
+  several minutes; not fabricating a number before it completes).
+- **`runner.tests.test_cli`** (real JVM): 64/64 OK, confirming the merge-resolved `eval/report.py`
+  and `runner/tests/test_cli.py`.
+- **A real bug found by actually reproducing M2's new CI job, not by reading the diff:** M2's
+  other PR #106 commit, `[M2] ci: check the Mid report tables against the mid-eval-v1 reports`,
+  made the Mid report's generated table a genuinely closed record — CI now regenerates it from
+  `mid-eval-v1`'s frozen `eval/reports/` (schema v1, via `git archive`), never the live
+  directory, since the Mid report is a graded, submitted artefact, not something that should
+  track Iteration 2's ongoing changes. Running that CI step locally
+  (`git archive mid-eval-v1 eval/reports | tar -x`, then `json_to_tex.py --reports <that
+  dir>`) crashed: `KeyError: 'matched'`. My own earlier "successes"→"matched" rename (2026-11-19
+  entry above) assumed every report would eventually move to schema v2 — wrong, since the tag's
+  reports are permanently schema v1. Fixed `rate()` in
+  `mid-eval-report/scripts/json_to_tex.py` to accept either key, test-first in spirit (ran the
+  exact CI command before and after the fix, confirmed the crash and then the fix).
+- **This also meant every one of my own "sync the Mid report to live data" edits this session
+  was wrong, not just incomplete.** The Mid report is explicitly a closed record checked against
+  `mid-eval-v1`, not something that should ever describe Iteration 2's state. **Reverted, back
+  to byte-identical with `git diff mid-eval-v1 -- <file>` showing nothing:**
+  `chapter8_testing.tex` (F3's table row and the results paragraph, back to `VERIFIED`/9/20),
+  `chapter4_requirements.tex` (the "Deletion checks" row, back to its original claim),
+  `appendix_test_cases.tex` (F2/F3/F4's order lengths and F4's shuffle seed, back to 6/15/seed
+  1/3 tests; N2's rate back to 9/20), `chapter6_module_m3.tex` (N2's rate citation, back to
+  9/20). All from *both* this session's passes — today's A1 edits and yesterday's N4-driven CI
+  fix — since both predate M2's closed-record architecture landing. `fixture_results.tex`
+  regenerated with `--reports` pointing at the tag, confirmed to reproduce exactly what CI will
+  now check. **What stays correct and current:** the actual code (`eval/outcome.py`,
+  `eval/report.py`) and every Iteration-2 doc (`evidence-m3.md`, `genai-log-m3.md`,
+  `members.md`, `iteration-2-plan.md`) — A1's fix is real and F3 genuinely is `CANDIDATE` today;
+  it is only the *frozen Mid report* that must not say so.
+- **Lesson for next time, stated plainly rather than silently fixed:** I spent real effort this
+  session treating the Mid report's generated table as something that should track live
+  `eval/reports/` data (see the 2026-11-19 CI-fix entry above, and the two rounds of N2-rate
+  chasing before this one) — reasoning from the chapter's own text ("regenerated... so it is
+  current") rather than checking whether the *tag* was the intended source of truth. M2's
+  independent fix answers that question definitively. Should have asked the team before the
+  first regeneration, not after the third.
+- **Not run this entry:** `ui.tests.test_server`, `mvn test-compile` steps, the Mid report's own
+  LaTeX compile (no local toolchain, same standing limitation). `.github/workflows/*`,
+  `ui/web/*`, `runner/cli.py`, `docs/evidence-m2.md`, `docs/genai-log-m2.md`,
+  `docs/10-Final1/handover-m1-m3.md`, `eval/schema/report.schema.json`'s `depth` field — all
+  merged cleanly (no conflict), M2's/M1's own files, not reviewed line-by-line here since they
+  are outside this entry's scope (the conflict resolution) and their owners already verified
+  them in their own commit messages.

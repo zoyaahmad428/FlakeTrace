@@ -2,12 +2,13 @@ import { useStore } from "../state";
 import { WILSON_FLOOR, toView } from "../lib/report";
 import { Badge, FlowNav, Missing, Panel, ScreenHeader, TONE, Terminal } from "../components/ui";
 
-function Count({ label, value, bounds }: { label: string; value: string; bounds: string }) {
+function Count({ label, value, bounds, detail }: { label: string; value: string; bounds: string; detail?: string }) {
   return (
     <div className="rounded-lg border border-line bg-sunken p-4">
       <p className="text-sm text-ink-3">{label}</p>
       <p className="mt-1 text-[1.8rem] font-semibold leading-none tabular">{value}</p>
       <p className="mt-1 font-mono text-[0.8rem] text-ink-2">{bounds}</p>
+      {detail && <p className="mt-1 text-sm text-ink-2">{detail}</p>}
     </div>
   );
 }
@@ -30,16 +31,23 @@ export default function CertificateScreen() {
         <Panel>
           <h2 className={`text-[2.2rem] font-semibold leading-none ${TONE[v.outcomeTone].text}`}>{v.outcome}</h2>
           {v.reason && <p className="mt-2 text-ink-2">{v.reason}</p>}
+          {v.candidateReasons.length > 0 && (
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-ink-2">
+              {v.candidateReasons.map((why) => (
+                <li key={why}>Not VERIFIED because {why}.</li>
+              ))}
+            </ul>
+          )}
           <p className="mt-3 text-sm text-ink-3">
             VERIFIED (sequence) means the failing sequence replays with a Wilson lower bound of at least {WILSON_FLOOR.toFixed(2)}, the
-            victim never failed alone with the same failure, and static analysis found a possible write/read overlap. It does not mean
-            the shared resource is confirmed as the cause.
+            victim passed alone in every run, every kept test was shown to be needed when removed, and static analysis found a possible
+            write/read overlap (ADR-010). It does not mean the shared resource is confirmed as the cause.
           </p>
         </Panel>
         <Panel title="Reliability">
           <div className="grid gap-4 md:grid-cols-2">
             <Count label="Failing sequence fails" value={v.reproduction} bounds={v.reproductionBounds} />
-            <Count label="Victim alone fails with the same failure" value={v.alone} bounds={v.aloneBounds} />
+            <Count label="Victim alone fails with the same failure" value={v.alone} bounds={v.aloneBounds} detail={v.aloneDetail} />
           </div>
         </Panel>
         <Panel title="Failure signature">

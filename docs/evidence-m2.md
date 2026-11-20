@@ -1287,3 +1287,44 @@ own copy of the code, not from the review's description.
   which fakes a failed delete. The test now removes it; the two folders were deleted; none remain.
 - **After the fixes:** every `runner/tests/test_*.py` → **212 OK** (471 s, none skipped); every
   `eval/tests/test_*.py` → **99 OK**; `ui.tests.test_server` → **31 OK**; `ui/web` `npm test` → **29 passed**.
+
+## PR #106 integration: making M3's W19 mergeable (2026-11-19)
+
+- **Why:** PR #106 (M3, W19 verdict contract v2) had a merge conflict with `main` and two failing
+  CI jobs; PR #107 (M1, W21 controls) had one. M3 gave M2 permission to merge `main` into #106,
+  resolve the two doc tables, use M1's `resource_edges`, and answer "`VERIFIED` without deletion
+  checks". Branch `m3/w19-verdict-contract-v2`.
+- **CI failures reproduced first** (in throwaway worktrees of each PR head):
+  - #107 `evidence`: as CI runs it, `ERROR: setUpClass (… Ft005ControlsTest) … FT005 controls not
+    compiled`; after `mvn … ft005-controls/pom.xml test-compile`, 45 OK. Fix: `ci.yml` compiles the
+    controls when present (guarded, because they arrive with #107 and the line must not break #106).
+  - #106 `build-report`: `KeyError: 'successes'` — the Mid report's table generator reads
+    `eval/reports/`, now schema v2.
+  - #106 `ui`: `ui/web` 9 of 21 tests failed (`expected 'undefined/20' to be '20/20'`, order lengths).
+- **Merge** (`git merge origin/main`, run by M2): conflicts only in `genai-register.md` and
+  `iteration-2-plan.md`; resolved by keeping M3's and M1's rows. Combined code: eval 119 OK.
+- **Found, not caught by any test:** `eval/report.py` still said "Member 1's extractor reports one
+  edge" after PR #105 made `report_fields` return every edge.
+- **Fixes, each test first:**
+  1. `eval/report.py` uses M1's `resource_edges`; `runner/cli.py` `combine_fields` lists every
+     polluter's edges; schema `resourceEdge` gains an optional `depth` (5-line diff). Before:
+     `Lists differ: ['a'] != ['a', 'b']` and three report tests failing.
+  2. Deletion answer (ADR-011 §2/§4): one polluter passing alone → `DELETION_VERIFIED`; two or more →
+     `INCOMPLETE` → `CANDIDATE [DELETION_EVIDENCE_INCOMPLETE]`. Before: `'NOT_YET_CHECKED' !=
+     'DELETION_VERIFIED'`; real F3 `('VERIFIED', []) != ('CANDIDATE', ['DELETION_EVIDENCE_INCOMPLETE'])`.
+  3. `ui/web` on schema v2 (`matched`, `candidate_reasons`, `resource_edges`, the full alone tally
+     "passed · failed differently · crashed" so N4 cannot read as "never failed alone").
+  4. Mid-report check: `json_to_tex.py --reports DIR`; `report.yml` extracts `eval/reports` from tag
+     `mid-eval-v1`. Locally: the generator on the tag's reports reproduces the committed tables
+     (`git diff --exit-code` → 0).
+- **Committed reports regenerated** with M3's tool, real runs: `py -3 eval/tools/run_w9_integration.py`
+  → F1, F2, F4 `VERIFIED` (`DELETION_VERIFIED`); F3 `CANDIDATE [DELETION_EVIDENCE_INCOMPLETE]` with
+  2 `resource_edges`; N1, N2 `UNRESOLVED (VICTIM_FAILS_ALONE)`; N3 `NOT_REPRODUCED`; N4
+  `VICTIM_FAILS_ALONE_DIFFERENTLY` (alone `other` 20).
+- **After:** every `eval/tests/test_*.py` → **122 OK**; every `runner/tests/test_*.py` → 213 run, 1
+  failure (`test_mixed_evidence…`: two polluters now also give `DELETION_EVIDENCE_INCOMPLETE` — the
+  intended change; expectation updated, `TestCombineFields` → 10 OK); `ui/web` → **33 passed**,
+  typecheck and build clean. *(The UI backend and evidence suites: see the hand-over message.)*
+- **Limitations:** F3's ground truth stays `VERIFIED` (the target after W20); until then the real F3
+  verdict is `CANDIDATE`. The UI shows only the primary edge on the Evidence graph screen; the list
+  of all edges is in the report JSON.
