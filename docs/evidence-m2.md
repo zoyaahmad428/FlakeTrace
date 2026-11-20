@@ -1657,3 +1657,46 @@ own copy of the code, not from the review's description.
   `ui.tests.test_server` `Ran 31 tests OK`, `ui/web` `npm test` → `33 passed`.
 - **Limitations:** no report for `BUDGET_EXHAUSTED` until M3's half (exit 3); `analysis_seconds` is
   `None` until W25; the seconds limit is tested with a fake clock only; one real run of each.
+
+## W25 runner half: search policy (2026-11-20)
+
+- **Requirement:** Interface 7 (agreed by M1, M2, M3 on 2026-11-20; PR #133), ADR-014 §4–§6: `--policy
+  original|ranked|random`, `--scope module|package`, one candidate order per diagnosis (the same endpoint),
+  the fallback, ADR-014 §6 deepening, `analysis_seconds`, a `ranking` record line.
+- **Code:** `runner/policy.py` (new: `SearchPolicy`, `choose_order`, `EvidenceRanker` over M1's `rank_candidates`
+  and `AnalysisCache`, `in_package`), `runner/diagnose.py` (`run_steps(policy, scope, ranker_for)`,
+  `diagnose(policy, scope)`, `DiagnosisRuns.search`, header keys), `runner/budget.py` (`write_event`,
+  `account(policy, analysis_seconds)`), `runner/cli.py` (`--policy`, `--scope`, `search:` line).
+- **Test-first (fake runner and `FakeRanker`, Windows 11, Python 3.14, JDK 21.0.9):**
+  - `py -3 -m unittest runner.tests.test_policy` → `No module named 'runner.policy'`; after → `Ran 15 tests OK`
+    (evidence first, no edge keeps the order, the fallback, the four ways deepening stops, a ranker that drops a
+    candidate raises).
+  - `TestSearchPolicy` (7) and the budget test → 8 errors (`unexpected keyword argument 'policy'`); after → OK.
+    ADR-014's test: the polluter is candidate 9 of 10 and the only one with an edge → `original` search 18
+    invocations, `ranked` 2, the same verdict, totals 16 apart.
+  - Task 3 → `ImportError` (`EvidenceRanker`, `search_line`); after → `Ran 45 tests OK`, including two real
+    `EvidenceRanker` tests on the compiled od-fixture (F1's polluter ranked first, score ≥ 1).
+- **Whole suites:** runner `Ran 325 tests in 715.912s` with 1 failure: a real F1 test counted every record line
+  (45 != 44, the new `ranking` line); it now counts run lines and exactly one ranking line → OK on re-run.
+  eval 129 OK, `evidence.tests.test_extract` 57 OK, `ui.tests.test_server` 31 OK, `ui/web` `npm test` 33 passed.
+  Real F1–F4 with `--policy ranked` → all `VERIFIED` (the same verdicts as `original`, ADR-014's test).
+- **Real runs, od-fixture F2** (`odfixture.FeatureVictimTest#expectsTurboDisabled`, no limit): `original` →
+  `VERIFIED`, 82 invocations, 7 of 7 candidates tried; `ranked` → `VERIFIED`, depth 2, 1 of 7 candidates with
+  evidence, 70 invocations, 1 of 7 tried; `random --seed 3` → `VERIFIED`, 76 invocations, 4 of 7 tried. The same
+  polluter each time. F1 with `--scope package --policy ranked` → `VERIFIED`, 1 of 2 tried.
+- **Fresh review (one reviewer, Claude Opus 5.5) and fixes, each test-first (6 new tests failed first):**
+  (1, Important) a project without `target/classes` made `--policy ranked` stop with a traceback after the JVM
+  runs, because `Project` was built outside P3's fallback — now built on first use, so it falls back with a note;
+  (2, Important) "the same endpoint" overstated it: when several earlier tests each pollute alone, the policies
+  can blame different tests (reviewer's probe: `original` blamed C1, `ranked` C4) — docs reworded, flagged to M3
+  and M1 for Interface 7's wording and the comparison; (3) a diagnosis that never searched printed "original
+  order" — now "no single-polluter search ran"; (4) ranked with no evidence now says the original order was kept;
+  (5) `ranked` without a ranker and (7) `priority` with a non-original policy are refused before any run; (6) a
+  ranker returning a different set falls back instead of raising; (8) `--scope package` leaving no candidate says
+  to re-run with `--scope module`. Two need a contract change and were raised with M1/M3, not built: a per-candidate
+  note for unanalysable candidates in the ranking line, and skipping ranking once the seconds limit is spent.
+  After the fixes: runner `Ran 330 tests in 739.350s OK` (real JVM), eval 129 OK, `ui.tests.test_server` 31 OK.
+- **Limitations:** these are fixture cases we wrote, with the ground truth known; they show the policies work
+  and reach the same endpoint, **not** that ranking helps in general — that is M3's measurement (ADR-014
+  evidence items 4–5, the real case W26b). The rule is M1's, fixed before any measured run (PR #112). No report
+  field yet: `search_policy` is M3's half.

@@ -128,7 +128,13 @@ class BudgetedRunner:
     def launches_in(self, phase: str) -> int:
         return len(self._outcomes.get(phase, []))
 
-    def account(self, candidates_total: int) -> BudgetAccount:
+    def write_event(self, entry: dict) -> None:
+        """A record line that is not a run (e.g. W25's ranking line); dropped when nothing records."""
+        if hasattr(self._runner, "write_event"):
+            self._runner.write_event(entry)
+
+    def account(self, candidates_total: int, policy: str = "original",
+                analysis_seconds: Optional[float] = None) -> BudgetAccount:
         return BudgetAccount(
             limit_invocations=self.budget.limit_invocations,
             limit_seconds=self.budget.limit_seconds,
@@ -136,8 +142,8 @@ class BudgetedRunner:
             spent={phase: self.spent.get(phase, 0) for phase in PHASES},
             launches=sum(len(runs) for runs in self._outcomes.values()),
             wall_seconds=round(self._clock() - self._start, 3),
-            analysis_seconds=None,
-            policy="original",
+            analysis_seconds=analysis_seconds,
+            policy=policy,
             exhausted=self.exhausted_phase is not None,
             exhausted_phase=self.exhausted_phase,
             candidates_total=candidates_total,

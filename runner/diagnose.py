@@ -22,8 +22,10 @@ from runner.integrity import SourceIntegrity, compare, integrity_of, snapshot
 from runner.minimise import ddmin
 from runner.orders import distinct_shuffles, search_orders
 from runner.order_runner import OrderRunner, java_version, maven_test_classpath
+from runner.policy import (DEEPEN_SHARE, POLICIES, SCOPES, EvidenceRanker, SearchPolicy, choose_order,
+                           in_package)
 from runner.recording import RecordingRunner
-from runner.search import find_polluter, reproduce
+from runner.search import candidate_order, find_polluter, reproduce
 from runner.verify import repeat, repeat_without_reference
 
 POLLUTER_FOUND = "POLLUTER_FOUND"
@@ -69,6 +71,8 @@ class DiagnosisRuns:
     deletion_checks: List[DeletionCheck] = field(default_factory=list)
     # W24 (Interface 6): what the diagnosis spent, per phase; run_steps always sets it.
     budget: Optional[BudgetAccount] = None
+    # W25 (Interface 7): how the search ordered its candidates; run_steps always sets it.
+    search: Optional[SearchPolicy] = None
 
 
 def _runs(status, victim, order, reference, polluters, sequence, sequence_tally: RunTally,
@@ -103,22 +107,48 @@ def run_steps(
     order_given: bool = False,
     budget: Optional[Budget] = None,
     clock=time.monotonic,
+    policy: str = "original",
+    scope: str = "module",
+    ranker_for=None,
 ) -> DiagnosisRuns:
     """Steps 3-6 of ADR-004 on any OrderRunner, plus ADR-008: shuffled orders when the starting
     order never fails, and the alone check always. Stops early as the ADRs' status tables say.
-    Every run goes through the budget ledger (W24, Interface 6), which may stop exploration."""
+    Every run goes through the budget ledger (W24, Interface 6), which may stop exploration. `policy`
+    orders the single-polluter search (W25, Interface 7); `ranker_for(candidates, victim)` gives the
+    ranker for `ranked`."""
     if n < 1:
         raise DiagnoseInputError(f"n must be >= 1, got {n!r}")
     if victim not in original_order:
         raise DiagnoseInputError(f"victim {victim} is not in the original order")
+    if policy not in POLICIES:
+        raise DiagnoseInputError(f"policy must be one of {', '.join(POLICIES)}, got {policy!r}")
+    if policy == "ranked" and ranker_for is None:
+        raise DiagnoseInputError("the ranked policy needs a ranker")
+    if priority and policy != "original":
+        raise DiagnoseInputError(f"a priority list orders the search itself; it cannot be combined with policy {policy}")
     full = list(original_order)
     check_budget(budget, n, full.index(victim) + 1)
     ledger = BudgetedRunner(runner, budget or Budget(), n, victim, clock)
-    result, searched = _steps(ledger, full, victim, n, priority, shuffles, seed_base, order_given)
-    return replace(result, budget=ledger.account(len(searched) - 1))
+    chosen = {"search": SearchPolicy(policy, scope, seed_base if policy == "random" else None, [], DEEPEN_SHARE,
+                                     None, None), "analysis_seconds": None}
+
+    def order_search(candidates):
+        # P1-P6: one candidate order per diagnosis, chosen once, recorded before the first search run.
+        ranker = ranker_for(candidates, victim) if policy == "ranked" and ranker_for is not None else None
+        order, search, scores, seconds = choose_order(policy, candidates, scope=scope, seed=seed_base, ranker=ranker,
+                                                      limit_seconds=(budget or Budget()).limit_seconds)
+        chosen.update(search=search, analysis_seconds=seconds)
+        ledger.write_event({"type": "ranking", "policy": policy, "scope": scope, "seed": search.seed,
+                            "depths": search.depths, "order": [str(test) for test in order],
+                            "scores": [list(score) for score in scores], "note": search.note})
+        return order
+
+    result, searched = _steps(ledger, full, victim, n, priority, shuffles, seed_base, order_given, order_search)
+    return replace(result, search=chosen["search"],
+                   budget=ledger.account(len(searched) - 1, policy, chosen["analysis_seconds"]))
 
 
-def _steps(runner: BudgetedRunner, full, victim, n, priority, shuffles, seed_base, order_given):
+def _steps(runner: BudgetedRunner, full, victim, n, priority, shuffles, seed_base, order_given, order_search):
     """run_steps' body. Returns (the diagnosis, the order searched)."""
     order = full[: full.index(victim) + 1]
     reference, attempts, attempt_failures, cut = None, 0, 0, None
@@ -178,8 +208,9 @@ def _steps(runner: BudgetedRunner, full, victim, n, priority, shuffles, seed_bas
     # decide(), and the report still says what happened after the polluter (W19).
 
     try:
+        searched_first = order_search(candidate_order(order, victim, priority))
         _label(runner, "search")
-        polluter, search_runs = find_polluter(runner, order, victim, reference, priority)
+        polluter, search_runs = find_polluter(runner, order, victim, reference, searched_first)
         polluters, minimise_runs = ([polluter], 0) if polluter is not None else ([], 0)
         if polluter is None and len(order) > 2:
             # No single test is enough: shrink everything before the victim (ADR-007). The full order
@@ -237,6 +268,8 @@ def diagnose(
     workspace: str = "in-place",
     origin=None,
     budget: Optional[Budget] = None,
+    policy: str = "original",
+    scope: str = "module",
 ) -> DiagnosisRuns:
     """`command` is the CLI's argument list, written to the record header; None from Python.
     `lifecycle` is passed to the OrderRunner (ADR-012 section 2) and recorded. When `project_dir` is a
@@ -250,6 +283,12 @@ def diagnose(
         raise DiagnoseInputError(f"victim {victim} is not in the original order")
     if original_order is not None and len(set(original_order)) != len(original_order):
         raise DiagnoseInputError("the given order lists a test more than once")
+    if policy not in POLICIES:
+        raise DiagnoseInputError(f"policy must be one of {', '.join(POLICIES)}, got {policy!r}")
+    if scope not in SCOPES:
+        raise DiagnoseInputError(f"scope must be one of {', '.join(SCOPES)}, got {scope!r}")
+    if scope == "package" and original_order is not None:
+        raise DiagnoseInputError("--scope package cannot be combined with --order: the order file already fixes the tests")
     project = Path(project_dir).resolve()
     source = Path(origin).resolve() if origin is not None else None
     records = Path(record_dir).resolve()
@@ -281,6 +320,8 @@ def diagnose(
                 f"{unknown[0]}); only the classes the project's Surefire configuration selects are "
                 f"discovered (includes {', '.join(selection.includes)}; excludes {', '.join(selection.excludes)})")
     order = list(original_order) if original_order is not None else discovered
+    if scope == "package":
+        order = in_package(order, victim)  # Interface 7: the real-case protocol's frozen scope rule
     if victim not in order:
         # Checked before the recorder exists, so no empty record is left behind.
         raise DiagnoseInputError(f"victim {victim} is not among the project's tests")
@@ -299,9 +340,11 @@ def diagnose(
         "budget": {"limit_invocations": budget.limit_invocations if budget else None,
                    "limit_seconds": budget.limit_seconds if budget else None,
                    "reserve_invocations": reserve(n)},
+        "policy": policy, "scope": scope,  # W25 (Interface 7)
     })
     result = run_steps(recorder, order, victim, n, priority, shuffles=shuffles, seed_base=seed,
-                       order_given=original_order is not None, budget=budget)
+                       order_given=original_order is not None, budget=budget, policy=policy, scope=scope,
+                       ranker_for=lambda candidates, v: EvidenceRanker(project, v, candidates))
     integrity = integrity_of(compare(before, snapshot(project)),
                              compare(before_source, snapshot(source)) if source is not None else None)
     return replace(result, source_integrity=integrity, execution_record=str(record))
