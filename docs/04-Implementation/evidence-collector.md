@@ -76,8 +76,11 @@ measured comparison).
 - **An empty edge list is not proof of independence.** The pair output always says so
   (`no_supported_resource_evidence`, fixed limitation 7). A polluter that restores the value
   it wrote still produces an edge, because values are not modelled.
-- **Only one edge fits Member 3's report.** `report_fields` names the rest in `limitations`
-  (contract open question 1).
+- **Only one edge is the report's headline.** `shared_resource` and the two locations hold the
+  first edge; every edge is listed in `resource_edges` (W21, schema v2), and `limitations` names
+  each further one as "not the headline resource; it is listed in resource_edges". Before
+  2026-11-20 that line said "not shown in this report", which stopped being true once
+  `resource_edges` existed (found by M2 verifying W21).
 - **Ranking inherits every blind spot above.** A polluter that writes through reflection, a
   library or an unresolved virtual call has no edge, so it keeps its original position. It is
   never dropped. A restoring polluter still ranks first (FT005 control 1), because values are

@@ -643,3 +643,48 @@ rule guarantees, and was rewritten to say that only measurement can show an impr
 - Deepening inside `rank_candidates` (the planner's decision, M2).
 - Running the rule on any fixture or fastjson case before it is committed and reviewed.
 - Editing `docs/contracts/interfaces.md`.
+
+## 2026-11-20 — Fix: second-edge limitation wording (found by M2 in W21 verification)
+
+**Assistance level:** L3 (Core-assist): the assistant read M2's A2 finding, wrote the regression
+test and changed the assertion first, ran them failing, made the one-line fix, ran the suites, and
+drafted the docs.
+
+**What I asked:** continue Iteration 2 from where it stood.
+
+**What was retained:** the fix in `evidence/extract.py`, the two test changes, the
+`04-Implementation` note bullet, and the entry in [[evidence-m1]].
+
+**What I changed:** ran the test-first check myself on my laptop, and read the diff before
+committing.
+
+**How it was verified:** test-first `FAILED (failures=2)`, then OK, and the evidence suite at 57 OK,
+both in the container and on my laptop; M2's and M3's consumer tests at 34 OK (container).
+
+**Errors found:** the old line itself, my W21 part 1 leftover. When I added `resource_edges` I
+kept the "not shown" limitation, and it stopped being true.
+
+**Rejections:** removing the line entirely. The headline fields still show only one resource, so
+naming the others stays useful.
+
+## 2026-11-20 — W25: Interface 5 (rank_candidates) contract proposal
+
+**Assistance level:** L3 (Core-assist): the assistant drafted the Interface 5 section from the
+merged code and M2's review, checked each statement against `evidence/extract.py`, and drafted
+the plan row and this entry.
+
+**What I asked:** continue Iteration 2. M2 asked me to add `rank_candidates` to the contract.
+
+**What was retained:** the Interface 5 section, the W25 plan row update, and the entry in
+[[evidence-m1]].
+
+**What I changed:** read the section against my code before committing.
+
+**How it was verified:** each statement was compared with the code at `69cf36f`. Nothing was run.
+
+**Errors found:** the first draft stated a depth range (1–5) that `rank_candidates` does not
+check, and described the runner's fallback as built. Both were corrected: "the analysis depth
+(default 2)", and "M2, when built".
+
+**Rejections:** editing the contract without the other two members. The section is a proposal
+until M2 and M3 approve the PR.
