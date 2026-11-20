@@ -461,7 +461,7 @@ it is now named in that entry.
 
 ## 2026-11-18 — W16: retired claims in `evidence/` wording
 
-**Assistance level:** L2 (Assisted): the assistant ran the phrase search, proposed the wording
+**Assistance level:** L3 (Core-assist): the assistant ran the phrase search, proposed the wording
 from claims ledger G3 and drafted the evidence entry; I read the diff and committed it.
 
 **What I asked:** do my part of W16: remove retired claims from `evidence/` and its note.
@@ -482,7 +482,7 @@ the resource-evidence contract.
 
 ## 2026-11-18 — W21 part 1: `resource_edges` in `report_fields`
 
-**Assistance level:** L2 (Assisted): the assistant wrote the test and the change from ADR-010's
+**Assistance level:** L3 (Core-assist): the assistant wrote the test and the change from ADR-010's
 `resource_edges` field, ran the suites and drafted the docs; I chose the plan (controls in my own
 folder, reflection as the hidden cause) and committed after reading the diff.
 
@@ -501,3 +501,66 @@ and runner CLI 63 tests OK ([[evidence-m1]]).
 `combine_fields` would pass on only the first polluter's edges.
 
 **Rejections:** changing `eval/report.py` or the schema (M3's W19) or `runner/cli.py` (M2).
+
+## 2026-11-18 — W21 part 2: the two FT005 controls
+
+**Assistance level:** L3 (Core-assist): the assistant wrote the control project, the expected
+results, the tests and the docs, and ran the extractor and two full diagnoses; I chose where the
+controls live and that reflection hides the real cause, and committed after reading the diff.
+
+**What I asked:** build W21's two controls (write-then-restore, unrelated overlap) in my folder.
+
+**What was retained:** `evidence/tests/resources/ft005-controls/` (pom, `State`, four test
+classes, `EXPECTED.md`), `Ft005ControlsTest` (3 tests), README and command lines.
+
+**What I changed:** Chose option 1 (my own folder) and reflection as the hidden cause; read the
+Java, the tests and `EXPECTED.md` before committing.
+
+**How it was verified:** the tests failed first (not compiled), then passed; both diagnoses ended
+`VERIFIED (sequence)` with the static-overlap wording; 45 evidence tests OK ([[evidence-m1]]).
+
+**Errors found:** none. Gaps recorded: CI needs one compile line (M2's `ci.yml`); the extra edge
+is only in `limitations` until W19.
+
+**Rejections:** editing `.github/workflows/ci.yml` (M2's) or adding cases to `fixtures/` (M3's).
+
+## 2026-11-20 — W22 verification (lifecycle control) on my own machine
+
+**Assistance level:** L3 (Core-assist): the assistant gave me the commands from M2's handover, diagnosed
+the two setup failures (Maven download timeouts, Python 3.9 too old for `jsonschema` 4.26.0) and
+drafted this evidence entry from the output I pasted; I ran every command myself on my laptop.
+
+**What I asked:** run the W22 verification on my laptop and record it.
+
+**What was retained:** the evidence entry in [[evidence-m1]], including the three-row table and the
+differences for M2.
+
+**What I changed:** Ran every command; fixed my setup (pre-fetched the Maven plugin, installed
+Python 3.11); read the entry against my terminal output before committing.
+
+**How it was verified:** every number in the entry is copied from my own terminal output.
+
+**Errors found:** the first instructions did not install the Python dependencies before `diagnose`
+(the assistant's omission); found when `diagnose` failed on `jsonschema`.
+
+**Rejections:** loosening the pinned `jsonschema` version (M3's file) to make Python 3.9 work.
+
+## 2026-11-20 — W18 verification (outcome tallies) on my own machine
+
+**Assistance level:** L3 (Core-assist): the assistant gave me the commands, found that the handover's
+"before" step would restore the old tests too, tried the corrected step in the cloud first, and
+drafted this entry from my output; I ran every command myself on my laptop.
+
+**What I asked:** run the W18 verification and record it.
+
+**What was retained:** the W18 entry in [[evidence-m1]].
+
+**What I changed:** Ran every command; checked the entry against my terminal output before
+committing.
+
+**How it was verified:** every number is copied from my own terminal output.
+
+**Errors found:** the handover's `git checkout d1e4d4f -- runner` cannot show the defect (it
+restores the old tests); recorded for M2.
+
+**Rejections:** none.

@@ -7,13 +7,14 @@ import platform
 import re
 import shutil
 import subprocess
+import tempfile
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional, Sequence, Tuple
 
 from eval.baseline import FailureSignature, RunTally, TestIdentifier
-from runner.discovery import discover_order
+from runner.discovery import DiscoveryConfigError, discover_order, project_selection
 from runner.integrity import SourceIntegrity, compare, integrity_of, snapshot
 from runner.minimise import ddmin
 from runner.orders import distinct_shuffles, search_orders
@@ -187,9 +188,16 @@ def diagnose(
         raise DiagnoseInputError(f"record_dir {records} is a file, not a folder")
     before_source = snapshot(source) if source is not None else None
     before = snapshot(project)
-    runner = OrderRunner(maven_test_classpath(project), working_dir=project, timeout_s=timeout_s,
-                         lifecycle=lifecycle)
-    discovered = discover_order(runner, project / "target" / "test-classes")
+    # A1: which classes are tests follows the project's own Surefire includes/excludes.
+    with tempfile.TemporaryDirectory(prefix="flaketrace-pom-") as tmp:
+        effective_pom = Path(tmp) / "effective-pom.xml"
+        runner = OrderRunner(maven_test_classpath(project, effective_pom=effective_pom), working_dir=project,
+                             timeout_s=timeout_s, lifecycle=lifecycle)
+        try:
+            selection = project_selection(effective_pom)
+        except DiscoveryConfigError as error:
+            raise DiagnoseInputError(str(error)) from error
+    discovered = discover_order(runner, project / "target" / "test-classes", selection)
     if original_order is not None:
         # A typo in a given order would fail with ClassNotFound and could pass for a reproduction.
         known = set(discovered)
@@ -197,8 +205,8 @@ def diagnose(
         if unknown:
             raise DiagnoseInputError(
                 f"{len(unknown)} test(s) in the given order are not among the project's tests (first: "
-                f"{unknown[0]}); only classes matching Surefire's default includes (Test*, *Test, *Tests, "
-                "*TestCase) are discovered")
+                f"{unknown[0]}); only the classes the project's Surefire configuration selects are "
+                f"discovered (includes {', '.join(selection.includes)}; excludes {', '.join(selection.excludes)})")
     order = list(original_order) if original_order is not None else discovered
     if victim not in order:
         # Checked before the recorder exists, so no empty record is left behind.
