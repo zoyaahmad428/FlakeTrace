@@ -1071,3 +1071,56 @@ contract change, so it is agreed only when M2 and M3 approve the PR.
 **Checked against the code:** every statement in the section was compared with
 `evidence/extract.py` at `69cf36f`: `AnalysisCache` (line 677), `RankedCandidate` (line 710),
 `rank_candidates` (line 713), and the 10 `RankCandidates*` tests. Nothing was run for this entry.
+
+## W20 verification: deletion checks on my own machine, ADR-011 T1–T5 (2026-11-20)
+
+**Requirement:** FT004 / ADR-011 / Interface 4, step 4: "M1 reproduces T3 independently on
+their machine". Every kept test must be shown to be needed by repeated removal, not by ddmin's
+single trial. Claim G2 was left `OPEN` pending this reproduction. Run by me on my own laptop
+(Windows 11, Oracle JDK 25.0.1, Maven 3.9.9, Python 3.11.9), on `main` at `0467ec2`, with the
+default `class-grouped` lifecycle and `--workspace copy`.
+
+- **Scripted, T1, T2 and T5:** `py -3.11 -m unittest -v runner.tests.test_deletion
+  runner.tests.test_diagnose.TestDeletionChecks eval.tests.test_report.TestDeletionChecksW20` →
+  `Ran 25 tests in 0.493s … OK`, including:
+  - T1, `test_ft004_counterexample_drops_the_unneeded_test`, and its shape in
+    `test_not_needed_test_is_dropped_and_the_rest_rechecked`;
+  - T2, `test_inconclusive_keeps_both_tests` (9 of 20 without Q);
+  - T5, `TestDeletionBudget` (4 tests) and `test_a_not_run_check_is_incomplete`;
+  - M3's aggregation, including `INCONCLUSIVE` ranking above a short run count.
+- **T3, real F3, two polluters:** `py -3.11 -m runner diagnose --project fixtures/od-fixture
+  --victim odfixture.ToggleVictimTest#expectsNotBothFlagsSet --records %TEMP%\ft-w20-f3` printed:
+  - `VERIFIED (sequence)`, polluters `ToggleAPolluterTest#setFlagA` and
+    `ToggleBPolluterTest#setFlagB`;
+  - `minimised: 16 earlier tests -> 2 polluters in 9 runs (reduced by single-trial delta
+    debugging)`;
+  - `deletion: kept tests removed one at a time, 20 runs each (40 runs): 0 dropped as not needed,
+    0 inconclusive`;
+  - the static-overlap line, `reproduced: 20/20`, `alone (same failure): 0/20, other failure:
+    0/20`;
+  - `budget: spent 264 invocations, no limit (reserve 60)`, and `exit 0`.
+
+  The report's `deletion_checks`: `setFlagA` `NEEDED` `deletion-run` round 1 `{n: 20, passed: 20,
+  matched: 0, other: 0, infra: 0}`; `setFlagB` the same. Outcome `VERIFIED`,
+  `candidate_reasons` `[]`. Record step counts: `reproduce 1, alone 20, search 16, minimise 9,
+  deletion 40, verify 20`.
+- **T4, real F1, one polluter:** the same command for `odfixture.ConfigVictimTest#expectsDefaultMode`
+  (`--records %TEMP%\ft-w20-f1`) printed `VERIFIED (sequence)`, polluter `ConfigPolluterTest#pollute`,
+  no `deletion:` line, `budget: spent 67 invocations, no limit (reserve 60)`, `exit 0`. Report:
+  one check, `pollute` `NEEDED` `alone-check` round 1. Record step counts: `reproduce 1, alone 20,
+  search 2, verify 20`, with **no `deletion` step**, so no extra JVM runs (ADR-011 T4).
+- **Source:** `git status --short` afterwards showed no change under `fixtures/`.
+
+**Result:** ADR-011 T1–T5 reproduced: T3 and T4 with real runs, T1, T2 and T5 scripted. F3's two
+kept tests are each needed in 20 of 20 repeated removals.
+
+**Limitations:**
+- One real multi-polluter case (F3). No real case where a kept test is `NOT_NEEDED` or
+  `INCONCLUSIVE`; those paths are scripted only.
+- "Needed" here means: removing it alone made the victim pass in 20 of 20 runs. It does not test
+  every subset.
+- T5 (budget ends mid-check) is scripted. I did not run a real diagnosis with a budget limit.
+
+**Unclear steps:** none in the commands. The `minimised:` line still says "reduced by single-trial
+delta debugging" even when the deletion line beneath it confirms both tests. This is correct but
+easy to misread as a weaker claim. The deletion line is the one that carries G2.
