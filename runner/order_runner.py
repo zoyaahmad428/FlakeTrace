@@ -17,8 +17,9 @@ from eval.baseline import SYNTHETIC_PREFIX, FailureSignature, RunOutcome, TestId
 
 HARNESS_SOURCE = Path(__file__).resolve().parent / "harness" / "FtHarness.java"
 
-# ADR-012 section 2: how class-level lifecycle (@BeforeClass/@AfterClass) runs. "per-method" is the
-# Mid behaviour and stays the default until Member 1's lifecycle control run validates the other.
+# ADR-012 section 2: how class-level lifecycle (@BeforeClass/@AfterClass) runs. "class-grouped"
+# (as under Surefire) is the default since Member 1's lifecycle control run matched Surefire on
+# 2026-11-20 (PR #108); "per-method" is the Mid behaviour, kept for comparison.
 LIFECYCLES = ("per-method", "class-grouped")
 
 # A stack is cut at the first frame from JUnit's runner, reflection or the harness. These
@@ -162,7 +163,7 @@ class OrderRunner:
     """Satisfies eval.baseline.OrderRunner. One fresh JVM per run_ordered call."""
 
     def __init__(self, classpath: Sequence[str], working_dir=None, timeout_s: float = 120.0,
-                 lifecycle: str = "per-method"):
+                 lifecycle: str = "class-grouped"):
         """`working_dir` is where the tests run; pass the target project's directory, as Maven
         would, so tests that use relative paths behave the same. None = the caller's directory.
         `lifecycle` is one of LIFECYCLES (ADR-012 section 2)."""

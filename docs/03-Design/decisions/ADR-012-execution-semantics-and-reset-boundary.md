@@ -169,7 +169,9 @@ workspace mode, the container image digest or `null`, and the full command line.
 3. The spike of section 2; then the harness change with the control of section 3 (W22).
    *Built 2026-11-14 (M2): `--lifecycle class-grouped`, the control as a Maven project in
    `runner/tests/resources/lifecycle-control/` (so Surefire can run it; also run in CI). Default
-   stays `per-method` until M1 records the section 3 table on her machine.*
+   stays `per-method` until M1 records the section 3 table on her machine.* *M1 recorded it on 2026-11-20
+   (PR #108, `docs/evidence-m1.md`): Surefire both pass, `per-method` fails `second`, `class-grouped`
+   both pass. The default became `class-grouped` the same day.*
 4. Section 4, then section 5 (W22, W27) — both can be cut if time is short; sections 1–3 cannot.
    *Section 4 built 2026-11-14 (M2): `--workspace copy`, the CLI default. The CLI owns the copy
    (the evidence extraction after `diagnose()` needs its compiled classes); integrity is reported

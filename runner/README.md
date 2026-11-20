@@ -81,11 +81,13 @@ not.
 
 ### Known limitations
 
-- In the default `per-method` mode each method is its own JUnit `Request`: `@BeforeClass`/`@AfterClass`
-  run once per method, not once per class as under Maven Surefire — measured by the lifecycle
-  control (`resources/lifecycle-control/`). `class-grouped` fixes it for JUnit 4 classes; it becomes
-  the default once Member 1 has run the control (ADR-012 §3). In `class-grouped`, an `@AfterClass`
-  failure is not charged to any test (as under Surefire).
+- The default `class-grouped` mode runs class-level setup once per run of same-class JUnit 4 tests,
+  as Maven Surefire does; it became the default after Member 1's lifecycle-control run matched
+  Surefire (PR #108, ADR-012 §3). In `per-method` (the Mid behaviour) each method is its own JUnit
+  `Request`, so `@BeforeClass`/`@AfterClass` run once per method — measured by the control
+  (`resources/lifecycle-control/`). JUnit 3, `@RunWith` and `suite()` classes run one test per
+  request in both modes. In `class-grouped`, an `@AfterClass` failure is not charged to any test
+  (as under Surefire).
 - JUnit 4, and JUnit 3 `TestCase` classes through JUnit's own JUnit38 adapter (tested with
   `resources/LegacyJUnit3Test.java`). JUnit 5 is not supported.
 - Only the top-level exception is part of the signature; a wrapped cause is not compared.
@@ -143,7 +145,7 @@ py -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVic
 | `--seed` | `0` | first shuffle seed; every seed tried is in the execution record |
 | `--workspace` | `copy` | `copy`: build, run and extract evidence in a temporary copy of the project, deleted afterwards — the project folder is never written to, not even `target/`; integrity is checked on the copy and on the original. `in-place`: as at the Mid (writes `target/`). **Limits of `copy`:** only the project folder is copied, so a module whose build reads `../pom.xml` (a multi-module child) or other files outside the folder fails — the error then suggests `--workspace in-place`; symbolic links are followed (their targets are copied); the original is hashed after the copy is made, so a change during the copy itself is not seen; Maven's own console output names the temporary path; costs one full copy (including large untracked folders) and one full compile; files a test writes outside the project are not contained |
 | `--copy-parent` | system temp | folder the temporary copy is made in; the UI passes the job's own folder so it can delete a copy left by a timed-out (killed) run |
-| `--lifecycle` | `per-method` | `class-grouped` runs class-level setup once per run of same-class tests, as Surefire does (ADR-012); recorded in the header |
+| `--lifecycle` | `class-grouped` | `class-grouped` runs class-level setup once per run of same-class tests, as Surefire does (ADR-012; the default since M1's control run matched Surefire, PR #108); `per-method` is the Mid behaviour; recorded in the header |
 
 It runs `diagnose()`, then — only when a polluter is found — Member 1's `analyse_pair` once per polluter
 (starts at depth 2, deepens to at most 5 only when needed, ADR-006) and `report_fields`, combined by

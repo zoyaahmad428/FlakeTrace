@@ -387,7 +387,7 @@ class TestDiagnoseOnFixture(unittest.TestCase):
         self.assertEqual(header["jvm"]["junit.version"], "4.13.2")
         self.assertTrue(header["maven_version"].startswith("Apache Maven"))
         self.assertEqual((header["lifecycle"], header["workspace"], header["container_image"]),
-                         ("per-method", "in-place", None))
+                         ("class-grouped", "in-place", None))
         self.assertEqual(header["command"], ["diagnose", "--n", "1"])
         self.assertIn("tool_commit", header)
         self.assertIn("java_version", header)  # old keys kept

@@ -288,10 +288,11 @@ class TestOrderFile(unittest.TestCase):
         kwargs = diagnose.call_args.kwargs
         self.assertEqual((kwargs["original_order"], kwargs["shuffles"], kwargs["seed"]), ([P, V], 7, 3))
 
-    def test_lifecycle_reaches_diagnose_and_defaults_to_per_method(self):
+    def test_lifecycle_reaches_diagnose_and_defaults_to_class_grouped(self):
         records = Path(tempfile.mkdtemp())
         base = ["diagnose", "--project", str(project_with_pom()), "--victim", str(V)]
-        for extra, expected in (([], "per-method"), (["--lifecycle", "class-grouped"], "class-grouped")):
+        # Default flipped to class-grouped after M1's W22 control run matched Surefire (PR #108).
+        for extra, expected in (([], "class-grouped"), (["--lifecycle", "per-method"], "per-method")):
             with mock.patch("runner.cli.diagnose", return_value=runs(VICTIM_FAILS_ALONE, records / "r.jsonl")) as diagnose:
                 run_cli(base + extra)
             self.assertEqual(diagnose.call_args.kwargs["lifecycle"], expected)
