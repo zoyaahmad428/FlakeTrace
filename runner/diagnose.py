@@ -140,7 +140,9 @@ def run_steps(
         chosen.update(search=search, analysis_seconds=seconds)
         ledger.write_event({"type": "ranking", "policy": policy, "scope": scope, "seed": search.seed,
                             "depths": search.depths, "order": [str(test) for test in order],
-                            "scores": [list(score) for score in scores], "note": search.note})
+                            "scores": [list(score) for score in scores], "note": search.note,
+                            # M1's #138 suggestion (agreed by M3): "could not analyse" is not "no evidence".
+                            "notes": {str(test): note for test, note in getattr(ranker, "notes", {}).items()}})
         return order
 
     result, searched = _steps(ledger, full, victim, n, priority, shuffles, seed_base, order_given, order_search)

@@ -6,7 +6,7 @@ import random
 from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from eval.baseline import TestIdentifier
 from evidence.extract import DEFAULT_DEPTH, MAX_DEPTH, AnalysisCache, ExtractError, Project, rank_candidates
@@ -90,6 +90,7 @@ class EvidenceRanker:
         self.candidates = list(candidates)
         self.by_name = {str(test): test for test in self.candidates}
         self.cache = AnalysisCache()
+        self.notes: Dict[TestIdentifier, str] = {}  # candidates M1's code could not analyse, at the last depth
 
     @property
     def project(self) -> Project:
@@ -105,6 +106,7 @@ class EvidenceRanker:
 
     def rank(self, depth: int) -> List[Tuple[TestIdentifier, tuple]]:
         ranked = rank_candidates(self.project, str(self.victim), list(self.by_name), depth, self.cache)
+        self.notes = {self.by_name[item.test]: item.note for item in ranked if item.note}
         return [(self.by_name[item.test], tuple(item.score)) for item in ranked]
 
     def cut_off(self, depth: int) -> bool:

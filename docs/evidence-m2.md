@@ -1716,3 +1716,24 @@ own copy of the code, not from the review's description.
   (BUDGET_EXHAUSTED)`, exit 0, `reproduced: no sequence verified (the starting order failed 1 of 1 run(s) before
   the budget ran out)`.
 - **Not changed:** claims row G2 stays `OPEN` until M3 agrees to settle it (it is M2's and M3's).
+
+## Ranking-line notes; G2 settled; Interface 6 step 3 on F2 (2026-11-21)
+
+- **Ranking notes (M1's #138 suggestion, agreed by M3; Interface 7 P6 now lists `notes`).** Test-first:
+  `TestEvidenceRanker.test_an_unanalysable_candidate_keeps_its_note` (real fixture classes, a candidate
+  `odfixture.NoSuchTest#x`) and `TestSearchPolicy.test_ranking_line_names_candidates_that_could_not_be_analysed`
+  → `FAILED (errors=3)` (`no attribute 'notes'`, `KeyError: 'notes'`); after → `Ran 40 tests OK`. The note is M1's
+  own text: `test class not found in project classes: odfixture.NoSuchTest`.
+- **G2 → SETTLED** with M3 (M1's reproduction, PR #137), scope kept: each kept test removed alone, not every
+  subset. E14's status follows.
+- **Interface 6 step 3, ADR-014 evidence items 1–3 on F2** (`odfixture.FeatureVictimTest#expectsTurboDisabled`,
+  n=20, `--budget-invocations 70`, the B2 minimum; JDK 21, default options):
+  - `--policy original` → `UNRESOLVED (BUDGET_EXHAUSTED)`, exit 0; spent 30 (reproduce 8, alone 20, search 2);
+    22 `run` lines (1 + 20 + 1) and one `budget-stop` (`search`, would_cost 2) — **item 1**: the next run was not
+    started; **item 2**: a report with a budget account; alone ran 20 of 20.
+  - `--policy ranked` → `VERIFIED (sequence)`, exit 0, polluter `FeaturePolluterTest#enableTurbo` tried first;
+    spent **70 of 70** (reproduce 8, alone 20, search 2, verify 40); 42 `run` lines; no `budget-stop` — **item 3**:
+    the alone check and the full 20-run sequence check ran, paid by the 3n reserve. `notes: {}`.
+  - M3 ran item 2 at limit 72 (PR #139); these runs are mine. **Limitation:** one fixture pair, written by us with
+    a known polluter; it shows the reserve and the stop work, not that ranking saves runs in general (M3's
+    measurement, W26b).
