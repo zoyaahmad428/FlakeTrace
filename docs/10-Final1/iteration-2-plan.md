@@ -52,7 +52,7 @@ for them.
 
 | WP | Work | Owner | Verifier | Needs | Done when |
 | --- | --- | --- | --- | --- | --- |
-| **W25** | `rank_candidates` with a per-test cache (M1). `--policy`, candidate scope option (M2). Offline and live comparison tool (M3) | M1, M2, M3 | M3 measures; M2 reviews the ranking rule **before** it meets ground truth | W24 | ADR-014 evidence items 4–5; the rule's commit predates its first measured run |
+| **W25** | `rank_candidates` with a per-test cache (M1). `--policy`, candidate scope option (M2). Offline and live comparison tool (M3). *M1's part 1 built 2026-11-20 on `m1/w25-rank-rule`: the rule (most shared resources, then shallowest edge, then original position) and `AnalysisCache`, test-first on M1's own classes only. No fixture or real case has been ranked. Awaiting M2's review of the rule before any measurement ([[evidence-m1]])* | M1, M2, M3 | M3 measures; M2 reviews the ranking rule **before** it meets ground truth | W24 | ADR-014 evidence items 4–5; the rule's commit predates its first measured run |
 | **W26b** | Real case, steps 6–9: `original`, `ranked`, `random` under one budget; independent repeat | M3 | M1 or M2 | W23, W24, W25, W26a | Bundles for every run, favourable or not; the yield table |
 | **W27** | Pinned container image and one documented command | M3, M2 reviews *(see note)* | M1 runs it | W23 | A fixture diagnosis runs in the container on a second machine |
 | **W28** | Report v2.0 | Chapter owners; M2 compiles | M3 checks status against code; M1 the abstract | W19–W26 results | [[10-Final1/report-v2-plan]] checklist |

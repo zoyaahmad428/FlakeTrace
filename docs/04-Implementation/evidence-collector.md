@@ -1,6 +1,6 @@
 # Evidence collector — `evidence/extract.py` (Member 1)
 
-*Status (2026-11-18): Iteration 1, Phases 2–6 and ADR-006: depth 1–5, single-test and pair mode, pair-mode auto-deepening; wording qualified for W16 (claims ledger G3). Four-point ownership note per
+*Status (2026-11-20): Iteration 1, Phases 2–6 and ADR-006: depth 1–5, single-test and pair mode, pair-mode auto-deepening; wording qualified for W16 (claims ledger G3); every edge in `resource_edges` (W21); `rank_candidates` with a per-test cache (W25 part 1, ADR-014 §5). The ranking rule is not yet measured on any case. Four-point ownership note per
 [[04-Implementation/README]]. Contract: [[contracts/resource-evidence]]. Decisions:
 [[03-Design/decisions/ADR-001-iteration1-evidence-without-instrumentation]],
 [[03-Design/decisions/ADR-002-evidence-extractor-implementation]],
@@ -23,7 +23,9 @@ depth limit, repeats it one level deeper (up to 5); the shallowest depth with an
 a possible mechanism, not confirmed as the cause**: the extractor sees that the code *may* write
 and read the same resource, not that it did, with what value, or in what order (ledger G3). This
 is the *where to look* part of the certificate: without it FlakeTrace can only say "this order
-fails", which iDFlakies already does.
+fails", which iDFlakies already does. `rank_candidates` (W25) uses the same edges *before* the
+search, to choose which candidate polluter to try first: most shared resources, then shallowest
+edge, then original position. It never removes a candidate.
 
 ## 2. Why it is built this way
 
@@ -37,7 +39,16 @@ fails", which iDFlakies already does.
   be pushed by one simple instruction each, and the first must be a string constant. Anything
   else is reported as `SYSPROP_NON_CONSTANT_KEY` rather than guessed.
 
-Rejected: ASM/Javassist (dependency, offset workaround); copying the POC code (team docs; ownership).
+- **Ranking is a sort key, not a weighted score.** A tuple compared left to right (ADR-014 §5)
+  has nothing to fit, so it cannot be tuned to the cases it is measured on. With no evidence it
+  gives exactly the original order. Whether it beats `original` anywhere else is for the
+  measurement (W25, M3) to show, not for this design to claim.
+- **One analysis per test, cached.** A pair analysis per candidate would analyse the victim N
+  times. `AnalysisCache` keeps each test's Output 1 and reuses `find_edges` on it.
+
+Rejected: ASM/Javassist (dependency, offset workaround); copying the POC code (team docs; ownership);
+the POC's class-initialiser and co-touch terms in the first ranking (ADR-014 §5: each only with a
+measured comparison).
 
 ## 3. What breaks
 
@@ -67,6 +78,10 @@ Rejected: ASM/Javassist (dependency, offset workaround); copying the POC code (t
   it wrote still produces an edge, because values are not modelled.
 - **Only one edge fits Member 3's report.** `report_fields` names the rest in `limitations`
   (contract open question 1).
+- **Ranking inherits every blind spot above.** A polluter that writes through reflection, a
+  library or an unresolved virtual call has no edge, so it keeps its original position. It is
+  never dropped. A restoring polluter still ranks first (FT005 control 1), because values are
+  not modelled.
 - **Input errors** (missing directory, unknown class/method, bad depth, bad flag combination): exit code 2
   with `error: …` on stderr. javap missing or failing: exit code 1.
 
@@ -81,6 +96,10 @@ Rejected: ASM/Javassist (dependency, offset workaround); copying the POC code (t
   contract's Terms (1–5) with all three members, and re-run `evidence.tools.measure_depth`.
 - **Change when pair mode deepens:** the loop in `_analyse_pair` (stop condition: an edge, no
   `DEPTH_LIMIT`, `deepen=False`, or `MAX_DEPTH`).
+- **Change the ranking rule:** `rank_candidates`'s `order` function and the `score` tuple, with
+  tests in `RankCandidatesTest`. Any change after measurement has started must be recorded as a
+  new rule, with its own commit before it is run (iteration-2-plan rule 4), and Member 2 must
+  review it.
 - **Change how calls are followed:** `walk_root` (breadth-first queue, visited set) and
   `follow_call` (resolve the named target, record `VIRTUAL_DISPATCH`/`DEPTH_LIMIT`/
   `UNRESOLVED_CALL`). To follow overrides you would have to load every project class to find

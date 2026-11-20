@@ -848,3 +848,65 @@ instead of breaking reports.
 **Limitation:** this test checks the fields' **shape**, not their meaning. Whether a static
 overlap is the right edge is still covered by `FixturePairTest` and `Ft005ControlsTest`. It also
 does not run `eval/report.py`; that file belongs to M3.
+
+## W25 part 1: `rank_candidates`, the ranking rule, written test-first (2026-11-20)
+
+**Requirement:** ADR-014 §5 and FT007. Rank candidate polluters by static evidence, using a fixed
+tuple with no weights:
+1. the number of resources the candidate writes and the victim reads;
+2. the shallowest such edge;
+3. the original position.
+
+No candidate is ever dropped, and a per-test cache makes ranking cost N + 1 analyses. Plan rule 4
+says the rule must be committed **before** it meets any ground truth. So these tests use only my
+own classes: hand-built analyses, and the FT005 controls. No fixture pair and no fastjson case
+was ranked.
+
+**File/function:** `evidence/extract.py`: `AnalysisCache`, `RankedCandidate`, `rank_candidates`.
+Tests in `evidence/tests/test_extract.py`:
+- `RankCandidatesTest`, 6 tests, no JVM. They cover ADR-014's scripted "candidate 9 of 10 is the
+  only one with an edge", no evidence giving exactly the original order, more resources before
+  shallower before earlier, edge depth taken as the deeper side, the candidate set unchanged, and
+  reasons in the `resource_edges` shape.
+- `RankCandidatesControlsTest`, 4 tests, on `ft005-controls`. They cover the restoring polluter
+  ranking first, N + 1 analyses with none repeated on a second ranking, an unanalysable
+  candidate kept with a note, and an unanalysable victim raising an error.
+
+**Runs, in the assistant's Linux cloud container, not my laptop** (OpenJDK 21.0.13, Maven 3.9.11,
+Python 3.13), at `188e1ec` plus the PR #106 check:
+- **Before the code (test-first):** `python3 -m unittest evidence.tests.test_extract.RankCandidatesTest
+  evidence.tests.test_extract.RankCandidatesControlsTest` → `Ran 10 tests … FAILED (errors=10)`,
+  with 7 × `AttributeError: module 'evidence.extract' has no attribute 'AnalysisCache'` and 3 ×
+  `… has no attribute 'rank_candidates'`.
+- **After:** the same command → `Ran 10 tests … OK`.
+- `FLAKETRACE_REQUIRE_JVM=1 python3 -m unittest evidence.tests.test_extract` → `Ran 56 tests … OK`.
+
+**On my laptop, by me** (Windows 11, Oracle JDK 25.0.1, Maven 3.9.9, Python 3.11.9), on
+`m1/w25-rank-rule` (based on `0071d9c`), with the class sets compiled as in the PR #106 entry:
+- **Before the code:** the patch was applied, its `evidence/extract.py` change saved to a file
+  (`git diff evidence/extract.py > %TEMP%\rank-code.diff`), and only that file put back to the
+  committed version (`git checkout -- evidence/extract.py`). The same two-class command then gave
+  `Ran 10 tests in 0.006s … FAILED (errors=10)`, with 7 × `AttributeError: module
+  'evidence.extract' has no attribute 'AnalysisCache'` and 3 × `… has no attribute
+  'rank_candidates'`.
+- **Code put back:** `git apply %TEMP%\rank-code.diff`. Then `git diff --stat evidence/extract.py`
+  showed `72 insertions(+)`, the same as the patch.
+- **After:** `py -3.11 -m unittest -v evidence.tests.test_extract.RankCandidatesTest
+  evidence.tests.test_extract.RankCandidatesControlsTest` → `Ran 10 tests in 3.898s … OK`.
+- With `set FLAKETRACE_REQUIRE_JVM=1`, `py -3.11 -m unittest evidence.tests.test_extract` → `Ran 56
+  tests in 70.644s … OK`.
+
+**Result:** the rule exists, is tested on non-ground-truth classes, and is fixed by this commit.
+That commit must come before any ranked run on F1–F4, N1–N4 or FJ-03 (ADR-014 evidence items 4–5,
+measured by M3). M2 is asked to review the rule before any measurement.
+
+**Limitations:**
+- The rule has **not yet been measured** on any case. Whether `ranked` reaches a polluter sooner
+  than `original` is unknown until M3's comparison.
+- It inherits the extractor's blind spots: reflection, libraries and virtual dispatch give no
+  edge, so such a polluter keeps its original position.
+- A restoring polluter still ranks first, because values are not modelled.
+- `rank_candidates` does not deepen. Deepening is the planner's decision (ADR-014 §6, M2).
+- `docs/contracts/interfaces.md` does not yet list `rank_candidates`. ADR-014 §5 defines its
+  signature, and I added an optional `cache` argument. Adding it to the contract needs all three
+  members, so it is proposed in the PR, not edited here.
