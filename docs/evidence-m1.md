@@ -1044,3 +1044,30 @@ on `main` at `69cf36f`:
 **Limitation:** M3's committed `eval/reports/f3.json` still holds M2's old CLI line until M3
 regenerates the reports (noted by M2). No committed report holds my old line; I checked by the
 search above.
+
+## W25: M2's review of the ranking rule, and Interface 5 (2026-11-20)
+
+**Requirement:** plan rule 4 and ADR-014 §5. The ranking rule must be reviewed by M2 before it
+meets ground truth. M2 also asked for the rule to be written into the contract.
+
+**M2's review** (message to me on 2026-11-20, answering the three questions in PR #112; quoted in
+substance):
+1. Ranking does not deepen: "that's the split I want". The planner decides and charges deepening
+   to the ledger (ADR-014 §6).
+2. An unanalysable candidate kept with a note, and an unanalysable victim raising `ExtractError`:
+   "both right". Under `--policy ranked` the runner will catch the error, keep the original
+   order, and record a limitation.
+3. "The cache is enough": the ledger reads `cache.seconds` and `cache.analysed`, and his deeper
+   analyses will go through the same cache.
+
+No ranked run on any fixture or fastjson case has been made by anyone, as far as `main` and the
+evidence logs show at `69cf36f`. So the review came before any measurement.
+
+**Contract:** I drafted "Interface 5 — candidate ranking" in `docs/contracts/interfaces.md`. It
+describes the merged code (signature, `RankedCandidate`, the rule, never-drops, victim-raises,
+the cache and its cost, no deepening, wording) and who does what. It changes no code. It is a
+contract change, so it is agreed only when M2 and M3 approve the PR.
+
+**Checked against the code:** every statement in the section was compared with
+`evidence/extract.py` at `69cf36f`: `AnalysisCache` (line 677), `RankedCandidate` (line 710),
+`rank_candidates` (line 713), and the 10 `RankCandidates*` tests. Nothing was run for this entry.
