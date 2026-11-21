@@ -1,8 +1,22 @@
 # Agenda for the next supervision meeting
 
-*v1 · 2026-11-13 · Status: questions prepared, **no answers yet**. Write each answer here with the
-date, in the supervisor's words where possible. An answer recorded here is the approval record the
-handbook's change control asks for.*
+*v2 · 2026-11-21 (v1 2026-11-13) · Status: questions prepared, **no answers yet**. Write each answer here
+with the date, in the supervisor's words where possible. An answer recorded here is the approval record
+the handbook's change control asks for. v2 (M2, W31): what changed since v1, one stale question
+corrected, the real-case ranking question added (§9), commitments ticked only where the item exists.*
+
+## Since v1 (13–21 November)
+
+Built and reproduced by a member who did not write it (details in [[10-Final1/action-register]]):
+
+- **FT003** (victim fails alone differently) and **FT004** (deletion evidence) fixed; reproduced by M1.
+- **Budget ledger** with a verification reserve (W24): stops at its limit, reproduced by all three on the
+  fixture (claim G8). **Ranked search** (W25): built; on fixture F2 at the same budget, `ranked` reached
+  `VERIFIED` where `original` stopped at the limit.
+- **Evidence bundles** (W23): writer, `verify` recount and `replay` built; M3's recount accepts the committed
+  F1 bundles. M1's independent reproduction is next.
+- **Real case FJ-03** builds and reproduces 10/10; the real command accepts it. **Finding (§9):** the static
+  evidence finds no edge on it, so ranking cannot help on our one real case.
 
 **Bring:** [[10-Final1/feedback-register]] · [[10-Final1/action-register]] ·
 [[10-Final1/iteration-2-plan]] · [[10-Final1/scope-inventory]] · the unsigned signature page.
@@ -28,7 +42,7 @@ resource is the cause, and it is displayed as `VERIFIED (sequence)`.
 | Question | Answer | Date |
 | --- | --- | --- |
 | Is that meaning acceptable? | | |
-| A sequence that replays reliably but has **no** static edge: `CANDIDATE` (our proposal, matching the certificate contract) or `UNRESOLVED` (today's code)? | | |
+| A sequence that replays reliably but has **no** static edge: `CANDIDATE` (implemented since W19, matching the certificate contract) or `UNRESOLVED` (the Mid's code)? Please confirm `CANDIDATE` | | |
 | Does causal certification of the resource remain a promise? If yes, is the intervention check of ADR-015 an acceptable way to establish it, and by which milestone? | | |
 
 ## 3. Approved scope
@@ -81,17 +95,32 @@ resource is the cause, and it is displayed as `VERIFIED (sequence)`.
 | Is the current allocation — M1 evidence, M2 runner and integration, M3 evaluation — the agreed workload? | | |
 | When will each member's explanation and small task be observed? | | |
 
+## 9. Ranking on the real case (added v2)
+
+On FJ-03 the sequence reproduces 20/20, but the extractor finds **no** static write/read edge, even
+after deepening: both tests only *read* the static `bufLocal`, and the change happens inside a JDK call
+(`ThreadLocal.set`) that is not followed ([[evidence-m1]], PR #145). So `--policy ranked` keeps the
+original order on our one real case **by design**; ranking cannot show a saving there. A rule that
+would rank it (a "co-touch" term) exists in ADR-014 §5 but was deliberately not added after seeing this
+case: the rule is fixed before ground truth (plan rule 4).
+
+| Question | Answer | Date |
+| --- | --- | --- |
+| For the Final, is the honest claim acceptable: *budgeted search is built and verified; ranking is built and saves runs on the fixture; on the one real case there was no evidence to rank by*? | | |
+| Should W26b add a second real case where an edge exists (e.g. FJ-04), or is the offline comparison on the POC's stored scan tables (ADR-014 item 5) enough for the Final? | | |
+| May a co-touch term be pre-registered and measured on other cases in FYP-2? | | |
+
 ---
 
 ## Our commitments for the meeting
 
 What we bring, per the supervisor's "what must be brought" list. Tick only what exists.
 
-- [ ] The baseline commit and every correction commit
-- [ ] The FT003 regression and its output, before and after
-- [ ] The agreed verdict contract (ADR-010, ADR-011) with three ticks
-- [ ] Member 1's static-evidence wording and control design
-- [ ] One portable bundle, with an independent reproduction record
+- [x] The baseline commit (`mid-eval-v1`) and every correction commit (named in [[10-Final1/action-register]])
+- [x] The FT003 regression and its output, before and after ([[evidence-m2]], [[evidence-m1]])
+- [x] The agreed verdict contract (ADR-010, ADR-011) with three ticks
+- [x] Member 1's static-evidence wording and control design (W21; reproduced by M2)
+- [ ] One portable bundle, with an independent reproduction record — *the bundle exists (`eval/bundles/`); M1's reproduction record does not yet*
 - [ ] The corrected GenAI register, the editable worksheet, the signed report
-- [ ] The budget and ranking plan, and the real-case protocol
+- [x] The budget and ranking plan, and the real-case protocol — *built, not only planned (W24, W25); protocol frozen (W26a)*
 - [ ] Each member: one completed personal change they can explain and modify

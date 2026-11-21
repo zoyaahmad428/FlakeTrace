@@ -1237,3 +1237,15 @@ clean checkout and with relative folders. **Found:** `core.autocrlf` would have 
 checksum; `.gitattributes` added and a test that reads every committed bundle back. **What I changed:** *to fill in.*
 
 Ownership checkpoint: why a committed bundle needs `-text`; why G8 is scoped.
+
+## 2026-11-21 — A8/W31: supervisor agenda v2, action register v2, plan rows
+
+**Tool:** Claude Code (Claude Opus 5.5) · **Level:** L2 · **Branch:** `m2/a8-supervisor-agenda`
+
+**Asked:** prepare W31. **Kept:** every status checked against the feedback register's closing rule — moved to
+`Partly` only where the work is built and reproduced by another member, never `Done` (that needs the supervisor);
+the real-case ranking gap (FJ-03, M1's #145) put to the supervisor as a question rather than hidden; the agenda's
+commitments ticked only where the item exists. Plan: the duplicate W18/W19 rows a merge had left removed, ✅ only where
+the row's own "Done when" is met. **What I changed:** *to fill in.*
+
+Ownership checkpoint: why nothing is `Done`; why §9 is on the agenda.

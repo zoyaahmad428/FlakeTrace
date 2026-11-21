@@ -1,6 +1,8 @@
 # Carried action register — handbook Form 10
 
-*v1 · 2026-11-13 · Status: live register. Updated before every evaluation.*
+*v2 · 2026-11-21 · Status: live register. Updated before every evaluation. v2 (M2, W31): statuses moved only
+where the work is built **and** reproduced by another member; none is `Done` — that needs the supervisor's
+acceptance (the feedback register's rule).*
 
 The handbook's rule for this form: *"Students update it before every evaluation. Panel only checks
 status and evidence link, not long explanations."* Later forms score **whether this register was
@@ -27,15 +29,15 @@ wording and due dates has not been supplied to us; we have asked for it
 
 | ID | Raised at | Required action | Owner | Due by | Status | Evidence | Panel status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| A1 | Proposal | Detect without application logs | M2 | Final | Partly | No fixture test logs anything; verdicts come from order, outcomes and bytecode. **Open:** a portable record another person can audit (FT009) | |
+| A1 | Proposal | Detect without application logs | M2 | Final | Partly | No fixture test logs anything; verdicts come from order, outcomes and bytecode. Portable record built: evidence bundles (W23, PRs #143, #146, #147), committed F1 bundle verified by M3's recount. **Open:** M1's independent reproduction (FT009) | |
 | A2 | Proposal | Say whether trace instructions are injected | M1 | Final | Partly | No: `javap` on compiled classes, ADR-001. **Open:** explain the approved runtime fallback, and label static evidence as potential overlap (FT005) | |
 | A3 | Proposal | Say whether code is modified | M2 | Final | Partly | Project files hashed before and after, `runner/integrity.py`. **Open:** state the limits honestly — endpoint equality only, `target/` and `.git/` excluded, no sandbox (FT021) | |
 | A4 | Proposal | Explain how the code block is isolated | M2, M1 | Final | Partly | Sequence reduction and resource localisation both exist. **Open:** pass-alone defect (FT003), unverified deletions (FT004), overlap is not cause (FT005) | |
 | A5 | Proposal | Show diverse applicable scenarios | M3 | Final | Partly | Seven fixture cases end to end. **Open:** scope confirmation and one real project (FT008) | |
 | A6 | Proposal | More research to improve the solution | M1 | Final | Partly | Minimisation note, ADR research sections. **Open:** each member explains the nearest baseline; a measured comparison plan (FT008) | |
-| A7 | Supervisor plan | Record the execution environment of every run | M2 | Final | Partly | JDK, OS, commit, order, seed in every record. **Open:** tool commit, dependency versions, timezone, reset assumptions (FT009, FT021) | |
+| A7 | Supervisor plan | Record the execution environment of every run | M2 | Final | Partly | Every record now also holds the tool commit, Maven, Python, JUnit, JVM timezone, locale and encoding, lifecycle and workspace (W22, PR #104, reproduced by M1 #108); every bundle states the reset assumptions (ADR-012) and checksums (W23). **Open:** the reproduced bundle (FT009) | |
 | A8 | Supervisor plan | Reproduction confidence with uncertainty | M3 | Final | Partly | Wilson intervals on real counts. **Open:** the acceptance logic around them (FT003, FT004) | |
-| A9 | Supervisor plan | Evidence report | M3, all | Final | Partly | Schema-validated reports for seven cases. **Open:** portable records, a replay command, a report for every status (FT009, FT010) | |
+| A9 | Supervisor plan | Evidence report | M3, all | Final | Partly | Schema-validated reports; a report for every status, including `INCONSISTENT` (W19) and `BUDGET_EXHAUSTED` (W24); bundles, `verify` and `replay` (W23). **Open:** M1's bundle reproduction (FT009) | |
 | A10 | Supervisor plan | Bounded resource decision | Supervisor, all | Next meeting | Open | Our position: static fields and system properties now, filesystem committed for FYP-2, the rest reported as unsupported ([[07-Defense/decisions/resource-family-boundaries]]). **Needs the supervisor's recorded decision** | |
 
 ## Raised at the Mid Evaluation
@@ -45,19 +47,19 @@ grouped; each keeps its FT identifier.
 
 | ID | Raised at | Required action | Owner | Due by | Status | Evidence | Panel status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| M-1 | Mid, official | Correct verification defects | M2, M3, M1 | Final | Open | Both defects reproduced on `7cf453d` ([[evidence-m2]]). Design: ADR-010, ADR-011 | |
-| M-2 | Mid, official | Complete budget-aware planning | M2, M1, M3 | Final | Open | Design: ADR-014 | |
-| M-3 | Mid, official | Real-project validation | M3, M2, M1 | Final | Open | Protocol: [[05-Testing/real-case-protocol]] | |
+| M-1 | Mid, official | Correct verification defects | M2, M3, M1 | Final | Partly | Both defects fixed and reproduced by another member: FT003 (W18/W19) and FT004 (W20), see their rows. Awaiting supervisor acceptance | |
+| M-2 | Mid, official | Complete budget-aware planning | M2, M1, M3 | Final | Partly | Budget ledger with a verification reserve (W24, PR #132/#135; claim G8 settled, reproduced by M1 #144) and ranked search (W25, PR #136). **Open:** the measured ranked-vs-original comparison (FT007, ADR-014 items 4–5) | |
+| M-3 | Mid, official | Real-project validation | M3, M2, M1 | Final | Partly | fastjson FJ-03 built and its premise confirmed 10/10 both ways (W26a, M3; reproduced by M2); the real command accepts the case. **Open:** the whole-pipeline runs under one budget (W26b) | |
 | M-4 | Mid, official | Restore the missing abstract | M2, all | Report v2.0 | Open | Our source and the submitted PDF contain a 188-word abstract; meaning of "missing" to be confirmed | |
 | M-5 | Mid, official | Align the report with the template | M2, all | Report v2.0 | Open | [[10-Final1/report-v2-plan]] | |
 | FT003 | Mid | No `VERIFIED` when the victim fails alone differently | M2, M3 | Sprint A | Partly | Fixed in W18 (`e49fa13`) and W19 (PR #106); reproduced by M1 2026-11-20: T1–T4 OK, N4 `UNRESOLVED (VICTIM_FAILS_ALONE_DIFFERENTLY)` ([[evidence-m1]]). Awaiting supervisor acceptance | |
 | FT004 | Mid | Deletion evidence under repetition | M2, M3 | Sprint B | Partly | W20 (M2 PR #121, M3 PRs #129, #130); reproduced by M1 2026-11-20: ADR-011 T1–T5, real F3 both kept tests `NEEDED` 20/20 ([[evidence-m1]]). Awaiting supervisor acceptance | |
 | FT005 | Mid | Separate sequence assurance from resource evidence | M1, M3 | Wording: Sprint A · controls: Sprint B | Partly | W16 + W21 (M1, PRs #105, #107) with schema v2 (M3, W19); **reproduced by M2 2026-11-20** ([[evidence-m2]]): both controls `VERIFIED (sequence)`, resource `STATIC_OVERLAP`, mechanism `NOT_ASSESSED`, no causal wording; control 2's report lists both edges in `resource_edges`. Two "not shown in this report" lines that became false once `resource_edges` showed every edge are both fixed: M2's (A2, PR #122) and M1's, test-first (PR #125, [[evidence-m1]]). Evidence for "Closes when" complete; **awaiting supervisor acceptance** | |
 | FT006, FT021 | Mid | Lifecycle semantics and the reset boundary | M2 | Sprint B | Partly | W22 (PR #104), reproduced by M1 2026-11-20 (PR #108): lifecycle control matches Surefire under `class-grouped`, now the default; JUnit 3, `@RunWith` and `suite()` named as per-method (ADR-012 §2); `--workspace copy` wrote no `target/` in the project. **Open:** FT006 on a real project (W26a); FT021's reset-sensitive control and container plan | |
-| FT009 | Mid | Portable, auditable evidence bundle | M3, M2 | Sprint B | Open | — | |
-| FT010 | Mid | A typed report for an inconclusive search | M2, M3 | Sprint A | Open | — | |
-| FT007, FT012 | Mid | Budget and ranking increment; one dated schedule | All | Plan: next meeting · build: Final | Partly | Schedule: [[10-Final1/iteration-2-plan]], [[00-Meta/roadmap]] | |
-| FT008 | Mid | One real case with a task-matched comparator | M3 | Protocol: next meeting · run: Final | Partly | Protocol drafted | |
+| FT009 | Mid | Portable, auditable evidence bundle | M3, M2 | Sprint B | Partly | Built: the writer and `replay` (M2, PR #143), `verify` (M3, PR #146), the first fixture bundles committed with `.gitattributes` (PR #147); M3's recount accepts both F1 bundles and they replay `same`. **Open:** M1 reproduces one alone on her machine (the closing evidence) | |
+| FT010 | Mid | A typed report for an inconclusive search | M2, M3 | Sprint A | Partly | `INCONSISTENT` gives a schema-valid `UNRESOLVED (INCONSISTENT_OUTCOMES)` report with the counts and a next step, exit 0, never a polluter (W19, PR #106; `test_inconsistent_writes_a_real_report_now`). **Open:** M1 exercises it | |
+| FT007, FT012 | Mid | Budget and ranking increment; one dated schedule | All | Plan: next meeting · build: Final | Partly | Built: budget (W24) and ranked search (W25); on fixture F2 at one budget, `ranked` reached `VERIFIED` in 70 invocations where `original` stopped at the limit ([[evidence-m2]]). **Open:** the measured comparison; on the real case FJ-03 ranking has no evidence to use (M1, #145). Schedule: [[10-Final1/iteration-2-plan]] | |
+| FT008 | Mid | One real case with a task-matched comparator | M3 | Protocol: next meeting · run: Final | Partly | Protocol frozen; FJ-03 builds and its premise holds (W26a, reproduced by M2). **Open:** the runs and the yield table (W26b) | |
 | FT011, FT022 | Mid | Scope authority and honest panel statuses | Supervisor, all | Next meeting | Partly | This register; [[10-Final1/supervisor-agenda]] | |
 | FT013, FT014 | Mid | Signatures and personal confirmations | Each member | Before report acceptance | Open | — | |
 | FT015 | Mid | Reconcile GenAI levels | M3, each | Before ownership assessment | Open | — | |
