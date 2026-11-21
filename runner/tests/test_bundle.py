@@ -189,5 +189,19 @@ class TestBundle(unittest.TestCase):
             self.assertIn(part, RESET_ASSUMPTIONS)
 
 
+class TestCommittedBundles(unittest.TestCase):
+    """Fixture bundles committed under eval/bundles/ (ADR-013 section 4) must still match their checksums after a
+    checkout: .gitattributes keeps Git from rewriting their line endings (core.autocrlf on Windows)."""
+
+    def test_every_committed_bundle_reads_back(self):
+        folders = sorted(p.parent for p in (REPO / "eval" / "bundles").glob("*/*/manifest.json"))
+        self.assertTrue(folders, "no committed bundle found under eval/bundles/")
+        for folder in folders:
+            bundle = read_bundle(folder)
+            self.assertEqual(bundle.manifest["tool"]["dirty"], False, folder.name)
+            for path in folder.iterdir():
+                self.assertNotIn(b"\r\n", path.read_bytes(), path.name)
+
+
 if __name__ == "__main__":
     unittest.main()

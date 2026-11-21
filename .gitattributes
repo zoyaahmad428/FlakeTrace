@@ -1,0 +1,3 @@
+# Evidence bundles (W23, Interface 8) are checked byte for byte against their SHA-256 checksums, so Git must
+# never change their line endings (core.autocrlf would turn LF into CRLF on Windows checkouts).
+eval/bundles/** -text
