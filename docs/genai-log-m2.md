@@ -1214,3 +1214,16 @@ skipping ranking once the seconds limit is spent (saves little, needs another co
 *to fill in.*
 
 Ownership checkpoint: why "could not analyse" must not look like "no evidence"; why ranked fits in 70 and original does not.
+
+## 2026-11-21 — W23, M2's half: bundle writer and replay
+
+**Tool:** Claude Code (Claude Opus 5.5), brainstorming (with a builder check) → writing-plans → executing-plans → TDD,
+one fresh reviewer at the end · **Level:** L3 · **Branch:** `m2/w23-replay-code`
+
+**Asked:** start W23 without waiting for M3. **Kept:** Interface 8 written first and agreed (two clarifications from
+the builder check); the runner writes bundles and M3 verifies; redaction refuses rather than leaks; replay never
+searches. **Wrong at first (found by review):** the written comparison disagreed with the printed one; replay trusted
+the unchecksummed manifest. **What I changed:** *to fill in.*
+
+Ownership checkpoint: why the user name is matched only as a path part; why replay reads `n` from the record; why
+"same" needs the same polluters.

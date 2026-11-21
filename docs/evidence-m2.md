@@ -1737,3 +1737,31 @@ own copy of the code, not from the review's description.
   - M3 ran item 2 at limit 72 (PR #139); these runs are mine. **Limitation:** one fixture pair, written by us with
     a known polluter; it shows the reserve and the stop work, not that ranking saves runs in general (M3's
     measurement, W26b).
+
+## W23, M2's half: bundle writer and replay (2026-11-21)
+
+- **Requirement:** Interface 8 (agreed by M1, M2, M3 on 2026-11-21, with two clarifications: replay bundles carry
+  `reference_signature`; "same" includes the polluters), ADR-013 §1, §3.
+- **Code:** `runner/bundle.py` (new: `redact`, `assert_clean`, `clean_url`, `manifest`, `write_bundle`,
+  `read_bundle`), `runner/replay.py` (new: `replayable`, `report_reference`, `replay_steps`, `compare`, `replay`),
+  `runner/diagnose.py` (`prepare_runner` and `record_header` extracted, behaviour unchanged), `runner/cli.py`
+  (`--bundle`, `replay` subcommand), `.gitignore` (`flaketrace-bundles/`).
+- **Test-first:** `runner.tests.test_bundle` → `No module named 'runner.bundle'`, then 10 OK; the Maven-version test
+  failed first (`'Apache Maven 3.10.0 (…)' != '3.10.0'`); `TestBundleOption` → `no attribute 'write_bundle'`;
+  `runner.tests.test_replay` → `No module named 'runner.replay'`; `TestReplayCommand` → 2 errors. One test of mine
+  was wrong and corrected: dropping a polluter needs `n = 20` (3/3 has Wilson lower bound 0.44, `INCONCLUSIVE`).
+- **Real runs** (od-fixture, Windows 11, JDK 21.0.9, Maven 3.10.0): F1
+  (`odfixture.ConfigVictimTest#expectsDefaultMode`) and F3 (`odfixture.ToggleVictimTest#expectsNotBothFlagsSet`):
+  `diagnose --bundle`, then `replay <bundle> --project fixtures/od-fixture` → exit 0, every row `same` (F1: polluter
+  `ConfigPolluterTest#pollute`, 20/20 matched, 20/20 passed alone, deletion `NEEDED`; F3: both polluters, both
+  deletion checks `NEEDED`). A scan of all 20 written files found no home path and no user name as a path part.
+- **Fresh review** (one reviewer, Claude Opus 5.5): 2 Important — the comparison written to `replay.md` marked Maven
+  `DIFFERENT` while the printed one said `same`; replay took `n` and the lifecycle from `manifest.json`, which is not
+  checksummed — and 11 Minor (malformed manifest traceback, home matched inside a longer user folder, case-sensitive
+  paths, a local origin path refused instead of redacted, `clean_url` gaps, one-letter user names hitting JSON
+  escapes, a half-written folder, R7 not enforced, `ExtractError` traceback, replay's `in-place` option, a doc
+  pointer). All fixed; 12 new tests, each failing first.
+- **After the fixes:** runner `Ran 372 tests in 816.327s OK` (real JVM), eval 136 OK, `ui.tests.test_server` 31 OK;
+  real F1 and F3 replayed again → exit 0, every row `same`, and the `Maven:` row in each `replay.md` now reads
+  `3.10.0 -> 3.10.0 same`, as printed; 20 files scanned, no personal path.
+- **Limitations:** `verify` (M3) does not exist yet, so no bundle has been recounted; one machine; fixture cases only.

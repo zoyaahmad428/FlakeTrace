@@ -64,6 +64,8 @@ python3 -m unittest -v $(ls eval/tests/test_*.py | sed 's#/#.#g; s#\.py$##')
 mvn -B -f fixtures/od-fixture/pom.xml test-compile
 python3 -m unittest -v $(ls runner/tests/test_*.py | sed 's#/#.#g; s#\.py$##')   # starts real JVMs, a few minutes
 python3 -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode
+python3 -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode --bundle flaketrace-bundles
+python3 -m runner replay flaketrace-bundles/<bundle-folder> --project fixtures/od-fixture   # W23: same verdict -> exit 0
 mvn -B -q -f evidence/tests/resources/m1-selftest/pom.xml test-compile
 mvn -B -q -f evidence/tests/resources/ft005-controls/pom.xml test-compile
 python3 -m unittest -v evidence.tests.test_extract       # needs the compiles above and javap

@@ -1,6 +1,7 @@
 import io
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -608,6 +609,75 @@ class TestSearchLine(unittest.TestCase):
                          ["  search:     ranked, fell back to the original order", "              " + note])
 
 
+class TestBundleOption(unittest.TestCase):
+    """W23 (Interface 8): diagnose --bundle writes the five-file bundle after the report."""
+
+    def test_bundle_flag_writes_a_bundle(self):
+        records = Path(tempfile.mkdtemp(prefix="flaketrace-cli-records-"))
+        record = records / "20261121T100000Z-pkg.VictimTest#v.jsonl"
+        record.write_text(json.dumps({"type": "header", "victim": str(V), "n": 20, "started": "2026-11-21T10:00:00+00:00",
+                                      "command": ["diagnose"]}) + "\n", encoding="utf-8")
+        bundles = Path(tempfile.mkdtemp(prefix="flaketrace-cli-bundles-"))
+        with mock.patch("runner.cli.diagnose", return_value=runs(VICTIM_FAILS_ALONE, record)), \
+                mock.patch("runner.cli._environment_text", return_value="java\n"):
+            code, out, err = run_cli(["diagnose", "--project", str(project_with_pom()), "--victim", str(V),
+                                      "--records", str(records), "--bundle", str(bundles)])
+        self.assertEqual(code, 0, err)
+        folder = bundles / record.stem
+        self.assertEqual(sorted(p.name for p in folder.iterdir()),
+                         ["environment.txt", "manifest.json", "record.jsonl", "replay.md", "report.json"])
+        self.assertIn(f"  bundle:     {folder}", out.splitlines())
+
+    def test_no_bundle_flag_writes_none(self):
+        records = Path(tempfile.mkdtemp(prefix="flaketrace-cli-records-"))
+        with mock.patch("runner.cli.diagnose", return_value=runs(VICTIM_FAILS_ALONE, records / "r.jsonl")), \
+                mock.patch("runner.cli.write_bundle") as write:
+            run_cli(["diagnose", "--project", str(project_with_pom()), "--victim", str(V)])
+        write.assert_not_called()
+
+
+class TestReplayCommand(unittest.TestCase):
+    """W23 (Interface 8): py -m runner replay <bundle> --project <checkout>."""
+
+    def a_bundle(self):
+        from runner.tests.test_replay import TestReplay
+        return TestReplay().bundle()
+
+    def test_replay_refuses_a_tampered_bundle(self):
+        folder = self.a_bundle()
+        (folder / "record.jsonl").write_text("{}\n", encoding="utf-8")
+        with mock.patch("runner.replay.prepare_runner") as prepare:
+            code, out, err = run_cli(["replay", str(folder), "--project", str(project_with_pom())])
+        self.assertEqual(code, 2)
+        self.assertIn("record.jsonl", err)
+        prepare.assert_not_called()
+
+    def test_replay_nothing_to_replay_exits_2(self):
+        from runner.tests.test_replay import TestReplay, a_report
+        folder = TestReplay().bundle(dict(a_report(), outcome="UNRESOLVED", polluters=[]))
+        code, out, err = run_cli(["replay", str(folder), "--project", str(project_with_pom())])
+        self.assertEqual(code, 2)
+        self.assertIn("nothing to replay: no polluter was blamed", err)
+
+    def test_resource_evidence_failure_exits_1(self):
+        folder = self.a_bundle()
+        with mock.patch("runner.replay.replay", side_effect=ExtractError("javap failed", 1)):
+            code, out, err = run_cli(["replay", str(folder), "--project", str(project_with_pom())])
+        self.assertEqual(code, 1)
+        self.assertIn("resource evidence failed", err)
+
+    def test_replay_has_no_in_place_mode(self):
+        """Interface 8 R2: a replay always runs on a copy."""
+        with self.assertRaises(SystemExit) as raised:
+            run_cli(["replay", "b", "--project", "p", "--workspace", "in-place"])
+        self.assertEqual(raised.exception.code, 2)
+
+    def test_replay_needs_a_project(self):
+        with self.assertRaises(SystemExit) as raised:
+            run_cli(["replay", "somewhere"])
+        self.assertEqual(raised.exception.code, 2)
+
+
 class TestBudgetLine(unittest.TestCase):
     SPENT = {"reproduce": 1, "shuffle": 0, "alone": 20, "search": 20, "minimise": 0, "deletion": 0, "verify": 40}
 
@@ -691,6 +761,46 @@ class TestCliOnFixture(unittest.TestCase):
             report = json.loads(reports[-1].read_text(encoding="utf-8"))
             self.assertEqual((code, report["outcome"]), (0, "VERIFIED"), victim + err)
             self.assertIn("  search:     ranked", out)
+
+    def test_f1_bundle_is_portable(self):
+        """W23: a real F1 bundle holds no home path and no user name as a path component, and reads back."""
+        import getpass
+        from runner.bundle import read_bundle
+        bundles = Path(tempfile.mkdtemp(prefix="flaketrace-cli-bundles-"))
+        code, out, err = run_cli(["diagnose", "--project", str(FIXTURE), "--victim",
+                                  "odfixture.ConfigVictimTest#expectsDefaultMode", "--records", self.records,
+                                  "--bundle", str(bundles)])
+        self.assertEqual(code, 0, err)
+        (folder,) = list(bundles.iterdir())
+        bundle = read_bundle(folder)
+        self.assertEqual((bundle.manifest["subject"]["repository"], bundle.manifest["subject"]["module_path"]),
+                         ("fixture", "fixtures/od-fixture"))
+        self.assertEqual(bundle.report["outcome"], "VERIFIED")
+        home, user = str(Path.home()), getpass.getuser()
+        for path in folder.iterdir():
+            text = path.read_text(encoding="utf-8")
+            for form in (home, home.replace("\\", "/"), home.replace("\\", "\\\\")):
+                self.assertNotIn(form.lower(), text.lower(), path.name)
+            self.assertNotRegex(text, r"(?i)[\\/]" + re.escape(user) + r"[\\/]", path.name)
+
+    def test_f1_bundle_replays_the_same(self):
+        """W23: a real F1 bundle, replayed on the same checkout, gives the same verdict (exit 0)."""
+        from runner.bundle import read_bundle
+        work = Path(tempfile.mkdtemp(prefix="flaketrace-cli-replay-"))
+        code, _, err = run_cli(["diagnose", "--project", str(FIXTURE), "--victim",
+                                "odfixture.ConfigVictimTest#expectsDefaultMode", "--records", str(work / "rec"),
+                                "--bundle", str(work / "b1")])
+        self.assertEqual(code, 0, err)
+        (original,) = list((work / "b1").iterdir())
+        code, out, err = run_cli(["replay", str(original), "--project", str(FIXTURE), "--records", str(work / "rec2"),
+                                  "--bundle", str(work / "b2")])
+        self.assertEqual(code, 0, out + err)
+        self.assertTrue(out.splitlines()[0].startswith("verdict:") and out.splitlines()[0].endswith("same"), out)
+        (new,) = list((work / "b2").iterdir())
+        manifest = read_bundle(new).manifest
+        self.assertEqual((manifest["kind"], manifest["replay_of"]),
+                         ("replay", read_bundle(original).manifest["files"]["report.json"]))
+        self.assertIn(f"  bundle:     {new}", out.splitlines())
 
     def test_f2_depth_two_edge(self):
         code, _, err, report = self.diagnose("odfixture.FeatureVictimTest#expectsTurboDisabled", 20)
