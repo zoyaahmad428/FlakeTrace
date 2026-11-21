@@ -1731,3 +1731,33 @@ Recorded it as a known gap in the evidence log instead of patching his module my
 Ownership checkpoint: be able to explain why `$(pwd)` works fine as the host side of a Docker
 volume mount on Linux/macOS but not from Git Bash on Windows, and why a successful-looking
 `docker run` output is not enough evidence that a bind mount actually worked.
+
+## 2026-11-21 — W29a/FT015: didn't trust the finding's own framing, checked it from scratch
+
+**What I didn't do:** FT015 says "L3 in one worksheet table and L2 in another, in the report and
+in the register" — reads like the report and the register might be two of the inconsistent
+sources. I didn't start editing either of them on that assumption. I counted the actual M3 rows
+in the register dated up to the Mid cutoff first, then read the frozen report's own table — they
+already agreed exactly (L2×18, L1×1). Editing either of the two sources that already agreed
+would have been pure risk for a worksheet-only bug, including risking the frozen, tagged Mid
+report, which must never be touched.
+
+**What finding the worksheet took:** the worksheet itself isn't in the repository — "submitted
+as PDF only" per FT013. It wasn't something to give up on; I searched the member's own Downloads
+folder for it and found both the submitted `.docx` and its PDF, timestamped the morning of the
+deadline. Reading its raw XML (no `pandoc` or LibreOffice on this machine) is what actually
+found the bug: one cell in the worksheet's own summary table said "L3 (18 rows), L2 (1)" for me,
+directly contradicting my own declaration a few hundred lines later in the *same file*. The
+register and the report were never the mismatched pair — the worksheet was inconsistent with
+itself, and FT015's wording just described it from the outside.
+
+**What I fixed, and what I deliberately didn't touch:** edited only the one wrong cell in a
+copy of the worksheet, verified byte-for-byte that nothing else changed (diffed extracted text,
+validated paragraph counts with the skill's own tool), and left the actually-submitted `.docx`/
+`.pdf` alone — that's a historical record of what was handed in, not mine to rewrite. Handing a
+corrected worksheet to the supervisor and the signatures FT013/FT014 ask for are explicitly
+outside what I can do from here; said so rather than treating the fixed file as "done."
+
+Ownership checkpoint: be able to explain, without re-reading this log, why the register and the
+frozen Mid report were never actually the inconsistent pair, and where in the worksheet itself
+the real, self-contradicting cell was.
