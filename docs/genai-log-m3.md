@@ -1667,3 +1667,34 @@ Ownership checkpoint: be able to explain why `test_not_reproduced_shape`, which 
 passing, never caught this — it's not that the test was wrong, it's that it tested a real but
 narrower shape (zero shuffle attempts) than the one N3's real diagnosis actually produced, and
 a passing test only proves the shapes it covers, never the ones it doesn't.
+
+## 2026-11-21 — W26b: running the real case instead of reasoning about it
+
+**What I did, and why I didn't shortcut it:** once M2's `discovery.py` fix landed, I worked out
+from the CLI's own code (`runner/diagnose.py`'s `_steps`) exactly what would happen if I ran the
+real pipeline with `--order` pointing at the frozen known-pair file: the order truncates to one
+candidate before the victim, so the single-polluter search has nothing to choose between across
+policies, and I could have predicted the result and written it up without running anything. I
+ran all seven real JVM invocations anyway — the member and ADR-014 both ask for real numbers,
+not derivations from reading the code, and "I worked out what it would do" is exactly the kind
+of claim the honesty rules exist to stop me from substituting for a real command.
+
+**What I caught before trusting the first result:** every one of the first seven bundles came
+back `tool.dirty: true`, breaking the clean-bundle precedent from W23. I didn't shrug past it —
+traced it to a leftover `HANDOFF-M3-report.md` from October sitting untracked in the working
+tree, confirmed from its own header that it was meant to be deleted once the Mid report was done
+(it was), asked the member before deleting it since the delete itself needed permission, and
+re-ran the whole matrix from a clean tree rather than keeping the first, dirtier batch.
+
+**What I didn't do:** didn't treat the six remaining `tool.dirty: true` manifests (after the
+first bundle in the clean re-run) as a second bug — checked the already-committed F1/F2-F4/N1-N4
+bundles first and found the identical pattern there (only ever the *first* bundle of a batch is
+clean, because every bundle after it is itself an untracked file sitting in the tree when the
+next one runs). Recognising "this matches existing, accepted behaviour" instead of re-diagnosing
+it from scratch saved real time without lowering the bar — I checked it was the same shape, not
+just hoped so.
+
+Ownership checkpoint: be able to explain, without re-deriving it live, why `--order` with a
+2-entry file collapses the single-polluter search to exactly one candidate regardless of
+`--policy` — and why that makes "ranked = original" on FJ-03 the mathematically forced outcome
+of this case's search space, not a property of M1's ranking rule.

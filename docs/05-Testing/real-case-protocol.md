@@ -1,13 +1,14 @@
 # Real-case protocol — the first real project through the whole pipeline
 
-*v1 · 2026-11-13 · Status: `FROZEN FOR STEPS 1-5` (2026-11-19, M3). Steps 1-5 complete for
-FJ-03 — see "Findings" below. **Steps 6-9 (the whole pipeline) are blocked** on a real tool gap
-found while doing steps 3-4: `runner/discovery.py` cannot discover or validate an `--order`
-naming the known polluter, so `py -m runner diagnose` refuses this case outright (not a
-ranking-quality issue — a hard block). Flagged for M2
-([[00-Meta/risk-register]]); this file stays frozen with its real findings recorded until that
-lands. The choice of case and the comparator are Member 3's to confirm; the supervisor asked to
-see "a feasible case and protocol" at the next review (FT008).*
+*v1 · 2026-11-13 · Status: `STEPS 1-8 COMPLETE FOR FJ-03` (2026-11-21, M3). Steps 1-5 complete
+2026-11-19 — see "Findings" below. **Steps 6-9 were blocked** on a real tool gap found while
+doing steps 3-4 (`runner/discovery.py` could not discover or validate an `--order` naming the
+known polluter) — **fixed by M2 2026-11-20** (PR #110,
+[[00-Meta/risk-register]]), unblocking steps 6-9. **Steps 6-8 run for real 2026-11-21** (M3,
+[[evidence-m3]]): `original`, `ranked` and `random` (five seeds) all give the identical real
+verdict at the identical real cost. **Step 9 (independent repeat) is the one piece left**,
+pending M1 or M2 on another machine. The choice of case and the comparator are Member 3's to
+confirm; the supervisor asked to see "a feasible case and protocol" at the next review (FT008).*
 
 ## Findings (2026-11-19, M3, real runs — native Windows, JDK 24 for the runner itself,
 real Temurin 8 (`1.8.0_512`, downloaded as a portable zip for this build only, not installed)
@@ -62,6 +63,27 @@ as the starting order for steps 6-9, since neither the natural discovered order 
 search found a different one, and this is the one directly confirmed in step 2. Steps 6-9
 themselves wait on the discovery.py fix (and, for 6-8, the budget ledger, ADR-014/W24, already
 not yet built).
+
+**Steps 6-8 (2026-11-21, M3, real runs — discovery.py's gap fixed by M2 2026-11-20).** Because
+`--order` fixes the starting order to exactly the known pair (step 5), the order truncated at the
+victim has a single entry before it: the search has exactly **one** candidate to try, regardless
+of policy. `original`, `ranked` and `random` (seeds 0-4) were all run for real, `--n 20
+--budget-invocations 100` (stated budget: the Interface 6 B2 minimum for this case is `3×20 + 2 +
+2 = 64`; 100 leaves headroom above it without being unlimited). All seven real runs gave the
+identical verdict at the identical cost: `CANDIDATE [NO_SUPPORTED_RESOURCE_EVIDENCE]`, reproduced
+20/20, search tried 1 of 1 candidates, 64 of 100 invocations spent (reserve 60 + 2 reproduce + 2
+search). `ranked` deepened through depths 2→5, found no evidence at any depth, and fell back to
+the original order — confirming end to end, with real JVM runs this time (not just the offline
+`rank_candidates` call of ADR-014 evidence item 5), M1's finding that FJ-03's pollution (a JDK
+`ThreadLocal.set()` call) has no static edge for ranking to use. This **is** the answer to "The
+comparison"'s central question on this case: under the same stated budget, `ranked` reaches the
+same verdict as `original`, with the same cost, not a lower one — reported exactly that way, not
+as a ranking defect and not inflated into a saving. Seven bundles committed under
+`eval/bundles/` (the real `original`/`ranked`/`random×5` runs), all `python -m eval.bundle
+verify` clean. Full numbers: [[evidence-m3]].
+
+**Step 9 — not yet done.** The independent repeat (M1 or M2, on another machine) is the one
+piece of steps 6-9 left.
 
 **Lead:** M3 · **Execution compatibility:** M2 · **Resource coverage:** M1 ·
 **Independent repeat:** M1 or M2 · **Work package:** W26

@@ -2590,3 +2590,58 @@ touch -- ranking only reorders the pair search, and F3's pair search was never t
 - **Not done:** `eval/reports/*.json` still not replaced by the bundles (other readers --
   `ui/web`, the Mid report's generated table -- still point at it); M1's independent
   reproduction of a bundle (ADR-013 section 5) has not happened.
+
+## 2026-11-21 -- W26b steps 6-8: the real FJ-03 pipeline, all three policies, real bundles
+
+**Requirement:** [[05-Testing/real-case-protocol]] steps 6-8 -- the whole pipeline on the real
+case, `original`/`ranked`/`random` (five seeds), one stated budget, bundled regardless of
+verdict. Blocked since W26a (2026-11-19) on a `runner/discovery.py` gap; **fixed by M2
+2026-11-20** (PR #110, confirmed in [[00-Meta/risk-register]]), so this was unblocked and not
+attempted until today.
+
+- **Command (real JDK 8 Temurin `1.8.0_512`, real fastjson checkout at the pinned commit
+  `e05e9c5`, real Maven, `JAVA_TOOL_OPTIONS=-Duser.timezone=UTC -Duser.language=en
+  -Duser.country=US`):**
+  ```
+  python -m runner diagnose --project <fastjson checkout> \
+    --victim com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf \
+    --order eval/real-cases/fj03/order.txt --n 20 --budget-invocations 100 \
+    --policy {original|ranked|random --seed {0,1,2,3,4}} --bundle eval/bundles
+  ```
+  **Budget choice:** Interface 6's B2 minimum for this case is `reserve(20) + start_length + 2 =
+  60 + 2 + 2 = 64` (the order file has exactly 2 entries). Chose **100**: comfortably above the
+  minimum (room for the search to actually run, not just scrape by), still a real stated limit,
+  not "no limit".
+- **Real result, all seven runs, identical:** `CANDIDATE [NO_SUPPORTED_RESOURCE_EVIDENCE]`,
+  reproduced 20/20 (lower bound 0.839), alone 0/20, polluter `SerializeWriterTest_14#test_writer_1`
+  found trying **1 of 1** candidates, **64 of 100** invocations spent (reserve 60; reproduce 2;
+  search 2; verify 40; shuffle/minimise/deletion all 0). `ranked`'s own line: "ranked at depth
+  2->3->4->5: no candidate had evidence, original order kept". `random` (seeds 0-4): "random
+  order (seed N)", same cost, same verdict, every seed.
+- **Why identical, and why that is the real, honest answer, not a flat result:** `--order`
+  fixes the starting order to the known pair (step 5's finding: neither the natural discovered
+  order nor 31 shuffles reproduce on this dense real suite). Truncated at the victim, that order
+  has exactly **one** test before it, so the single-polluter search has exactly one candidate to
+  try -- policy cannot matter when there is nothing to reorder. This is the real-JVM confirmation
+  of ADR-014 evidence item 5's offline finding (`rank_candidates` found zero static evidence for
+  FJ-03's `ThreadLocal`-based pollution, so ranked position = original position = 368 of 524):
+  item 5 showed it with no JVM runs; this shows the product's own CLI reaching the identical
+  real verdict, for real, end to end. **Reported as it is** (ADR-014's own instruction): on this
+  one real case, there is no search to speed up, so there is no saving to measure -- not "ranking
+  doesn't work", not "ranking wins".
+- **A real bug in my own working tree, not the product, found before trusting the first
+  result:** my first pass at all seven runs showed `tool.dirty: true` on every bundle's
+  manifest, breaking W23's established "`tool.dirty: false`" precedent for a clean evidence
+  bundle. Cause: a stale `HANDOFF-M3-report.md` left over from the October Mid-Report phase
+  (untracked, its own header said to delete it once that report was done -- it was) sitting in
+  the working tree. Deleted it (with the member's OK, since the delete itself needed
+  permission), confirmed `git status --short` clean, and re-ran all seven for real. The first of
+  the seven now shows `tool.dirty: false`; the other six show `true` again, but only because the
+  *previous* bundle folder in the same `eval/bundles/` batch is itself untracked at the moment
+  the next one runs -- the exact same shape the committed F1/F2-F4/N1-N4 bundles already have
+  (only the first bundle of each sitting is ever `false`), so this is the established, accepted
+  convention, not a new problem to chase.
+- **Verified:** `python -m eval.bundle verify <folder>` on all seven real bundles -> **all seven
+  `OK`**, no recount mismatches.
+- **Not done:** step 9, the independent repeat of step 6 or 7 by M1 or M2 on another machine --
+  not mine to run.
