@@ -1233,3 +1233,58 @@ item 1 (a limit stops the run before it is crossed) in a real run, although item
 - I did not run the schema validator on my report. M3 validated hers.
 - Item 3 (the reserve holds when the search is exhausted) is M2's and was not re-run by me,
   although the alone check (20) ran in full here.
+## FJ-03: why the extractor finds no edge on the real fastjson case (2026-11-20)
+
+**Question (from M2, 2026-11-20):** on FJ-03, `SerializeWriterTest_14#test_writer_1` →
+`MaxBufSizeTest#test_max_buf`, the sequence reproduces 20/20, but `resource_edges` is `[]` even
+after deepening (`CANDIDATE [NO_SUPPORTED_RESOURCE_EVIDENCE]`). So `--policy ranked` keeps the
+original order on this case. Why?
+
+**Answer: a known blind spot, and the extractor behaved to its specification.**
+
+**From the fastjson source** at `e05e9c5`:
+- `SerializeWriter` holds `private final static ThreadLocal<char[]> bufLocal`. The polluter builds
+  `new SerializeWriter(strOut, 1)`, a 1-character buffer, and its `close()` stores that buffer with
+  `bufLocal.set(buf)` (`buf.length <= 128 KiB`).
+- The victim's `new SerializeWriter()` takes it back with `bufLocal.get()`. So `setMaxBufSize(1)`
+  no longer throws (`1 < buf.length` is false), and `assertNotNull(error)` fails.
+
+This is a reading of the source, consistent with the premise. It was not confirmed by a run that
+changes the code.
+
+**What the extractor reports** (in the assistant's Linux cloud container):
+- fastjson was fetched at `e05e9c5`, unmodified (`git status` clean). It was built with OpenJDK
+  `1.8.0_514` from Ubuntu's packages (`mvn -B -q test-compile` → exit 0); JDK 21 cannot build it,
+  because it lacks `javax.xml.bind`.
+- `FLAKETRACE_JAVAP` was set to the JDK 8 `javap`. The extractor is `main` at `2ade4c0`, and a
+  one-off script (not committed) called `analyse_pair` and `analyse_test`.
+- `analyse_pair`: `depth_requested 2, depth_used 5, edges 0`. Unsupported observations:
+  - polluter: `DEPTH_LIMIT` 55, `IMPLICIT_CLINIT` 27, `VIRTUAL_DISPATCH` 6, `REFLECTION` 1;
+  - victim: `IMPLICIT_CLINIT` 3, `UNRESOLVED_CALL` 1.
+- `analyse_test` at depth 5:
+  - polluter: `bufLocal` **READ** at depth 2 in `SerializeWriter.close`, and `java.lang.ThreadLocal`
+    in `external_calls_not_followed` (60 accesses, 7 writes, none of them to `bufLocal`);
+  - victim: `bufLocal` **READ** twice at depth 4 in `SerializeWriter.<init>`, and
+    `java.lang.ThreadLocal` not followed (16 accesses, 0 writes).
+- At depth 2 the victim has no access at all; the read is first reached at depth 4.
+
+**Why there is no edge:** an edge needs a polluter WRITE and a victim READ of the same resource.
+Here both sides only READ `bufLocal`. The real change is a method call (`ThreadLocal.set`) on the
+object the field refers to, inside the JDK, which is not followed. Two fixed limitations cover
+this: "Calls into JDK classes and third-party jars are not followed" and "Only static fields and
+constant-key system properties are modelled".
+
+**What this means:**
+- On FJ-03, ranking keeps the original order **by design**. It is not a ranking defect, and M3's
+  measurement should report it as it is.
+- A READ on both sides of the same static field is ADR-014 §5's deferred **co-touch** term. It
+  would put this polluter first, but **I am not adding it now**: the rule was fixed before ground
+  truth (plan rule 4), and FJ-03 is ground truth. Any co-touch rule must be a new, separately
+  committed rule, reviewed by M2, and measured on cases other than FJ-03.
+- I added this case to the "What breaks" section of [[04-Implementation/evidence-collector]].
+
+**Not run on my laptop:** building fastjson needs JDK 8, and my laptop has JDK 25. M3 reproduced
+the build with a portable Temurin 8 on Windows.
+
+**Limitations:** one case; source reading plus static analysis, no runtime observation of
+`bufLocal`.
