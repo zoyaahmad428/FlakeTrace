@@ -40,6 +40,14 @@ version of this note wrongly attributed the resolving to `diagnose()` itself —
 after Member 2 pointed it out; see `docs/evidence-m3.md`.) Worth raising as a joint question
 if a portable reference is wanted later.
 
+**Fixed, as of W23 (ADR-013, 2026-11-20):** `eval/bundles/` is the portable answer to exactly
+this limitation — a bundle carries its own record alongside the report, every path inside it
+relative or redacted, and `python -m eval.bundle verify` recounts the report from the record
+alone on any machine. One real bundle (F1) is there now; see `eval/bundles/README.md`. F2-F4
+and N1-N3 are not migrated yet — this folder's reports are still the ones in active use
+everywhere else in the repository (the UI, the Mid report's generated table) until that
+migration happens.
+
 ## What's NOT here yet
 
 Nothing from the OD fixture — all 7 cases (F1-F4, N1-N3) now have a real report. Only the

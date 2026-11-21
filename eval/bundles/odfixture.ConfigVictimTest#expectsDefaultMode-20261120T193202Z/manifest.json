@@ -1,0 +1,65 @@
+{
+  "bundle_version": 1,
+  "tool": {
+    "commit": "07e0fd7aa630188aeac674209f063f17cd61aba5",
+    "dirty": true
+  },
+  "subject": {
+    "repository": "fixture",
+    "commit": "07e0fd7aa630188aeac674209f063f17cd61aba5",
+    "dirty": false,
+    "module_path": "<project>"
+  },
+  "victim": {
+    "class": "odfixture.ConfigVictimTest",
+    "method": "expectsDefaultMode"
+  },
+  "command": [
+    "diagnose",
+    "--project",
+    "fixtures/od-fixture",
+    "--victim",
+    "odfixture.ConfigVictimTest#expectsDefaultMode",
+    "--records",
+    "<home>/AppData/Local/Temp/w23-records"
+  ],
+  "parameters": {
+    "n": 20,
+    "shuffles": 31,
+    "seed": 0,
+    "budget": {
+      "limit_invocations": null,
+      "limit_seconds": null,
+      "reserve_invocations": 60
+    },
+    "policy": "original",
+    "scope": "module",
+    "lifecycle": "class-grouped",
+    "workspace": "copy"
+  },
+  "environment": {
+    "os": "Windows-11-10.0.26200-SP0",
+    "java_version": "openjdk version \"1.8.0_512\"",
+    "maven_version": "Apache Maven 3.9.11 (3e54c93a704957b63ee3494413a2b544fd3d825b)",
+    "python_version": "3.14.3",
+    "jvm": {
+      "java.version": "1.8.0_512",
+      "timezone": "Asia/Karachi",
+      "locale": "en_US",
+      "file.encoding": "Cp1252",
+      "junit.version": "4.13.2"
+    },
+    "container_image": null
+  },
+  "reset_assumptions": "Reset between orders: JVM state only (static fields, system properties, loaded classes, threads). Not reset: files anywhere, the working directory, environment variables, network and external services, the system clock and timezone. (ADR-012 section 1.)",
+  "fresh_run": {
+    "value": true,
+    "date": "2026-11-20T19:32:02.822027+00:00"
+  },
+  "files": {
+    "report.json": "3cf1f63e4418548ed31067bae837dadc816486f6594e2c642335a8c4549e0386",
+    "record.jsonl": "fd29bf304ad00a6d56ab7f2363f97c4ccb32bf27af9cbf21c34351b0bc2f9079",
+    "replay.md": "4ddcbcedcb407da3853db0660e911d64c784dd679aa98c4f2c7f435e444fb5fe",
+    "environment.txt": "d8710ffa0fc99c9fbc7301daf71aaf606ef3f1a79a3b46ce042b69c334467c69"
+  }
+}

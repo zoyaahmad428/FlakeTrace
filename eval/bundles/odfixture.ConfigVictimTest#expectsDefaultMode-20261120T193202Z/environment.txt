@@ -1,0 +1,9 @@
+openjdk version "1.8.0_512"
+Apache Maven 3.9.11 (3e54c93a704957b63ee3494413a2b544fd3d825b)
+os: Windows-11-10.0.26200-SP0
+python: 3.14.3
+jvm.file.encoding: Cp1252
+jvm.java.version: 1.8.0_512
+jvm.junit.version: 4.13.2
+jvm.locale: en_US
+jvm.timezone: Asia/Karachi

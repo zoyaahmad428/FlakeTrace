@@ -1431,3 +1431,62 @@ Ownership checkpoint: be able to explain why a budget limit of 72 for F2 gives
 candidate-pair check) plus the one reproduce run (8) already leaves only 4 invocations for
 search, which buys exactly 2 of the 7 candidate pairs before the ledger refuses the third — not
 a bug, the exact B3/B5 arithmetic Interface 6 specifies.
+
+## 2026-11-20 — W23 evidence bundle and recount checker
+
+**What I asked for:** after a status review showed W23 (ADR-013's bundle format + recount
+checker) as fully unblocked M3 work, with nothing of mine waiting on another member, the
+member said "start working" — I picked W23 over W25's measurement tool because it's listed
+first on the critical path into W26b and nothing had been built for it at all yet (checked
+`eval/` and `runner/` on `main` before starting, not assumed).
+
+**What I read before writing anything:** the full ADR-013 text, then `runner/recording.py`,
+`runner/diagnose.py`'s header-building code, `runner/search.py`, `runner/verify.py` and
+`runner/deletion.py` — specifically to find the *exact* rule each tally in a report comes from
+(which record lines, in what order, classified against which reference), rather than
+approximating it. Found, by reading `runner/deletion.py`'s own comment, that M2 had *already*
+added the `removed`/`round` note fields ADR-013 asks for to deletion-run lines — the capture
+side was further along than the plan doc's prose suggested, so I didn't need to ask for
+anything there.
+
+**A scope decision I made and documented rather than silently expanding:** faithfully
+replicating every status branch of `runner.diagnose._steps()` (including INCONSISTENT and
+BUDGET_EXHAUSTED, which have no "verify" phase at all) would have meant reimplementing a large
+share of the runner's own internal control flow inside `eval/`, for two statuses that don't
+appear in any of the real committed example reports. I built exact recount coverage for the
+three shapes that do (POLLUTER_FOUND/CANDIDATE/VERIFIED, VICTIM_FAILS_ALONE/_DIFFERENTLY,
+NOT_REPRODUCED-with-no-reference), and made `verify_bundle` say explicitly that the other two
+aren't covered yet, rather than quietly producing a possibly-wrong recount for them. Also
+decided to redact by trying both path environments (`eval.outcome`'s own `deletion_status`
+priority rule is duplicated here, not imported, because this module works from recounted
+record data, not a `runner.diagnose.DiagnosisRuns` — flagged in the code as a drift risk if
+Interface 4's rule ever changes).
+
+**A real bug I only found by actually inspecting the real output, not by reasoning about the
+code:** my first redaction pass looked clean in every unit test (which all use a hand-built,
+backslash-only header), but bundling a real diagnosis's real record left the home directory
+username sitting in the bundle's `manifest.json` and `record.jsonl`, in the `command` list's
+`--records` path — written with forward slashes by this machine's bash-like shell, which a
+plain string-replace against `Path.home()` (backslash-style) never matches. Caught it only by
+running `grep -c zarpa` on the real bundle's own files after creating it, the same way the
+checksum/recount design itself insists on checking the actual artefact rather than trusting the
+code that produced it. Fixed, added a permanent regression test, re-ran the real bundle and
+confirmed zero hits before calling this done.
+
+**What I deliberately left out:** did not migrate `eval/reports/*.json` to bundles for F2-F4 or
+N1-N4, and did not touch `ui/web` or `mid-eval-report/`'s generated table (both still read
+`eval/reports/*.json` directly) — that migration is ADR-013's own "Consequences" list, a
+separate, larger, cross-cutting change with other members' dependents, not part of W23's own
+"done when". Did not attempt `python -m runner replay` (M2's half of ADR-013, explicitly) or
+full `java -version`/`mvn -v` banner capture (would need a runner-side change to the record
+header, also M2's territory) — `replay.md` and `environment.txt` are honest about using only
+what the record header already carries today.
+
+Ownership checkpoint: be able to explain, without this log, why `verify_bundle` recomputes the
+reference signature *twice*, in two different ways, depending on whether a real failure ever
+showed up in the "reproduce"/"shuffle" phase at all — and why that split exactly mirrors
+`runner.search.reproduce()` versus `runner.verify.repeat_without_reference()`, not an
+arbitrary choice of mine. Also be able to explain why deleting one "alone" line and then
+*fixing the checksum to match* still gets caught: the checksum only proves the file wasn't
+tampered with after bundling, while the recount independently re-derives the numbers from
+whatever the file actually contains now — two different guarantees, not a redundant pair.
