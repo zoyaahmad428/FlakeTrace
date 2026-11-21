@@ -56,6 +56,20 @@ JUnit Platform launcher (needs the Vintage engine, a new dependency).
   rest of the order still runs. A duplicate test in one order raises `ValueError` (the result
   is keyed by test and cannot hold two outcomes).
 
+## The reset boundary, measured (FT021, 2026-11-21)
+
+ADR-012 §1 states what one fresh JVM per order resets. The reset control (`runner/tests/resources/reset-control/`, run by `TestResetControl` in `runner/tests/test_order_runner.py`) shows it with real runs: `ResetWriterTest` leaves state in one order, `ResetReaderTest` looks for it in the next.
+
+| State | Between orders (a new JVM) | Shown by |
+| --- | --- | --- |
+| A static field | **reset** | `ResetReaderTest#staticFieldIsDefault` passes |
+| A system property | **reset** | `ResetReaderTest#systemPropertyIsUnset` passes |
+| A file in the temp folder | **not reset** | `ResetReaderTest#tempFileIsAbsent` fails |
+| A file in the working directory (the project, or its disposable copy) | **not reset** | `ResetReaderTest#workingDirFileIsAbsent` fails |
+| Environment variables, the clock and timezone | not reset | not testable from a Java test (it cannot change them) |
+
+The same result in both lifecycle modes. In **one** JVM every reader fails, so each reader really detects its leftover (no vacuous pass). `--workspace copy` protects the user's project *after* the diagnosis, but within one diagnosis a file one order writes is still seen by the next. A test that depends on such a file is outside the contract (ADR-012 §1); detecting it during a diagnosis needs file-access evidence — the filesystem family, FYP-2.
+
 ## 4. How to modify it
 
 - **Run consecutive methods of the same class in one `Request`** (to match Surefire's
