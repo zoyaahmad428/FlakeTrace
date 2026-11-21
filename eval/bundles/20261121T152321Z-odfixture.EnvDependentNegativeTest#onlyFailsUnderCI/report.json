@@ -1,0 +1,131 @@
+{
+  "schema_version": 2,
+  "victim": {
+    "class": "odfixture.EnvDependentNegativeTest",
+    "method": "onlyFailsUnderCI"
+  },
+  "polluters": [],
+  "original_failing_order": [
+    {
+      "class": "odfixture.AlwaysEarlyVictimTest",
+      "method": "expectsLateFlagUnset"
+    },
+    {
+      "class": "odfixture.ConfigPolluterTest",
+      "method": "pollute"
+    },
+    {
+      "class": "odfixture.ConfigVictimTest",
+      "method": "expectsDefaultMode"
+    },
+    {
+      "class": "odfixture.DualFailurePolluterTest",
+      "method": "setState"
+    },
+    {
+      "class": "odfixture.DualFailureVictimTest",
+      "method": "expectsStateTwo"
+    },
+    {
+      "class": "odfixture.EnvDependentNegativeTest",
+      "method": "onlyFailsUnderCI"
+    }
+  ],
+  "reduced_sequence": [
+    {
+      "class": "odfixture.AlwaysEarlyVictimTest",
+      "method": "expectsLateFlagUnset"
+    },
+    {
+      "class": "odfixture.ConfigPolluterTest",
+      "method": "pollute"
+    },
+    {
+      "class": "odfixture.ConfigVictimTest",
+      "method": "expectsDefaultMode"
+    },
+    {
+      "class": "odfixture.DualFailurePolluterTest",
+      "method": "setState"
+    },
+    {
+      "class": "odfixture.DualFailureVictimTest",
+      "method": "expectsStateTwo"
+    },
+    {
+      "class": "odfixture.EnvDependentNegativeTest",
+      "method": "onlyFailsUnderCI"
+    }
+  ],
+  "reproduction": {
+    "n": 20,
+    "passed": 20,
+    "matched": 0,
+    "other": 0,
+    "infra": 0,
+    "confidence": 0.95,
+    "lower": 0.0,
+    "upper": 0.16112515827076002
+  },
+  "victim_alone": {
+    "n": 20,
+    "passed": 20,
+    "matched": 0,
+    "other": 0,
+    "infra": 0,
+    "confidence": 0.95,
+    "lower": 0.0,
+    "upper": 0.16112515827076002
+  },
+  "shared_resource": null,
+  "polluter_write_location": null,
+  "victim_read_location": null,
+  "resource_edges": [],
+  "failure_signature": null,
+  "instrumentation_level": "static-only",
+  "execution_record_reference": "record.jsonl",
+  "source_integrity": {
+    "passed": true,
+    "details": "copy: 26 files hashed (SHA-256) before and after; all identical; original project: 26 files hashed (SHA-256) before and after; all identical"
+  },
+  "outcome": "UNRESOLVED",
+  "unresolved_reason": "NOT_REPRODUCED",
+  "candidate_reasons": [],
+  "limitations": [
+    "instrumentation_level is static-only; runtime instrumentation is not built.",
+    "Not reproduced: 20 runs of the discovered order (plus 31 shuffled order(s)), 20 runs alone. In the discovered order the failure rate is below 0.161 with 95% confidence (Wilson). This is not evidence that the test is reliable: flaky tests have been found only after thousands of reruns."
+  ],
+  "deletion_checks": [],
+  "order_exploration": {
+    "order_given": false,
+    "shuffled_orders_tried": 31,
+    "orders_exhausted": false,
+    "seed_base": 0,
+    "reproducing_seed": null,
+    "infrastructure_failures": 0
+  },
+  "budget": {
+    "limit_invocations": null,
+    "limit_seconds": null,
+    "reserve_invocations": 60,
+    "spent": {
+      "reproduce": 120,
+      "shuffle": 297,
+      "alone": 20,
+      "search": 0,
+      "minimise": 0,
+      "deletion": 0,
+      "verify": 0
+    },
+    "launches": 71,
+    "wall_seconds": 25.441,
+    "analysis_seconds": null,
+    "policy": "original",
+    "exhausted": false,
+    "exhausted_phase": null,
+    "candidates": {
+      "total": 5,
+      "tried": 0
+    }
+  }
+}

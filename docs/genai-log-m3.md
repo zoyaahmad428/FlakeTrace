@@ -1637,3 +1637,33 @@ Ownership checkpoint: be able to explain, without digging through this log, exac
 the repo" loop unsafe for a script that does not actually live inside the repo — and why F3
 showing zero benefit from ranking is not a bug in the ranking rule, but a correct consequence
 of where F3's cost actually comes from (`ddmin`, not the pair search).
+
+## 2026-11-21 — W23 finished, and my own tool caught its own bug
+
+**What I did, briefly, since the member asked to move fast on real work:** bundled the
+remaining 7 fixture cases for real, then ran `verify` against every one of them — not because
+a checklist said to, but because that is the entire point of building an independent checker:
+it is only worth anything if it actually gets pointed at real output, not just at the
+synthetic fixtures I built it against.
+
+**What I did when it found something:** `verify` flagged a real mismatch on N3 —
+`reproduction.n` 20 vs. 51. I did not assume my own tool was right and the report was wrong, or
+the reverse; read N3's real record first, counted the "reproduce" and "shuffle" lines by hand
+(20 and 31), and only then went to `runner.diagnose._steps`'s own code to see which one of the
+two numbers it actually produces for this case. The report's 20 was right; my recount's 51 was
+the bug — a case where my own "independent recount" had quietly drifted from the thing it was
+supposed to be checking, caught only because I ran it for real rather than trusting the
+synthetic test suite's coverage. Wrote the regression test with the exact real shape (both
+phases present) before touching the fix, confirmed it failed first.
+
+**What I didn't do:** didn't treat the Windows permission error on N4's bundle write as a
+reason to dig into `runner/bundle.py` (M2's file) — checked that no partial bundle was left
+behind (confirming the existing cleanup logic already handles this case correctly), retried the
+identical command, got the identical real result, and moved on. Not every failure is a bug to
+chase; this one had a textbook signature (transient file lock, clean rollback already in
+place) that didn't warrant treating M2's code as suspect.
+
+Ownership checkpoint: be able to explain why `test_not_reproduced_shape`, which was already
+passing, never caught this — it's not that the test was wrong, it's that it tested a real but
+narrower shape (zero shuffle attempts) than the one N3's real diagnosis actually produced, and
+a passing test only proves the shapes it covers, never the ones it doesn't.

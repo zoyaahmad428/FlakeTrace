@@ -215,6 +215,30 @@ class TestVerifyBundleOtherShapes(BundleTestCase):
         bundle_dir = self.bundle(report=report, lines=lines)
         self.assertEqual(verify_bundle(bundle_dir), [])
 
+    def test_not_reproduced_shape_with_shuffles_tried_too(self):
+        """Real bug found bundling N3 (2026-11-21): runner.diagnose._steps' RunTally for "no
+        reference anywhere" counts only the "reproduce" phase's own attempts (ADR-008's shuffle
+        fallback is a SEPARATE phase, tried only when the discovered order never failed) -- the
+        recount must not fold "shuffle" lines into that tally just because they are also
+        eligible places to look for a reference signature."""
+        report = _report(polluters=[], reduced_sequence=[P, V], deletion_checks=[],
+                         shared_resource=None, polluter_write_location=None, victim_read_location=None,
+                         resource_edges=[], failure_signature=None,
+                         reproduction={"n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0,
+                                       "confidence": 0.95, "lower": 0.0, "upper": 0.161},
+                         victim_alone={"n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0,
+                                       "confidence": 0.95, "lower": 0.0, "upper": 0.161},
+                         outcome="UNRESOLVED", unresolved_reason="NOT_REPRODUCED")
+        del report["assurance"]
+        lines = [_header()]
+        lines += [_run_line("reproduce", ["odfixture.ConfigPolluterTest#pollute", VICTIM_STR],
+                            _victim_outcome(matched=False)) for _ in range(20)]
+        lines += [_run_line("shuffle", ["odfixture.ConfigPolluterTest#pollute", VICTIM_STR],
+                            _victim_outcome(matched=False)) for _ in range(31)]
+        lines += [_run_line("alone", [VICTIM_STR], _victim_outcome(matched=False)) for _ in range(20)]
+        bundle_dir = self.bundle(report=report, lines=lines)
+        self.assertEqual(verify_bundle(bundle_dir), [])
+
     def test_two_polluters_deletion_run_shape(self):
         report = _report(polluters=[P, Q], reduced_sequence=[P, Q, V], deletion_checks=[
             {"removed": P, "runs": {"n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0},

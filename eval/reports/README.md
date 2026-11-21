@@ -43,10 +43,10 @@ if a portable reference is wanted later.
 **Fixed, as of W23 (ADR-013, 2026-11-20):** `eval/bundles/` is the portable answer to exactly
 this limitation — a bundle carries its own record alongside the report, every path inside it
 relative or redacted, and `python -m eval.bundle verify` recounts the report from the record
-alone on any machine. One real bundle (F1) is there now; see `eval/bundles/README.md`. F2-F4
-and N1-N3 are not migrated yet — this folder's reports are still the ones in active use
-everywhere else in the repository (the UI, the Mid report's generated table) until that
-migration happens.
+alone on any machine. All 8 real fixture cases (F1-F4, N1-N4) are bundled there now, each
+`verify`d clean; see `eval/bundles/README.md`. This folder's reports are still the ones in
+active use everywhere else in the repository (the UI, the Mid report's generated table), which
+have not been pointed at the bundles instead.
 
 ## What's NOT here yet
 

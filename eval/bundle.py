@@ -134,6 +134,7 @@ def _recount(lines: List[dict], manifest: dict, report: dict) -> dict:
                 "deletion_checks": deletion_checks}
 
     # kind == "diagnosis": the full search may have run.
+    reproduce_only_lines = [l for l in run_lines if l["step"] == "reproduce"]
     reproduce_lines = [l for l in run_lines if l["step"] in ("reproduce", "shuffle")]
     minimise_lines = [l for l in run_lines if l["step"] == "minimise"]
     reference = _first_real_failure(reproduce_lines, victim)
@@ -148,10 +149,12 @@ def _recount(lines: List[dict], manifest: dict, report: dict) -> dict:
             return {"reference": alone_reference, "alone": alone_tally, "sequence": alone_tally,
                     "deletion_checks": []}
         # No reference anywhere: runner.diagnose._steps' RunTally(attempts, attempts-failures, 0, 0,
-        # failures) over the reproduce-phase runs only (every failure there was synthetic, by
-        # construction -- a real one would have already been the reference above).
-        attempts = len(reproduce_lines)
-        failures = sum(1 for l in reproduce_lines if not _victim_from(l, victim).passed)
+        # failures) over the "reproduce" phase's own runs ONLY -- real bug found bundling N3
+        # (2026-11-21): ADR-008's shuffle fallback is a separate phase (tried only when the
+        # discovered order never failed) and is not folded into this tally by _steps either,
+        # even though "shuffle" lines are also eligible places to look for a reference above.
+        attempts = len(reproduce_only_lines)
+        failures = sum(1 for l in reproduce_only_lines if not _victim_from(l, victim).passed)
         sequence_tally = RunTally(attempts, attempts - failures, 0, 0, failures)
         return {"reference": None, "alone": alone_tally, "sequence": sequence_tally, "deletion_checks": []}
 
