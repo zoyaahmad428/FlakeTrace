@@ -1716,3 +1716,52 @@ own copy of the code, not from the review's description.
   (BUDGET_EXHAUSTED)`, exit 0, `reproduced: no sequence verified (the starting order failed 1 of 1 run(s) before
   the budget ran out)`.
 - **Not changed:** claims row G2 stays `OPEN` until M3 agrees to settle it (it is M2's and M3's).
+
+## Ranking-line notes; G2 settled; Interface 6 step 3 on F2 (2026-11-21)
+
+- **Ranking notes (M1's #138 suggestion, agreed by M3; Interface 7 P6 now lists `notes`).** Test-first:
+  `TestEvidenceRanker.test_an_unanalysable_candidate_keeps_its_note` (real fixture classes, a candidate
+  `odfixture.NoSuchTest#x`) and `TestSearchPolicy.test_ranking_line_names_candidates_that_could_not_be_analysed`
+  → `FAILED (errors=3)` (`no attribute 'notes'`, `KeyError: 'notes'`); after → `Ran 40 tests OK`. The note is M1's
+  own text: `test class not found in project classes: odfixture.NoSuchTest`.
+- **G2 → SETTLED** with M3 (M1's reproduction, PR #137), scope kept: each kept test removed alone, not every
+  subset. E14's status follows.
+- **Interface 6 step 3, ADR-014 evidence items 1–3 on F2** (`odfixture.FeatureVictimTest#expectsTurboDisabled`,
+  n=20, `--budget-invocations 70`, the B2 minimum; JDK 21, default options):
+  - `--policy original` → `UNRESOLVED (BUDGET_EXHAUSTED)`, exit 0; spent 30 (reproduce 8, alone 20, search 2);
+    22 `run` lines (1 + 20 + 1) and one `budget-stop` (`search`, would_cost 2) — **item 1**: the next run was not
+    started; **item 2**: a report with a budget account; alone ran 20 of 20.
+  - `--policy ranked` → `VERIFIED (sequence)`, exit 0, polluter `FeaturePolluterTest#enableTurbo` tried first;
+    spent **70 of 70** (reproduce 8, alone 20, search 2, verify 40); 42 `run` lines; no `budget-stop` — **item 3**:
+    the alone check and the full 20-run sequence check ran, paid by the 3n reserve. `notes: {}`.
+  - M3 ran item 2 at limit 72 (PR #139); these runs are mine. **Limitation:** one fixture pair, written by us with
+    a known polluter; it shows the reserve and the stop work, not that ranking saves runs in general (M3's
+    measurement, W26b).
+
+## W23, M2's half: bundle writer and replay (2026-11-21)
+
+- **Requirement:** Interface 8 (agreed by M1, M2, M3 on 2026-11-21, with two clarifications: replay bundles carry
+  `reference_signature`; "same" includes the polluters), ADR-013 §1, §3.
+- **Code:** `runner/bundle.py` (new: `redact`, `assert_clean`, `clean_url`, `manifest`, `write_bundle`,
+  `read_bundle`), `runner/replay.py` (new: `replayable`, `report_reference`, `replay_steps`, `compare`, `replay`),
+  `runner/diagnose.py` (`prepare_runner` and `record_header` extracted, behaviour unchanged), `runner/cli.py`
+  (`--bundle`, `replay` subcommand), `.gitignore` (`flaketrace-bundles/`).
+- **Test-first:** `runner.tests.test_bundle` → `No module named 'runner.bundle'`, then 10 OK; the Maven-version test
+  failed first (`'Apache Maven 3.10.0 (…)' != '3.10.0'`); `TestBundleOption` → `no attribute 'write_bundle'`;
+  `runner.tests.test_replay` → `No module named 'runner.replay'`; `TestReplayCommand` → 2 errors. One test of mine
+  was wrong and corrected: dropping a polluter needs `n = 20` (3/3 has Wilson lower bound 0.44, `INCONCLUSIVE`).
+- **Real runs** (od-fixture, Windows 11, JDK 21.0.9, Maven 3.10.0): F1
+  (`odfixture.ConfigVictimTest#expectsDefaultMode`) and F3 (`odfixture.ToggleVictimTest#expectsNotBothFlagsSet`):
+  `diagnose --bundle`, then `replay <bundle> --project fixtures/od-fixture` → exit 0, every row `same` (F1: polluter
+  `ConfigPolluterTest#pollute`, 20/20 matched, 20/20 passed alone, deletion `NEEDED`; F3: both polluters, both
+  deletion checks `NEEDED`). A scan of all 20 written files found no home path and no user name as a path part.
+- **Fresh review** (one reviewer, Claude Opus 5.5): 2 Important — the comparison written to `replay.md` marked Maven
+  `DIFFERENT` while the printed one said `same`; replay took `n` and the lifecycle from `manifest.json`, which is not
+  checksummed — and 11 Minor (malformed manifest traceback, home matched inside a longer user folder, case-sensitive
+  paths, a local origin path refused instead of redacted, `clean_url` gaps, one-letter user names hitting JSON
+  escapes, a half-written folder, R7 not enforced, `ExtractError` traceback, replay's `in-place` option, a doc
+  pointer). All fixed; 12 new tests, each failing first.
+- **After the fixes:** runner `Ran 372 tests in 816.327s OK` (real JVM), eval 136 OK, `ui.tests.test_server` 31 OK;
+  real F1 and F3 replayed again → exit 0, every row `same`, and the `Maven:` row in each `replay.md` now reads
+  `3.10.0 -> 3.10.0 same`, as printed; 20 files scanned, no personal path.
+- **Limitations:** `verify` (M3) does not exist yet, so no bundle has been recounted; one machine; fixture cases only.

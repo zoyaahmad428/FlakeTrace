@@ -26,6 +26,7 @@ Thumbs.db
 
 # FlakeTrace execution records (runner/recording.py)
 flaketrace-records/
+flaketrace-bundles/
 
 # Web UI (ui/web)
 node_modules/

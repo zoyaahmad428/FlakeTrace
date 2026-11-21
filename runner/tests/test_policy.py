@@ -23,6 +23,7 @@ class FakeRanker:
         self.fails_at = set(fails_at)
         self.seconds = 0.0
         self.asked = []
+        self.notes = {}
 
     def rank(self, depth):
         self.asked.append(depth)
@@ -149,6 +150,16 @@ class TestEvidenceRanker(unittest.TestCase):
         self.assertEqual(ranked[1][1][0], 0)
         self.assertGreater(ranker.seconds, 0)
         self.assertIsInstance(ranker.cut_off(2), bool)
+
+    def test_an_unanalysable_candidate_keeps_its_note(self):
+        """M1's #138 suggestion: a candidate that could not be analysed is not recorded like one with no
+        evidence -- the ranker keeps Interface 5's note for it (and only for it)."""
+        victim = TestIdentifier("odfixture.ConfigVictimTest", "expectsDefaultMode")
+        missing = TestIdentifier("odfixture.NoSuchTest", "x")
+        polluter = TestIdentifier("odfixture.ConfigPolluterTest", "pollute")
+        ranker = EvidenceRanker(FIXTURE, victim, [missing, polluter])
+        ranker.rank(2)
+        self.assertEqual(ranker.notes, {missing: "test class not found in project classes: odfixture.NoSuchTest"})
 
     def test_an_unknown_victim_raises_extract_error(self):
         ranker = EvidenceRanker(FIXTURE, TestIdentifier("odfixture.NoSuchTest", "x"),
