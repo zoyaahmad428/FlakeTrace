@@ -1586,3 +1586,54 @@ Ownership checkpoint: be able to explain why Q2 of the acceptance task is weight
 is — not "all three questions matter equally" but "this one question is the actual thing FT018
 is for," and why that asymmetry has to be decided and written down *before* the session, not
 noticed afterward while scoring it.
+
+## 2026-11-21 — W25 measurement, and a four-hour bug of my own making
+
+**What happened, honestly:** built a one-off script to run the product's real
+`rank_candidates` against all 524 real FJ-03 candidates (ADR-014 evidence item 5). It hung for
+almost four hours. I did not just wait blindly — checked the process's actual CPU time against
+wall-clock time repeatedly to confirm it was genuinely busy, not stuck, investigated OneDrive
+and Windows Defender as plausible causes of slowness, and only found the real cause by doing
+the arithmetic properly: timed one real candidate analysis in isolation (about two seconds) and
+multiplied by 524 — the four hours did not remotely match that, which is what actually forced
+me to go looking for a bug in my own code rather than accepting "JVM spawns are just slow" as
+the explanation. The bug: my script auto-discovered the FlakeTrace repo root by walking up from
+its own directory, which lived in a scratch folder *outside* the repo entirely — the walk-up
+hit the drive root and spun forever, since `Path("C:\\").parent == Path("C:\\")`. The entire
+first run, start to finish, did zero real analysis.
+
+**What I told the user, and when:** as soon as I'd confirmed it with real evidence (the timing
+math, not a hunch), not before and not after sitting on it. Also told them plainly that the
+~4 hours of waiting was my own mistake, not an unavoidably slow computation — the honest
+account, not a softened one.
+
+**What I verified before trusting the fix:** ran the corrected version on a single real
+candidate first and confirmed the timing matched my own prediction (~2s) before committing to
+the full 524-candidate run again. Only let the full run proceed once the arithmetic actually
+closed.
+
+**A design choice under real time pressure:** added progress logging (flushed every 10
+candidates) specifically so this class of problem — real work that happens to be slow vs. a
+hang — would be distinguishable without another multi-hour guessing game. Structured the fixed
+version to warm the `AnalysisCache` with a plain loop (so I control the progress printing) and
+then call the real, unmodified `rank_candidates` on the warm cache for the actual scoring —
+deliberately avoided reimplementing `rank_candidates`'s own scoring/sorting logic by hand a
+second time, which would have risked a silent, undetected drift from the product's real
+behaviour just to get a progress bar.
+
+**What I did once the real numbers came back:** reported FJ-03's real result exactly as it
+came out — zero evidence found, ranking changed nothing — rather than treating a "ranking
+didn't help" result as a disappointment to soften. Then, before writing anything up, checked
+whether M2 had already run the fixture-level comparison for real (he had, on F2) and
+independently re-ran it myself rather than just citing his number — it matched exactly, which
+is real corroboration, not an assumption that his report was correct. Ran F1, F3 and F4 myself
+too, since item 4 asks for "the fixture," not one case, and F3's result (zero saving, because
+`ddmin` dominates its cost, not the search order) is exactly the kind of inconvenient real
+finding the honesty rules exist to protect — reported in full, not trimmed to the three cases
+that look good.
+
+Ownership checkpoint: be able to explain, without digging through this log, exactly why
+`Path("C:\\").parent` equals `Path("C:\\")` and why that makes a naive "walk up until you find
+the repo" loop unsafe for a script that does not actually live inside the repo — and why F3
+showing zero benefit from ranking is not a bug in the ranking rule, but a correct consequence
+of where F3's cost actually comes from (`ddmin`, not the pair search).

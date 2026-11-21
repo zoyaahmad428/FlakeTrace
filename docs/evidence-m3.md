@@ -2479,3 +2479,78 @@ needed a real answer, not just acknowledgement.
 - **Not done by me:** M2's own "The case" section of `practitioner-check.md` is still a
   placeholder -- he made the real clean F1 bundle for it, but hasn't filled in that section of
   the protocol itself; flagged for him rather than filled in on his behalf (his folder).
+
+## 2026-11-21 — W25 measurement: ADR-014 evidence items 4 and 5, both real, both done
+
+**Requirement:** ADR-014's own evidence table, items 4 ("`ranked` against `original` on the
+fixture and on the real case, same budget, total invocations to the same verdict") and 5 ("the
+same comparison offline on the POC's stored scan tables, using the product's `rank_candidates`
+-- no JVM runs"). Both M3's (item 5 with M1). Both unblocked once M2's W25 runner half merged.
+
+### Item 5 -- offline, real fastjson, no JVM test runs
+
+Cloned fastjson for real at the pinned commit (`e05e9c5e4be580691cc55a59f3256595393203a1`,
+`https://github.com/alibaba/fastjson`) into an isolated scratch directory, built it for real
+(`mvn -B -DskipTests test-compile`, portable JDK 8, `BUILD SUCCESS`), then ran the product's
+real `rank_candidates` (unmodified, `evidence.extract.rank_candidates`) against all 524 real
+candidates from `POC/results/scan_FJ-03.csv` -- the real, stored scan outcome, not a POC
+re-run. No JVM test execution anywhere in this step; every analysis is `javap`-based static
+analysis through `evidence.extract.Project`/`AnalysisCache`, the product's own real code.
+
+**Real result:** `rank_candidates` found **zero static evidence** for all 6 of the real
+relevant candidates (`od_relevant=YES` in the scan table) -- every one scored `(0, None,
+position)`, meaning no shared-resource edge at all, at the product's default depth. With no
+evidence, the rule's own third tie-break (original position) applies, so ranking left the
+order **completely unchanged**: the first relevant candidate's ranked position (368 of 524)
+exactly equals its original position (368 of 524). This independently confirms, for real and
+end to end (not by re-reading M1's finding), what she already found: FJ-03's pollution is a
+JDK `ThreadLocal.set()` call that static analysis does not follow
+([[04-Implementation/evidence-collector]]), so there is no edge for `rank_candidates` to rank
+by. **A real result, reported as it is** (ADR-014's own instruction) -- not a ranking defect,
+and not spun as a win; on this one real case, ranking helps not at all.
+- **Command:** a one-off script (not committed -- see "Not done" below),
+  `evidence.extract.rank_candidates(project, victim, candidates, cache=cache)` against the real
+  compiled fastjson classes. 524/524 candidates analysed with zero failures,
+  `analysis_seconds` 249.3 real seconds on this machine.
+- **A real bug I found and fixed in my own one-off script, not the product:** my first attempt
+  auto-discovered the FlakeTrace repo root by walking up from the script's own directory
+  looking for `evidence/extract.py` -- but the script lived in a scratch directory **outside**
+  the repo entirely, so the walk-up hit the drive root and spun forever (`Path("C:\\").parent
+  == Path("C:\\")`), burning real CPU for roughly four hours before I diagnosed it (checked the
+  process's actual CPU time against wall-clock time, confirmed it was genuinely busy not
+  stuck, then timed one real candidate in isolation and found it should take ~2 seconds, not
+  four hours for 524 of them -- the arithmetic didn't close, which is what actually caught the
+  bug). Fixed by passing the repo root explicitly instead of discovering it. This was 100% my
+  own script's bug, never the product's `rank_candidates` itself, which is unmodified and
+  already M1's, tested, and merged.
+
+### Item 4 -- the fixture, real invocation counts, both policies
+
+Real `python -m runner diagnose --policy original|ranked` on all four real fixture cases, no
+budget limit (JDK 8, real Maven/JVM):
+
+| Case | `original` invocations | `ranked` invocations | Savings | Verdict (both policies) |
+| --- | --- | --- | --- | --- |
+| F1 | 67 | 65 | 2 (3%) | `VERIFIED`, same polluter |
+| F2 | 82 | 70 | 12 (15%) | `VERIFIED`, same polluter |
+| F3 | 264 | 264 | 0 (0%) | `VERIFIED`, same two polluters |
+| F4 | 166 | 146 | 20 (12%) | `VERIFIED`, same polluter |
+
+`ranked` never costs more than `original` and reaches the identical verdict every time -- the
+"same endpoint" ADR-014 asks for, confirmed on every fixture case, not just F2. F2's numbers
+(82 vs 70) independently reproduce M2's own already-recorded real run exactly
+([[evidence-m2]]); F1, F3 and F4 are new real runs. **F3's zero saving is a real, honest
+result, not a bug:** `ranked` still tries all 16 of 16 candidates and spends the identical 264
+invocations, because F3's cost is dominated by `ddmin` minimisation (two required polluters
+need shrinking after the single-candidate search fails), a phase candidate ranking does not
+touch -- ranking only reorders the pair search, and F3's pair search was never the bottleneck.
+- **Not done:** the real-case half of item 4 (FJ-03 under both policies, real JVM runs, not
+  just the offline comparison above) -- blocked on nothing technical now that discovery.py's
+  gap is fixed, but not yet run; given item 5's result (no edge, ranking changes nothing), this
+  real-case run is expected to show `ranked` costing the same as `original` too, which would
+  itself be worth confirming rather than assuming. This is W26b's real-case work, not a gap in
+  this entry.
+- **Not committed:** the one-off `rank_candidates`/fastjson comparison script lived in a
+  scratch directory, not under `eval/tools/`. If this comparison needs to be re-run later (a
+  co-touch rule, FYP-2), it should be rebuilt as a proper committed tool rather than rerun from
+  scratch -- noted here rather than silently left to be rediscovered.
