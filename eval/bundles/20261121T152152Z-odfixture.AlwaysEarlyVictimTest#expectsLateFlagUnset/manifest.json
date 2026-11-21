@@ -1,0 +1,60 @@
+{
+  "bundle_version": 1,
+  "kind": "diagnosis",
+  "tool": {
+    "commit": "db76288e9f0ca4bc7d25e7f4f3a43b99e90ce473",
+    "dirty": true
+  },
+  "subject": {
+    "repository": "fixture",
+    "commit": "db76288e9f0ca4bc7d25e7f4f3a43b99e90ce473",
+    "dirty": false,
+    "module_path": "fixtures/od-fixture"
+  },
+  "victim": "odfixture.AlwaysEarlyVictimTest#expectsLateFlagUnset",
+  "command": [
+    "diagnose",
+    "--project",
+    "fixtures/od-fixture",
+    "--victim",
+    "odfixture.AlwaysEarlyVictimTest#expectsLateFlagUnset",
+    "--records",
+    "<records>",
+    "--bundle",
+    "eval/bundles"
+  ],
+  "parameters": {
+    "n": 20,
+    "shuffles": 31,
+    "seed": 0,
+    "budget": {
+      "limit_invocations": null,
+      "limit_seconds": null
+    },
+    "policy": "original",
+    "scope": "module",
+    "lifecycle": "class-grouped",
+    "workspace": "copy"
+  },
+  "environment": {
+    "os": "Windows-11-10.0.26200-SP0",
+    "jdk": "1.8.0_512",
+    "maven": "3.9.11",
+    "junit": "4.13.2",
+    "python": "3.14.3",
+    "timezone": "Asia/Karachi",
+    "locale": "en_US",
+    "encoding": "Cp1252",
+    "container_image": null
+  },
+  "reset_assumptions": "Reset between orders: JVM state only: static fields, system properties, loaded classes, threads. Not reset: Files anywhere, the working directory, environment variables, network and external services, the system clock and timezone.",
+  "fresh_run": true,
+  "run_date": "2026-11-21",
+  "replay_of": null,
+  "files": {
+    "report.json": "8968267019ce2b2c49a4a7818d76d01bd6f3a30f2e7dfcba550d4b143c96fe4e",
+    "record.jsonl": "159370e69be8613b1b9395c2d7b1f934c17b6d887730e4fc78f82a107b5d248c",
+    "replay.md": "8e236a5a456fecc71e984fb0f24c8f16da34f46625742990951d20bc6c8e454e",
+    "environment.txt": "68c1c48c9d397c6a508b32b8acc2e42b87090a167967cda68937c1aa84256f8b"
+  }
+}

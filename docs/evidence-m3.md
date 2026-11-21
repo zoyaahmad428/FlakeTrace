@@ -2554,3 +2554,39 @@ touch -- ranking only reorders the pair search, and F3's pair search was never t
   scratch directory, not under `eval/tools/`. If this comparison needs to be re-run later (a
   co-touch rule, FYP-2), it should be rebuilt as a proper committed tool rather than rerun from
   scratch -- noted here rather than silently left to be rediscovered.
+
+## 2026-11-21 — W23 complete: F2-F4 and N1-N4 bundled; a real recount bug found and fixed
+
+**Requirement:** W23's "fixture bundles committed" -- only F1 (two copies) was bundled so far.
+
+- **Command:** `python -m runner diagnose --project fixtures/od-fixture --victim <each
+  victim> --bundle eval/bundles` for all 7 remaining cases (JDK 8, real Maven/JVM). All 7 real
+  diagnoses matched their known ground truth (F2-F4 `VERIFIED`; N1/N2 `UNRESOLVED
+  (VICTIM_FAILS_ALONE)`; N3 `UNRESOLVED (NOT_REPRODUCED)`; N4 `UNRESOLVED
+  (VICTIM_FAILS_ALONE_DIFFERENTLY)`). N2's 13/20 alone-failure rate is this run's real number,
+  not the same every time, by design (N2 is intentionally flaky).
+- **A transient environment failure, not a product bug:** N4's first `--bundle` attempt failed
+  with a Windows `PermissionError` renaming the bundle's `.partial` folder to its final name
+  (`write_bundle`'s own "write to a side folder, rename at the end" safety already cleaned up
+  the `.partial` folder on that failure -- confirmed no half-written bundle was left behind).
+  Re-ran the identical command and it succeeded, with the identical real result -- most likely
+  a brief antivirus lock on the newly-written folder, not anything in the product.
+- **A real bug in my own recount, found by `verify` itself, not a unit test:** `python -m
+  eval.bundle verify` on N3's real bundle flagged `reproduction.n: report says 20, recount says
+  51`. N3's real record has 20 "reproduce" lines and 31 "shuffle" lines (ADR-008's fallback,
+  since the discovered order never failed). `eval/bundle.py`'s recount, for the
+  "no reference established anywhere" case, was reusing the same `reproduce_lines` list built
+  for reference-searching (reproduce + shuffle together, correctly) as the source for the
+  fallback `RunTally` too -- but `runner.diagnose._steps` itself counts only the "reproduce"
+  phase for that specific tally, never the shuffle attempts. The existing unit test for this
+  shape (`test_not_reproduced_shape`) happened to have zero shuffle lines, so it could never
+  have caught this. Added `test_not_reproduced_shape_with_shuffles_tried_too` (confirmed failing
+  against the pre-fix code first, with the exact same `51` mismatch N3 showed), then fixed by
+  splitting `reproduce_only_lines` out from the reference-search pool. Re-verified N3's real
+  bundle clean afterward.
+- **Verified:** `python3 -m unittest discover -s eval/tests` -> **147 tests, OK** (1 new
+  regression test). All 9 committed bundles (two F1, one each F2-F4/N1-N4) re-verified clean
+  with `python -m eval.bundle verify` after the fix.
+- **Not done:** `eval/reports/*.json` still not replaced by the bundles (other readers --
+  `ui/web`, the Mid report's generated table -- still point at it); M1's independent
+  reproduction of a bundle (ADR-013 section 5) has not happened.

@@ -1,0 +1,222 @@
+{
+  "schema_version": 2,
+  "victim": {
+    "class": "odfixture.AlwaysEarlyVictimTest",
+    "method": "expectsLateFlagUnset"
+  },
+  "polluters": [
+    {
+      "class": "odfixture.ZzzLatePolluterTest",
+      "method": "setLateFlag"
+    }
+  ],
+  "original_failing_order": [
+    {
+      "class": "odfixture.ToggleBPolluterTest",
+      "method": "setFlagB"
+    },
+    {
+      "class": "odfixture.ConfigPolluterTest",
+      "method": "pollute"
+    },
+    {
+      "class": "odfixture.MathUtilTest",
+      "method": "addsTwoNumbers"
+    },
+    {
+      "class": "odfixture.MathUtilTest",
+      "method": "squaresANumber"
+    },
+    {
+      "class": "odfixture.DualFailurePolluterTest",
+      "method": "setState"
+    },
+    {
+      "class": "odfixture.FeaturePolluterTest",
+      "method": "enableTurbo"
+    },
+    {
+      "class": "odfixture.NegativeFlakyTest",
+      "method": "sometimesFails"
+    },
+    {
+      "class": "odfixture.NegativeAloneFailTest",
+      "method": "alwaysFails"
+    },
+    {
+      "class": "odfixture.EnvDependentNegativeTest",
+      "method": "onlyFailsUnderCI"
+    },
+    {
+      "class": "odfixture.ToggleVictimTest",
+      "method": "expectsNotBothFlagsSet"
+    },
+    {
+      "class": "odfixture.ZzzLatePolluterTest",
+      "method": "setLateFlag"
+    },
+    {
+      "class": "odfixture.StringUtilTest",
+      "method": "reversesAString"
+    },
+    {
+      "class": "odfixture.StringUtilTest",
+      "method": "detectsPalindrome"
+    },
+    {
+      "class": "odfixture.AlwaysEarlyVictimTest",
+      "method": "expectsLateFlagUnset"
+    }
+  ],
+  "reduced_sequence": [
+    {
+      "class": "odfixture.ZzzLatePolluterTest",
+      "method": "setLateFlag"
+    },
+    {
+      "class": "odfixture.AlwaysEarlyVictimTest",
+      "method": "expectsLateFlagUnset"
+    }
+  ],
+  "reproduction": {
+    "n": 20,
+    "passed": 0,
+    "matched": 20,
+    "other": 0,
+    "infra": 0,
+    "confidence": 0.95,
+    "lower": 0.83887484172924,
+    "upper": 1.0
+  },
+  "victim_alone": {
+    "n": 20,
+    "passed": 20,
+    "matched": 0,
+    "other": 0,
+    "infra": 0,
+    "confidence": 0.95,
+    "lower": 0.0,
+    "upper": 0.16112515827076002
+  },
+  "shared_resource": {
+    "kind": "static-field",
+    "class": "odfixture.LateFlag",
+    "field": "isSet"
+  },
+  "polluter_write_location": {
+    "class": "odfixture.ZzzLatePolluterTest",
+    "method": "setLateFlag",
+    "bytecode_offset": 1
+  },
+  "victim_read_location": {
+    "class": "odfixture.AlwaysEarlyVictimTest",
+    "method": "expectsLateFlagUnset",
+    "bytecode_offset": 0
+  },
+  "resource_edges": [
+    {
+      "shared_resource": {
+        "kind": "static-field",
+        "class": "odfixture.LateFlag",
+        "field": "isSet"
+      },
+      "polluter_write_location": {
+        "class": "odfixture.ZzzLatePolluterTest",
+        "method": "setLateFlag",
+        "bytecode_offset": 1
+      },
+      "victim_read_location": {
+        "class": "odfixture.AlwaysEarlyVictimTest",
+        "method": "expectsLateFlagUnset",
+        "bytecode_offset": 0
+      },
+      "depth": 1
+    }
+  ],
+  "failure_signature": {
+    "exception_type": "java.lang.AssertionError",
+    "message": "",
+    "stack_trace": "org.junit.Assert.fail:87\norg.junit.Assert.assertTrue:42\norg.junit.Assert.assertFalse:65\norg.junit.Assert.assertFalse:75\nodfixture.AlwaysEarlyVictimTest.expectsLateFlagUnset:15"
+  },
+  "instrumentation_level": "static-only",
+  "execution_record_reference": "record.jsonl",
+  "source_integrity": {
+    "passed": true,
+    "details": "copy: 26 files hashed (SHA-256) before and after; all identical; original project: 26 files hashed (SHA-256) before and after; all identical"
+  },
+  "outcome": "VERIFIED",
+  "unresolved_reason": null,
+  "candidate_reasons": [],
+  "limitations": [
+    "instrumentation_level is static-only; runtime instrumentation is not built.",
+    "Static analysis only; no runtime evidence (Iteration 2).",
+    "Calls into JDK classes and third-party jars are not followed.",
+    "Virtual dispatch to subclasses and reflection are not resolved (see VIRTUAL_DISPATCH, REFLECTION).",
+    "Only static fields and constant-key system properties are modelled. Files, environment variables, network, databases, singletons reached through instance fields, etc. are not.",
+    "Written values are not modelled: a polluter that writes and then restores the original value still produces a WRITE.",
+    "Execution timing is not modelled (e.g. a victim <clinit> read that happens before the polluter runs).",
+    "Missing evidence is not proof of independence.",
+    "Deletion check from the alone runs (ADR-011 section 2): without its one polluter the victim passed 20 of 20 runs alone."
+  ],
+  "deletion_checks": [
+    {
+      "removed": {
+        "class": "odfixture.ZzzLatePolluterTest",
+        "method": "setLateFlag"
+      },
+      "runs": {
+        "n": 20,
+        "passed": 20,
+        "matched": 0,
+        "other": 0,
+        "infra": 0
+      },
+      "status": "NEEDED",
+      "source": "alone-check",
+      "round": 1
+    }
+  ],
+  "assurance": {
+    "sequence": {
+      "reproduces": "ESTABLISHED",
+      "passes_alone": "ESTABLISHED",
+      "deletion": "DELETION_VERIFIED"
+    },
+    "resource": {
+      "level": "STATIC_OVERLAP",
+      "mechanism": "NOT_ASSESSED"
+    }
+  },
+  "order_exploration": {
+    "order_given": false,
+    "shuffled_orders_tried": 7,
+    "orders_exhausted": false,
+    "seed_base": 0,
+    "reproducing_seed": 6,
+    "infrastructure_failures": 0
+  },
+  "budget": {
+    "limit_invocations": null,
+    "limit_seconds": null,
+    "reserve_invocations": 60,
+    "spent": {
+      "reproduce": 20,
+      "shuffle": 64,
+      "alone": 20,
+      "search": 22,
+      "minimise": 0,
+      "deletion": 0,
+      "verify": 40
+    },
+    "launches": 78,
+    "wall_seconds": 24.467,
+    "analysis_seconds": null,
+    "policy": "original",
+    "exhausted": false,
+    "exhausted_phase": null,
+    "candidates": {
+      "total": 13,
+      "tried": 11
+    }
+  }
+}

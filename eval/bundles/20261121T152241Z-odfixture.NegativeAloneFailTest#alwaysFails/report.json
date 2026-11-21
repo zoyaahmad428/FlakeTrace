@@ -1,0 +1,134 @@
+{
+  "schema_version": 2,
+  "victim": {
+    "class": "odfixture.NegativeAloneFailTest",
+    "method": "alwaysFails"
+  },
+  "polluters": [],
+  "original_failing_order": [
+    {
+      "class": "odfixture.AlwaysEarlyVictimTest",
+      "method": "expectsLateFlagUnset"
+    },
+    {
+      "class": "odfixture.ConfigPolluterTest",
+      "method": "pollute"
+    },
+    {
+      "class": "odfixture.ConfigVictimTest",
+      "method": "expectsDefaultMode"
+    },
+    {
+      "class": "odfixture.DualFailurePolluterTest",
+      "method": "setState"
+    },
+    {
+      "class": "odfixture.DualFailureVictimTest",
+      "method": "expectsStateTwo"
+    },
+    {
+      "class": "odfixture.EnvDependentNegativeTest",
+      "method": "onlyFailsUnderCI"
+    },
+    {
+      "class": "odfixture.FeaturePolluterTest",
+      "method": "enableTurbo"
+    },
+    {
+      "class": "odfixture.FeatureVictimTest",
+      "method": "expectsTurboDisabled"
+    },
+    {
+      "class": "odfixture.MathUtilTest",
+      "method": "squaresANumber"
+    },
+    {
+      "class": "odfixture.MathUtilTest",
+      "method": "addsTwoNumbers"
+    },
+    {
+      "class": "odfixture.NegativeAloneFailTest",
+      "method": "alwaysFails"
+    }
+  ],
+  "reduced_sequence": [
+    {
+      "class": "odfixture.NegativeAloneFailTest",
+      "method": "alwaysFails"
+    }
+  ],
+  "reproduction": {
+    "n": 20,
+    "passed": 0,
+    "matched": 20,
+    "other": 0,
+    "infra": 0,
+    "confidence": 0.95,
+    "lower": 0.83887484172924,
+    "upper": 1.0
+  },
+  "victim_alone": {
+    "n": 20,
+    "passed": 0,
+    "matched": 20,
+    "other": 0,
+    "infra": 0,
+    "confidence": 0.95,
+    "lower": 0.83887484172924,
+    "upper": 1.0
+  },
+  "shared_resource": null,
+  "polluter_write_location": null,
+  "victim_read_location": null,
+  "resource_edges": [],
+  "failure_signature": {
+    "exception_type": "java.lang.AssertionError",
+    "message": "expected:<<N>> but was:<<N>>",
+    "stack_trace": "org.junit.Assert.fail:89\norg.junit.Assert.failNotEquals:835\norg.junit.Assert.assertEquals:647\norg.junit.Assert.assertEquals:633\nodfixture.NegativeAloneFailTest.alwaysFails:10"
+  },
+  "instrumentation_level": "static-only",
+  "execution_record_reference": "record.jsonl",
+  "source_integrity": {
+    "passed": true,
+    "details": "copy: 26 files hashed (SHA-256) before and after; all identical; original project: 26 files hashed (SHA-256) before and after; all identical"
+  },
+  "outcome": "UNRESOLVED",
+  "unresolved_reason": "VICTIM_FAILS_ALONE",
+  "candidate_reasons": [],
+  "limitations": [
+    "instrumentation_level is static-only; runtime instrumentation is not built."
+  ],
+  "deletion_checks": [],
+  "order_exploration": {
+    "order_given": false,
+    "shuffled_orders_tried": 0,
+    "orders_exhausted": false,
+    "seed_base": 0,
+    "reproducing_seed": null,
+    "infrastructure_failures": 0
+  },
+  "budget": {
+    "limit_invocations": null,
+    "limit_seconds": null,
+    "reserve_invocations": 60,
+    "spent": {
+      "reproduce": 11,
+      "shuffle": 0,
+      "alone": 20,
+      "search": 0,
+      "minimise": 0,
+      "deletion": 0,
+      "verify": 0
+    },
+    "launches": 21,
+    "wall_seconds": 7.16,
+    "analysis_seconds": null,
+    "policy": "original",
+    "exhausted": false,
+    "exhausted_phase": null,
+    "candidates": {
+      "total": 10,
+      "tried": 0
+    }
+  }
+}
