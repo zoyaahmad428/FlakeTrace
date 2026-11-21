@@ -11,6 +11,8 @@ for the schema validator's `jsonschema` dependency.
 | `outcome.py` | `decide()` — the 13-row VERIFIED/CANDIDATE/UNRESOLVED decision table (ADR-010), including the deletion-evidence claim S3 (ADR-011). |
 | `report.py` | `assemble_report()` — joins Member 2's raw tallies and Member 1's resource-edge data into one schema-v2-validated report; decides nothing itself, calls `outcome.decide()`. |
 | `schema_validator.py` | Validates a report dict/file against the schema. |
+| `bundle.py` | `verify_bundle()` — the ADR-013/Interface 8 evidence bundle (W23), M3's half: the runner writes and replays bundles (`runner/bundle.py`, `runner/replay.py`, M2); this reads one and independently recounts every tally from `record.jsonl` alone and re-decides, never trusting the runner's own numbers. `python -m eval.bundle verify <bundle-folder>`. |
+| `bundles/` | Real, committed bundles (ADR-013 §4) — see `eval/bundles/README.md`. Replaces `eval/reports/*.json`'s absolute-path limitation, one case at a time. |
 | `examples/` | Hand-written example reports, one per decision-table row. Not results. |
 | `benchmark/manifest.json` | Frozen case list (F1-F3, N1-N2, plus one real POC case with a pinned SHA) — see status below. |
 | `benchmark/yield_report.py` | Generates the attempted→built→victim-passes-alone→reproduced→excluded funnel from `benchmark/logs/`, never from hand-typed numbers. |
