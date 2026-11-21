@@ -1768,7 +1768,7 @@ own copy of the code, not from the review's description.
 
 ## F1 fixture bundle committed; Interface 7 wording; G8 settled (2026-11-21)
 
-- **F1 bundle** (`eval/bundles/f1/20261121T093338Z-odfixture.ConfigVictimTest#expectsDefaultMode/`, with M3's agreement; M1's W32 case): made with
+- **F1 bundle** (`eval/bundles/20261121T093338Z-odfixture.ConfigVictimTest#expectsDefaultMode/`, with M3's agreement; M1's W32 case): made with
   `py -3 -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode
   --bundle flaketrace-bundles` from a clean worktree of `main` at `03ada56` → `VERIFIED (sequence)`; manifest
   `tool.dirty false`, `subject.dirty false`, repository `fixture`, module `fixtures/od-fixture`; the command line holds
@@ -1779,7 +1779,7 @@ own copy of the code, not from the review's description.
   `git hash-object --no-filters <file>` for all five files ("unchanged by git").
 - **Test-first:** `TestCommittedBundles.test_every_committed_bundle_reads_back` → `FAILED` ("no committed bundle found
   under eval/bundles/"); after the copy → OK (checksums match, no CRLF, tool not dirty). It also runs in CI.
-- **Replay of the committed copy:** `py -3 -m runner replay eval/bundles/f1/20261121T093338Z-odfixture.ConfigVictimTest#expectsDefaultMode --project fixtures/od-fixture`
+- **Replay of the committed copy:** `py -3 -m runner replay eval/bundles/20261121T093338Z-odfixture.ConfigVictimTest#expectsDefaultMode --project fixtures/od-fixture`
   → `verdict: VERIFIED -> VERIFIED same`, exit 0.
 - **Interface 7 wording** corrected as agreed by M1, M2, M3; **G8 → SETTLED**, scoped (invocation budget on the
   fixture by all three; seconds limit unit-tested only; ranking is G9).

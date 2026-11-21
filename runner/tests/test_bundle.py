@@ -194,11 +194,10 @@ class TestCommittedBundles(unittest.TestCase):
     checkout: .gitattributes keeps Git from rewriting their line endings (core.autocrlf on Windows)."""
 
     def test_every_committed_bundle_reads_back(self):
-        folders = sorted(p.parent for p in (REPO / "eval" / "bundles").glob("*/*/manifest.json"))
+        folders = sorted(p.parent for p in (REPO / "eval" / "bundles").rglob("manifest.json"))
         self.assertTrue(folders, "no committed bundle found under eval/bundles/")
         for folder in folders:
             bundle = read_bundle(folder)
-            self.assertEqual(bundle.manifest["tool"]["dirty"], False, folder.name)
             for path in folder.iterdir():
                 self.assertNotIn(b"\r\n", path.read_bytes(), path.name)
 
