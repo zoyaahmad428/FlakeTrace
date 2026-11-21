@@ -1185,3 +1185,51 @@ The probe script is not committed; it lived only in `%TEMP%`. Its code is the
 
 **Limitation:** my check used fixture-free classes and two candidates only. It shows the rules
 work; it says nothing about whether ranking saves runs (M3's measurement).
+
+## W24 verification: ADR-014 evidence item 2 on my own machine (2026-11-20)
+
+**Requirement:** FT007 / ADR-014 / Interface 6, step 4: "M1 reproduces item 2 (a budget too
+small to finish gives `UNRESOLVED(BUDGET_EXHAUSTED)` with an account) on their own machine". G8
+was left `OPEN` pending this. Run by me on my own laptop (Windows 11, Oracle JDK 25.0.1, Maven
+3.9.9, Python 3.11.9), on `main` at `9a6392f`, defaults (`--policy original`, `class-grouped`,
+`--workspace copy`). Victim F2, `odfixture.FeatureVictimTest#expectsTurboDisabled`.
+
+M3 used a limit of 72, two above the minimum ([[evidence-m3]]). I used the two boundary values,
+69 and exactly 70, so the two runs check different points.
+
+- **Below the minimum, `--budget-invocations 69`:** `error: an invocation limit of 69 is below the
+  minimum 70 for n=20: the verification reserve 60, one run of the starting order (8 tests) and
+  one candidate pair` → `exit 2`. No run was started.
+- **At the minimum, `--budget-invocations 70`:**
+  - `UNRESOLVED (BUDGET_EXHAUSTED)`, `reproduced: 1/1 (lower bound 0.207)`, `alone (same
+    failure): 0/20, other failure: 0/20`, `search: original order`;
+  - `budget: spent 30 of 70 invocations (reserve 60); search tried 1 of 7 candidates; stopped in
+    search` → **`exit 0`**, with a report. M2's run of the same command before M3's half merged
+    gave exit 3 and no report.
+  - The report: `outcome UNRESOLVED`, `unresolved_reason BUDGET_EXHAUSTED`, `candidate_reasons
+    []`, and `budget`:
+    - `limit_invocations 70`, `limit_seconds null`, `reserve_invocations 60`;
+    - `spent {reproduce 8, shuffle 0, alone 20, search 2, minimise 0, deletion 0, verify 0}`;
+    - `launches 22`, `wall_seconds 5.0`, `analysis_seconds null`, `policy original`;
+    - `exhausted true`, `exhausted_phase search`, `candidates {total 7, tried 1}`.
+  - Record lines: `header 1, reproduce 1, alone 20, ranking 1, search 1, budget-stop 1`.
+- **No limit (comparison):** `VERIFIED (sequence)`, polluter `FeaturePolluterTest#enableTurbo`,
+  static-overlap line, `reproduced: 20/20`, `budget: spent 82 invocations, no limit (reserve 60);
+  search tried 7 of 7 candidates` → `exit 0`. These are the same 82 and 7 of 7 that M2 and M3
+  recorded.
+- **Source:** `git status --short` after the runs showed no change under `fixtures/`.
+
+**The arithmetic checks out.** With a limit of 70 and a reserve of 60, exploration may spend 10:
+the reproduce run of the starting order (8) and one candidate pair (2). That is exactly what was
+spent (8 + 2), plus the alone check (20), which comes out of the reserve. The next pair would have
+crossed the limit, so it was refused and recorded as `budget-stop`. This also shows ADR-014's
+item 1 (a limit stops the run before it is crossed) in a real run, although item 1 is M2's.
+
+**Result:** item 2 reproduced independently at the boundary. It agrees with M3's run at 72 (spent
+32, 2 of 7 tried): each extra pair the limit allows costs 2 invocations.
+
+**Limitations:**
+- Only `--budget-invocations`, only F2, only `--policy original`. `--budget-seconds` was not run.
+- I did not run the schema validator on my report. M3 validated hers.
+- Item 3 (the reserve holds when the search is exhausted) is M2's and was not re-run by me,
+  although the alone check (20) ran in full here.
