@@ -90,3 +90,31 @@ py -m unittest -v evidence.tests.test_extract
 CI (`.github/workflows/ci.yml`) runs the three test suites on every pull request, on Linux with
 JDK 8 and Python 3.11. The `diagnose` command writes its execution record and report to
 `flaketrace-records/` (git-ignored).
+
+## Reproduce in a container (W27)
+
+The `Dockerfile` at the repo root pins the exact toolchain a diagnosis needs (Maven 3.9.9,
+Temurin JDK 8, Python 3) so a fixture diagnosis reproduces on any machine with Docker, not just
+one with the right versions already on `PATH`. It does not implement the full sandbox profile in
+[docs/02-Requirements/non-functional.md](docs/02-Requirements/non-functional.md) (rootless,
+network-disabled, resource limits) — that is a later target; this image is for reproducibility,
+not isolation.
+
+Build once, then run the same fixture diagnosis as above, entirely inside the container:
+
+```bash
+docker build -t flaketrace:w27 .
+docker run --rm -v "$(pwd)/flaketrace-bundles:/flaketrace/flaketrace-bundles" \
+  flaketrace:w27 diagnose --project fixtures/od-fixture \
+  --victim odfixture.ConfigVictimTest#expectsDefaultMode --bundle flaketrace-bundles
+```
+
+On Windows, Git Bash's automatic path conversion mangles the `-v host:container` volume
+argument — use a native Windows path on the host side instead:
+
+```
+docker run --rm -v "C:\path\to\FlakeTrace\flaketrace-bundles:/flaketrace/flaketrace-bundles" flaketrace:w27 diagnose --project fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode --bundle flaketrace-bundles
+```
+
+The bundle lands in `flaketrace-bundles/` on the host either way; check it with
+`python -m eval.bundle verify flaketrace-bundles/<folder>`.

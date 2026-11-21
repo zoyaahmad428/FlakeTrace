@@ -208,6 +208,8 @@ mvn -B -q -f evidence/tests/resources/ft005-controls/pom.xml test-compile
 python3 -m unittest -v evidence.tests.test_extract       # needs the two compiles above and javap
 python3 -m unittest -v ui.tests.test_server               # one real F1 run needs JDK 8+ and Maven
 (cd ui/web && npm ci && npm test && npm run build)        # needs Node.js 20+
+docker build -t flaketrace:w27 .                           # W27: pinned Maven 3.9.9 + Temurin JDK 8 + Python
+docker run --rm -v "$(pwd)/flaketrace-bundles:/flaketrace/flaketrace-bundles" flaketrace:w27 diagnose --project fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode --bundle flaketrace-bundles
 ```
 
 CI runs exactly what is in `.github/workflows/ci.yml`. If you add tests, add them there.
