@@ -20,6 +20,8 @@ component is refused outright (`runner.bundle.assert_clean`), not written with a
 real, already-documented limitation: `eval/reports/*.json`'s `execution_record_reference` was
 an absolute, machine-specific path (see `eval/reports/README.md`'s "Known limitation").
 
+**Line endings.** `.gitattributes` marks `eval/bundles/**` as `-text`: Git must never turn a bundle's LF into CRLF (`core.autocrlf` on Windows), or every checksum fails. `runner/tests/test_bundle.py` reads every committed bundle back.
+
 ## Making and checking a bundle
 
 ```
@@ -43,6 +45,7 @@ summary.
 | Bundle | Case | Real result | How it was made |
 | --- | --- | --- | --- |
 | `20261121T094724Z-odfixture.ConfigVictimTest#expectsDefaultMode/` | F1 | `VERIFIED` (20/20 reproduced, 0/20 alone) | `python -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode --bundle eval/bundles`, real JDK 8/Maven. Verified clean: `python -m eval.bundle verify` exits 0, zero occurrences of the machine username in any of the 5 files. Also used to confirm the checker independently catches a tamper: changing `reproduction.matched` in a copy was caught immediately by `read_bundle`'s own checksum check, exit 1 |
+| `20261121T093338Z-odfixture.ConfigVictimTest#expectsDefaultMode/` | F1 | `VERIFIED` (20/20 reproduced, 0/20 alone) | Added by M2 with M3's agreement (the W32 practitioner case): the same command, from a clean checkout of `main` at `03ada56`, so `tool.dirty` is `false` (the one above was made from a working copy with uncommitted changes, `tool.dirty: true`); JDK 21. `python -m runner replay` on it → `VERIFIED -> VERIFIED same`, exit 0 |
 
 **Not yet done**: F2–F4 and N1–N4 are not bundled yet, and `eval/reports/*.json` has not been
 replaced — the next step, not part of W23's own "done when" (ADR-013's tests, and one

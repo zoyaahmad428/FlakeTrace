@@ -1227,3 +1227,13 @@ the unchecksummed manifest. **What I changed:** *to fill in.*
 
 Ownership checkpoint: why the user name is matched only as a path part; why replay reads `n` from the record; why
 "same" needs the same polluters.
+
+## 2026-11-21 — F1 bundle, Interface 7 wording, G8
+
+**Tool:** Claude Code (Claude Opus 5.5) · **Level:** L2 · **Branch:** `m2/interface7-g8-bundle`
+
+**Asked:** act on M1's #144/#145 and her message. **Kept:** G8 settled only with its scope; the bundle made from a
+clean checkout and with relative folders. **Found:** `core.autocrlf` would have broken every committed bundle's
+checksum; `.gitattributes` added and a test that reads every committed bundle back. **What I changed:** *to fill in.*
+
+Ownership checkpoint: why a committed bundle needs `-text`; why G8 is scoped.

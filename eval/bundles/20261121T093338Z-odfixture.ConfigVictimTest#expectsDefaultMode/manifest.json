@@ -1,0 +1,58 @@
+{
+  "bundle_version": 1,
+  "kind": "diagnosis",
+  "tool": {
+    "commit": "03ada56a77e7939fc2de493e3cb50d62c18aebc1",
+    "dirty": false
+  },
+  "subject": {
+    "repository": "fixture",
+    "commit": "03ada56a77e7939fc2de493e3cb50d62c18aebc1",
+    "dirty": false,
+    "module_path": "fixtures/od-fixture"
+  },
+  "victim": "odfixture.ConfigVictimTest#expectsDefaultMode",
+  "command": [
+    "diagnose",
+    "--project",
+    "fixtures/od-fixture",
+    "--victim",
+    "odfixture.ConfigVictimTest#expectsDefaultMode",
+    "--bundle",
+    "flaketrace-bundles"
+  ],
+  "parameters": {
+    "n": 20,
+    "shuffles": 31,
+    "seed": 0,
+    "budget": {
+      "limit_invocations": null,
+      "limit_seconds": null
+    },
+    "policy": "original",
+    "scope": "module",
+    "lifecycle": "class-grouped",
+    "workspace": "copy"
+  },
+  "environment": {
+    "os": "Windows-11-10.0.26300-SP0",
+    "jdk": "21.0.9",
+    "maven": "3.10.0",
+    "junit": "4.13.2",
+    "python": "3.14.0",
+    "timezone": "Asia/Karachi",
+    "locale": "en_US",
+    "encoding": "UTF-8",
+    "container_image": null
+  },
+  "reset_assumptions": "Reset between orders: JVM state only: static fields, system properties, loaded classes, threads. Not reset: Files anywhere, the working directory, environment variables, network and external services, the system clock and timezone.",
+  "fresh_run": true,
+  "run_date": "2026-11-21",
+  "replay_of": null,
+  "files": {
+    "report.json": "ed01b9b0b696444a9ef0dbad5fb26365ce0e28b66aff7435002088a00ef27c9b",
+    "record.jsonl": "683b935a64c020269521e267051ab1d48b795fb1b58763cf280d5860fa307481",
+    "replay.md": "62e29e735d691a27e247f493f936b74adfcf0e80178fe5d4184b2731c414710e",
+    "environment.txt": "24fbc244ba3ca31cdff092397d73f0fd84bd8a1d2d2c0420e6cfac1ec4117e6a"
+  }
+}

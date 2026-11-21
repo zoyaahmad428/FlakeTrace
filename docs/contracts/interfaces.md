@@ -357,7 +357,9 @@ SearchPolicy(
 
 - The report gains `search_policy` with the fields above (a schema bump M3 proposes in
   [report-schema.md](report-schema.md)). A `note` is also added to `limitations`.
-- The verdict never depends on the policy: the same evidence gives the same `decide()` input.
+- Every step after the candidate order is identical; with several single polluters, the first one found may
+  differ (and so the blamed test). *Corrected 2026-11-21, agreed by M1, M2 and M3: it said "the verdict never
+  depends on the policy", which W25's review showed false when more than one test pollutes alone.*
 - Wording (claims ledger G3): a higher rank orders the search; it never says what caused a failure.
   `reasons` stay out of the report; they are in the record line.
 
