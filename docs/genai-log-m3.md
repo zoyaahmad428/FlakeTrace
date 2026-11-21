@@ -1542,3 +1542,98 @@ and why that is a *better* design than the first version, not a downgrade — on
 the format has exactly one place in code that can drift from the contract, and `verify_bundle`
 staying a pure reader is what makes it credible as an independent check in the first place (a
 checker that can also write the thing it checks is not independent).
+
+## 2026-11-21 — pulling main, answering two teammates, writing W32's task
+
+**What I did without being told step by step:** the member relayed two real messages from M2
+and M1, each with several items mixed together (status updates, a question, requests). Sorted
+them before acting: some needed no action (G8 was already settled by the time I checked --
+both messages' questions about it were already moot), one needed a real engineering decision
+(keep or remove a duplicate bundle), one was a direct, explicit ask with a deadline implication
+("I still need your acceptance task, written before any session") that I just did rather than
+acknowledging and deferring.
+
+**The duplicate-bundle decision, made and justified, not just picked:** M2 explicitly handed
+me the call ("your folder, your call"). The easy, tidy-looking answer is to delete the "dirty"
+one and keep a single clean bundle. I didn't take it — a `tool.dirty: true` bundle isn't a
+mistake to clean up, it's an honest record of what actually ran, and having the *same* verdict
+survive under two different JDKs and tool states is free corroborating evidence a reviewer
+would otherwise have to ask for. Wrote the reasoning into the README itself, not just a commit
+message, since the next person to find two F1 bundles needs to see it was a decision, not an
+oversight.
+
+**The acceptance task: designed against the real artefact, not written in the abstract.** Read
+the actual committed `report.json` and the CLI's literal source line before writing a single
+question, specifically so Q2's pass criterion ("points to the exact line or field") names text
+that genuinely exists verbatim in the product, not a paraphrase I made up that a participant
+could never actually find on screen. Made Q2 the one question that fails the whole task by
+itself if wrong — a deliberate asymmetry, because FT018 exists to catch exactly one failure
+mode (a practitioner reading `VERIFIED` as proof of cause), and a task that let two easy
+questions outvote that one would defeat its own purpose.
+
+**What I verified rather than assumed:** re-ran `eval.bundle verify` against both committed
+bundles only after actually pulling `main` locally — not from reading the diff, since a
+checker claiming to check a writer it has never actually been run against proves nothing. Both
+exited 0 for real, which is the first time this session the two halves of Interface 8 have
+checked each other without me controlling both sides.
+
+**What I deliberately left alone:** M2's own "The case" section of `practitioner-check.md` is
+still unwritten even though his bundle exists; I flagged it rather than filling it in myself —
+it's recorded against his name in the protocol, and the honest-ownership rule in root
+`CLAUDE.md` matters more here than finishing the document for him.
+
+Ownership checkpoint: be able to explain why Q2 of the acceptance task is weighted the way it
+is — not "all three questions matter equally" but "this one question is the actual thing FT018
+is for," and why that asymmetry has to be decided and written down *before* the session, not
+noticed afterward while scoring it.
+
+## 2026-11-21 — W25 measurement, and a four-hour bug of my own making
+
+**What happened, honestly:** built a one-off script to run the product's real
+`rank_candidates` against all 524 real FJ-03 candidates (ADR-014 evidence item 5). It hung for
+almost four hours. I did not just wait blindly — checked the process's actual CPU time against
+wall-clock time repeatedly to confirm it was genuinely busy, not stuck, investigated OneDrive
+and Windows Defender as plausible causes of slowness, and only found the real cause by doing
+the arithmetic properly: timed one real candidate analysis in isolation (about two seconds) and
+multiplied by 524 — the four hours did not remotely match that, which is what actually forced
+me to go looking for a bug in my own code rather than accepting "JVM spawns are just slow" as
+the explanation. The bug: my script auto-discovered the FlakeTrace repo root by walking up from
+its own directory, which lived in a scratch folder *outside* the repo entirely — the walk-up
+hit the drive root and spun forever, since `Path("C:\\").parent == Path("C:\\")`. The entire
+first run, start to finish, did zero real analysis.
+
+**What I told the user, and when:** as soon as I'd confirmed it with real evidence (the timing
+math, not a hunch), not before and not after sitting on it. Also told them plainly that the
+~4 hours of waiting was my own mistake, not an unavoidably slow computation — the honest
+account, not a softened one.
+
+**What I verified before trusting the fix:** ran the corrected version on a single real
+candidate first and confirmed the timing matched my own prediction (~2s) before committing to
+the full 524-candidate run again. Only let the full run proceed once the arithmetic actually
+closed.
+
+**A design choice under real time pressure:** added progress logging (flushed every 10
+candidates) specifically so this class of problem — real work that happens to be slow vs. a
+hang — would be distinguishable without another multi-hour guessing game. Structured the fixed
+version to warm the `AnalysisCache` with a plain loop (so I control the progress printing) and
+then call the real, unmodified `rank_candidates` on the warm cache for the actual scoring —
+deliberately avoided reimplementing `rank_candidates`'s own scoring/sorting logic by hand a
+second time, which would have risked a silent, undetected drift from the product's real
+behaviour just to get a progress bar.
+
+**What I did once the real numbers came back:** reported FJ-03's real result exactly as it
+came out — zero evidence found, ranking changed nothing — rather than treating a "ranking
+didn't help" result as a disappointment to soften. Then, before writing anything up, checked
+whether M2 had already run the fixture-level comparison for real (he had, on F2) and
+independently re-ran it myself rather than just citing his number — it matched exactly, which
+is real corroboration, not an assumption that his report was correct. Ran F1, F3 and F4 myself
+too, since item 4 asks for "the fixture," not one case, and F3's result (zero saving, because
+`ddmin` dominates its cost, not the search order) is exactly the kind of inconvenient real
+finding the honesty rules exist to protect — reported in full, not trimmed to the three cases
+that look good.
+
+Ownership checkpoint: be able to explain, without digging through this log, exactly why
+`Path("C:\\").parent` equals `Path("C:\\")` and why that makes a naive "walk up until you find
+the repo" loop unsafe for a script that does not actually live inside the repo — and why F3
+showing zero benefit from ranking is not a bug in the ranking rule, but a correct consequence
+of where F3's cost actually comes from (`ddmin`, not the pair search).

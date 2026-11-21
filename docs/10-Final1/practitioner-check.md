@@ -1,8 +1,10 @@
 # W32 — Java/Maven practitioner workflow check (FT018)
 
 *v1 · 2026-11-20 · Status: `DRAFT PROTOCOL` by M1. **No practitioner has been contacted and no
-session has been held.** The case (M2) and the acceptance task (M3) are still to be supplied;
-their places are marked below. Verifier: M3 ([[10-Final1/iteration-2-plan]]).*
+session has been held.** **The acceptance task (M3) is supplied, 2026-11-21** (below). The
+case (M2) still needs its section filled in here, even though the clean F1 bundle for it
+already exists (`eval/bundles/20261121T093338Z-...`, [[evidence-m2]]). Verifier: M3
+([[10-Final1/iteration-2-plan]]).*
 
 ## Why this exists
 
@@ -110,15 +112,46 @@ message) and the report FlakeTrace produced for it, from a recorded run. Options
 
 **Do not show a report that was not produced by a real run.**
 
-## The acceptance task — to be supplied by M3
+## The acceptance task — supplied by M3, 2026-11-21
 
-*Not yet supplied.* It must state:
-- what the participant is asked to do with the report, for example to name the polluter, what
-  was established, and what was not;
-- the time limit;
-- the pass criteria;
+Written and fixed before any session, against the real F1 case (`eval/bundles/
+20261121T093338Z-odfixture.ConfigVictimTest#expectsDefaultMode/`, the clean checkout M2
+prepared for this). If M2 supplies FJ-03 instead, use the FJ-03 variant at the end of this
+section — the task's shape is the same either way, only Q2's exact wording changes.
 
-and must be written down before the session, so the result cannot be fitted afterwards.
+**What the participant is asked to do.** Immediately after Part 4's open discussion, with no
+further talking, show them the same report once more (on paper or the screen) and ask them to
+write short answers to three questions, unaided:
+
+1. *"Which one test would you look at first, based on this report?"*
+2. *"Does this report prove that the shared resource access is why the victim test fails?
+   Answer yes or no, and point to the exact line or field that supports your answer."*
+3. *"Before you would treat this as a confirmed bug in your own code review, what is the one
+   thing this report does not give you?"*
+
+**Time limit:** 5 minutes total (the session plan's own Part 5 allocation), no help, no going
+back to re-read the Part 4 discussion.
+
+**Pass criteria, fixed now, before the session:**
+
+| Q | Passes if | Fails if |
+| --- | --- | --- |
+| 1 | Names the test in the report's `polluters[0]` (for F1: `odfixture.ConfigPolluterTest#pollute`, the class name alone also accepted) | Names any other test, or says the report does not say |
+| 2 | Answers **No**, and points to the CLI's own line "static overlap: a possible mechanism, not confirmed as the cause" or `assurance.resource.mechanism: "NOT_ASSESSED"` | Answers "Yes", or treats the overlap as confirmed causation in any wording — **this fails the whole task regardless of Q1/Q3**, because it is the one thing FT018 actually tests: whether a real practitioner reads `VERIFIED` as proof of cause |
+| 3 | Names something in the spirit of "runtime confirmation that the write actually reached the read in this execution" / "proof the resource access is the mechanism" — any phrasing recognising that only static analysis was shown | Names something the report *does* give (the polluter's name, that it reproduces, that it passes alone) |
+
+**Overall pass/fail:** PASS requires Q2 to pass, plus at least one of Q1/Q3. Record each
+answer verbatim and each question's pass/fail in the record template below — not paraphrased,
+so the result cannot be fitted after the fact.
+
+**FJ-03 variant**, if M2's case is FJ-03 instead of F1: that real report is
+`CANDIDATE [NO_SUPPORTED_RESOURCE_EVIDENCE]` — no resource edge at all (the pollution is a JDK
+`ThreadLocal` call that static analysis does not follow, [[04-Implementation/evidence-collector]]).
+Rephrase Q2 to *"Does this report name any mechanism for why the victim fails? Answer yes or
+no, and point to what supports your answer"* (passes on **No**, citing
+`candidate_reasons: ["NO_SUPPORTED_RESOURCE_EVIDENCE"]` or the CLI's own "no resource" line).
+Same test, in both variants: whether a result short of outright proof is read as weaker than it
+is, not as a confirmed cause.
 
 ## Record template — one per session
 

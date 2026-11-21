@@ -42,10 +42,17 @@ summary.
 
 ## What's here so far
 
+**Two F1 bundles, kept deliberately, not a duplicate to clean up.** M2 asked whether to keep
+both or remove the dirty one; decided (M3, 2026-11-21) to keep both: they are the same case
+reproducing the same verdict under two different environments (JDK 8/working-copy vs.
+JDK 21/clean checkout), which is a genuine cross-check, not noise -- `tool.dirty` is accurate,
+transparently-reported metadata about which one ran, not a defect to hide. The clean one is the
+W32 practitioner case (M2's choice, below).
+
 | Bundle | Case | Real result | How it was made |
 | --- | --- | --- | --- |
-| `20261121T094724Z-odfixture.ConfigVictimTest#expectsDefaultMode/` | F1 | `VERIFIED` (20/20 reproduced, 0/20 alone) | `python -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode --bundle eval/bundles`, real JDK 8/Maven. Verified clean: `python -m eval.bundle verify` exits 0, zero occurrences of the machine username in any of the 5 files. Also used to confirm the checker independently catches a tamper: changing `reproduction.matched` in a copy was caught immediately by `read_bundle`'s own checksum check, exit 1 |
-| `20261121T093338Z-odfixture.ConfigVictimTest#expectsDefaultMode/` | F1 | `VERIFIED` (20/20 reproduced, 0/20 alone) | Added by M2 with M3's agreement (the W32 practitioner case): the same command, from a clean checkout of `main` at `03ada56`, so `tool.dirty` is `false` (the one above was made from a working copy with uncommitted changes, `tool.dirty: true`); JDK 21. `python -m runner replay` on it → `VERIFIED -> VERIFIED same`, exit 0 |
+| `20261121T093338Z-odfixture.ConfigVictimTest#expectsDefaultMode/` | F1 | `VERIFIED` (20/20 reproduced, 0/20 alone) | Added by M2 for the W32 practitioner case: `--bundle`, from a clean checkout of `main` at `03ada56` (`tool.dirty: false`), JDK 21. `python -m runner replay` on it → `VERIFIED -> VERIFIED same`, exit 0 ([[evidence-m2]]) |
+| `20261121T094724Z-odfixture.ConfigVictimTest#expectsDefaultMode/` | F1 | `VERIFIED` (20/20 reproduced, 0/20 alone) | `python -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode --bundle eval/bundles`, real JDK 8/Maven, from a working copy with uncommitted changes (`tool.dirty: true`). Verified clean: `python -m eval.bundle verify` exits 0, zero occurrences of the machine username in any of the 5 files. Also used to confirm the checker independently catches a tamper: changing `reproduction.matched` in a copy was caught immediately by `read_bundle`'s own checksum check, exit 1 |
 
 **Not yet done**: F2–F4 and N1–N4 are not bundled yet, and `eval/reports/*.json` has not been
 replaced — the next step, not part of W23's own "done when" (ADR-013's tests, and one
