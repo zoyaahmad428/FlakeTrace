@@ -1249,3 +1249,16 @@ commitments ticked only where the item exists. Plan: the duplicate W18/W19 rows 
 the row's own "Done when" is met. **What I changed:** *to fill in.*
 
 Ownership checkpoint: why nothing is `Done`; why §9 is on the agenda.
+
+## 2026-11-21 — FT021 reset-sensitive control
+
+**Tool:** Claude Code (Claude Opus 5.5), brainstorming → plan → TDD · **Level:** L2 · **Branch:** `m2/ft021-reset-control`
+
+**Asked:** build the missing FT021 control, the best way for the long run. **Kept:** a separate control project
+(the lifecycle control's Surefire run must keep passing); expectations as one table mirroring ADR-012 §1, so the
+hardened container in FYP-2 changes one row; two file locations (temp folder, working directory) because that is
+what `--workspace copy` does and does not cover; a same-JVM check so no reader passes vacuously. **Not done, on
+purpose:** detecting leftover state during a diagnosis (needs the filesystem family, FYP-2). **What I changed:**
+*to fill in.*
+
+Ownership checkpoint: why a new JVM resets statics but not files; what `--workspace copy` does not protect.
