@@ -2434,3 +2434,48 @@ file; the mismatch was in what the two halves assumed about each other's shape.
   current.
 - **Still open:** F2-F4/N1-N4 not bundled; `eval/reports/*.json` not replaced; M1's independent
   reproduction of a real bundle (ADR-013 section 5) has not happened.
+
+## 2026-11-21 — merged, confirmed on `main`; two team questions settled; W32 task written
+
+**Requirement:** PR #146 landed, M2 merged a follow-up (PR #147) fixing a real Windows CRLF
+checksum failure and adding a second F1 bundle; both M2 and M1 sent questions/requests that
+needed a real answer, not just acknowledgement.
+
+- **Confirmed on `main` (pulled, 682984d):** `python -m eval.bundle verify` on both committed
+  bundles (`eval/bundles/20261121T093338Z-.../` M2's clean one, `.../20261121T094724Z-.../`
+  mine) -> real exit 0 on both, against the real merged `runner.bundle.read_bundle`. This is
+  the first time the writer (M2) and the checker (M3) have confirmed each other on bundles
+  neither of us tampered with in the same session -- the actual point of Interface 8. Full
+  suite: `python3 -m unittest discover -s eval/tests` -> **146 tests, OK**.
+- **M2's question: keep both F1 bundles, or remove mine and keep only his clean one?**
+  Decided: **keep both.** They reproduce the identical verdict (`VERIFIED`, 20/20, 0/20 alone)
+  under two different environments -- JDK 8 from a working copy with uncommitted changes
+  (`tool.dirty: true`) vs. JDK 21 from a clean checkout of `main` (`tool.dirty: false`) -- which
+  is a genuine cross-environment check, not noise to clean up. `tool.dirty` is accurate,
+  transparently-reported metadata about which one ran; removing the dirty one would not make
+  the evidence stronger, it would just give up that cross-check. Recorded the reasoning in
+  `eval/bundles/README.md` so it reads as a decision, not an open question, for anyone who
+  finds two F1 bundles later.
+- **G7 and G8 (claims ledger):** G8 was already `SETTLED` (by M1, M2 and M3, with the scope
+  M2's PR fixed) by the time I checked -- nothing further needed from me there, despite both
+  M1's and M2's messages asking about it; the team had already agreed it before I read the
+  messages. Updated G7 to reflect what actually merged: writer, replay and recount all built
+  and confirming each other on real bundles, still `OPEN` only on M1's independent
+  reproduction, which is in progress.
+- **W32's acceptance task, supplied (M1 explicitly asked for this before any session runs):**
+  three written questions against the real, committed F1 report, read directly from its own
+  `report.json`/CLI text (not invented wording) -- which test, whether the resource overlap is
+  being read as proof of cause (the one question that fails the whole task on its own if
+  wrong, since that is exactly what FT018 is testing), and what the report withholds. Fixed
+  pass criteria, a 5-minute limit matching the session plan's own allocation, and a named FJ-03
+  variant in case M2's case choice changes. Written into
+  `docs/10-Final1/practitioner-check.md` directly, not drafted elsewhere first.
+- **FJ-03 "ranked = original" note for W25/W26b:** M1's PR #145 already found and documented
+  this (the pollution is a JDK `ThreadLocal` call static analysis does not follow, so there is
+  no edge to rank by -- not a ranking defect). Recorded a pointer to it in the W25 row of
+  `docs/10-Final1/iteration-2-plan.md` so my own future measurement work reports it correctly
+  ("ranked = original, no edge found") on the first attempt, not after re-discovering what M1
+  already found.
+- **Not done by me:** M2's own "The case" section of `practitioner-check.md` is still a
+  placeholder -- he made the real clean F1 bundle for it, but hasn't filled in that section of
+  the protocol itself; flagged for him rather than filled in on his behalf (his folder).

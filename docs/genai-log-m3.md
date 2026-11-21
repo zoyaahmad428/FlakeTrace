@@ -1542,3 +1542,47 @@ and why that is a *better* design than the first version, not a downgrade — on
 the format has exactly one place in code that can drift from the contract, and `verify_bundle`
 staying a pure reader is what makes it credible as an independent check in the first place (a
 checker that can also write the thing it checks is not independent).
+
+## 2026-11-21 — pulling main, answering two teammates, writing W32's task
+
+**What I did without being told step by step:** the member relayed two real messages from M2
+and M1, each with several items mixed together (status updates, a question, requests). Sorted
+them before acting: some needed no action (G8 was already settled by the time I checked --
+both messages' questions about it were already moot), one needed a real engineering decision
+(keep or remove a duplicate bundle), one was a direct, explicit ask with a deadline implication
+("I still need your acceptance task, written before any session") that I just did rather than
+acknowledging and deferring.
+
+**The duplicate-bundle decision, made and justified, not just picked:** M2 explicitly handed
+me the call ("your folder, your call"). The easy, tidy-looking answer is to delete the "dirty"
+one and keep a single clean bundle. I didn't take it — a `tool.dirty: true` bundle isn't a
+mistake to clean up, it's an honest record of what actually ran, and having the *same* verdict
+survive under two different JDKs and tool states is free corroborating evidence a reviewer
+would otherwise have to ask for. Wrote the reasoning into the README itself, not just a commit
+message, since the next person to find two F1 bundles needs to see it was a decision, not an
+oversight.
+
+**The acceptance task: designed against the real artefact, not written in the abstract.** Read
+the actual committed `report.json` and the CLI's literal source line before writing a single
+question, specifically so Q2's pass criterion ("points to the exact line or field") names text
+that genuinely exists verbatim in the product, not a paraphrase I made up that a participant
+could never actually find on screen. Made Q2 the one question that fails the whole task by
+itself if wrong — a deliberate asymmetry, because FT018 exists to catch exactly one failure
+mode (a practitioner reading `VERIFIED` as proof of cause), and a task that let two easy
+questions outvote that one would defeat its own purpose.
+
+**What I verified rather than assumed:** re-ran `eval.bundle verify` against both committed
+bundles only after actually pulling `main` locally — not from reading the diff, since a
+checker claiming to check a writer it has never actually been run against proves nothing. Both
+exited 0 for real, which is the first time this session the two halves of Interface 8 have
+checked each other without me controlling both sides.
+
+**What I deliberately left alone:** M2's own "The case" section of `practitioner-check.md` is
+still unwritten even though his bundle exists; I flagged it rather than filling it in myself —
+it's recorded against his name in the protocol, and the honest-ownership rule in root
+`CLAUDE.md` matters more here than finishing the document for him.
+
+Ownership checkpoint: be able to explain why Q2 of the acceptance task is weighted the way it
+is — not "all three questions matter equally" but "this one question is the actual thing FT018
+is for," and why that asymmetry has to be decided and written down *before* the session, not
+noticed afterward while scoring it.
