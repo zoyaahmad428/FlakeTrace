@@ -420,5 +420,65 @@ class TestLifecycleControl(unittest.TestCase):
             OrderRunner(self.classpath, lifecycle="per-class")
 
 
+RESET = Path(__file__).resolve().parent / "resources" / "reset-control"
+MARKER = "flaketrace-reset-control.marker"
+
+
+class TestResetControl(unittest.TestCase):
+    """FT021, ADR-012 section 1: what one fresh JVM per order resets, shown with real runs. ResetWriterTest leaves
+    state behind; each ResetReaderTest method passes only if its piece of state is gone. The expectations are one
+    table, the same rows as ADR-012's: when a hardened container (FYP-2) resets files too, a row changes here."""
+
+    WRITER = TestIdentifier("ResetWriterTest", "leaveState")
+    EXPECTED = {  # row -> (reader method, expected)
+        "static field": ("staticFieldIsDefault", "reset"),
+        "system property": ("systemPropertyIsUnset", "reset"),
+        "file in the temp folder": ("tempFileIsAbsent", "not reset"),
+        "file in the working directory": ("workingDirFileIsAbsent", "not reset"),
+    }
+
+    @classmethod
+    def setUpClass(cls):
+        missing = [tool for tool in ("java", "javac", "mvn") if shutil.which(tool) is None]
+        if missing:
+            if os.environ.get("FLAKETRACE_REQUIRE_JVM"):
+                raise RuntimeError(f"FLAKETRACE_REQUIRE_JVM is set but {missing} not on PATH")
+            raise unittest.SkipTest(f"{missing} not on PATH")
+        cls.classpath = maven_test_classpath(RESET)
+
+    def setUp(self):
+        self.work = Path(tempfile.mkdtemp(prefix="flaketrace-reset-"))
+        self.markers = [self.work / MARKER, Path(tempfile.gettempdir()) / MARKER]
+        self.clean()  # a marker left by an earlier, crashed run must not decide the result
+        self.addCleanup(self.clean)
+        self.addCleanup(shutil.rmtree, self.work, True)
+
+    def clean(self):
+        for marker in self.markers:
+            if marker.exists():
+                marker.unlink()
+
+    def readers(self):
+        return {row: TestIdentifier("ResetReaderTest", method) for row, (method, _) in self.EXPECTED.items()}
+
+    def test_a_new_jvm_resets_jvm_state_but_not_files(self):
+        for lifecycle in ("class-grouped", "per-method"):
+            with self.subTest(lifecycle=lifecycle):
+                self.clean()
+                runner = OrderRunner(self.classpath, working_dir=self.work, lifecycle=lifecycle)
+                self.assertTrue(runner.run_ordered([self.WRITER])[self.WRITER].passed)
+                readers = self.readers()
+                results = runner.run_ordered(list(readers.values()))  # a new JVM
+                seen = {row: "reset" if results[test].passed else "not reset" for row, test in readers.items()}
+                self.assertEqual(seen, {row: expected for row, (_, expected) in self.EXPECTED.items()})
+
+    def test_each_reader_detects_its_leftover_in_one_jvm(self):
+        """No vacuous pass: in the same JVM nothing is reset, so every reader must fail."""
+        readers = self.readers()
+        results = OrderRunner(self.classpath, working_dir=self.work).run_ordered([self.WRITER, *readers.values()])
+        self.assertEqual({row: results[test].passed for row, test in readers.items()},
+                         {row: False for row in readers})
+
+
 if __name__ == "__main__":
     unittest.main()

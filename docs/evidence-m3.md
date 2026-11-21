@@ -2695,6 +2695,49 @@ runner behaviour, just packages the existing, unmodified toolchain.
   specifically a second machine, which this session cannot be. This entry shows it is buildable
   and reproduces correctly on one real machine; the cross-machine confirmation is the next step.
 
+## 2026-11-21 -- W29a / FT015: the real cause was one wrong cell in the worksheet, not the register
+
+**Requirement:** [[10-Final1/iteration-2-plan]] W29a / FT015 -- "Member 3's GenAI level is L3
+in one worksheet table and L2 in another, in the report and in the repository register. One
+consistent per-artefact account." Scoped to my own (M3's) levels, per FT015's own ownership.
+
+- **First checked what FT015 actually claims, against the real sources, before touching
+  anything:** counted every M3 row in `docs/08-MidEval/genai-register.md` dated on or before
+  2026-10-14 (the Mid cutoff the frozen report's own text names, "the counts are rows in the
+  register on 11 October 2026") -- **exactly L2 x18, L1 x1**, with **zero** L3 rows. The frozen
+  Mid report's own Table 9 (`mid-eval-report/chapters/chapter9_development_evidence.tex`,
+  `ch9:tab:genai`) says, for M3: "L2 (18 rows), L1 (1)". **These two already agree exactly** --
+  the register and the frozen report were never the mismatched pair FT015 named. (The frozen
+  report is the submitted, tagged `mid-eval-v1` record and must stay byte-identical to it --
+  not edited here or ever, per the earlier 2026-11-20 entry in this log.)
+- **Found the real mismatch by reading the actual submitted worksheet**, not by assuming it
+  matched the report: `C:\Users\zarpa\Downloads\FlakeTrace_FYP1_Mid_Worksheet.docx` (the file
+  timestamped 2026-10-14 08:44, the morning of the 8:30 AM deadline -- the one actually
+  submitted, not a template). Unpacked and read its `word/document.xml` directly (no `pandoc`
+  or LibreOffice available on this machine, so a Python regex strip of the XML tags, checked
+  against the Skill's own `merge_runs.py` output). Its own "GenAI artefact register" table, M3's
+  row ("Evaluation, statistics, schema, fixtures"), says: **"Claude Sonnet 5; L3 (18 rows), L2
+  (1)"** -- one level too high on both counts. A few hundred lines later in the **same
+  document**, M3's own individual declaration page says the opposite, and the correct thing:
+  "L2 -- statistics, schema, decision logic, fixtures and report sections (18 register rows L2,
+  1 L1)." **The worksheet contradicts itself**, exactly as FT015 describes -- the mismatch was
+  never worksheet-vs-report, it was worksheet-table-vs-worksheet-declaration, with the register
+  and the report both agreeing with the *correct* side all along.
+- **Fixed it in a corrected, editable copy, not the submitted record:** the already-submitted
+  `.docx`/`.pdf` stay as submitted -- this is a correction for the forward-looking ask in
+  FT013 ("supply the editable filled worksheet") and FT015 together, not a rewrite of history.
+  Edited `word/document.xml` directly (the exact run containing "L3" and the following "L2"
+  digit, found via a byte-for-byte substring match, confirmed unique with `grep -c` before
+  touching it), repacked with Python's `zipfile` (no `zip` binary on this machine), and
+  validated with the docx skill's own `validate.py` against the original: **same paragraph
+  count (1432 -> 1432), all checks passed.** Re-extracted the corrected file's own text and
+  diffed it against the original's extracted text: **the only textual difference anywhere in
+  the document is the one cell, "L3 (18 rows), L2 (1)" -> "L2 (18 rows), L1 (1)"** -- confirmed,
+  not assumed, that nothing else moved.
+- **Not done:** actually handing the corrected worksheet to the supervisor, and the signatures
+  FT013/FT014 ask for -- both outside this session (a human, external-facing submission step,
+  not a repository change). Sent the corrected `.docx` to the member directly for review.
+
 ## 2026-11-21 -- M2's PR #152/#153 review, addressed for real (all four points)
 
 **Requirement:** M2 reviewed W23/W26b/W27 for real (re-ran `verify` on all 16 bundles, read the

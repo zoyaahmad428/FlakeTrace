@@ -87,7 +87,10 @@ not.
   as Maven Surefire does; it became the default after Member 1's lifecycle-control run matched
   Surefire (PR #108, ADR-012 §3). In `per-method` (the Mid behaviour) each method is its own JUnit
   `Request`, so `@BeforeClass`/`@AfterClass` run once per method — measured by the control
-  (`resources/lifecycle-control/`). JUnit 3, `@RunWith` and `suite()` classes run one test per
+  (`resources/lifecycle-control/`). The **reset control** (`resources/reset-control/`, FT021) shows what a fresh
+  JVM per order resets — static fields and system properties — and what it does not — files in the temp folder and
+  in the working directory, even under `--workspace copy` — with real runs (`TestResetControl`; table in
+  `docs/04-Implementation/sandbox-runner.md`). JUnit 3, `@RunWith` and `suite()` classes run one test per
   request in both modes. In `class-grouped`, an `@AfterClass` failure is not charged to any test
   (as under Surefire).
 - JUnit 4, and JUnit 3 `TestCase` classes through JUnit's own JUnit38 adapter (tested with

@@ -1783,3 +1783,25 @@ own copy of the code, not from the review's description.
   → `verdict: VERIFIED -> VERIFIED same`, exit 0.
 - **Interface 7 wording** corrected as agreed by M1, M2, M3; **G8 → SETTLED**, scoped (invocation budget on the
   fixture by all three; seconds limit unit-tested only; ranking is G9).
+
+## FT021: the reset-sensitive control (2026-11-21)
+
+- **Requirement:** FT021 — "add a reset-sensitive control"; "the reset boundary is written down and matches the
+  code" (ADR-012 §1). Verifier: M3.
+- **Code:** `runner/tests/resources/reset-control/` (new Maven project: `ResetState`, `ResetWriterTest`,
+  `ResetReaderTest`; Surefire skipped, with the reason in the POM) and `TestResetControl` in
+  `runner/tests/test_order_runner.py`, whose expectations are one table mirroring ADR-012 §1.
+- **Test-first:** `py -3 -m unittest runner.tests.test_order_runner.TestResetControl` → error (no control project:
+  Maven exit 1); after → `Ran 2 tests in 29.075s OK` (Windows 11, JDK 21.0.9, Maven 3.10.0).
+- **Result** (real JVMs, a temporary working directory, markers removed before and after):
+| State | Between orders (a new JVM) | Shown by |
+| --- | --- | --- |
+| A static field | **reset** | `ResetReaderTest#staticFieldIsDefault` passes |
+| A system property | **reset** | `ResetReaderTest#systemPropertyIsUnset` passes |
+| A file in the temp folder | **not reset** | `ResetReaderTest#tempFileIsAbsent` fails |
+| A file in the working directory (the project, or its disposable copy) | **not reset** | `ResetReaderTest#workingDirFileIsAbsent` fails |
+| Environment variables, the clock and timezone | not reset | not testable from a Java test (it cannot change them) |
+  The same in `class-grouped` and `per-method`. In one JVM (writer then readers) all four readers fail — no vacuous
+  pass. `py -3 -m unittest runner.tests.test_order_runner` → `Ran 50 tests OK`; no marker left behind.
+- **Limitations:** one machine; environment variables and the clock are not testable from Java; detecting such
+  leftovers during a diagnosis is FYP-2 (risk register).
