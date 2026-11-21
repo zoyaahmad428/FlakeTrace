@@ -69,6 +69,13 @@ measured comparison).
   interface call with no default method has nothing to scan.
 - **Calls into the JDK or third-party jars are never followed** (e.g. a library that sets a
   system property internally is invisible). They are listed in `external_calls_not_followed`.
+- **State changed through the object a static field holds is not a write.** On the real case
+  FJ-03, the polluter and the victim both only *read* the static `SerializeWriter.bufLocal` (a
+  `ThreadLocal`). The pollution is the polluter's `bufLocal.set(buf)`, a call into the JDK that is
+  not followed, so there is no WRITE and no edge, even at depth 5 (investigated 2026-11-20,
+  [[evidence-m1]]). A READ on both sides of one static field is exactly ADR-014's deferred
+  "co-touch" term. It is not in the ranking rule, and per plan rule 4 it can be added only as a new,
+  separately committed rule, measured on cases other than FJ-03.
 - **Not seen at all:** reflection, invokedynamic bodies, keys built at runtime, `@Rule`/`@RunWith`
   code, implicit `<clinit>` of other classes, and the test class constructor and instance-field
   initialisers. The first five are reported as unsupported observations; the constructor is a

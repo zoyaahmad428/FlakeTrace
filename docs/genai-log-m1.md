@@ -779,3 +779,24 @@ committing.
 
 **Rejections:** marking G8 `SETTLED` alone. I co-own it with M2 and M3, so I left it for all three
 to agree.
+## 2026-11-20 — FJ-03: why the extractor finds no edge
+
+**Assistance level:** L3 (Core-assist): the assistant fetched fastjson at the pinned commit in its
+container, installed JDK 8 from Ubuntu's packages to build it unmodified, read `SerializeWriter`,
+ran my extractor on the pair with a one-off script, and drafted the explanation and the
+`04-Implementation` bullet.
+
+**What I asked:** look into M2's finding that FJ-03 has no resource edge.
+
+**What was retained:** the entry in [[evidence-m1]] and the new "What breaks" bullet.
+
+**What I changed:** read the explanation against the source and the extractor output before
+committing.
+
+**How it was verified:** the extractor output quoted in the entry. Nothing in `evidence/` changed.
+
+**Errors found:** the first two builds failed (JDK 21: "Source option 5 is no longer supported",
+then `javax.xml.bind` missing). JDK 8 built it.
+
+**Rejections:** adding a co-touch term to the ranking rule now. FJ-03 is ground truth, and plan
+rule 4 forbids tuning the rule on it.
