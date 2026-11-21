@@ -1,0 +1,2171 @@
+{
+  "schema_version": 2,
+  "victim": {
+    "class": "com.alibaba.json.bvt.serializer.MaxBufSizeTest",
+    "method": "test_max_buf"
+  },
+  "polluters": [],
+  "original_failing_order": [
+    {
+      "class": "com.alibaba.json.bvt.serializer.AbstractTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.AbstractTest",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanArraySerializerTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldSerializerTest",
+      "method": "test_codec_no_asm"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldSerializerTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldSerializerTest",
+      "method": "test_codec_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldSerializerTest",
+      "method": "test_codec_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldSerializerTest",
+      "method": "test_codec"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldSerializerTest_primitive",
+      "method": "test_codec_no_asm"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldSerializerTest_primitive",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldSerializerTest_primitive",
+      "method": "test_codec_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldSerializerTest_primitive",
+      "method": "test_codec_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldSerializerTest_primitive",
+      "method": "test_codec_2"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldSerializerTest_primitive",
+      "method": "test_codec_3"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldSerializerTest_primitive",
+      "method": "test_codec"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest",
+      "method": "test_model_max"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest",
+      "method": "test_model"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest2",
+      "method": "test_0_reader"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest2",
+      "method": "test_true"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest2",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest2",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest2",
+      "method": "test_1_reader"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest2",
+      "method": "test_false_reader"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest2",
+      "method": "test_true_reader"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest2",
+      "method": "test_false"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest3",
+      "method": "test_model"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest_array",
+      "method": "test_model_error_fal"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest_array",
+      "method": "test_model_error_tru"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest_array",
+      "method": "test_model_error_fals"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest_array",
+      "method": "test_model_error_true_notclose"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest_array",
+      "method": "test_model_error_f"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest_array",
+      "method": "test_model_error_t"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest_array",
+      "method": "test_model_error_fa"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest_array",
+      "method": "test_model_error_tr"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest_array",
+      "method": "test_model_error_false_notclose"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest0",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest0",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest0",
+      "method": "test_2"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest0",
+      "method": "test_3"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest0",
+      "method": "test_4"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest0",
+      "method": "test_error_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest0",
+      "method": "test_error_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest0",
+      "method": "test_error_3"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest0",
+      "method": "test_error_4"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest1",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest1",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest1",
+      "method": "test_2"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest1",
+      "method": "test_3"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest1",
+      "method": "test_4"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest1",
+      "method": "test_5"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest1",
+      "method": "test_7"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest2",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.Bug_for_yegaofei",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ByteArrayFieldSerializerTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ByteArrayFieldSerializerTest",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ByteArraySerializerTest",
+      "method": "test_b_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ByteArraySerializerTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ByteArraySerializerTest",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ByteArraySerializerTest",
+      "method": "test_2"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ByteArrayTest",
+      "method": "test_bytes_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ByteArrayTest",
+      "method": "test_bytes"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.CharArraySerializerTest",
+      "method": "test_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.CharTest",
+      "method": "test_file"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.CharsetSerializerTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.CharsetTest",
+      "method": "test_file"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.CircularReferencesTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.CircularReferencesTest",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.CircularReferencesTest",
+      "method": "test_2"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ClassFieldTest",
+      "method": "test_writer_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ClassLoaderTest",
+      "method": "test_error"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ClobSeriliazerTest",
+      "method": "test_clob_error"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ClobSeriliazerTest",
+      "method": "test_clob"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ClobSeriliazerTest",
+      "method": "test_clob_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.CollectionSerializerTest",
+      "method": "test_2_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.CollectionSerializerTest",
+      "method": "test_3_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.CollectionSerializerTest",
+      "method": "test_4_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.CollectionSerializerTest",
+      "method": "test_5_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.CollectionSerializerTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.CollectionSerializerTest",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ColorSerializerTest",
+      "method": "test_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ColorSerializerTest",
+      "method": "test_rgb"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ColorSerializerTest",
+      "method": "test_rgb_getAutowiredFor"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ConcurrentHashMapTest",
+      "method": "test_concurrentHashmap"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ConcurrentHashMapTest2",
+      "method": "test_concurrentHashmap"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ConcurrentHashMapTest3",
+      "method": "test_concurrentHashmap"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ConcurrentHashMapTest4",
+      "method": "test_concurrentHashmap"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ConcurrentHashMapTest5",
+      "method": "test_concurrentHashmap"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ConcurrentHashMapTest6",
+      "method": "test_concurrentHashmap"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ConcurrentHashMapTest7",
+      "method": "test_concurrentHashmap"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DateFormatSerializerTest",
+      "method": "test_date"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DateFormatSerializerTest",
+      "method": "test_date_2"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DateFormatSerializerTest",
+      "method": "test_date_3"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DateFormatSerializerTest",
+      "method": "test_date_4"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DoubleArraySerializerTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DoubleFormatTest",
+      "method": "test_format"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DoubleFormatTest2",
+      "method": "test_format"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DoubleTest",
+      "method": "test_double"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DoubleTest_custom",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DoubleTest_custom",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DoubleTest_custom2",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DupSetterTest",
+      "method": "testEnum"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DupSetterTest2",
+      "method": "testEnum"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DupSetterTest3",
+      "method": "testEnum"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DupSetterTest4",
+      "method": "testDup"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DupSetterTest5",
+      "method": "testDup"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DupSetterTest6",
+      "method": "testDupSetter"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.EnumerationSeriliazerTest",
+      "method": "test_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.EnumerationSeriliazerTest",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.EnumerationSeriliazerTest",
+      "method": "test_2"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.EnumerationSeriliazerTest",
+      "method": "test_3"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.EnumerationSeriliazerTest",
+      "method": "test_4"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.EnumerationSeriliazerTest",
+      "method": "test_nullAsEmtpyList"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ErrorGetterTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ErrorTest",
+      "method": "test_error"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ExtendsTest",
+      "method": "test_extends"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.FieldOrderTest",
+      "method": "test_field_order"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.FileTest",
+      "method": "test_file"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.FloatArraySerializerTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.FloatFormatTest",
+      "method": "test_format"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.FloatFormatTest2",
+      "method": "test_format"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.FloatTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.FontSerializerTest",
+      "method": "test_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.GenericTypeNotMatchTest",
+      "method": "test_for_notMatch"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.GenericTypeNotMatchTest2",
+      "method": "test_for_notMatch"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.GenericTypeTest",
+      "method": "test_gerneric"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.GenericTypeTest2",
+      "method": "test_gerneric"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IgnoreGetMethodTest",
+      "method": "test"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IgnoreNonFieldGetterTest",
+      "method": "test_int"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IgnoreNonFieldGetterTest2",
+      "method": "test_int"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.InetAddressTest",
+      "method": "test_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.InetAddressTest",
+      "method": "test_inetAddress"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.InetAddressTest",
+      "method": "test_empty"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.InetSocketAddressTest",
+      "method": "test_timezone"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntArrayEncodeTest",
+      "method": "test_0_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntArrayEncodeTest",
+      "method": "test_1_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntArrayEncodeTest",
+      "method": "test_2_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntArrayEncodeTest",
+      "method": "test_3_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntFieldTest",
+      "method": "test_model_max"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntFieldTest",
+      "method": "test_model"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntFieldTest2",
+      "method": "test_model_map"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntFieldTest2",
+      "method": "test_model_max"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntFieldTest2",
+      "method": "test_model_map_error"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntFieldTest2",
+      "method": "test_model_map_error_2"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntFieldTest2",
+      "method": "test_model"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntegerArrayEncodeTest",
+      "method": "test_0_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntegerArrayEncodeTest",
+      "method": "test_1_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntegerArrayEncodeTest",
+      "method": "test_2_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntegerArrayEncodeTest",
+      "method": "test_3_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntegerArrayEncodeTest",
+      "method": "test_4_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntegerArrayFieldSerializerTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntegerArrayFieldSerializerTest",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntegerSerializerTest",
+      "method": "test_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.InterfaceTest",
+      "method": "test_interface"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest",
+      "method": "test_jsonField"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest2",
+      "method": "test_jsonField"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest3",
+      "method": "test_jsonField"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest4",
+      "method": "test_jsonField"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest5",
+      "method": "test_jsonField"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest_unwrapped_0",
+      "method": "test_jsonField"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest_unwrapped_1",
+      "method": "test_jsonField"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest_unwrapped_2",
+      "method": "test_jsonField"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest_unwrapped_3",
+      "method": "test_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest_unwrapped_3",
+      "method": "test_jsonField"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest_unwrapped_3",
+      "method": "test_empty"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest_unwrapped_4",
+      "method": "test_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest_unwrapped_4",
+      "method": "test_jsonField"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest_unwrapped_4",
+      "method": "test_empty"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest_unwrapped_5",
+      "method": "test_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest_unwrapped_5",
+      "method": "test_jsonField"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest_unwrapped_5",
+      "method": "test_empty"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONObjectOrderTest",
+      "method": "test_for_order"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerDeprecatedTest",
+      "method": "test_"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_0_g"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_1_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_2_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_3_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_4_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_5_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_6_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_7_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_8_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_9_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_2"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_3"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_4"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_5"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_6"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_7"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_8"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_9"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerMapTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_5_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_9_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_10"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_11"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_12"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_13"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_14"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_15"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_16"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_17"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_0_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_1_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_2_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_3_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_2"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_3"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_4"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_5"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_6"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_7"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_8"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_9"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_error"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest1",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest2",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest2",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest2",
+      "method": "test_2"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest2",
+      "method": "test_3"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest2",
+      "method": "test_error"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest3",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONTypeIncludesTest",
+      "method": "test_includes"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JavaBeanSerializerTest",
+      "method": "test_0_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JavaBeanSerializerTest",
+      "method": "test_1_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JavaBeanSerializerTest",
+      "method": "test_2_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JavaBeanSerializerTest",
+      "method": "test_3_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JavaBeanSerializerTest",
+      "method": "test_error_1_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JavaBeanSerializerTest",
+      "method": "test_error_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JavaBeanSerializerTest2",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ListFieldTest",
+      "method": "test_for_list"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ListSerializerTest",
+      "method": "test_0_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ListSerializerTest",
+      "method": "test_2_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ListSerializerTest",
+      "method": "test_3_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ListSerializerTest",
+      "method": "test_4_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ListSerializerTest",
+      "method": "test_5_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ListSerializerTest",
+      "method": "test_6_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ListSerializerTest",
+      "method": "test_7_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ListSerializerTest",
+      "method": "test_8_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ListSerializerTest2",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ListSerializerTest3",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ListSerializerTest3",
+      "method": "test_2"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ListTest",
+      "method": "test_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.LocalTest",
+      "method": "test_timezone"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.LongArraySerializerTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.MapSerializerTest",
+      "method": "test_special_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.MapSerializerTest",
+      "method": "test_singleton_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.MapSerializerTest",
+      "method": "test_long2_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.MapSerializerTest",
+      "method": "test_4"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.MapSerializerTest",
+      "method": "test_int2_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.MapSerializerTest",
+      "method": "test_string2_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.MapSerializerTest",
+      "method": "test_string3_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.MapSerializerTest",
+      "method": "test_empty_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.MapSerializerTest",
+      "method": "test_special2_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.MapSerializerTest",
+      "method": "test_special3_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.MapTest",
+      "method": "test_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.MapTest",
+      "method": "test_no_sort"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.MaxBufSizeTest",
+      "method": "test_max_buf"
+    }
+  ],
+  "reduced_sequence": [
+    {
+      "class": "com.alibaba.json.bvt.serializer.AbstractTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.AbstractTest",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanArraySerializerTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldSerializerTest",
+      "method": "test_codec_no_asm"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldSerializerTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldSerializerTest",
+      "method": "test_codec_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldSerializerTest",
+      "method": "test_codec_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldSerializerTest",
+      "method": "test_codec"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldSerializerTest_primitive",
+      "method": "test_codec_no_asm"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldSerializerTest_primitive",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldSerializerTest_primitive",
+      "method": "test_codec_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldSerializerTest_primitive",
+      "method": "test_codec_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldSerializerTest_primitive",
+      "method": "test_codec_2"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldSerializerTest_primitive",
+      "method": "test_codec_3"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldSerializerTest_primitive",
+      "method": "test_codec"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest",
+      "method": "test_model_max"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest",
+      "method": "test_model"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest2",
+      "method": "test_0_reader"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest2",
+      "method": "test_true"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest2",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest2",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest2",
+      "method": "test_1_reader"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest2",
+      "method": "test_false_reader"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest2",
+      "method": "test_true_reader"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest2",
+      "method": "test_false"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest3",
+      "method": "test_model"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest_array",
+      "method": "test_model_error_fal"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest_array",
+      "method": "test_model_error_tru"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest_array",
+      "method": "test_model_error_fals"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest_array",
+      "method": "test_model_error_true_notclose"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest_array",
+      "method": "test_model_error_f"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest_array",
+      "method": "test_model_error_t"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest_array",
+      "method": "test_model_error_fa"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest_array",
+      "method": "test_model_error_tr"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BooleanFieldTest_array",
+      "method": "test_model_error_false_notclose"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest0",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest0",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest0",
+      "method": "test_2"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest0",
+      "method": "test_3"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest0",
+      "method": "test_4"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest0",
+      "method": "test_error_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest0",
+      "method": "test_error_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest0",
+      "method": "test_error_3"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest0",
+      "method": "test_error_4"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest1",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest1",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest1",
+      "method": "test_2"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest1",
+      "method": "test_3"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest1",
+      "method": "test_4"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest1",
+      "method": "test_5"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest1",
+      "method": "test_7"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.BugTest2",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.Bug_for_yegaofei",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ByteArrayFieldSerializerTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ByteArrayFieldSerializerTest",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ByteArraySerializerTest",
+      "method": "test_b_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ByteArraySerializerTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ByteArraySerializerTest",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ByteArraySerializerTest",
+      "method": "test_2"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ByteArrayTest",
+      "method": "test_bytes_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ByteArrayTest",
+      "method": "test_bytes"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.CharArraySerializerTest",
+      "method": "test_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.CharTest",
+      "method": "test_file"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.CharsetSerializerTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.CharsetTest",
+      "method": "test_file"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.CircularReferencesTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.CircularReferencesTest",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.CircularReferencesTest",
+      "method": "test_2"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ClassFieldTest",
+      "method": "test_writer_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ClassLoaderTest",
+      "method": "test_error"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ClobSeriliazerTest",
+      "method": "test_clob_error"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ClobSeriliazerTest",
+      "method": "test_clob"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ClobSeriliazerTest",
+      "method": "test_clob_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.CollectionSerializerTest",
+      "method": "test_2_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.CollectionSerializerTest",
+      "method": "test_3_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.CollectionSerializerTest",
+      "method": "test_4_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.CollectionSerializerTest",
+      "method": "test_5_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.CollectionSerializerTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.CollectionSerializerTest",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ColorSerializerTest",
+      "method": "test_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ColorSerializerTest",
+      "method": "test_rgb"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ColorSerializerTest",
+      "method": "test_rgb_getAutowiredFor"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ConcurrentHashMapTest",
+      "method": "test_concurrentHashmap"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ConcurrentHashMapTest2",
+      "method": "test_concurrentHashmap"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ConcurrentHashMapTest3",
+      "method": "test_concurrentHashmap"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ConcurrentHashMapTest4",
+      "method": "test_concurrentHashmap"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ConcurrentHashMapTest5",
+      "method": "test_concurrentHashmap"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ConcurrentHashMapTest6",
+      "method": "test_concurrentHashmap"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ConcurrentHashMapTest7",
+      "method": "test_concurrentHashmap"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DateFormatSerializerTest",
+      "method": "test_date"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DateFormatSerializerTest",
+      "method": "test_date_2"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DateFormatSerializerTest",
+      "method": "test_date_3"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DateFormatSerializerTest",
+      "method": "test_date_4"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DoubleArraySerializerTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DoubleFormatTest",
+      "method": "test_format"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DoubleFormatTest2",
+      "method": "test_format"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DoubleTest",
+      "method": "test_double"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DoubleTest_custom",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DoubleTest_custom",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DoubleTest_custom2",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DupSetterTest",
+      "method": "testEnum"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DupSetterTest2",
+      "method": "testEnum"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DupSetterTest3",
+      "method": "testEnum"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DupSetterTest4",
+      "method": "testDup"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DupSetterTest5",
+      "method": "testDup"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.DupSetterTest6",
+      "method": "testDupSetter"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.EnumerationSeriliazerTest",
+      "method": "test_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.EnumerationSeriliazerTest",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.EnumerationSeriliazerTest",
+      "method": "test_2"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.EnumerationSeriliazerTest",
+      "method": "test_3"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.EnumerationSeriliazerTest",
+      "method": "test_4"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.EnumerationSeriliazerTest",
+      "method": "test_nullAsEmtpyList"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ErrorGetterTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ErrorTest",
+      "method": "test_error"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ExtendsTest",
+      "method": "test_extends"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.FieldOrderTest",
+      "method": "test_field_order"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.FileTest",
+      "method": "test_file"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.FloatArraySerializerTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.FloatFormatTest",
+      "method": "test_format"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.FloatFormatTest2",
+      "method": "test_format"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.FloatTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.FontSerializerTest",
+      "method": "test_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.GenericTypeNotMatchTest",
+      "method": "test_for_notMatch"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.GenericTypeNotMatchTest2",
+      "method": "test_for_notMatch"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.GenericTypeTest",
+      "method": "test_gerneric"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.GenericTypeTest2",
+      "method": "test_gerneric"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IgnoreGetMethodTest",
+      "method": "test"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IgnoreNonFieldGetterTest",
+      "method": "test_int"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IgnoreNonFieldGetterTest2",
+      "method": "test_int"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.InetAddressTest",
+      "method": "test_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.InetAddressTest",
+      "method": "test_inetAddress"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.InetAddressTest",
+      "method": "test_empty"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.InetSocketAddressTest",
+      "method": "test_timezone"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntArrayEncodeTest",
+      "method": "test_0_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntArrayEncodeTest",
+      "method": "test_1_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntArrayEncodeTest",
+      "method": "test_2_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntArrayEncodeTest",
+      "method": "test_3_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntFieldTest",
+      "method": "test_model_max"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntFieldTest",
+      "method": "test_model"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntFieldTest2",
+      "method": "test_model_map"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntFieldTest2",
+      "method": "test_model_max"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntFieldTest2",
+      "method": "test_model_map_error"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntFieldTest2",
+      "method": "test_model_map_error_2"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntFieldTest2",
+      "method": "test_model"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntegerArrayEncodeTest",
+      "method": "test_0_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntegerArrayEncodeTest",
+      "method": "test_1_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntegerArrayEncodeTest",
+      "method": "test_2_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntegerArrayEncodeTest",
+      "method": "test_3_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntegerArrayEncodeTest",
+      "method": "test_4_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntegerArrayFieldSerializerTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntegerArrayFieldSerializerTest",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.IntegerSerializerTest",
+      "method": "test_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.InterfaceTest",
+      "method": "test_interface"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest",
+      "method": "test_jsonField"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest2",
+      "method": "test_jsonField"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest3",
+      "method": "test_jsonField"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest4",
+      "method": "test_jsonField"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest5",
+      "method": "test_jsonField"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest_unwrapped_0",
+      "method": "test_jsonField"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest_unwrapped_1",
+      "method": "test_jsonField"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest_unwrapped_2",
+      "method": "test_jsonField"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest_unwrapped_3",
+      "method": "test_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest_unwrapped_3",
+      "method": "test_jsonField"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest_unwrapped_3",
+      "method": "test_empty"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest_unwrapped_4",
+      "method": "test_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest_unwrapped_4",
+      "method": "test_jsonField"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest_unwrapped_4",
+      "method": "test_empty"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest_unwrapped_5",
+      "method": "test_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest_unwrapped_5",
+      "method": "test_jsonField"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONFieldTest_unwrapped_5",
+      "method": "test_empty"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONObjectOrderTest",
+      "method": "test_for_order"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerDeprecatedTest",
+      "method": "test_"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_0_g"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_1_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_2_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_3_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_4_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_5_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_6_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_7_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_8_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_9_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_2"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_3"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_4"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_5"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_6"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_7"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_8"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerFeatureTest",
+      "method": "test_9"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerMapTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_5_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_9_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_10"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_11"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_12"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_13"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_14"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_15"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_16"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_17"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_0_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_1_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_2_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_3_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_2"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_3"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_4"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_5"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_6"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_7"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_8"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_9"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest",
+      "method": "test_error"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest1",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest2",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest2",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest2",
+      "method": "test_2"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest2",
+      "method": "test_3"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest2",
+      "method": "test_error"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONSerializerTest3",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JSONTypeIncludesTest",
+      "method": "test_includes"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JavaBeanSerializerTest",
+      "method": "test_0_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JavaBeanSerializerTest",
+      "method": "test_1_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JavaBeanSerializerTest",
+      "method": "test_2_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JavaBeanSerializerTest",
+      "method": "test_3_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JavaBeanSerializerTest",
+      "method": "test_error_1_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JavaBeanSerializerTest",
+      "method": "test_error_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.JavaBeanSerializerTest2",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ListFieldTest",
+      "method": "test_for_list"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ListSerializerTest",
+      "method": "test_0_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ListSerializerTest",
+      "method": "test_2_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ListSerializerTest",
+      "method": "test_3_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ListSerializerTest",
+      "method": "test_4_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ListSerializerTest",
+      "method": "test_5_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ListSerializerTest",
+      "method": "test_6_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ListSerializerTest",
+      "method": "test_7_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ListSerializerTest",
+      "method": "test_8_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ListSerializerTest2",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ListSerializerTest3",
+      "method": "test_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ListSerializerTest3",
+      "method": "test_2"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.ListTest",
+      "method": "test_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.LocalTest",
+      "method": "test_timezone"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.LongArraySerializerTest",
+      "method": "test_0"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.MapSerializerTest",
+      "method": "test_special_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.MapSerializerTest",
+      "method": "test_singleton_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.MapSerializerTest",
+      "method": "test_long2_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.MapSerializerTest",
+      "method": "test_4"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.MapSerializerTest",
+      "method": "test_int2_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.MapSerializerTest",
+      "method": "test_string2_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.MapSerializerTest",
+      "method": "test_string3_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.MapSerializerTest",
+      "method": "test_empty_1"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.MapSerializerTest",
+      "method": "test_special2_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.MapSerializerTest",
+      "method": "test_special3_s"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.MapTest",
+      "method": "test_null"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.MapTest",
+      "method": "test_no_sort"
+    },
+    {
+      "class": "com.alibaba.json.bvt.serializer.MaxBufSizeTest",
+      "method": "test_max_buf"
+    }
+  ],
+  "reproduction": {
+    "n": 20,
+    "passed": 20,
+    "matched": 0,
+    "other": 0,
+    "infra": 0,
+    "confidence": 0.95,
+    "lower": 0.0,
+    "upper": 0.16112515827076002
+  },
+  "victim_alone": {
+    "n": 20,
+    "passed": 20,
+    "matched": 0,
+    "other": 0,
+    "infra": 0,
+    "confidence": 0.95,
+    "lower": 0.0,
+    "upper": 0.16112515827076002
+  },
+  "shared_resource": null,
+  "polluter_write_location": null,
+  "victim_read_location": null,
+  "resource_edges": [],
+  "failure_signature": null,
+  "instrumentation_level": "static-only",
+  "execution_record_reference": "record.jsonl",
+  "source_integrity": {
+    "passed": true,
+    "details": "copy: 2778 files hashed (SHA-256) before and after; all identical; original project: 2778 files hashed (SHA-256) before and after; all identical"
+  },
+  "outcome": "UNRESOLVED",
+  "unresolved_reason": "NOT_REPRODUCED",
+  "candidate_reasons": [],
+  "limitations": [
+    "instrumentation_level is static-only; runtime instrumentation is not built.",
+    "Not reproduced: 20 runs of the discovered order (plus 31 shuffled order(s)), 20 runs alone. In the discovered order the failure rate is below 0.161 with 95% confidence (Wilson). This is not evidence that the test is reliable: flaky tests have been found only after thousands of reruns."
+  ],
+  "deletion_checks": [],
+  "order_exploration": {
+    "order_given": false,
+    "shuffled_orders_tried": 31,
+    "orders_exhausted": false,
+    "seed_base": 0,
+    "reproducing_seed": null,
+    "infrastructure_failures": 0
+  },
+  "budget": {
+    "limit_invocations": null,
+    "limit_seconds": null,
+    "reserve_invocations": 60,
+    "spent": {
+      "reproduce": 5220,
+      "shuffle": 7577,
+      "alone": 20,
+      "search": 0,
+      "minimise": 0,
+      "deletion": 0,
+      "verify": 0
+    },
+    "launches": 71,
+    "wall_seconds": 480.614,
+    "analysis_seconds": null,
+    "policy": "original",
+    "exhausted": false,
+    "exhausted_phase": null,
+    "candidates": {
+      "total": 260,
+      "tried": 0
+    }
+  }
+}

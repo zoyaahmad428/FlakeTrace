@@ -3,7 +3,11 @@
 # "it reproduces on any machine with Docker". Does not implement the full sandbox profile in
 # docs/02-Requirements/non-functional.md (rootless, network-disabled, resource limits) -- that
 # remains a later target; this image is for reproducibility, not isolation.
-FROM maven:3.9.9-eclipse-temurin-8
+#
+# Pinned by digest, not just the tag (M2's review, PR #153): a moved tag would silently change
+# the JDK 8 patch level under us, exactly the kind of drift docs/evidence-m3.md already found
+# between this host's Temurin 1.8.0_512 and this image's own 1.8.0_452.
+FROM maven:3.9.9-eclipse-temurin-8@sha256:e20e4fc05fb5480c884a1f750c362ed0e91aca15cec5736e12796713710ec9b3
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends python3 python3-pip \

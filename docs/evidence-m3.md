@@ -2694,3 +2694,97 @@ runner behaviour, just packages the existing, unmodified toolchain.
 - **Not done:** M1 (or M2) actually running it on a second, real machine -- the "done when" is
   specifically a second machine, which this session cannot be. This entry shows it is buildable
   and reproduces correctly on one real machine; the cross-machine confirmation is the next step.
+
+## 2026-11-21 -- M2's PR #152/#153 review, addressed for real (all four points)
+
+**Requirement:** M2 reviewed W23/W26b/W27 for real (re-ran `verify` on all 16 bundles, read the
+Dockerfile and the FJ-03 commands) and raised four points. All four checked and fixed for real,
+not argued from reading the code alone.
+
+### 1. The big one -- the FJ-03 "confirmed with real JVM runs" claim overclaimed
+
+M2's point: `--order` fixes FJ-03's run to the known pair, so every policy had exactly one
+candidate. That can't test ranking, and the real-run sentence in G9/the protocol should be
+reworded or removed until the real (524-candidate, package-scope) experiment is run.
+
+**Checked, not assumed.** Ran `py -m runner diagnose --scope package --n 20 --policy original`
+(no `--order`, no budget limit) against real fastjson, through the product's own CLI (M2's
+discovery.py fix, 2026-11-20, makes this possible for the first time). Real result, twice
+(identical both times): **`UNRESOLVED (NOT_REPRODUCED)`, 12,817 real invocations** (reproduce
+20 attempts x 261 = 5,220; shuffle 31 attempts = 7,577; alone 20), **search tried 0 of 260
+candidates**. `wall_seconds`: 750 (~12.5 min) -- invocations are cheap (~0.1s each; one JVM
+session runs many test methods) once the real build is warm, which is why this was tractable to
+actually run rather than estimate.
+
+**Why this is the real, structural answer, not a budget-sizing fix:** `runner.diagnose._steps`
+only reaches the single-polluter search (where `--policy` matters) *after* `reproduce` or
+`shuffle` establishes a reference signature. Real evidence, twice over, says neither does for
+FJ-03's natural suite: this reconfirms, end to end through the fixed CLI (not the W26a
+workaround script), the same real finding step 4 already made. **So `--scope package` cannot
+produce a live ranked-vs-original comparison on this case either** -- not a flaw in my first
+run, a property of the case. Bundled the real result:
+`eval/bundles/20261121T205558Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf`,
+`verify` clean (`tool.dirty: true` -- honest, since other real work was pending in the tree at
+the time; not part of the "clean batch" precedent, a one-off supplementary bundle).
+
+**Reworded, not deleted**, in [[05-Testing/real-case-protocol]] and `docs/07-Defense/claims-ledger.md`
+(G9): the 1-candidate runs show the three policies cost the same (not a saving); the new
+package-scope run shows *why* a live saving can't be measured on this case; the offline
+`rank_candidates` comparison (item 5, 368 of 524 in both orders) remains the actual source of
+the "no evidence" finding.
+
+**A second real, transient failure found along the way:** the first package-scope attempt hit a
+genuine JVM native-memory crash (`malloc failed`, `hs_err_pid*.log`/`replay_pid*.log` written
+to the repo root) -- confirmed real memory pressure (690 MB free of 8 GB, `Get-CimInstance
+Win32_OperatingSystem`), not a product bug; stopped Docker Desktop (no longer needed once W27
+was verified) to free memory, deleted the stray crash-dump files, and the identical command
+succeeded on retry with the identical real result.
+
+**A real, pre-existing robustness gap found, not mine to fix:** every real run against fastjson
+(not the small fixture) throws `UnicodeDecodeError` in `subprocess`'s internal reader threads
+(`byte 0xa0 invalid start byte` -- a Windows-1252 non-breaking space in Maven's console output,
+read as UTF-8). The command still completes and the report is still valid both times this was
+seen, so it is not blocking -- but it is a real gap in `runner/order_runner.py`'s (M2's file)
+subprocess output handling on a non-ASCII console under Cp1252, flagged here rather than patched
+myself.
+
+### 2. The uncommitted comparison script -- now in `eval/tools/`
+
+Committed `eval/tools/fj03_rank_compare.py` (was a scratch one-off), fixing the repo-root
+discovery to `Path(__file__).resolve().parents[2]` (the bug that caused the ~4-hour hang two
+days ago was a script living *outside* the repo; this one now lives inside it, so that failure
+mode cannot recur). **Re-ran it for real** after moving it: 524/524 candidates analysed, 292.3
+real seconds, **original position 368 of 524; ranked position 368 of 524** -- exactly
+reproduces the number already in the register, confirming the move didn't change its behaviour.
+
+### 3. The Dockerfile -- digest-pinned, `.git` no longer excluded
+
+- **Pinned by digest**: `FROM maven:3.9.9-eclipse-temurin-8@sha256:e20e4fc0...` (pulled for
+  real to get the real digest). A moved tag would have silently changed the JDK patch level --
+  exactly the `1.8.0_512` (host) vs `1.8.0_452` (image) drift already on record.
+- **`.git/` removed from `.dockerignore`**: `runner/diagnose.py`'s `git_state()` shells out to
+  `git -C <folder> rev-parse HEAD`/`status --porcelain` against the tool's own folder; with no
+  `.git` in the image, that silently returns `(None, None)` -- exactly the `tool.commit: null`
+  M2 found. Confirmed the base image already has `git` installed (`git version 2.43.0`), so no
+  extra `apt-get install` was needed. **Rebuilt the image for real and re-ran F1 inside it**:
+  `manifest.json`'s `tool.commit`/`subject.commit` are now real hashes
+  (`c5eff18f366edf94f7e76003db3903f1afadea44`), not `null` -- confirmed fixed, not just reasoned
+  about. (`tool.dirty`/`subject.dirty` show `true` in that one test bundle because other real
+  edits were genuinely pending in the tree at build time; deleted that throwaway test bundle
+  afterward, it was never meant to be committed.)
+
+### 4. 14 of 16 bundles had `tool.dirty: true` -- regenerated from a clean tree
+
+Confirmed M2's count exactly (`tool.dirty` check script over every committed bundle's
+manifest). Regenerated all 14 (F1's second copy, F2-F4, N1-N4, and FJ-03's `ranked` +
+`random`x5) **into a scratch location outside the repo first**, so the repo stayed genuinely
+clean (`git status --short` empty) at the moment each one ran, then copied all 14 into
+`eval/bundles/` in one pass. Every real result matched its known ground truth exactly (same
+invocation counts as the original runs: F1 67, F2 82, F3 264, F4 166, N1/N2/N3/N4 unchanged).
+One transient real timeout (`java.EXE timed out after 120s`) on the first attempt of FJ-03's
+random seed 3 -- confirmed no partial bundle was left behind, succeeded identically on retry.
+**All 16 now verify clean, and `tool.dirty: false` on every one of the 14 regenerated bundles**
+(confirmed with a dirty-check script reading every manifest, not by eye).
+
+**Not done:** M2's own step 9 run and his planned package-scope repeat -- his call, informed by
+point 1 above (it will reconfirm `NOT_REPRODUCED`, not produce a ranking comparison).
