@@ -1698,3 +1698,36 @@ Ownership checkpoint: be able to explain, without re-deriving it live, why `--or
 2-entry file collapses the single-polluter search to exactly one candidate regardless of
 `--policy` — and why that makes "ranked = original" on FJ-03 the mathematically forced outcome
 of this case's search space, not a property of M1's ranking rule.
+
+## 2026-11-21 — W27: the container had to actually run, not just build
+
+**What I scoped out, and why:** `docs/02-Requirements/non-functional.md` describes a fully
+hardened sandbox (rootless, no socket mount, network disabled, resource limits, read-only
+base). W27's actual "done when" is just "a fixture diagnosis runs in the container on a second
+machine" — a reproducibility image, not that sandbox. Building the full hardened profile when
+only the pinned-toolchain version was asked for would have been scope creep dressed up as
+thoroughness, so I built the smaller thing and said in the Dockerfile's own comment and in the
+evidence log that the hardened profile is still a later target, rather than letting the two get
+conflated.
+
+**What I didn't skip:** a build that succeeds is not evidence the image works — I ran a real
+fixture diagnosis inside it and checked the result against known ground truth (F1,
+`VERIFIED (sequence)`, 67 invocations) before writing anything up. The bundle's own recorded
+environment (a different Linux kernel, a different JDK 8 patch number than this host) is what
+actually proves this ran somewhere independent, not just "docker build exited 0."
+
+**A bug I caught by checking state, not by trusting a clean exit:** my first `docker run` with a
+bind mount printed a normal, successful-looking report and exited 0 — but the bundle it claimed
+to write was never on the host. Checking the mounted folder afterward (not just the container's
+own stdout) is what caught it; a silent no-op mount is exactly the kind of failure that looks
+identical to success until you check the actual file. Isolated it with a one-line throwaway
+probe (`touch` inside a disposable container) before touching the real command again, rather
+than guessing at the fix.
+
+**What I left for M2 rather than fixing myself:** the bundle's `container_image` field is
+always `null` — traced it to a hardcoded `None` in `runner/diagnose.py`, which is M2's file.
+Recorded it as a known gap in the evidence log instead of patching his module myself.
+
+Ownership checkpoint: be able to explain why `$(pwd)` works fine as the host side of a Docker
+volume mount on Linux/macOS but not from Git Bash on Windows, and why a successful-looking
+`docker run` output is not enough evidence that a bind mount actually worked.

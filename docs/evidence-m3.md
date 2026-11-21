@@ -2645,3 +2645,52 @@ attempted until today.
   `OK`**, no recount mismatches.
 - **Not done:** step 9, the independent repeat of step 6 or 7 by M1 or M2 on another machine --
   not mine to run.
+
+## 2026-11-21 -- W27: pinned container image, built and run for real
+
+**Requirement:** [[10-Final1/iteration-2-plan]] W27 -- "a fixture diagnosis runs in the
+container on a second machine" (M1 to run it; M2 reviews). Scoped to its literal done-when, not
+the full sandbox profile in `docs/02-Requirements/non-functional.md` (rootless, network-disabled,
+resource limits) -- that stays a later target; this image pins the toolchain for
+reproducibility, it does not isolate it. No ADR needed: this doesn't change any contract or
+runner behaviour, just packages the existing, unmodified toolchain.
+
+- **Command:**
+  ```
+  docker build -t flaketrace:w27 .
+  docker run --rm -v "<host>/flaketrace-bundles:/flaketrace/flaketrace-bundles" flaketrace:w27 \
+    diagnose --project fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode \
+    --bundle flaketrace-bundles
+  ```
+  (`Dockerfile`: `maven:3.9.9-eclipse-temurin-8` + `python3`/`pip3`, `eval/requirements.txt`
+  installed, repo copied in, `JAVA_TOOL_OPTIONS` pinned to match the real-case protocol's own
+  environment convention.)
+- **Real result:** built for real (Docker Desktop on this machine, ~56s for the `apt-get`
+  layer the first time). Ran the F1 fixture diagnosis for real, entirely inside the container:
+  `VERIFIED (sequence)`, polluter `odfixture.ConfigPolluterTest#pollute`, 67 invocations --
+  **matching F1's known ground truth exactly**, the same result this exact diagnosis gives on
+  the host. `python -m eval.bundle verify` on the resulting bundle (written back to the host via
+  the bind mount): **OK**. The bundle's own `environment` block is real, independent
+  confirmation this ran on a genuinely different environment, not just a different folder:
+  `Linux-6.18.58.1-microsoft-standard-WSL2`, JDK `1.8.0_452` (a different Temurin 8 patch than
+  this machine's own `1.8.0_512`), Maven `3.9.9`, Python `3.12.3` -- none of these match the
+  host values the earlier real-case bundles recorded, so this is a real second environment, not
+  the same one relabelled.
+- **A real bug in my first command, not the product:** the first run's `-v
+  "$(pwd)/flaketrace-bundles:/flaketrace/flaketrace-bundles"` produced *no error* but silently
+  bind-mounted nothing -- the bundle the container reported writing was never on the host side,
+  `flaketrace-bundles/` stayed empty. Cause: Git Bash's automatic path conversion mangles a
+  `/c/...`-style `$(pwd)` path when it sits on the host side of a `host:container` volume
+  argument with its own colon. Confirmed with a minimal probe (`touch /check/probe.txt` inside a
+  throwaway container) that a **native Windows path** (`C:\Users\...`) on the host side mounts
+  correctly; re-ran the real diagnosis with that form and the bundle landed on the host as
+  expected. Documented both forms in `README.md` (`$(pwd)` works as normal on Linux/macOS; a
+  native path is needed from Git Bash on Windows) rather than silently working around it.
+- **A known, unfilled field, not mine to fix:** the bundle's `environment.container_image` is
+  `null` -- `runner/diagnose.py` (M2's file) hardcodes it to `None`; nothing in the product yet
+  detects or records which image it ran in. Noted here rather than edited myself (not my
+  folder); worth a small follow-up in `runner/` if the team wants the image identity recorded
+  automatically rather than left to whoever ran the command to note down.
+- **Not done:** M1 (or M2) actually running it on a second, real machine -- the "done when" is
+  specifically a second machine, which this session cannot be. This entry shows it is buildable
+  and reproduces correctly on one real machine; the cross-machine confirmation is the next step.
