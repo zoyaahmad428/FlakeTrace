@@ -1,0 +1,70 @@
+{
+  "bundle_version": 1,
+  "kind": "diagnosis",
+  "tool": {
+    "commit": "9a9707522d52c61f824e4a2ac6098262a74ab9c1",
+    "dirty": true
+  },
+  "subject": {
+    "repository": "https://github.com/alibaba/fastjson",
+    "commit": "e05e9c5e4be580691cc55a59f3256595393203a1",
+    "dirty": false,
+    "module_path": "."
+  },
+  "victim": "com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf",
+  "command": [
+    "diagnose",
+    "--project",
+    "<project>",
+    "--victim",
+    "com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf",
+    "--order",
+    "eval/real-cases/fj03/order.txt",
+    "--n",
+    "20",
+    "--budget-invocations",
+    "100",
+    "--policy",
+    "random",
+    "--seed",
+    "0",
+    "--records",
+    "<records>",
+    "--bundle",
+    "eval/bundles"
+  ],
+  "parameters": {
+    "n": 20,
+    "shuffles": 31,
+    "seed": 0,
+    "budget": {
+      "limit_invocations": 100,
+      "limit_seconds": null
+    },
+    "policy": "random",
+    "scope": "module",
+    "lifecycle": "class-grouped",
+    "workspace": "copy"
+  },
+  "environment": {
+    "os": "Windows-11-10.0.26200-SP0",
+    "jdk": "1.8.0_512",
+    "maven": "3.9.11",
+    "junit": "4.12",
+    "python": "3.14.3",
+    "timezone": "UTC",
+    "locale": "en_US",
+    "encoding": "Cp1252",
+    "container_image": null
+  },
+  "reset_assumptions": "Reset between orders: JVM state only: static fields, system properties, loaded classes, threads. Not reset: Files anywhere, the working directory, environment variables, network and external services, the system clock and timezone.",
+  "fresh_run": true,
+  "run_date": "2026-11-21",
+  "replay_of": null,
+  "files": {
+    "report.json": "dd613322308017d17177ccb7e754d1ff1d908f7d3e7ee20211367b9b1c1e51d6",
+    "record.jsonl": "5cdaa56afb95fd103a2f662bf6dd1ff2c381c650d3d5626f6afff20eebcf42c0",
+    "replay.md": "7149c4d25588b44291d3c317822b1391c328f1ed926dc1b5b7c561ba11f9f261",
+    "environment.txt": "c8a5b97688887f64b05ca871e9cdb0a1160add7b70a92eab776ce7587966f80a"
+  }
+}
