@@ -1,6 +1,7 @@
 import io
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -15,7 +16,7 @@ from eval.baseline import FailureSignature, RunTally, TestIdentifier
 from eval.report import UnhandledStatus, assemble_report
 from runner.budget import Budget, BudgetAccount
 from runner.deletion import DeletionCheck
-from runner.cli import (OrderFileError, budget_line, combine_fields, main, read_order, resource_fields, search_line,
+from runner.cli import (_NO_REPORT_WHY, OrderFileError, budget_line, combine_fields, main, read_order, resource_fields, search_line,
                         summary)
 from runner.policy import SearchPolicy
 from runner.diagnose import (BUDGET_EXHAUSTED, INCONSISTENT, POLLUTER_FOUND, VICTIM_FAILS_ALONE, DiagnoseInputError,
@@ -355,6 +356,16 @@ class TestReports(unittest.TestCase):
         self.assertIn("  deletion:   kept tests removed one at a time, 20 runs each (20 runs): "
                       "0 dropped as not needed, 0 inconclusive, 1 not run (budget)", text)
 
+    def test_summary_says_each_kept_test_was_confirmed_needed(self):
+        """M1's W20 verification (PR #137): when every kept test is NEEDED, say so, so the minimised line's
+        "single-trial delta debugging" is not read as the only evidence."""
+        checks = [DeletionCheck(P, RunTally(20, 20, 0, 0, 0), "NEEDED", "deletion-run", 1),
+                  DeletionCheck(Q, RunTally(20, 20, 0, 0, 0), "NEEDED", "deletion-run", 1)]
+        text = summary(self.report_with_resource(), Path("r.report.json"), minimised=(16, 9),
+                       deletion_checks=checks).splitlines()
+        self.assertIn("  deletion:   each kept test confirmed needed: removed one at a time, 20 runs each (40 runs), "
+                      "the victim passed every run", text)
+
     def test_summary_without_deletion_runs_has_no_deletion_line(self):
         check = [DeletionCheck(P, RunTally(20, 20, 0, 0, 0), "NEEDED", "alone-check", 1)]
         text = summary(self.report_with_resource(), Path("r.report.json"), deletion_checks=check)
@@ -505,20 +516,26 @@ class TestBudgetOptions(unittest.TestCase):
             self.run_with("--budget-invocations", "abc")
         self.assertEqual(raised.exception.code, 2)
 
-    def test_budget_exhausted_prints_no_report_and_the_budget(self):
+    def test_budget_exhausted_writes_a_report_that_claims_no_sequence(self):
+        """After M3's W24 half: exit 0 with a report; the summary does not present the starting order's
+        runs as a verified reproduction, and the old "no report yet" text is gone."""
         records = Path(tempfile.mkdtemp())
         account = BudgetAccount(80, None, 60, {"reproduce": 11, "shuffle": 0, "alone": 20, "search": 8, "minimise": 0,
                                                "deletion": 0, "verify": 0}, 25, 1.5, None, "original", True,
                                 "search", 10, 4)
-        exhausted = runs(BUDGET_EXHAUSTED, records / "r.jsonl", budget=account)
-        with mock.patch("runner.cli.diagnose", return_value=exhausted), \
-                mock.patch("runner.cli.assemble_report", side_effect=UnhandledStatus("BUDGET_EXHAUSTED")):
+        exhausted = runs(BUDGET_EXHAUSTED, records / "r.jsonl", budget=account, sequence_tally=RunTally(1, 0, 1, 0, 0),
+                         alone_tally=RunTally(20, 20, 0, 0, 0))
+        with mock.patch("runner.cli.diagnose", return_value=exhausted):
             code, out, _ = run_cli(["diagnose", "--project", str(project_with_pom()), "--victim", str(V)])
-        self.assertEqual(code, 3)
-        self.assertIn("No report: BUDGET_EXHAUSTED - the budget ran out before a polluter set was found; "
-                      "no report is built for this result yet", out)
+        self.assertEqual(code, 0)
+        lines = out.splitlines()
+        self.assertEqual(lines[0], "UNRESOLVED (BUDGET_EXHAUSTED)  pkg.VictimTest#v")
+        self.assertIn("  reproduced: no sequence verified (the starting order failed 1 of 1 run(s) before the budget "
+                      "ran out)   alone (same failure): 0/20, other failure: 0/20", lines)
         self.assertIn("  budget:     spent 39 of 80 invocations (reserve 60); search tried 4 of 10 candidates; "
-                      "stopped in search", out.splitlines())
+                      "stopped in search", lines)
+        self.assertNotIn("No report", out)
+        self.assertNotIn(BUDGET_EXHAUSTED, _NO_REPORT_WHY)
 
 
     def test_the_real_report_assembly_handles_budget_exhausted_now(self):
@@ -590,6 +607,75 @@ class TestSearchLine(unittest.TestCase):
         note = "ranking fell back to the original order: the victim could not be analysed (x)"
         self.assertEqual(search_line(SearchPolicy("ranked", "module", None, [], 0.2, None, note), 7),
                          ["  search:     ranked, fell back to the original order", "              " + note])
+
+
+class TestBundleOption(unittest.TestCase):
+    """W23 (Interface 8): diagnose --bundle writes the five-file bundle after the report."""
+
+    def test_bundle_flag_writes_a_bundle(self):
+        records = Path(tempfile.mkdtemp(prefix="flaketrace-cli-records-"))
+        record = records / "20261121T100000Z-pkg.VictimTest#v.jsonl"
+        record.write_text(json.dumps({"type": "header", "victim": str(V), "n": 20, "started": "2026-11-21T10:00:00+00:00",
+                                      "command": ["diagnose"]}) + "\n", encoding="utf-8")
+        bundles = Path(tempfile.mkdtemp(prefix="flaketrace-cli-bundles-"))
+        with mock.patch("runner.cli.diagnose", return_value=runs(VICTIM_FAILS_ALONE, record)), \
+                mock.patch("runner.cli._environment_text", return_value="java\n"):
+            code, out, err = run_cli(["diagnose", "--project", str(project_with_pom()), "--victim", str(V),
+                                      "--records", str(records), "--bundle", str(bundles)])
+        self.assertEqual(code, 0, err)
+        folder = bundles / record.stem
+        self.assertEqual(sorted(p.name for p in folder.iterdir()),
+                         ["environment.txt", "manifest.json", "record.jsonl", "replay.md", "report.json"])
+        self.assertIn(f"  bundle:     {folder}", out.splitlines())
+
+    def test_no_bundle_flag_writes_none(self):
+        records = Path(tempfile.mkdtemp(prefix="flaketrace-cli-records-"))
+        with mock.patch("runner.cli.diagnose", return_value=runs(VICTIM_FAILS_ALONE, records / "r.jsonl")), \
+                mock.patch("runner.cli.write_bundle") as write:
+            run_cli(["diagnose", "--project", str(project_with_pom()), "--victim", str(V)])
+        write.assert_not_called()
+
+
+class TestReplayCommand(unittest.TestCase):
+    """W23 (Interface 8): py -m runner replay <bundle> --project <checkout>."""
+
+    def a_bundle(self):
+        from runner.tests.test_replay import TestReplay
+        return TestReplay().bundle()
+
+    def test_replay_refuses_a_tampered_bundle(self):
+        folder = self.a_bundle()
+        (folder / "record.jsonl").write_text("{}\n", encoding="utf-8")
+        with mock.patch("runner.replay.prepare_runner") as prepare:
+            code, out, err = run_cli(["replay", str(folder), "--project", str(project_with_pom())])
+        self.assertEqual(code, 2)
+        self.assertIn("record.jsonl", err)
+        prepare.assert_not_called()
+
+    def test_replay_nothing_to_replay_exits_2(self):
+        from runner.tests.test_replay import TestReplay, a_report
+        folder = TestReplay().bundle(dict(a_report(), outcome="UNRESOLVED", polluters=[]))
+        code, out, err = run_cli(["replay", str(folder), "--project", str(project_with_pom())])
+        self.assertEqual(code, 2)
+        self.assertIn("nothing to replay: no polluter was blamed", err)
+
+    def test_resource_evidence_failure_exits_1(self):
+        folder = self.a_bundle()
+        with mock.patch("runner.replay.replay", side_effect=ExtractError("javap failed", 1)):
+            code, out, err = run_cli(["replay", str(folder), "--project", str(project_with_pom())])
+        self.assertEqual(code, 1)
+        self.assertIn("resource evidence failed", err)
+
+    def test_replay_has_no_in_place_mode(self):
+        """Interface 8 R2: a replay always runs on a copy."""
+        with self.assertRaises(SystemExit) as raised:
+            run_cli(["replay", "b", "--project", "p", "--workspace", "in-place"])
+        self.assertEqual(raised.exception.code, 2)
+
+    def test_replay_needs_a_project(self):
+        with self.assertRaises(SystemExit) as raised:
+            run_cli(["replay", "somewhere"])
+        self.assertEqual(raised.exception.code, 2)
 
 
 class TestBudgetLine(unittest.TestCase):
@@ -675,6 +761,46 @@ class TestCliOnFixture(unittest.TestCase):
             report = json.loads(reports[-1].read_text(encoding="utf-8"))
             self.assertEqual((code, report["outcome"]), (0, "VERIFIED"), victim + err)
             self.assertIn("  search:     ranked", out)
+
+    def test_f1_bundle_is_portable(self):
+        """W23: a real F1 bundle holds no home path and no user name as a path component, and reads back."""
+        import getpass
+        from runner.bundle import read_bundle
+        bundles = Path(tempfile.mkdtemp(prefix="flaketrace-cli-bundles-"))
+        code, out, err = run_cli(["diagnose", "--project", str(FIXTURE), "--victim",
+                                  "odfixture.ConfigVictimTest#expectsDefaultMode", "--records", self.records,
+                                  "--bundle", str(bundles)])
+        self.assertEqual(code, 0, err)
+        (folder,) = list(bundles.iterdir())
+        bundle = read_bundle(folder)
+        self.assertEqual((bundle.manifest["subject"]["repository"], bundle.manifest["subject"]["module_path"]),
+                         ("fixture", "fixtures/od-fixture"))
+        self.assertEqual(bundle.report["outcome"], "VERIFIED")
+        home, user = str(Path.home()), getpass.getuser()
+        for path in folder.iterdir():
+            text = path.read_text(encoding="utf-8")
+            for form in (home, home.replace("\\", "/"), home.replace("\\", "\\\\")):
+                self.assertNotIn(form.lower(), text.lower(), path.name)
+            self.assertNotRegex(text, r"(?i)[\\/]" + re.escape(user) + r"[\\/]", path.name)
+
+    def test_f1_bundle_replays_the_same(self):
+        """W23: a real F1 bundle, replayed on the same checkout, gives the same verdict (exit 0)."""
+        from runner.bundle import read_bundle
+        work = Path(tempfile.mkdtemp(prefix="flaketrace-cli-replay-"))
+        code, _, err = run_cli(["diagnose", "--project", str(FIXTURE), "--victim",
+                                "odfixture.ConfigVictimTest#expectsDefaultMode", "--records", str(work / "rec"),
+                                "--bundle", str(work / "b1")])
+        self.assertEqual(code, 0, err)
+        (original,) = list((work / "b1").iterdir())
+        code, out, err = run_cli(["replay", str(original), "--project", str(FIXTURE), "--records", str(work / "rec2"),
+                                  "--bundle", str(work / "b2")])
+        self.assertEqual(code, 0, out + err)
+        self.assertTrue(out.splitlines()[0].startswith("verdict:") and out.splitlines()[0].endswith("same"), out)
+        (new,) = list((work / "b2").iterdir())
+        manifest = read_bundle(new).manifest
+        self.assertEqual((manifest["kind"], manifest["replay_of"]),
+                         ("replay", read_bundle(original).manifest["files"]["report.json"]))
+        self.assertIn(f"  bundle:     {new}", out.splitlines())
 
     def test_f2_depth_two_edge(self):
         code, _, err, report = self.diagnose("odfixture.FeatureVictimTest#expectsTurboDisabled", 20)

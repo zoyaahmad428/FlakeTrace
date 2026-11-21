@@ -1,0 +1,60 @@
+{
+  "bundle_version": 1,
+  "kind": "diagnosis",
+  "tool": {
+    "commit": "aaf69df8638c27ecb0a4eb0666439320a6332510",
+    "dirty": true
+  },
+  "subject": {
+    "repository": "fixture",
+    "commit": "aaf69df8638c27ecb0a4eb0666439320a6332510",
+    "dirty": false,
+    "module_path": "fixtures/od-fixture"
+  },
+  "victim": "odfixture.ConfigVictimTest#expectsDefaultMode",
+  "command": [
+    "diagnose",
+    "--project",
+    "fixtures/od-fixture",
+    "--victim",
+    "odfixture.ConfigVictimTest#expectsDefaultMode",
+    "--records",
+    "<records>",
+    "--bundle",
+    "eval/bundles"
+  ],
+  "parameters": {
+    "n": 20,
+    "shuffles": 31,
+    "seed": 0,
+    "budget": {
+      "limit_invocations": null,
+      "limit_seconds": null
+    },
+    "policy": "original",
+    "scope": "module",
+    "lifecycle": "class-grouped",
+    "workspace": "copy"
+  },
+  "environment": {
+    "os": "Windows-11-10.0.26200-SP0",
+    "jdk": "1.8.0_512",
+    "maven": "3.9.11",
+    "junit": "4.13.2",
+    "python": "3.14.3",
+    "timezone": "Asia/Karachi",
+    "locale": "en_US",
+    "encoding": "Cp1252",
+    "container_image": null
+  },
+  "reset_assumptions": "Reset between orders: JVM state only: static fields, system properties, loaded classes, threads. Not reset: Files anywhere, the working directory, environment variables, network and external services, the system clock and timezone.",
+  "fresh_run": true,
+  "run_date": "2026-11-21",
+  "replay_of": null,
+  "files": {
+    "report.json": "564c4d4eae3c0a3fe3ac2eaaf1e698d46bb113e2253f3ea424a2900dbf5c105c",
+    "record.jsonl": "a6a337cde86a99749a9637c21c4575383564680958f357964c02060215f7ff84",
+    "replay.md": "f0843d5d8f0457c5e19ff87b6e9111d79f5f63198378514b8174c50f828fb577",
+    "environment.txt": "cbd9c5c791b6ef6ec46bf5fa7ff84af09c972c40143b52daa964a955c8853726"
+  }
+}

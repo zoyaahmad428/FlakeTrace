@@ -758,3 +758,45 @@ identical results in the container and on my laptop.
 
 **Rejections:** editing `runner/policy.py` (M2's) for the `note` point. It is left as a
 suggestion for him.
+
+## 2026-11-20 — W24 verification (ADR-014 evidence item 2) on my own machine
+
+**Assistance level:** L3 (Core-assist): the assistant gave me the boundary commands (69, 70, and
+no limit) with two one-line checks (the report's `budget`, the record line counts), and drafted
+this entry and the register updates from my output; I ran every command myself on my laptop.
+
+**What I asked:** my next step after the W25 review: Interface 6 step 4.
+
+**What was retained:** the W24 entry in [[evidence-m1]], the W24 plan row, and the G8 row in
+[[07-Defense/claims-ledger]].
+
+**What I changed:** ran every command; checked the entry against my terminal output before
+committing.
+
+**How it was verified:** every number is copied from my own terminal output.
+
+**Errors found:** none.
+
+**Rejections:** marking G8 `SETTLED` alone. I co-own it with M2 and M3, so I left it for all three
+to agree.
+## 2026-11-20 — FJ-03: why the extractor finds no edge
+
+**Assistance level:** L3 (Core-assist): the assistant fetched fastjson at the pinned commit in its
+container, installed JDK 8 from Ubuntu's packages to build it unmodified, read `SerializeWriter`,
+ran my extractor on the pair with a one-off script, and drafted the explanation and the
+`04-Implementation` bullet.
+
+**What I asked:** look into M2's finding that FJ-03 has no resource edge.
+
+**What was retained:** the entry in [[evidence-m1]] and the new "What breaks" bullet.
+
+**What I changed:** read the explanation against the source and the extractor output before
+committing.
+
+**How it was verified:** the extractor output quoted in the entry. Nothing in `evidence/` changed.
+
+**Errors found:** the first two builds failed (JDK 21: "Source option 5 is no longer supported",
+then `javax.xml.bind` missing). JDK 8 built it.
+
+**Rejections:** adding a co-touch term to the ranking rule now. FJ-03 is ground truth, and plan
+rule 4 forbids tuning the rule on it.

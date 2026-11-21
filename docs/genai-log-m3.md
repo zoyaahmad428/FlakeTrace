@@ -1490,3 +1490,55 @@ arbitrary choice of mine. Also be able to explain why deleting one "alone" line 
 *fixing the checksum to match* still gets caught: the checksum only proves the file wasn't
 tampered with after bundling, while the recount independently re-derives the numbers from
 whatever the file actually contains now — two different guarantees, not a redundant pair.
+
+## 2026-11-21 — the format moved out from under a half-built PR
+
+**What happened:** the member said there were merge conflicts on the W23 branch again.
+Checking `main` before touching anything (the established habit by this point) showed more
+than the usual append-only-doc conflicts: M2 had built and merged a real bundle writer and
+replay command (`runner/bundle.py`, `runner/replay.py`) against a new, more detailed **Interface
+8** that the team agreed the day after I built my own `eval/bundle.py` from ADR-013 directly.
+My manifest shape, folder-naming rule and redaction approach were all different from the real,
+already-merged one — not a text conflict at all (no file I touched and no file M2 touched
+overlapped), a design one that a line-based merge would never surface.
+
+**What I did, not what I was told to do:** nobody asked me to notice this — the task was "fix
+the merge conflicts," and the three actual conflicts (the usual append-only docs) would have
+resolved in five minutes with no further action. I kept reading past them because the git log
+itself (`m2/w23-replay-code`, `m2/w23-replay`) named the same work package I was mid-PR on,
+which was reason enough to go look at what landed before assuming three doc conflicts were the
+whole story. Read `runner/bundle.py` and `runner/replay.py` in full before changing anything of
+mine, specifically to find the one new, unsignposted-in-the-docs detail that mattered most for
+correctness: a replay bundle's reference signature lives in the record header, not re-derived
+from a search phase that does not exist for a replay (I would have silently mis-recounted every
+replay bundle without having read `runner/replay.py`'s `replay_steps` directly).
+
+**A judgement call on scope, made and stated, not quietly decided:** rather than patching my
+old `create_bundle` to also emit Interface 8's shape (keeping two writers alive, which the
+interface itself says not to do), I deleted it outright and rebuilt `verify_bundle` purely as a
+*reader* of `runner.bundle`'s real format — matching the ownership split ("one writer") the
+team had just agreed, not my own earlier, now-overtaken reading of ADR-013.
+
+**What I verified rather than assumed:** rewrote every unit test to build its bundles through
+the real `runner.bundle.write_bundle`, specifically so this module's tests are structurally
+unable to drift from the real contract the way the first version's hand-rolled fixtures could
+have. Then went one step further and ran the real CLI (`runner diagnose --bundle`) for real,
+checked the new bundle's manifest.json by eye against Interface 8's own example, grepped all
+five files for the machine username, and tampered a copy to confirm the failure mode too —
+not just "the unit tests pass," which could still hide a format mismatch if the tests
+themselves were wrong about the contract.
+
+**A tooling mistake along the way, caught before it reached a commit:** tried to patch one of
+the merge-conflict resolutions with an inline `python -c "..."` script containing backticks for
+markdown code spans; bash command-substituted several of them inside the double-quoted string
+before Python ever saw it (one, `` `eval/bundle.py` ``, was interpreted as "run this file as a
+shell script," which is why the terminal filled with Python-syntax-as-shell-syntax errors).
+Caught it by re-reading the file afterward rather than trusting the script's reported success,
+found exactly one damaged fragment, fixed it directly. Lesson for next time: write content with
+backticks to a script *file* and run that, never inline in a shell `-c` argument.
+
+Ownership checkpoint: be able to explain why `eval/bundle.py` no longer writes anything at all,
+and why that is a *better* design than the first version, not a downgrade — one writer means
+the format has exactly one place in code that can drift from the contract, and `verify_bundle`
+staying a pure reader is what makes it credible as an independent check in the first place (a
+checker that can also write the thing it checks is not independent).

@@ -809,6 +809,20 @@ class TestSearchPolicy(unittest.TestCase):
                          ("ranked", "module", [2], None))
         self.assertEqual((ranking["order"][0], len(ranking["order"]), ranking["scores"][0]),
                          (str(self.C[8]), 10, [1, 2, 8]))
+        self.assertEqual(ranking["notes"], {})
+
+    def test_ranking_line_names_candidates_that_could_not_be_analysed(self):
+        """M1's #138 suggestion, agreed by M3: the record tells "no evidence" from "could not analyse"."""
+        def ranker_for(candidates, victim):
+            ranker = FakeRanker(candidates, edges={2: {8: 1}}, cut_off=False)
+            ranker.notes = {candidates[3]: "test class not found in project classes: pkg.C3Test"}
+            return ranker
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "r.jsonl"
+            run_steps(RecordingRunner(self.fails_after(self.C[8]), path, {}), self.C + [V], V, n=20,
+                      policy="ranked", ranker_for=ranker_for)
+            ranking = next(json.loads(x) for x in path.read_text(encoding="utf-8").splitlines() if '"ranking"' in x)
+        self.assertEqual(ranking["notes"], {str(self.C[3]): "test class not found in project classes: pkg.C3Test"})
 
     def test_analysis_seconds_in_the_account(self):
         runs = run_steps(self.fails_after(self.C[8]), self.C + [V], V, n=20, policy="ranked",

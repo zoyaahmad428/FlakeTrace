@@ -98,9 +98,23 @@ in-process and decides nothing itself:
 
 - `--budget-invocations N` and `--budget-seconds S` (ADR-014, Interface 6). A limit below the start minimum (`3n` + the tests up to the victim + 2) exits 2 and names the minimum.
 - Every summary has a `budget:` line: invocations spent (of the limit), the reserve, candidates tried, and the phase it stopped in.
-- `BUDGET_EXHAUSTED` exits 3 with "No report" and the budget line until M3's W24 report half reads it.
+- `BUDGET_EXHAUSTED` is a report since M3's W24 half (PR #135): `UNRESOLVED (BUDGET_EXHAUSTED)`, exit 0. Its
+  `reproduced:` line says "no sequence verified (the starting order failed k of r run(s) before the budget ran
+  out)", so the starting order's runs are not read as a verified reproduction (2026-11-20 follow-up).
+- When every kept test is `NEEDED`, the `deletion:` line says "each kept test confirmed needed" (M1's W20
+  verification, PR #137).
 
 ## W25 additions (2026-11-20)
 
 - `--policy original|ranked|random` and `--scope module|package` (ADR-014, Interface 7). `--scope package` with `--order` exits 2.
 - A `search:` line: `original order`, `random order (seed S)`, or `ranked by static evidence at depth 2 (k of N candidates with evidence)`, with the fallback note on its own line. A rank orders the search; it never says what caused the failure (claims ledger G3).
+
+## W23 additions (2026-11-21)
+
+- `--bundle <folder>` writes an evidence bundle (Interface 8) after the report; the summary names it.
+- `replay <bundle> --project <checkout> [--bundle] [--records] [--workspace]` re-checks it (R1–R7) and prints the comparison. Exit 0 same verdict, 4 different, 2 input (not a bundle, a changed file, nothing to replay, a test missing from the checkout), 1 tool failed.
+- **What breaks:** a bundle refuses to be written if your home folder or user name would remain in it — a path printed somewhere new (e.g. a tool's banner) needs adding to `paths` in `runner/cli.py` (diagnose) and
+  `runner/replay.py` (replay). User names shorter than 3 characters are not matched as path parts (they
+  would also hit JSON escapes such as `\n`).
+- `replay` always runs on a copy (Interface 8 R2), takes `n` and the lifecycle from the checksummed record
+  (a manifest that disagrees is refused), and never writes inside the original bundle (R7).

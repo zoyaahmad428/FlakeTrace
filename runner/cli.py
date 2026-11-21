@@ -3,11 +3,13 @@
 Runs runner.diagnose.diagnose(), Member 1's resource evidence for a found polluter and
 Member 3's assemble_report(), then writes the report next to its execution record.
 Exit codes: 0 report written, 2 input wrong, 1 tool failed, 3 no report can be built yet.
+`replay` (W23): 0 the verdict is the same, 4 it differs, 2 input wrong, 1 tool failed.
 """
 
 import argparse
 import json
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -17,9 +19,9 @@ from eval.baseline import TestIdentifier
 from eval.report import UnhandledStatus, assemble_report
 from evidence.extract import DEFAULT_DEPTH, ExtractError, Project, analyse_pair, report_fields
 from runner.budget import Budget
-from runner.diagnose import (BUDGET_EXHAUSTED, INCONSISTENT, NOT_REPRODUCED, POLLUTER_FOUND,
-                             DiagnoseInputError, diagnose)
-from runner.deletion import DELETION_RUN, INCONCLUSIVE, NOT_NEEDED, NOT_RUN
+from runner.bundle import BundleError, write_bundle
+from runner.diagnose import INCONSISTENT, NOT_REPRODUCED, POLLUTER_FOUND, DiagnoseInputError, diagnose
+from runner.deletion import DELETION_RUN, INCONCLUSIVE, NEEDED, NOT_NEEDED, NOT_RUN
 from runner.order_runner import LIFECYCLES, ToolError
 from runner.policy import POLICIES, SCOPES
 from runner.workspace import WORKSPACES, WorkspaceError, workspace
@@ -30,7 +32,6 @@ _NO_REPORT_WHY = {
     INCONSISTENT: "the victim failed in the original order but not again (alone, after any single "
                         "earlier test, or in the full order once more), so no test is blamed; likely flaky",
     NOT_REPRODUCED: "the victim never failed with a real failure in n runs of the original order",
-    BUDGET_EXHAUSTED: "the budget ran out before a polluter set was found; no report is built for this result yet",
 }
 
 
@@ -67,8 +68,19 @@ def main(argv=None) -> int:
     command.add_argument("--scope", choices=SCOPES, default="module",
                          help="module (default): every discovered test; package: only tests in the victim's "
                               "package (the real-case protocol's scope rule; not with --order) (W25)")
+    command.add_argument("--bundle", default=None,
+                         help="also write an evidence bundle (report, record, environment, replay commands; "
+                              "personal paths removed) into this folder (W23, ADR-013)")
+    again = commands.add_parser("replay", help="re-check a bundle's evidence on a checkout and compare the verdict")
+    again.add_argument("bundle", help="a bundle folder written by diagnose --bundle")
+    again.add_argument("--project", required=True, help="checkout of the subject at the bundle's commit")
+    again.add_argument("--bundle", dest="out", default="flaketrace-bundles",
+                       help="folder for the replay's own bundle (default flaketrace-bundles)")
+    again.add_argument("--records", default="flaketrace-records", help="folder for the replay's record")
     arguments = list(argv if argv is not None else sys.argv[1:])
     args = parser.parse_args(arguments)
+    if args.command == "replay":
+        return run_replay(Path(args.bundle), Path(args.project), args.out, args.records, arguments)
     if args.budget_invocations is not None and args.budget_invocations < 1:
         return _error(f"--budget-invocations must be >= 1, got {args.budget_invocations}", 2)
     if args.budget_seconds is not None and args.budget_seconds <= 0:
@@ -80,14 +92,14 @@ def main(argv=None) -> int:
     return run_diagnose(Path(args.project), args.victim, args.n, args.records,
                         Path(args.order) if args.order else None, args.shuffles, args.seed, arguments, args.lifecycle,
                         args.workspace, Path(args.copy_parent) if args.copy_parent else None, budget,
-                        args.policy, args.scope)
+                        args.policy, args.scope, args.bundle)
 
 
 def run_diagnose(project: Path, victim_id: str, n: int, records: str, order_path: Optional[Path] = None,
                  shuffles: int = 31, seed: int = 0, command: Optional[List[str]] = None,
                  lifecycle: str = "class-grouped", workspace_mode: str = "copy",
                  copy_parent: Optional[Path] = None, budget: Optional[Budget] = None,
-                 policy: str = "original", scope: str = "module") -> int:
+                 policy: str = "original", scope: str = "module", bundle: Optional[str] = None) -> int:
     # Java names only: the victim also becomes part of the record's file name.
     if not _VICTIM.fullmatch(victim_id):
         return _error(f"--victim must be Class#method (Java names, no spaces), got {victim_id!r}", 2)
@@ -107,6 +119,7 @@ def run_diagnose(project: Path, victim_id: str, n: int, records: str, order_path
     # ADR-012 section 4: build, run and extract evidence in `work`, a disposable copy by default.
     try:
         with workspace(project, workspace_mode, copy_parent) as work:
+            work_path = Path(work).resolve()
             outcome = _diagnose_in(work, project, victim, n, records, order, shuffles, seed, command, lifecycle,
                                    workspace_mode, budget, policy, scope)
     except WorkspaceError as error:
@@ -130,7 +143,39 @@ def run_diagnose(project: Path, victim_id: str, n: int, records: str, order_path
     crashes = runs.infrastructure_failures + runs.shuffle_infrastructure_failures + runs.alone_infrastructure_failures
     print(summary(report, report_path, (len(runs.original_order) - 1, runs.minimise_runs) if ddmin_ran else None,
                   crashes, runs.deletion_checks, runs.budget, runs.search))
+    if bundle is not None:
+        try:
+            folder = write_bundle(bundle, report, runs.execution_record, environment_text=_environment_text(),
+                                  paths={str(work_path): "<project>", str(project.resolve()): "<project>",
+                                         str(Path(records).resolve()): "<records>"},
+                                  **_subject(project))
+        except BundleError as error:
+            return _error(str(error), 1)
+        print(f"  bundle:     {folder}")
     return 0
+
+
+def run_replay(bundle: Path, project: Path, out: str, records: str, command: Optional[List[str]] = None) -> int:
+    """W23 (Interface 8 R1-R7). Exit codes: 0 same verdict, 4 the verdict differs, 2 input, 1 tool failed."""
+    from runner.replay import replay
+    if not (project / "pom.xml").is_file():
+        return _error(f"no pom.xml in {project}; --project must be a checkout of the bundle's subject", 2)
+    try:
+        # Interface 8 R2: a replay always runs on a copy of the checkout.
+        code, lines, folder = replay(bundle, project, out, records, 120.0, "copy", command)
+    except DiagnoseInputError as error:
+        return _error(str(error), 2)
+    except (BundleError, WorkspaceError, ToolError) as error:
+        return _error(str(error), 1)
+    except ExtractError as error:
+        return _error(f"resource evidence failed: {error}", 1)
+    except subprocess.CalledProcessError as error:
+        return _error(f"{Path(str(error.cmd[0])).name} failed with exit code {error.returncode} on {project}", 1)
+    if code == 2:
+        return _error(lines[0], 2)
+    print("\n".join(lines))
+    print(f"  bundle:     {folder}")
+    return code
 
 
 def _diagnose_in(work: Path, project: Path, victim, n, records, order, shuffles, seed, command, lifecycle,
@@ -227,6 +272,32 @@ def search_line(search, candidates: int, searched: bool = True) -> List[str]:
     return [f"  search:     original order{scope}"]
 
 
+def _environment_text() -> str:
+    """ADR-013's environment.txt: what `java -version` and `mvn -v` print (a missing tool says so)."""
+    parts = []
+    for command in (["java", "-version"], ["mvn", "-v"]):
+        try:
+            done = subprocess.run([shutil.which(command[0]) or command[0], *command[1:]], capture_output=True,
+                                  text=True, timeout=60)
+            parts.append(f"$ {' '.join(command)}\n{done.stdout}{done.stderr}")
+        except (OSError, subprocess.SubprocessError) as error:
+            parts.append(f"$ {' '.join(command)}\nnot available: {error}\n")
+    return "\n".join(parts)
+
+
+def _subject(project: Path) -> dict:
+    """Interface 8's subject: "fixture" for a project inside this repository, else its origin URL."""
+    project = project.resolve()
+    repository_root = Path(__file__).resolve().parents[1]
+    top = subprocess.run(["git", "-C", str(project), "rev-parse", "--show-toplevel"], capture_output=True, text=True)
+    root = Path(top.stdout.strip()).resolve() if top.returncode == 0 and top.stdout.strip() else None
+    module_path = project.relative_to(root).as_posix() if root and root in [project, *project.parents] else None
+    if repository_root == project or repository_root in project.parents:
+        return {"repository": "fixture", "module_path": module_path}
+    origin = subprocess.run(["git", "-C", str(project), "remote", "get-url", "origin"], capture_output=True, text=True)
+    return {"repository": origin.stdout.strip() if origin.returncode == 0 else None, "module_path": module_path}
+
+
 def budget_line(account) -> str:
     """W24 (Interface 6): what the diagnosis spent and, if it stopped early, where."""
     spent = sum(account.spent.values())
@@ -263,7 +334,12 @@ def summary(report: dict, report_path: Path, minimised: Optional[Tuple[int, int]
         checked = "" if deletion_checks else "; not deletion-verified"
         lines.append(f"  minimised:  {earlier} earlier tests -> {count} polluter{'s' if count != 1 else ''} "
                      f"in {runs} runs (reduced by single-trial delta debugging{checked})")
-    if removals:
+    last_round = [c for c in deletion_checks if deletion_checks and c.round == deletion_checks[-1].round]
+    if removals and all(c.status == NEEDED for c in last_round) and not any(c.status == NOT_NEEDED for c in removals):
+        # M1's W20 verification (PR #137): say it plainly when every kept test was confirmed needed.
+        lines.append(f"  deletion:   each kept test confirmed needed: removed one at a time, {removals[0].runs.n} runs "
+                     f"each ({sum(c.runs.n for c in removals)} runs), the victim passed every run")
+    elif removals:
         dropped = sum(c.status == NOT_NEEDED for c in removals)
         unsure = sum(c.status == INCONCLUSIVE for c in deletion_checks if c.round == deletion_checks[-1].round)
         lines.append(f"  deletion:   kept tests removed one at a time, {removals[0].runs.n} runs each "
@@ -295,8 +371,13 @@ def summary(report: dict, report_path: Path, minimised: Optional[Tuple[int, int]
     reproduced, alone = report["reproduction"], report["victim_alone"]
     # The alone count holds only failures matching the reference signature (claims ledger G1, FT003);
     # "other failure" keeps a victim that fails alone differently (N4) apart from one that passes (F1).
-    lines.append(f"  reproduced: {reproduced['matched']}/{reproduced['n']} (lower bound "
-                 f"{reproduced['lower']:.3f})   alone (same failure): {alone['matched']}/{alone['n']}, "
+    if report["unresolved_reason"] == "BUDGET_EXHAUSTED":
+        # W24: these are only the starting order's runs before the budget ran out, not a verified sequence.
+        sequence = (f"no sequence verified (the starting order failed {reproduced['matched']} of {reproduced['n']} "
+                    "run(s) before the budget ran out)")
+    else:
+        sequence = f"{reproduced['matched']}/{reproduced['n']} (lower bound {reproduced['lower']:.3f})"
+    lines.append(f"  reproduced: {sequence}   alone (same failure): {alone['matched']}/{alone['n']}, "
                  f"other failure: {alone['other']}/{alone['n']}")
     if search is not None:
         lines += search_line(search, budget.candidates_total if budget is not None else 0,

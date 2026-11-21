@@ -2376,3 +2376,61 @@ re-decide against `eval.outcome.decide()`.
   reproduction (ADR-013 section 5: clone at the recorded tool commit, `verify-bundle`,
   `replay`) has not happened. `python -m runner replay` (ADR-013 section 3, M2's half) does
   not exist yet -- `replay.md` inside each bundle names the manual command in the meantime.
+
+## 2026-11-21 — W23's format changed mid-build: Interface 8, `eval/bundle.py` reworked
+
+**What happened:** the 2026-11-20 entry above built `eval/bundle.py` straight from ADR-013's
+own text (its own `create_bundle` writer, its own manifest shape) because, at that point,
+nothing more specific existed. Before that PR merged, the team agreed **Interface 8**
+(`docs/contracts/interfaces.md`, recorded by M2, 2026-11-21) -- a materially different,
+more detailed manifest (`kind`, `run_date`, `replay_of`, a flat `environment` block, `victim`
+as a string not an object), a different folder-naming rule (the record's own filename stem,
+timestamp first, not the victim-first name ADR-013's literal wording suggested), a more
+rigorous redaction (`runner.bundle.redact`/`assert_clean`: path-boundary regex matching, both
+slash styles and JSON-escaped forms, a fail-closed check that refuses to write a bundle that
+would still contain the home path or user name), and **a real writer already built and merged**
+(`runner/bundle.py`, `runner/replay.py`; M2) with real F1/F3 bundles replayed `same`
+([[evidence-m2]]). Caught this by re-fetching `main` before pushing the W23 PR -- not something
+a text-only merge conflict would have shown, since `eval/` and `runner/` never touched the same
+file; the mismatch was in what the two halves assumed about each other's shape.
+
+**What I did about it, not just resolved as text:**
+- Deleted `create_bundle` and every writer-side helper (`_redact`, `_manifest`, `_replay_md`,
+  `_environment_txt`, `bundle_folder_name`) entirely -- Interface 8 point 1 is explicit that
+  there is one writer, and it is the runner, not `eval/`.
+- `verify_bundle` now calls `runner.bundle.read_bundle` for checksums (it already raises
+  `BundleError` on any mismatch; my own manual checksum loop was redundant and removed) and
+  reads `bundle.manifest`/`bundle.report` from it, rather than parsing the bundle's files by
+  hand.
+- Added the new `kind: "replay"` shape to the recount: a replay bundle has no reproduce/
+  shuffle/search/minimise lines at all (`runner.replay.replay_steps` only ever runs alone,
+  deletion, verify), and its reference signature is the record header's own
+  `reference_signature` field (carried over from the original report, per Interface 8), not
+  re-derived from the search phase the way a diagnosis bundle's is -- read `runner/replay.py`
+  first to get this right rather than guessing from the manifest text alone.
+- Rewrote every test in `eval/tests/test_bundle.py` to build its bundles through the *real*
+  `runner.bundle.write_bundle`, not a hand-rolled approximation of the format -- so this
+  module's tests can never again silently drift from the real contract the way the first
+  version did.
+- Deleted the committed `eval/bundles/odfixture.ConfigVictimTest#expectsDefaultMode-
+  20261120T193202Z/` (my old format) and regenerated a real one with the actual CLI
+  (`runner diagnose --bundle`), in the real Interface 8 shape, at
+  `eval/bundles/20261121T094724Z-odfixture.ConfigVictimTest#expectsDefaultMode/`.
+- **Command:** `python3 -m unittest discover -s eval/tests` -> **146 tests, OK** (10 bundle
+  tests now, rewritten; down from 11 because two of the old create-focused tests no longer
+  apply with `create_bundle` gone). Real end-to-end: `python -m runner diagnose --project
+  fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode --bundle
+  eval/bundles` (JDK 8, real Maven/JVM) -> real bundle written; `python -m eval.bundle verify`
+  on it -> real exit 0, zero occurrences of the machine username in any of the 5 files
+  (checked directly, not assumed). A tampered copy (`reproduction.matched` changed) ->
+  `read_bundle`'s own checksum check catches it immediately, exit 1.
+- **Not a mistake in the honesty-rules sense:** nothing was asserted that wasn't run, and the
+  11-tests/148-tests numbers in the 2026-11-20 entry were real at the time, against the code
+  that existed then. This is a design the team changed out from under a half-built PR, caught
+  by re-checking `main` before pushing -- exactly the discipline that is supposed to catch
+  this, working as intended. Updated `eval/bundles/README.md`, `eval/README.md`,
+  `docs/07-Defense/claims-ledger.md` (G7), `docs/10-Final1/iteration-2-plan.md` (W23 row) and
+  `docs/09-Team/members.md` accordingly -- none left describing the superseded design as
+  current.
+- **Still open:** F2-F4/N1-N4 not bundled; `eval/reports/*.json` not replaced; M1's independent
+  reproduction of a real bundle (ADR-013 section 5) has not happened.

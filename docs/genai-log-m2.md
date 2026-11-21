@@ -1194,3 +1194,36 @@ the existing `priority` hook, so every step after the candidate order is the sam
 
 Ownership checkpoint: why the policies reach the same endpoint; when deepening stops; why a fixture result is not
 a contribution claim.
+
+## 2026-11-20 — CLI follow-ups after #135 and #137
+
+**Tool:** Claude Code (Claude Opus 5.5), test-driven-development · **Level:** L2 · **Branch:** `m2/w24-followups`
+
+**Asked:** analyse M3's #135 and M1's #137 and do the follow-ups. **Kept:** two summary wordings, each test-first;
+the dead "no report yet" text removed. **Left:** G2's status, which needs M3's agreement. **What I changed:** *to fill in.*
+
+Ownership checkpoint: why a `BUDGET_EXHAUSTED` report's `reproduced:` numbers are not a verified sequence.
+
+## 2026-11-21 — ranking-line notes, G2, Interface 6 step 3
+
+**Tool:** Claude Code (Claude Opus 5.5), test-driven-development · **Level:** L2 · **Branch:** `m2/ranking-notes`
+
+**Asked:** act on M1's and M3's merged PRs and M1's message. **Kept:** M1's per-candidate note carried into the
+ranking line (agreed by M3); G2 settled with its scope; a real F2 pair at the same limit for items 1–3. **Declined:**
+skipping ranking once the seconds limit is spent (saves little, needs another contract change). **What I changed:**
+*to fill in.*
+
+Ownership checkpoint: why "could not analyse" must not look like "no evidence"; why ranked fits in 70 and original does not.
+
+## 2026-11-21 — W23, M2's half: bundle writer and replay
+
+**Tool:** Claude Code (Claude Opus 5.5), brainstorming (with a builder check) → writing-plans → executing-plans → TDD,
+one fresh reviewer at the end · **Level:** L3 · **Branch:** `m2/w23-replay-code`
+
+**Asked:** start W23 without waiting for M3. **Kept:** Interface 8 written first and agreed (two clarifications from
+the builder check); the runner writes bundles and M3 verifies; redaction refuses rather than leaks; replay never
+searches. **Wrong at first (found by review):** the written comparison disagreed with the printed one; replay trusted
+the unchecksummed manifest. **What I changed:** *to fill in.*
+
+Ownership checkpoint: why the user name is matched only as a path part; why replay reads `n` from the record; why
+"same" needs the same polluters.
