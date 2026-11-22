@@ -1,138 +1,140 @@
-# ADR-016 — Reproduction fallback: pair search, then "all before", when no order fails
+# ADR-016 — Pair mode: diagnose a known victim when no order makes it fail
 
-**Date:** 2026-11-22 · **Status:** `ACCEPTED` by M1, M2 and M3 on 2026-11-22 (team WhatsApp group, recorded by M2;
-confirmed by approving PR #157), as proposed: the fallback is automatic, `--no-fallback` keeps today's
-behaviour. To be built in Sprint C as W35, after its Interface section is agreed ·
+**Date:** 2026-11-22 (revised the same day) · **Status:** `PROPOSED (revised)` by M2 — an earlier version (an
+automatic fallback with "all before" orders) was accepted by M1, M2 and M3 on 2026-11-22; on review it was
+over-built, and this revision replaces it. It needs the three ticks again before anything is built ·
 **Owner:** M2 (runner) with M3 (report field, measurement) · **Reviewer of the ranking use:** M1 ·
-**Addresses:** M-3 / FT008 (a real case through the whole pipeline), M-2 / FT007 (a live ranked-vs-original
-comparison on real code), panel action A5 · **Work package:** W35 (Sprint C, agreed 2026-11-22) ·
-**Builds on:** [[03-Design/decisions/ADR-004-w7-diagnosis-runs]], [[03-Design/decisions/ADR-007-w10-ddmin-minimisation]],
-[[03-Design/decisions/ADR-008-not-reproduced-and-order-search]],
-[[03-Design/decisions/ADR-011-deletion-evidence]], [[03-Design/decisions/ADR-014-budget-ledger-and-ranked-search]]
+**Addresses:** M-3 / FT008 (a real case through the whole pipeline), M-2 / FT007 (budget and ranking on real
+code), panel action A5 · **Work package:** W35 (Sprint C) ·
+**Builds on:** [[03-Design/decisions/ADR-004-w7-diagnosis-runs]],
+[[03-Design/decisions/ADR-008-not-reproduced-and-order-search]], [[03-Design/decisions/ADR-011-deletion-evidence]],
+[[03-Design/decisions/ADR-014-budget-ledger-and-ranked-search]]
 
 ## Context
 
-FlakeTrace searches for a polluter **only after it has seen the victim fail in some full order**: the
-starting order, then up to 31 class-first shuffles (ADR-008). On our one real case this never happens:
+**What FlakeTrace is for** (`docs/00-Meta/project-one-pager.md`): the input is a known failure of a known victim;
+the output is evidence, with a typed reason that tells the developer the next action; the process is bounded by a
+budget. We do not do detection.
 
-- FJ-03 (fastjson `e05e9c5`) is a genuine order-dependent victim: `[SerializeWriterTest_14#test_writer_1,
-  MaxBufSizeTest#test_max_buf]` fails 10/10, the victim alone passes 10/10 (W26a premise, reproduced by M2).
-- With `--scope package` (524 tests), the real command ran 12,817 invocations and gave
-  `UNRESOLVED (NOT_REPRODUCED)` (M3, PR #156): in the discovered (sorted) order the polluter runs **after**
-  the victim, so it is not even a candidate (the order is cut after the victim: 260 candidates); in the 16 of
-  31 shuffles where it ran **before**, other tests in between reset the shared buffer — they act as
-  **cleaners** — and the failure never appeared.
+**How FlakeTrace starts today:** it searches for a polluter only after it has seen the victim fail in a full order
+(the starting order, then up to 31 shuffles, ADR-008). Only then do the search, `ddmin`, deletion checks, the
+budget and ranking act.
 
-So the obstacle is neither the search (it finds the polluter whenever a failing order exists) nor the test (a
-real victim): it is the **entry rule**. Consequences today: the real case cannot be diagnosed from the victim
-alone; the budget and ranking (W24, W25) — the approved contribution — are never exercised on real code; and
-the only real-case ranking result is offline (W25 item 5: no static evidence, position 368 of 524 in both orders).
+**What FJ-03 showed** (M3, PR #156): from the victim alone with `--scope package`, the real command ran 12,817
+invocations and gave `UNRESOLVED (NOT_REPRODUCED)`. In fastjson's discovered order the polluter runs after the
+victim; in the 16 of 31 shuffles where it ran before, other tests in between reset the state (cleaners). The
+victim is real — `[SerializeWriterTest_14#test_writer_1, MaxBufSizeTest#test_max_buf]` fails 10/10, the victim
+alone passes 10/10 — but no order FlakeTrace can find makes it fail.
 
-How the alternatives handle this situation (from [[01-Literature/contemporary-comparison-table]]):
+**Why this is the normal case, not an odd one.** FJ-03 is "known" from a **pair scan** (our POC ran all 524
+`[candidate, victim]` pairs). Our main dataset, **IDoFT** (`odr-tests.csv`, 1,908 rows, 24 projects; the five
+held-out cases in `eval/benchmark/manifest.json`), also lists each victim **with its polluters, not with a failing
+order**. And the setting in which ranking was measured — the POC's 39.3%, RankF — is pair scanning. So:
 
-| Tool | Needs a failing order first? | In this situation |
+- today FlakeTrace cannot diagnose most dataset victims from the victim alone;
+- giving it the dataset's polluters as an `--order` would hand it the answer (the evaluation plan's leakage rule:
+  the oracle may not be an input) — which is what FJ-03's two-test `order.txt` does;
+- budget and ranking, the approved contribution, are never exercised on real code.
+
+| Baseline family | Its input | The FlakeTrace mode it compares with fairly |
 | --- | --- | --- |
-| iDFlakies | No — it creates orders by shuffling | Detection only; masked by the same cleaners |
-| iFixFlakies | **Yes** — a known failing and a passing order | Cannot start, like FlakeTrace today |
-| RankF / one-by-one pair scanning (and our POC) | **No** — runs `[candidate, victim]` pairs | Finds FJ-03's polluter; this is how the POC found it |
+| iFixFlakies | A failing order (from iDFlakies' runs) | Order mode (today) |
+| RankF, one-by-one pair scanning, our POC | The victim only — pairs | **Pair mode (this ADR)** |
+| iDFlakies | Nothing (detection) | None: out of scope |
 
 ## Decision
 
-### 1. One pipeline, three steps before giving up
+### 1. A second search mode: pairs
 
-The user still gives only the victim (and optionally `--order`, `--scope`, `--policy`, a budget). After the
-alone check passes (unchanged: a victim that fails alone stops as `VICTIM_FAILS_ALONE`), and only when no order
-reproduced a real failure:
+`--search order` (default, today's pipeline, unchanged) or `--search pairs`. In pair mode:
 
-```
-1. Observed order:  the starting order, then shuffles               (today, ADR-008)
-2. Pair search:     [candidate, victim] for each candidate in scope  (new)  → single polluters
-3. "All before":    [every candidate…, victim], a few orders        (new)  → several polluters together
-4. Nothing failed:  UNRESOLVED (NOT_REPRODUCED), with every step's runs and cost
-```
-
-| Step | Rule |
+| Rule | |
 | --- | --- |
-| 2. Pair search | Candidates are **all tests in scope except the victim**, in the policy's order (Interface 7: `original`, `ranked`, `random`). Each pair runs **once**. The first real (non-synthetic) victim failure becomes the reference signature; that pair is the failing order. From there the normal path runs: alone check (already done), deletion check (one polluter: the alone check, ADR-011 §2), the sequence check `n` times. No minimisation is needed |
-| 3. "All before" | If no pair fails: run `[all candidates in scope, victim]` once in the discovered order, then up to **3** class-first shuffles of the candidates with the victim kept last. The first real failure gives a failing order; from there the existing path runs: single-polluter search over it, then `ddmin` (ADR-007), deletion checks (ADR-011), the sequence check |
-| Automatic | Steps 2–3 run automatically. `--no-fallback` keeps today's behaviour (stop at step 1) |
-| Honest wording | A failure found by step 2 or 3 was seen **in an order FlakeTrace constructed**, not in the project's natural run. The report says so in `limitations`: "the failure appeared only when the polluter ran directly before the victim (a constructed order); it was not seen in the project's discovered or shuffled orders" |
+| Input | The victim only (plus scope, policy, budget, `n`). Never the dataset's polluters |
+| Alone check first | As today: a victim that fails alone stops as `VICTIM_FAILS_ALONE` |
+| Candidates | Every test in scope except the victim, **including tests that come after it** in the discovered order (a pair has no "before" to respect), in the policy's order (Interface 7: `original`, `ranked`, `random`) |
+| Each pair | `[c, victim]` runs once. A real (non-synthetic) victim failure is **re-run once**; only if it fails again with the same signature is it adopted (the same safeguard as the re-check before `ddmin`, ADR-007). Otherwise the scan continues |
+| Found | The adopted pair is the failing order; its signature is the reference. The normal path certifies it: the alone check (done), the deletion check (one polluter: the alone check, ADR-011 §2), the sequence check `n` times |
+| None found | `UNRESOLVED (NOT_REPRODUCED)`, with the pairs tried |
+| Budget | Pairs are exploration (Interface 6): never the verification reserve; a cut gives `BUDGET_EXHAUSTED` with "tried k of N" |
 
-### 2. Cost, bounded and announced
+### 2. Simple for the user: the verdict names the next step
 
-- Steps 2–3 are **exploration** (Interface 6): they never spend the verification reserve (`3n`); when the limit
-  is reached the result is `UNRESOLVED (BUDGET_EXHAUSTED)` with "tried k of N candidates" and a suggested limit.
-- Before step 2 the CLI prints the worst case, e.g. "no order reproduced; pair search over 524 candidates may cost
-  up to 1,048 invocations, 'all before' up to 2,100".
-- **Default cap** when the user gave no `--budget-invocations`: one full pair pass + the "all before" orders + the
-  reserve. A diagnosis is never unbounded.
-- Ranking (W25) orders the pairs; with static evidence the polluter is usually among the first. Without evidence
-  (FJ-03) it changes nothing — an honest, now **live**, result.
-- Step labels `pair` and `all-before` are new record phases; the ledger, the recount (Interface 6 B8) and the
-  bundle (Interface 8) count them like the others.
+Pair mode is not started automatically. When order mode ends `NOT_REPRODUCED`, the summary names the next step with
+its cost, measured from the run itself (illustrative numbers):
 
-### 3. What the report carries (contract change)
+```
+UNRESOLVED (NOT_REPRODUCED)  com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf
+  next:       no order reproduced the failure. To search pairs instead:
+              py -m runner diagnose ... --search pairs   (524 candidates, about 25 min at 2.8 s per JVM)
+```
 
-A new field, proposed for M3's schema: `reproduced_by` — `"starting-order"`, `"shuffled-order"`, `"pair"`,
-`"all-before"` or `null` (never reproduced). With step counts in the budget account's `spent` (new keys `pair`,
-`all-before`). The verdict rules (ADR-010) are unchanged: a pair-found sequence is certified by the same alone
-check, deletion checks and repeated sequence check.
+This is the one-pager's design — a typed outcome mapped to a next action — and the user never starts an unseen
+multi-hour run.
 
-### 4. Left for FYP-2, stated now
+### 3. Honest report
 
-| Item | Why it waits | What it would add |
+A new report field `reproduced_by`: `"order"` (the starting or a shuffled order) or `"pair"`, or `null` when never
+reproduced. For `"pair"`, a `limitations` line: *"The failure appeared when the polluter ran directly before the
+victim (a constructed pair); it was not seen in the project's own or shuffled orders."* The verdict rules (ADR-010)
+do not change. (Interface 9 fixes the exact fields.)
+
+### 4. Not in this ADR
+
+| Item | When | Why |
 | --- | --- | --- |
-| **Cleaner-aware search** | When a cleaner sits between the polluters and the victim in every order tried, steps 1–3 can all be masked. Solving it means **finding the cleaners** — tests that undo the pollution — and keeping them out of the constructed orders, as iFixFlakies discovers cleaners for its patches | Diagnoses masked multi-polluter cases; the cleaners found are themselves evidence for a fix (and for the gated CDR) |
-| Group testing | Several candidates before the victim in one JVM clears many at once, but a cleaner inside the group hides the failure — the FJ-03 problem | Lower cost per candidate; belongs with the adaptive policy (ADR-014 §7) where it can be measured |
-| Known-failure start (`--expect-failure`) | Pair search does not need a signature; a pasted CI signature only confirms it is the *same* failure CI saw | A CI-log entry point; with the Surefire report reader, a path to CI integration |
-| Brittle tests | A test that fails alone and passes after a state-setter is the mirror case (agenda §6) | The second real-case family |
+| A real case that fails in a **recorded failing order** (order mode on real code; the iFixFlakies comparison) | **Next iteration** | IDoFT gives no failing orders; finding a development victim that fails naturally needs several tries. Every attempt is recorded |
+| Automatic switch to pairs | Later, if users want it | The typed next step is simpler and never surprises |
+| "All before" orders + `ddmin` (several polluters together, masked) | FYP-2 | Rarer; most exposed to cleaners |
+| **Cleaner-aware search** | FYP-2 | When cleaners mask every order, find them (as iFixFlakies discovers cleaners) and keep them out of constructed orders; also evidence for a fix |
+| Group testing; a CI-signature start (`--expect-failure`); brittle tests | FYP-2 | Need measurement (ADR-014 §7) or a new input |
 
 ## Alternatives considered
 
 | | Option | Why not chosen |
 | --- | --- | --- |
-| A | Keep today's rule; report FJ-03 as `NOT_REPRODUCED` | Honest, but leaves the contribution untested on real code and the user with nothing |
-| B | Require a pasted CI failure signature to start a pair search | Extra work for the user; FJ-03 has no CI failure to paste; kept as the optional `--expect-failure` (§4) |
-| C | Pair search **opt-in** (`--pair-search`) | Predictable, but users must know it exists; the announced cost and default cap give the same predictability automatically |
-| D | Choose an order that places the polluter before the victim | Biased: we would pick it knowing the answer |
+| A | Change nothing; FJ-03 stays `NOT_REPRODUCED` | The contribution stays unproven on real code, and dataset victims stay out of reach |
+| B | This ADR's first version: automatic fallback, then "all before" | Over-built: could start hour-long runs unasked; its cost cap never triggered; "all before" is the part most hurt by cleaners |
+| C | Feed the dataset's polluters as `--order` | Gives the tool the answer (leakage); nothing left for search, budget or ranking to do |
+| D | Pick only real cases that fail in natural orders | Needed too (next iteration), but excludes most of the dataset |
 
 ## What must be demonstrated
 
 | # | Evidence | Owner |
 | --- | --- | --- |
-| 1 | FJ-03 from the victim alone (`--scope package`): pair search finds a real polluter; the alone, deletion and sequence checks certify it; a bundle | M2 runs, M3 verifies |
-| 2 | The live comparison on FJ-03: `original`, `ranked`, `random` (5 seeds) under one budget, cost to the same verdict; first relevant pair at the POC's position or not, reported as it is | M3 measures, M1 or M2 repeats |
-| 3 | A multi-polluter case masked in natural orders is found by "all before" + `ddmin` (a new fixture control) | M2, M3's fixture |
-| 4 | A cleaner-masked case stays `NOT_REPRODUCED` with every step's cost — the stated limit, not a wrong verdict | M2 |
+| 1 | FJ-03 from the victim alone with `--search pairs --scope package`: a polluter found, certified, a bundle | M2 runs, M3 verifies |
+| 2 | The live comparison on FJ-03: `original`, `ranked`, `random` (5 seeds), one budget, cost to the same verdict, reported as it is | M3 measures; M1 or M2 repeats |
+| 3 | A randomly failing victim in a pair is not adopted (the re-run), and the scan continues | M2 (scripted, plus fixture N2) |
+| 4 | Real F1–F4, N1–N4 in order mode: unchanged | M2 |
 
 ## Tests to write first
 
 | Test | Expected |
 | --- | --- |
-| Scripted: nothing reproduces, victim passes alone, polluter is candidate k | Pair search finds it after k pairs; `POLLUTER_FOUND`; `reproduced_by: "pair"` |
-| Scripted: two polluters needed together, masked in natural orders | No pair fails; "all before" fails; `ddmin` keeps both; both deletion checks `NEEDED` |
-| Scripted: a cleaner always between polluter and victim | `NOT_REPRODUCED`; `spent` shows the pair and all-before runs |
-| Scripted: budget cuts the pair search | `BUDGET_EXHAUSTED`, "tried k of N" |
-| Scripted: victim fails alone | `VICTIM_FAILS_ALONE`; no pair runs |
-| Scripted: `--no-fallback` | Today's behaviour exactly |
+| Scripted: polluter is candidate k, after the victim in the discovered order | Found after k pairs; `POLLUTER_FOUND`; `reproduced_by: "pair"` |
+| Scripted: candidate j fails once by chance | Re-run passes; the scan continues to k |
+| Scripted: no pair fails | `NOT_REPRODUCED`; pairs tried = N |
+| Scripted: budget cuts the scan | `BUDGET_EXHAUSTED`, "tried k of N" |
+| Scripted: victim fails alone | `VICTIM_FAILS_ALONE`; no pairs run |
 | Scripted: `ranked` with evidence on candidate k | Its pair runs first |
-| Real F1–F4, N1–N4 | Verdicts unchanged (they reproduce at step 1) |
+| Order mode `NOT_REPRODUCED` | The summary's `next:` line names `--search pairs` with a time estimate |
+| Real F1–F4, N1–N4 (order mode) | Verdicts unchanged |
 
 ## Consequences
 
-- `run_steps` gains steps 2–3 between the alone check and `NOT_REPRODUCED`; the CLI gains `--no-fallback` and
-  the cost announcement. Interface 6 gains two exploration phases; Interface 7's candidate order applies to the
-  pair search. Report schema: `reproduced_by` (M3). A new Interface section is written before code, as for W24/W25.
-- FJ-03 becomes a real end-to-end case for W26b and the first live real-code measurement of the budget and ranking.
-- Diagnoses that today stop at `NOT_REPRODUCED` may now cost more; the announcement and the default cap keep it
-  predictable.
-- The claim changes from "FlakeTrace diagnoses failures it can reproduce in an order" to "…in an order it observes,
-  or failing ones it can construct, stating which" — recorded in the claims ledger when built.
+- The runner gains `--search pairs` (`run_steps` / `diagnose(search=…)`), a `pair` budget phase and record step, and
+  the `next:` line. Report schema: `reproduced_by` (M3). Interface 9 before code.
+- FJ-03 becomes a real end-to-end case diagnosed from the victim alone, and budget and ranking are measured live on
+  real code, in the setting the POC and RankF used.
+- The claim becomes: "FlakeTrace diagnoses a known victim from a failing order or, when none can be found, from pairs
+  — saying which."
 
 ## Agreement
 
+*The earlier version was ticked by all three on 2026-11-22. This revision needs the ticks again.*
+
 | Member | Agree? | Comment |
 | --- | --- | --- |
-| M1 | ☑ | Agreed 2026-11-22 (team group), recorded by M2; confirmed by approving PR #157 |
-| M2 | ☑ | Proposed and agreed 2026-11-22 |
-| M3 | ☑ | Agreed 2026-11-22 (team group), recorded by M2; confirmed by approving PR #157 |
+| M1 | ☐ | |
+| M2 | ☑ | Revised 2026-11-22 after review; replaces the accepted first version |
+| M3 | ☐ | |
