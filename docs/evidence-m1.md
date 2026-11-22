@@ -1288,3 +1288,94 @@ the build with a portable Temurin 8 on Windows.
 
 **Limitations:** one case; source reading plus static analysis, no runtime observation of
 `bufLocal`.
+
+## W23 verification: my independent bundle reproduction, ADR-013 §5 (2026-11-22)
+
+**Requirement:** FT009 / ADR-013 §5 / Interface 8, step 3: "M1, on her own machine, without
+Member 2 or 3 at the keyboard: clone at the recorded tool commit · `verify-bundle` · `replay`.
+Record: date, machine, JDK, both commands' output, every difference, every step that was unclear.
+If it fails, the failure is the finding." Claim G7 and FT009 were left open pending this.
+
+**Who and how:** me, alone. Neither M2 nor M3 was asked anything during the run. The assistant
+read the written instructions with me and, after my first attempts failed, turned them into
+commands. Those commands and my interpretations are marked below.
+
+**Machine:** my laptop, Windows 11 (build 26300), Oracle JDK 25.0.1, Apache Maven 3.9.9, Python
+3.11.9 (`python` and `py -3.11` both 3.11.9). The bundle is M2's F1 bundle, made on JDK 21.0.9,
+Maven 3.10.0. The bundle is `eval/bundles/20261121T093338Z-odfixture.ConfigVictimTest#expectsDefaultMode/`.
+
+### Part 1: following the written instructions alone
+
+- `git clone https://github.com/zoyaahmad428/FlakeTrace.git ft-b2` → `Receiving objects: 100%
+  (5382/5382), 14.58 MiB`, `Resolving deltas: 100% (3753/3753), done`.
+- From `D:\ft-b2`, the command exactly as the bundle's `replay.md` step 2 writes it:
+  `python -m eval.bundle verify 20261121T093338Z-odfixture.ConfigVictimTest#expectsDefaultMode` → `… is not a readable bundle: [Errno 2] No such file
+  or directory: '…\\manifest.json'`.
+- `python -m runner diagnose --project <project> --victim <Class#method> --bundle eval/bundles`
+  (the first line of the README's "Making and checking a bundle") → `The system cannot find the
+  file specified.` The same happened with the real victim name in place of `<Class#method>`.
+
+### Part 2: with the instructions interpreted (commands from the assistant)
+
+- **Deviation from `replay.md` step 1.** I did *not* check out the recorded commit `03ada56`. At
+  that commit neither the verifier nor the bundle exists:
+  - `git ls-tree 03ada56 eval/bundle.py` printed nothing;
+  - `git ls-tree 03ada56 "eval/bundles/20261121T093338Z-odfixture.ConfigVictimTest#expectsDefaultMode/manifest.json"` printed nothing.
+
+  The code replay uses is identical: `git diff --stat 03ada56 HEAD -- fixtures/od-fixture
+  runner/replay.py runner/bundle.py runner/order_runner.py runner/diagnose.py
+  evidence/extract.py` printed nothing. So I stayed on `main` at `dd3235f`.
+- `py -3.11 -m pip install -r eval/requirements.txt` → every requirement already satisfied
+  (`jsonschema==4.26.0`).
+- **Verify:** `py -3.11 -m eval.bundle verify "eval/bundles/20261121T093338Z-odfixture.ConfigVictimTest#expectsDefaultMode"` → `OK: eval/bundles/20261121T093338Z-odfixture.ConfigVictimTest#expectsDefaultMode`,
+  `exit 0`.
+- **Replay** (my interpretation: `<checkout of the subject>` = `fixtures/od-fixture` in this
+  clone): `py -3.11 -m runner replay "eval/bundles/20261121T093338Z-odfixture.ConfigVictimTest#expectsDefaultMode" --project fixtures/od-fixture
+  --bundle %TEMP%\b2-bundle --records %TEMP%\b2-records` → `exit 0`:
+
+  | Row | Bundle → my run |
+  | --- | --- |
+  | verdict | `VERIFIED -> VERIFIED` **same** |
+  | polluters | `odfixture.ConfigPolluterTest#pollute` → the same, **same** |
+  | sequence | `20/20 matched -> 20/20 matched` |
+  | alone | `20/20 passed -> 20/20 passed` |
+  | deletion | `ConfigPolluterTest#pollute NEEDED -> NEEDED` |
+  | subject, tool | `03ada56… -> dd3235f…` DIFFERENT (expected: I stayed on `main`; see the deviation above) |
+  | JDK | `21.0.9 -> 25.0.1` DIFFERENT |
+  | OS | `Windows-11-10.0.26300-SP0 -> Windows-10-10.0.26300-SP0` DIFFERENT (see finding 5) |
+  | Maven | `3.10.0 -> 3.9.9` DIFFERENT |
+  | timezone, locale, encoding, lifecycle | `Asia/Karachi`, `en_US`, `UTF-8`, `class-grouped`: **same** |
+
+- **My replay's own bundle:** `%TEMP%\b2-bundle\20261122T060836Z-odfixture.ConfigVictimTest#expectsDefaultMode`
+  → `py -3.11 -m eval.bundle verify "<that folder>"` → `OK`.
+- **Clone unchanged:** `git status --short` showed one untracked file, `ion`, and no tracked file
+  changed (nothing under `fixtures/`). `ion` is most likely a by-product of the `<…>` redirections
+  in part 1; it is not FlakeTrace output.
+
+**Result:** the F1 bundle **verifies and replays to the same verdict on a second machine**, with a
+different JDK (25 vs 21) and Maven (3.9.9 vs 3.10.0). That is FT009's and G7's closing evidence:
+someone other than the authors checked a report from its bundle.
+
+### Findings: every step that was unclear (for M2 and M3)
+
+1. **`replay.md` gives the bundle's bare name** (`… verify 20261121T093338Z-odfixture.ConfigVictimTest#expectsDefaultMode`). That fails from the repo
+   root, and from inside `eval/bundles` `python -m eval.bundle` cannot be imported. No folder makes
+   the line work as written. It should give the path (`eval/bundles/<name>`). (M2, `runner/bundle.py`
+   writes `replay.md`.)
+2. **`replay.md` step 1 contradicts step 2.** "Check out FlakeTrace at the commit above" (`03ada56`)
+   leaves no `eval/bundle.py` and no bundle to verify, because both were committed later. It
+   should say which commit to verify with, or record the verifier's commit as well. (M2, M3.)
+3. **The README mixes making and reproducing.** "Making and checking a bundle" puts `diagnose
+   --bundle` first. A reproducer needs only verify and replay, and nothing says so. (M3.)
+4. **`<…>` placeholders break in Windows cmd.** `<` and `>` are redirections, so the README line
+   gives `The system cannot find the file specified.` and may leave stray files (finding: `ion`).
+   A Windows example with real values is needed. (M3.)
+5. **The OS row reports a false difference.** Both machines are Windows 11 build 26300, but the
+   bundle says `Windows-11` and my run `Windows-10`. Python's `platform` names Windows 11 differently
+   across versions (M2 recorded Python 3.14; I ran 3.11). (M2, `runner/replay.py`.)
+6. **"`--project <checkout of the subject>`" is ambiguous.** It could be the repo root or
+   `fixtures/od-fixture`. For a fixture bundle the manifest's `subject.module_path` says
+   `fixtures/od-fixture`; the instructions could say "the checkout's `module_path`". (M2.)
+
+**Limitations:** one bundle (F1); one second machine (mine); the subject and tool commits were
+`main`, not the recorded `03ada56` (deviation above, with the diff showing the code is identical).

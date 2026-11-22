@@ -823,3 +823,27 @@ phrasing. It was replaced with the measured tally ("in the report's 20 alone run
 failed").
 
 **Rejections:** none.
+
+## 2026-11-22 — W23 verification: independent bundle reproduction (ADR-013 §5)
+
+**Assistance level:** L3 (Core-assist): I ran every command myself on my laptop, and neither M2
+nor M3 was involved. The assistant read the README and `replay.md` with me, explained why my
+first three attempts failed, gave me the part 2 commands (including checking that `03ada56`
+lacks the verifier), and drafted this entry and the register updates from my output.
+
+**What I asked:** do B2, the W23 reproduction, alone from the written instructions; then, after
+they failed, for the commands.
+
+**What was retained:** the W23 entry in [[evidence-m1]], with six findings for M2 and M3; the W23
+plan row; the FT009 row in [[10-Final1/action-register]]; the G7 row in [[07-Defense/claims-ledger]].
+
+**What I changed:** ran every command; checked the entry against my terminal output before
+committing.
+
+**How it was verified:** every number is copied from my own terminal output.
+
+**Errors found:** the assistant first assumed my plain `python` was 3.9. It is 3.11.9 in that
+folder, so that was not a finding.
+
+**Rejections:** closing FT009 or G7 myself. G7 belongs to M3 and M2, and FT009 also needs the
+supervisor's acceptance.
