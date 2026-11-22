@@ -1379,3 +1379,85 @@ someone other than the authors checked a report from its bundle.
 
 **Limitations:** one bundle (F1); one second machine (mine); the subject and tool commits were
 `main`, not the recorded `03ada56` (deviation above, with the diff showing the code is identical).
+
+## W35 verification: FJ-03 pair-mode diagnosis on my own machine (2026-11-22)
+
+**Requirement:** ADR-016 / Interface 9, step 3: "M1 reproduces the FJ-03 pair-mode diagnosis on
+her own machine (W35's verifier)". This is the first real fastjson victim diagnosed from the
+victim alone, through the whole pipeline. M2's run is in [[evidence-m2]] ("W35, M2's half").
+
+**Machine and setup**, on my laptop, run by me:
+- Windows 11; Python 3.11.9; Maven 3.9.9 (`C:\tools\apache-maven-3.9.9`).
+- For this run only, **Temurin JDK 8** (`openjdk version "1.8.0_512"`, build `1.8.0_512-b09`),
+  installed from Adoptium into `C:\Program Files\Eclipse Adoptium`. It was used through `set JAVA_HOME=C:\Program Files\Eclipse
+  Adoptium\jdk-8.0.512.9-hotspot` and `set PATH=%JAVA_HOME%\bin;%PATH%` in one Command Prompt
+  window. My default `java` stays JDK 25.0.1.
+- FlakeTrace: `main` at `7f95297`.
+
+**fastjson, outside the repository:**
+- In `D:\fj\fastjson`: `git init`, `git remote add origin https://github.com/alibaba/fastjson`,
+  `git fetch --depth 1 origin e05e9c5e4be580691cc55a59f3256595393203a1` (3009 objects, 2.92 MiB),
+  `git checkout FETCH_HEAD` → `e05e9c5 (grafted, HEAD) jsonpath.extract support
+  MultiPropertySegement`.
+- `mvn -B -q -DskipTests -Daether.connector.connectTimeout=60000
+  -Daether.connector.requestTimeout=180000 test-compile` → `exit 0`. `git status --short`
+  afterwards printed nothing: fastjson was not modified.
+
+**The diagnosis**, from `D:\FlakeTrace`, with `set JAVA_TOOL_OPTIONS=-Duser.timezone=UTC
+-Duser.language=en -Duser.country=US`:
+
+`py -3.11 -m runner diagnose --project D:\fj\fastjson --victim
+com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf --search pairs --scope package
+--policy original --n 20 --records %TEMP%\w35-rec --bundle %TEMP%\w35-bundle`
+
+It printed:
+- `CANDIDATE  com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf`;
+- `polluter: com.alibaba.json.bvt.serializer.SerializeWriterTest_14#test_writer_1`;
+- `pairs: found in a constructed pair after 368 of 524 pairs; pair mode does not run the
+  project's own orders`;
+- `reproduced: 20/20 (lower bound 0.839)   alone (same failure): 0/20, other failure: 0/20`;
+- `search: original order, victim's package only`;
+- `budget: spent 798 invocations, no limit (reserve 60); pairs tried 368 of 524 candidates`;
+- a report, a record and a bundle written to `%TEMP%`.
+
+From the report:
+- `outcome CANDIDATE`, `candidate_reasons ['NO_SUPPORTED_RESOURCE_EVIDENCE']`;
+- `polluters [SerializeWriterTest_14#test_writer_1]`;
+- `victim_alone {n 20, passed 20, matched 0, other 0, infra 0}`;
+- `reproduction {n 20, passed 0, matched 20}`;
+- `budget.spent {reproduce 0, shuffle 0, alone 20, pair 738, search 0, minimise 0, deletion 0,
+  verify 40}`, `candidates {total 524, tried 368}`.
+
+Record lines: `header 1, alone 20, ranking 1, pair 369, verify 20`.
+
+Afterwards, `git status --short` in `D:\FlakeTrace` showed only my usual untracked files.
+
+**Comparison with M2's run** (his JDK 21 for FlakeTrace, Temurin 8u502 for fastjson):
+
+| | M2 | Me |
+| --- | --- | --- |
+| Outcome | `CANDIDATE` | `CANDIDATE [NO_SUPPORTED_RESOURCE_EVIDENCE]` |
+| Polluter | `SerializeWriterTest_14#test_writer_1` | same |
+| Pairs | 368 of 524 | 368 of 524 |
+| Invocations | 798 (20 alone, 369 pair runs, 40 verify) | 798 (alone 20, pair 738 = 369 × 2, verify 40) |
+| `pair` record lines | 369 (368 + 1 re-run) | 369 |
+
+**Result: reproduced exactly** on a second machine with a different JDK 8 build (8u512 vs 8u502).
+FJ-03 is diagnosed from the victim alone. The 368th position matches the POC's recorded
+original-order position and the W25 offline result.
+
+**Why `CANDIDATE`, not `VERIFIED`:** there is no static edge (#145). Both tests only read the
+static `ThreadLocal` `SerializeWriter.bufLocal`, and the change is a JDK call. The report says so
+(`NO_SUPPORTED_RESOURCE_EVIDENCE`) instead of claiming more.
+
+**Findings:**
+1. **`reproduced_by` is `None` in the report.** Interface 9 makes it required. `eval/report.py`
+   on `main` does not write it yet, which is M3's half of W35 (still to land). The CLI's `pairs:`
+   line does say it came from a constructed pair.
+2. I did not run `eval.bundle verify` on the pair-mode bundle. M2 notes that the recount for
+   pair-mode bundles is also M3's half (Interface 9).
+
+**Limitations:**
+- One run, with `--policy original` only. The `ranked`/`random` comparison is M3's measurement.
+  `ranked` would keep the same order, because there is no edge.
+- Wall time was not recorded: no timer was used.

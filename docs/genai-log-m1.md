@@ -847,3 +847,24 @@ folder, so that was not a finding.
 
 **Rejections:** closing FT009 or G7 myself. G7 belongs to M3 and M2, and FT009 also needs the
 supervisor's acceptance.
+
+## 2026-11-22 — W35 verification: FJ-03 pair mode on my own machine
+
+**Assistance level:** L3 (Core-assist): the assistant read M2's W35 entry for the expected
+numbers, gave me the JDK 8 installer settings (no PATH, JAVA_HOME or registry change), the
+fastjson fetch and build commands and M2's exact `diagnose` command, and drafted this entry from
+my output; I ran every command myself on my laptop.
+
+**What I asked:** help with W35, my verification of FJ-03 pair mode.
+
+**What was retained:** the W35 entry in [[evidence-m1]] and the W35 plan row.
+
+**What I changed:** installed Temurin 8 myself after the zip download would not extract; ran every command;
+checked the entry against my terminal output before committing.
+
+**How it was verified:** every number is copied from my own terminal output.
+
+**Errors found:** the zip download would not extract ("Unrecognized archive format"). The
+Adoptium installer worked.
+
+**Rejections:** changing my system `java` to JDK 8. It stays 25.0.1; JDK 8 is set only in one window.
