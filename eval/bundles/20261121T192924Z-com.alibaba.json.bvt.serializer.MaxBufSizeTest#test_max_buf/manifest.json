@@ -1,0 +1,68 @@
+{
+  "bundle_version": 1,
+  "kind": "diagnosis",
+  "tool": {
+    "commit": "c5eff18f366edf94f7e76003db3903f1afadea44",
+    "dirty": false
+  },
+  "subject": {
+    "repository": "https://github.com/alibaba/fastjson",
+    "commit": "e05e9c5e4be580691cc55a59f3256595393203a1",
+    "dirty": false,
+    "module_path": "."
+  },
+  "victim": "com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf",
+  "command": [
+    "diagnose",
+    "--project",
+    "<project>",
+    "--victim",
+    "com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf",
+    "--order",
+    "eval/real-cases/fj03/order.txt",
+    "--n",
+    "20",
+    "--budget-invocations",
+    "100",
+    "--policy",
+    "random",
+    "--seed",
+    "2",
+    "--bundle",
+    "<home>/AppData/Local/Temp/claude/802d5b925a00f957/b8e9921a-2ccc-4dab-87ac-bbe44b65f63b/scratchpad/clean-bundles"
+  ],
+  "parameters": {
+    "n": 20,
+    "shuffles": 31,
+    "seed": 2,
+    "budget": {
+      "limit_invocations": 100,
+      "limit_seconds": null
+    },
+    "policy": "random",
+    "scope": "module",
+    "lifecycle": "class-grouped",
+    "workspace": "copy"
+  },
+  "environment": {
+    "os": "Windows-11-10.0.26200-SP0",
+    "jdk": "1.8.0_512",
+    "maven": "3.9.11",
+    "junit": "4.12",
+    "python": "3.14.3",
+    "timezone": "UTC",
+    "locale": "en_US",
+    "encoding": "Cp1252",
+    "container_image": null
+  },
+  "reset_assumptions": "Reset between orders: JVM state only: static fields, system properties, loaded classes, threads. Not reset: Files anywhere, the working directory, environment variables, network and external services, the system clock and timezone.",
+  "fresh_run": true,
+  "run_date": "2026-11-21",
+  "replay_of": null,
+  "files": {
+    "report.json": "297d264292ac55da8e38e9b6d72f1e9dc2362ef298a5ed8b7afc6a184969c0a7",
+    "record.jsonl": "f0c989dd4b27b09143190d4629b898ae73fd8fd3469694a0af98541cdd0a824b",
+    "replay.md": "28e0481762a1b64d5f4e7b30d0f10dff15773591c89077503ae9123bb4a98c11",
+    "environment.txt": "c8a5b97688887f64b05ca871e9cdb0a1160add7b70a92eab776ce7587966f80a"
+  }
+}

@@ -1761,3 +1761,49 @@ outside what I can do from here; said so rather than treating the fixed file as 
 Ownership checkpoint: be able to explain, without re-reading this log, why the register and the
 frozen Mid report were never actually the inconsistent pair, and where in the worksheet itself
 the real, self-contradicting cell was.
+
+## 2026-11-21 — M2's review: the one I could have argued my way out of, and didn't
+
+**What I didn't do:** M2's central point was that my FJ-03 runs couldn't test ranking because
+`--order` collapsed the search to one candidate. I could see from the code alone (`_steps` only
+reaches `search` after `reproduce`/`shuffle` establishes a reference, and step 4 already found
+neither does for FJ-03) that his suggested re-run would almost certainly just reconfirm
+`NOT_REPRODUCED` without exercising policy — and I was tempted to write exactly that reasoning
+back to him instead of running anything. I didn't send that reply. A correct-sounding argument
+from reading the code is still an argument, not the real evidence this project's own rules ask
+for, and M2's whole review was itself grounded in rerunning `verify` for real rather than
+reading my PR description — matching that standard back was the only honest response.
+
+**What changed my cost estimate, and why I re-ran rather than trusted my first number:**
+I initially assumed each test invocation meant a separate JVM launch and estimated hours. The
+first real probe (281 invocations in 27.6 real seconds) contradicted that by 10x — one JVM
+session runs many test methods, so the real cost is ~0.1s/invocation. I didn't just accept the
+cheaper number and extrapolate either; I ran the *actual* full experiment (12,817 invocations,
+~12.5 minutes) rather than present an extrapolation as a measured result.
+
+**What I didn't dismiss as noise:** the full run crashed with a real JVM native-memory failure
+on the first attempt, leaving crash-dump files in the repo root. Checked real free memory
+(`Get-CimInstance Win32_OperatingSystem`, ~690MB of 8GB) before deciding it was a genuine
+resource issue rather than a product bug, freed memory by stopping a process I no longer
+needed (Docker Desktop, already done with it for W27), cleaned up the stray files, and reran —
+identical real result. Separately, a `UnicodeDecodeError` appeared in `subprocess`'s reader
+threads on every real fastjson run (not the small fixture) — didn't patch M2's
+`order_runner.py` to silence it; flagged it as a real, pre-existing gap since the run still
+completed correctly both times.
+
+**What I didn't do when fixing the Dockerfile:** M2 said `.git` exclusion breaks commit
+tracking. I didn't just remove it from `.dockerignore` and call it fixed — rebuilt the image for
+real and re-ran F1 inside it to confirm `tool.commit` actually changed from `null` to a real
+hash before reporting the fix as done.
+
+**What I didn't do when regenerating the 14 dirty bundles:** could have just regenerated them
+in place and accepted more `tool.dirty: true` results, since that's the existing documented
+convention for a multi-bundle batch. Instead, since M2 specifically asked whether they *could*
+be clean, I generated every one into a scratch location outside the repo first, so the repo was
+genuinely clean at the moment each one ran, then copied all 14 in at the end — the harder but
+actually-answers-the-question version of the fix.
+
+Ownership checkpoint: be able to explain, without re-deriving it live, why a 1-candidate search
+space and the package-scope `NOT_REPRODUCED` result are two *different* real findings, not one
+restated — and why the second one, despite costing nothing less than the first to explain, was
+worth actually running rather than predicting.

@@ -1,0 +1,58 @@
+{
+  "bundle_version": 1,
+  "kind": "diagnosis",
+  "tool": {
+    "commit": "c5eff18f366edf94f7e76003db3903f1afadea44",
+    "dirty": false
+  },
+  "subject": {
+    "repository": "fixture",
+    "commit": "c5eff18f366edf94f7e76003db3903f1afadea44",
+    "dirty": false,
+    "module_path": "fixtures/od-fixture"
+  },
+  "victim": "odfixture.ConfigVictimTest#expectsDefaultMode",
+  "command": [
+    "diagnose",
+    "--project",
+    "fixtures/od-fixture",
+    "--victim",
+    "odfixture.ConfigVictimTest#expectsDefaultMode",
+    "--bundle",
+    "<home>/AppData/Local/Temp/claude/802d5b925a00f957/b8e9921a-2ccc-4dab-87ac-bbe44b65f63b/scratchpad/clean-bundles"
+  ],
+  "parameters": {
+    "n": 20,
+    "shuffles": 31,
+    "seed": 0,
+    "budget": {
+      "limit_invocations": null,
+      "limit_seconds": null
+    },
+    "policy": "original",
+    "scope": "module",
+    "lifecycle": "class-grouped",
+    "workspace": "copy"
+  },
+  "environment": {
+    "os": "Windows-11-10.0.26200-SP0",
+    "jdk": "1.8.0_512",
+    "maven": "3.9.11",
+    "junit": "4.13.2",
+    "python": "3.14.3",
+    "timezone": "Asia/Karachi",
+    "locale": "en_US",
+    "encoding": "Cp1252",
+    "container_image": null
+  },
+  "reset_assumptions": "Reset between orders: JVM state only: static fields, system properties, loaded classes, threads. Not reset: Files anywhere, the working directory, environment variables, network and external services, the system clock and timezone.",
+  "fresh_run": true,
+  "run_date": "2026-11-21",
+  "replay_of": null,
+  "files": {
+    "report.json": "10f835a7b4335051231d9afd02ad7ae04188a32c3f5127bf6d7f808911586f6f",
+    "record.jsonl": "8b23cb5cabf819f9de7447fbbfdbda65d1208a930fda85ecc6d3679072add291",
+    "replay.md": "6b3905db0def40795eabe55e8056fb49b6ca302f0e86eb7e7a8f521777c22f80",
+    "environment.txt": "68c1c48c9d397c6a508b32b8acc2e42b87090a167967cda68937c1aa84256f8b"
+  }
+}

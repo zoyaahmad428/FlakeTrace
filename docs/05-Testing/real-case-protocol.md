@@ -73,17 +73,37 @@ of policy. `original`, `ranked` and `random` (seeds 0-4) were all run for real, 
 identical verdict at the identical cost: `CANDIDATE [NO_SUPPORTED_RESOURCE_EVIDENCE]`, reproduced
 20/20, search tried 1 of 1 candidates, 64 of 100 invocations spent (reserve 60 + 2 reproduce + 2
 search). `ranked` deepened through depths 2→5, found no evidence at any depth, and fell back to
-the original order — confirming end to end, with real JVM runs this time (not just the offline
-`rank_candidates` call of ADR-014 evidence item 5), M1's finding that FJ-03's pollution (a JDK
-`ThreadLocal.set()` call) has no static edge for ranking to use. This **is** the answer to "The
-comparison"'s central question on this case: under the same stated budget, `ranked` reaches the
-same verdict as `original`, with the same cost, not a lower one — reported exactly that way, not
-as a ranking defect and not inflated into a saving. Seven bundles committed under
-`eval/bundles/` (the real `original`/`ranked`/`random×5` runs), all `python -m eval.bundle
-verify` clean. Full numbers: [[evidence-m3]].
+the original order. Seven bundles committed under `eval/bundles/` (the real
+`original`/`ranked`/`random×5` runs), all `python -m eval.bundle verify` clean.
+
+**Correction, 2026-11-21 (M2's review of PR #152/#153, M3 verified for real):** the sentence
+above originally said this "confirms end to end, with real JVM runs" that ranked finds no
+saving on FJ-03. That overclaimed what steps 6-8 actually tested: `--order` fixes the run to the
+known pair, so the search has exactly **one** candidate regardless of policy — a 1-candidate
+search cannot demonstrate a *saving*, only that none of the three policies costs more than the
+others (which they don't). It does not test the real, 524-candidate search a policy comparison
+needs. **Checked for real, not just by reading the code**: running the *actual* package-scope
+search (524 candidates, no `--order`, the natural discovered order plus all 31 ADR-008 shuffles,
+`--n 20`, no budget limit) through the product's own CLI gives, for real, `UNRESOLVED
+(NOT_REPRODUCED)` — 12,817 real invocations (reproduce 5,220 + shuffle 7,577 + alone 20), the
+discovered order and every one of the 31 shuffles never fails, and the single-polluter search
+phase (where policy would matter) **never runs** — "search tried 0 of 260 candidates". This is
+not a budget-sizing problem: the search is architecturally gated on `reproduce`/`shuffle`
+establishing a reference signature first, and neither does, for real, on this dense suite
+(matching step 4's original finding, now reconfirmed end to end through the fixed CLI rather
+than the workaround script). **So there is no way to run a live, 524-candidate ranked-vs-original
+comparison on FJ-03** — not with `--order`, not with `--scope package` — regardless of budget.
+The genuine source of "no evidence, no saving" on this case remains the offline comparison (item
+5: `rank_candidates` position = original position, 368 of 524, no JVM runs needed). Bundled as
+`eval/bundles/20261121T205558Z-...` ([[evidence-m3]]).
 
 **Step 9 — not yet done.** The independent repeat (M1 or M2, on another machine) is the one
-piece of steps 6-9 left.
+piece of steps 6-9 left. **Note for whoever runs it:** a repeat of the package-scope search
+above (step 4's `NOT_REPRODUCED` reconfirmed through the real CLI) is a legitimate, different
+check from repeating the trivial 1-candidate `--order` runs — but it will not produce a
+ranked-vs-original comparison either, for the structural reason above. Worth doing for the
+reconfirmation; not a substitute for the still-missing live comparison, which this case cannot
+supply.
 
 **Lead:** M3 · **Execution compatibility:** M2 · **Resource coverage:** M1 ·
 **Independent repeat:** M1 or M2 · **Work package:** W26
