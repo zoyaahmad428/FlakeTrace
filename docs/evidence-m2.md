@@ -1805,3 +1805,19 @@ own copy of the code, not from the review's description.
   pass. `py -3 -m unittest runner.tests.test_order_runner` → `Ran 50 tests OK`; no marker left behind.
 - **Limitations:** one machine; environment variables and the clock are not testable from Java; detecting such
   leftovers during a diagnosis is FYP-2 (risk register).
+
+## W23 reproduction gaps 1, 2, 5, 6 (2026-11-22)
+
+- **Requirement:** FT009 / claim G7 — M1's independent reproduction (PR #159) found that `replay.md` alone did not get
+  her there; gaps 1, 2, 5 and 6 are M2's (`runner/bundle.py`, `runner/replay.py`).
+- **Test-first:** three new `TestBundle` tests and `TestOsRow` → 4 failures on the old code (bare name and
+  `<checkout of the subject>` in `replay.md`; `Windows-11-10.0.26300-SP0` vs `Windows-10-10.0.26300-SP0` →
+  `DIFFERENT`); the guard test (different build or system → `DIFFERENT`) passed before and after. After:
+  `runner.tests.test_bundle runner.tests.test_replay` → 36 OK; `eval/tests` → OK.
+- **Real check** (Windows 11, JDK 21.0.9, Maven 3.10.0): a real F1 bundle written to `flaketrace-bundles`; its
+  `replay.md` commands run **verbatim in Windows cmd** from the repo root (`python` → `py`, as the file says):
+  `verify` → `OK`, exit 0; `replay` → `VERIFIED -> VERIFIED same`, every environment row `same`, exit 0.
+- **Not run:** the 3.11 naming on this laptop (only Python 3.14 is installed, which says `Windows-11`); covered by
+  the unit test with M1's exact strings.
+- Full suite: `py -3 -m unittest discover -s runner/tests -p "test_*.py"` → `Ran 381 tests in 813.833s OK` (with the next commit's runner fix also in the tree).
+- **Limitations:** committed bundles keep their old `replay.md` (checksummed); M3's README findings 3 and 4 are hers.

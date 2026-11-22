@@ -1,5 +1,6 @@
 import hashlib
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -179,6 +180,39 @@ class TestBundle(unittest.TestCase):
         text = (self.write() / "replay.md").read_text(encoding="utf-8")
         for needed in ("python -m eval.bundle verify", "python -m runner replay", "def", "abc"):
             self.assertIn(needed, text)
+
+    def test_replay_md_commands_run_as_written_from_the_flaketrace_folder(self):
+        """M1's W23 reproduction (#159), gaps 1, 2 and 6: a real path, the right FlakeTrace, the real --project."""
+        text = (self.write() / "replay.md").read_text(encoding="utf-8")
+        name = "20261121T100000Z-pkg.VictimTest#v"
+        self.assertIn(f'python -m eval.bundle verify "eval/bundles/{name}"', text)
+        self.assertIn(f'python -m runner replay "eval/bundles/{name}" --project fixtures/od-fixture', text)
+        self.assertIn("any FlakeTrace commit that has eval/bundle.py", text)
+        self.assertNotIn("Check out FlakeTrace at the commit above", text)
+        self.assertIn("Run them from the FlakeTrace folder (on Windows, `py` instead of `python`)", text)
+        commands = [line for line in text.splitlines() if line.lstrip().startswith("python ")]
+        self.assertEqual(len(commands), 2)
+        self.assertFalse(any("<" in line or ">" in line for line in commands), commands)
+
+    def test_replay_md_uses_a_relative_output_folder_as_given(self):
+        cwd = os.getcwd()
+        os.chdir(self.tmp)
+        try:
+            folder = write_bundle("my-bundles", self.report, self.record, paths={PROJECT: "<project>"}, home=HOME,
+                                  user="alice", repository="fixture", module_path="fixtures/od-fixture")
+            text = (self.tmp / folder / "replay.md").read_text(encoding="utf-8")
+        finally:
+            os.chdir(cwd)
+        self.assertIn('verify "my-bundles/20261121T100000Z-pkg.VictimTest#v"', text)
+
+    def test_replay_md_for_an_outside_subject_names_its_clone(self):
+        text = (self.write(repository="https://github.com/alibaba/fastjson", module_path=None)
+                / "replay.md").read_text(encoding="utf-8")
+        self.assertIn('--project "CHECKOUT"', text)
+        self.assertIn("CHECKOUT is your clone of https://github.com/alibaba/fastjson at commit abc", text)
+        folder = write_bundle(self.tmp / "other", self.report, self.record, paths={PROJECT: "<project>"}, home=HOME,
+                              user="alice", repository="https://github.com/x/y", module_path="core")
+        self.assertIn('--project "CHECKOUT/core"', (folder / "replay.md").read_text(encoding="utf-8"))
 
     def test_reset_assumptions_is_the_adr_text(self):
         adr = next((REPO / "docs" / "03-Design" / "decisions").glob("ADR-012-*.md")).read_text(encoding="utf-8")

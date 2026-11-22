@@ -3,6 +3,7 @@ the victim alone, the deletion checks and the kept sequence, with the recorded n
 the verdict. It never searches: a new search is a new diagnosis."""
 
 import json
+import re
 from dataclasses import replace
 from datetime import datetime, timezone
 from pathlib import Path
@@ -59,8 +60,15 @@ def _verdict(report: dict) -> str:
     return report["outcome"] + (f" ({reasons})" if reasons else "")
 
 
-def _row(label: str, old, new, judged: bool = True) -> str:
-    mark = (SAME if old == new else DIFFERENT) if judged else ""
+def _same_os(old, new) -> bool:
+    """Python 3.11 names Windows 11 "Windows-10" with the same build number, so only the build is compared
+    (M1's W23 reproduction, #159)."""
+    windows = lambda text: re.sub(r"^Windows-1[01]-", "Windows-", text) if isinstance(text, str) else text
+    return windows(old) == windows(new)
+
+
+def _row(label: str, old, new, judged: bool = True, same: Optional[bool] = None) -> str:
+    mark = (SAME if (old == new if same is None else same) else DIFFERENT) if judged else ""
     return f"{label:<13}{old}  ->  {new}" + (f"      {mark}" if mark else "")
 
 
@@ -91,7 +99,8 @@ def compare(old_report: dict, new_report: dict, old_manifest: dict, new_manifest
                         ("Maven:", ("environment", "maven")), ("timezone:", ("environment", "timezone")),
                         ("locale:", ("environment", "locale")), ("encoding:", ("environment", "encoding")),
                         ("lifecycle:", ("parameters", "lifecycle"))):
-        lines.append(_row(label, get(old_manifest, *keys), get(new_manifest, *keys)))
+        old, new = get(old_manifest, *keys), get(new_manifest, *keys)
+        lines.append(_row(label, old, new, same=_same_os(old, new) if label == "OS:" else None))
     return lines, same
 
 
