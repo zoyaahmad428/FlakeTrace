@@ -118,3 +118,21 @@ in-process and decides nothing itself:
   would also hit JSON escapes such as `\n`).
 - `replay` always runs on a copy (Interface 8 R2), takes `n` and the lifecycle from the checksummed record
   (a manifest that disagrees is refused), and never writes inside the original bundle (R7).
+
+## W35 additions (2026-11-22)
+
+- `--search order|pairs` (ADR-016 revised, Interface 9). `--search pairs` with `--order` exits 2: an order file can
+  hold a dataset's polluters, which pair mode must never see.
+- Pair mode's summary has a `pairs:` line: "found in a constructed pair after k of N pairs; pair mode does not run
+  the project's own orders", or "no pair adopted (k of N pairs tried; m failed once and passed when re-run; c crashed
+  or timed out; stopped by the budget)". Without an adopted pair, `reproduced:` says "no sequence verified (no pair
+  adopted)", and there are no `orders:`/`bound:` lines (they describe orders pair mode never ran). The `budget:` line
+  says "pairs tried".
+- Order mode's `NOT_REPRODUCED` summary ends its order lines with `next:`, naming `--search pairs` (and
+  `--scope package` when that was the scope) with an upper-bound estimate: (candidates + 2n) JVM launches at this
+  run's mean seconds per alone run (a one-test JVM, the closest to a pair), rounded up to whole minutes. After
+  `--order` it says "re-run without --order and with --search pairs", with no count (the file's tests are not pair
+  mode's candidates).
+- `summary()` takes the `DiagnosisRuns` as `diagnosis` (not `runs`: that name is a local inside it).
+- In pair mode the budget minimum is the reserve plus one pair and its re-run (`reserve + 4`), so a failing pair can
+  always be adopted.
