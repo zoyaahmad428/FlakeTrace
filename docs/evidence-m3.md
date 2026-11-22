@@ -3044,3 +3044,24 @@ alongside `ranked` and the five seeds, under the one methodology, bundling every
   eval/tests` -> 158/158 OK, unaffected.
 - **Not done:** M1's independent reproduction of the FJ-03 pair-mode diagnosis (Interface 9's
   own plan, W35's verifier) -- hers to run, not mine.
+
+## 2026-11-22 -- PR #165 merged; a stale status found and corrected in two registers
+
+Confirmed the hand-off above: PR #165 merged into `main` at `614fc6d` (approved by M2, all 5 CI
+workflows green -- `ui`, `python-eval`, `runner`, `fixture-build`, `evidence`). While checking
+what was next for M3, re-read `docs/10-Final1/action-register.md`'s FT009 row and
+`docs/07-Defense/claims-ledger.md`'s G7 row against the actual repository state, not just taken
+on trust.
+
+**Found:** both still said "M3's README gaps (3, 4) open" / "for M3 and M2 to settle once the
+instruction gaps are fixed" -- but gaps 3 and 4 (M1's own numbered list, [[evidence-m1]]) were
+already fixed in `570a05f` (PR #164, 2026-11-22, earlier the same day): README's new "Reproduce
+a bundle (W23)" section. The claims-ledger row was further stale on an unrelated point -- it
+still said "only F1/F3 are bundled", though F2-F4/N1-N4 were committed and verified clean on
+2026-11-21 ([[05-Testing/real-case-protocol]] W23 entry).
+
+**Corrected, not left standing on the honesty rule** (a doc's `Status` line must stay true):
+both rows now say all six of M1's instruction gaps are fixed (M2's 1, 2, 5, 6 same day as hers;
+mine, 3 and 4), and the claims-ledger's fixture-bundle count is current. Neither row is marked
+`Done` -- M1 has not re-run her reproduction against the fixed instructions yet, and supervisor
+acceptance is still open. No code changed; this is a documentation-accuracy correction only.

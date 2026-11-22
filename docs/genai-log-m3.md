@@ -1910,3 +1910,27 @@ Ownership checkpoint: be able to explain, without re-deriving it, why "six indep
 polluters" is itself a real finding from this session (not something the earlier offline
 ranking analysis could have told us), and why it is the reason random beat both ranked and
 original here specifically, not evidence about random search in general.
+
+## 2026-11-22 -- confirming the hand-off, then a stale-status check (L2)
+
+Asked to confirm the previous commit (`614fc6d`, the live comparison above) was run and
+land correctly. Checked via the GitHub API (no `gh` CLI in this shell) rather than assuming:
+PR #165 merged, M2 approved, all five CI jobs green.
+
+While looking for the next concrete task, re-read the two registers that track FT009's open
+items (`docs/10-Final1/action-register.md`, `docs/07-Defense/claims-ledger.md`'s G7 row)
+against what is actually in the repo, rather than trusting their own prose. Both still claimed
+my README gaps (M1's numbered gaps 3 and 4) were open; `git log` showed they were fixed hours
+earlier the same day, in a commit already merged (`570a05f`, PR #164). Kept and checked by me:
+the exact commit and PR for the fix, and a second staleness in the same ledger row ("only
+F1/F3 bundled") against the W23 entry that shows all nine were bundled on 2026-11-21. Rejected:
+nothing to reject here — this was a documentation-accuracy pass, not new engineering; the
+correction is small and traceable to real commits, not an invented status.
+
+Verified: no command run (docs-only edit); the claim rests on `git log`/`git show` output and
+the GitHub API responses quoted in `docs/evidence-m3.md`'s matching entry.
+
+Ownership checkpoint: be able to say which two files had the stale status, what the actual
+fix commit was (`570a05f`), and why neither row was marked `Done` even after the correction
+(M1 has not re-run her reproduction against the fixed instructions; supervisor acceptance is
+separate from any of this).
