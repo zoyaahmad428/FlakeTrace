@@ -1,11 +1,11 @@
 # ADR-016 — Reproduction fallback: pair search, then "all before", when no order fails
 
-**Date:** 2026-11-22 · **Status:** `PROPOSED` by M2 — not agreed; nothing is built against it until M1,
-M2 and M3 tick it (iteration-2-plan rule; root CLAUDE.md §0) ·
+**Date:** 2026-11-22 · **Status:** `ACCEPTED` by M1, M2 and M3 on 2026-11-22 (team WhatsApp group, recorded by M2;
+confirmed by approving PR #157), as proposed: the fallback is automatic, `--no-fallback` keeps today's
+behaviour. To be built in Sprint C as W35, after its Interface section is agreed ·
 **Owner:** M2 (runner) with M3 (report field, measurement) · **Reviewer of the ranking use:** M1 ·
 **Addresses:** M-3 / FT008 (a real case through the whole pipeline), M-2 / FT007 (a live ranked-vs-original
-comparison on real code), panel action A5 · **Work package:** proposed W35 (Sprint C, or the first FYP-2
-item if the team prefers) ·
+comparison on real code), panel action A5 · **Work package:** W35 (Sprint C, agreed 2026-11-22) ·
 **Builds on:** [[03-Design/decisions/ADR-004-w7-diagnosis-runs]], [[03-Design/decisions/ADR-007-w10-ddmin-minimisation]],
 [[03-Design/decisions/ADR-008-not-reproduced-and-order-search]],
 [[03-Design/decisions/ADR-011-deletion-evidence]], [[03-Design/decisions/ADR-014-budget-ledger-and-ranked-search]]
@@ -133,6 +133,6 @@ check, deletion checks and repeated sequence check.
 
 | Member | Agree? | Comment |
 | --- | --- | --- |
-| M1 | ☐ | |
-| M2 | ☐ | Proposed 2026-11-22 |
-| M3 | ☐ | |
+| M1 | ☑ | Agreed 2026-11-22 (team group), recorded by M2; confirmed by approving PR #157 |
+| M2 | ☑ | Proposed and agreed 2026-11-22 |
+| M3 | ☑ | Agreed 2026-11-22 (team group), recorded by M2; confirmed by approving PR #157 |
