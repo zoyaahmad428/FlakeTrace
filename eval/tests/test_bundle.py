@@ -331,6 +331,26 @@ class TestPairModeW35(BundleTestCase):
         bundle_dir = self.bundle(report=report, lines=lines)
         self.assertEqual(verify_bundle(bundle_dir), [])
 
+    def test_zero_pairs_run_recounts_the_alone_tally_not_an_empty_one(self):
+        """No candidate was in scope at all (or the budget cut before the very first pair): there
+        are no "pair" lines whatsoever, only the alone-check's. runner.diagnose._pair_steps'
+        own tally in this shape IS the alone tally (`pair_tally if firsts else alone`; M3's
+        report refuses an empty one) -- the recount must match, not fall through to order
+        mode's "no reproduce lines" shape and report RunTally(0, 0, 0, 0, 0) (M2's finding)."""
+        report = _report(polluters=[], reduced_sequence=[V], deletion_checks=[],
+                         shared_resource=None, polluter_write_location=None, victim_read_location=None,
+                         resource_edges=[], failure_signature=None, reproduced_by=None,
+                         reproduction={"n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0,
+                                       "confidence": 0.95, "lower": 0.0, "upper": 0.161},
+                         victim_alone={"n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0,
+                                       "confidence": 0.95, "lower": 0.0, "upper": 0.161},
+                         outcome="UNRESOLVED", unresolved_reason="NOT_REPRODUCED")
+        del report["assurance"]
+        lines = [_header(search_mode="pairs")]
+        lines += [_run_line("alone", [VICTIM_STR], _victim_outcome(matched=False)) for _ in range(20)]  # no pairs
+        bundle_dir = self.bundle(report=report, lines=lines)
+        self.assertEqual(verify_bundle(bundle_dir), [])
+
 
 class TestVerifyReplayBundle(BundleTestCase):
     """Interface 8: a replay bundle (kind="replay") carries reference_signature in its record

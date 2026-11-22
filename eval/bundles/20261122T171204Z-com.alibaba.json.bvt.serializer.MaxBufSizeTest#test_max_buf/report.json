@@ -128,7 +128,7 @@
       "verify": 40
     },
     "launches": 102,
-    "wall_seconds": 66.521,
+    "wall_seconds": 261.322,
     "analysis_seconds": null,
     "policy": "random",
     "exhausted": false,

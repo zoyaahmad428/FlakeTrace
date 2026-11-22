@@ -3065,3 +3065,108 @@ both rows now say all six of M1's instruction gaps are fixed (M2's 1, 2, 5, 6 sa
 mine, 3 and 4), and the claims-ledger's fixture-bundle count is current. Neither row is marked
 `Done` -- M1 has not re-run her reproduction against the fixed instructions yet, and supervisor
 acceptance is still open. No code changed; this is a documentation-accuracy correction only.
+
+## 2026-11-22 -- FT021's verifier check: the reset-sensitive control, for real, independently
+
+M2's row for FT021 named me the verifier ("M3 checks recorded provenance"). Did the actual
+check rather than taking his evidence log on trust: read `runner/integrity.py` (hashes every
+file under the project except the *top-level* `target/` and `.git/` -- a nested module's own
+`target/` is not excluded, matching the docstring's and ADR-012's wording exactly, not a wider
+claim); grepped every doc that describes the reset boundary (ADR-012, `runner/README.md`,
+`docs/04-Implementation/sandbox-runner.md`, claims-ledger's G4) for "sandbox" or "never
+modified" -- the only hits are the ADR's own "words we stop using" list and its replacement
+wording, never used as a claim.
+
+Then ran the real control myself on a machine/toolchain none of the earlier runs used (JDK
+24.0.2, Maven 3.9.11, Python 3.14.3 -- M2's record names JDK 21.0.9/Maven 3.10.0):
+
+```
+FLAKETRACE_REQUIRE_JVM=1 py -3 -m unittest runner.tests.test_order_runner.TestResetControl -v
+```
+-> `Ran 2 tests in 25.620s -- OK`. Both subtests (`class-grouped`, `per-method`) agree with the
+expectation table: static field and system property **reset** between orders (a new JVM);
+a file in the temp folder and a file in the working directory **not reset**. The same-JVM
+sanity test (`test_each_reader_detects_its_leftover_in_one_jvm`) failed all four readers --
+no vacuous pass.
+
+Then the full suite, to catch any regression the isolated test would miss:
+`FLAKETRACE_REQUIRE_JVM=1 py -3 -m unittest runner.tests.test_order_runner` ->
+`Ran 51 tests in 130.800s -- OK`; `git status --short` clean afterward, no marker left in the
+repo or the OS temp folder.
+
+**Result:** FT021's own closing criterion -- "the reset boundary is written down and matches
+the code" -- holds, confirmed independently, not just reproduced from the same claim. **Not
+checked by this entry** (outside FT021's scope): FT006 against a real project, and the
+container plan (W27), both still open per the action-register row.
+
+## 2026-11-22 -- M2's review of #164/#165, addressed for real
+
+M2 reviewed #164 and #165 himself (not just reading the PR description): confirmed the pair
+walk in `eval/bundle.py` matches `find_pair` and that the comparison numbers match the 7
+bundles. He also brought his own fix for the `replay.py` gap I'd flagged (PR #167, merged) and
+asked for four things.
+
+**1. Six of the seven comparison bundles were `tool.dirty: true` -- regenerate from a clean
+tree.** Found the fastjson checkout and the portable Temurin 8u512 JDK still cached in this
+session's scratchpad from the original runs; reused them rather than re-fetching or re-building
+anything (same subject commit, `e05e9c5e4be580691cc55a59f3256595393203a1`). First attempt used
+this shell's default JDK (24) and failed for real (`source/target 5` unsupported); fixed by
+putting the cached JDK 8 on `PATH`.
+
+**A real tooling quirk found doing this, not assumed in advance:** `runner.diagnose.
+tool_environment()`'s dirty check is `git status --porcelain -- .`, which flags an **untracked**
+file too -- so the bundle one run just wrote, sitting uncommitted in `eval/bundles/`, makes the
+tree dirty for the *next* run in the same batch. Regenerating all six into the same working
+tree can never give six clean ones unless each is moved out before the next run starts. Did
+exactly that: after each regeneration, moved the new bundle out to a scratch staging folder,
+confirmed `git status --short` was empty again, then ran the next. One regeneration (seed 0's
+second attempt) was swept into staging before I'd noticed this and carries `tool.dirty: true`
+as a leftover of the pre-fix process -- excluded from the final set, not committed.
+
+Also hit four real, transient OOM crashes across the six runs (`malloc failed`/`Could not
+reserve enough space for object heap`), confirmed as genuine system memory pressure each time
+(`Get-CimInstance Win32_OperatingSystem`: free memory fell as low as ~230MB, and at one point
+PowerShell itself failed to start, reporting the paging file too small) rather than a product
+issue -- the member restarted their machine once memory pressure stopped responding to retries
+and closing applications; every retry after that used identical settings and gave an identical
+result to the first successful attempt where one exists.
+
+**All six regenerated bundles' real results matched the ones already recorded exactly**
+(`ranked` 368/524 798 inv.; seed 0 187/524 436 inv.; seed 1 7/524 76 inv.; seed 2 61/524 184
+inv.; seed 3 98/524 258 inv.; seed 4 43/524 148 inv.) -- not a coincidence: `--search pairs` is
+deterministic given the policy/seed and the pinned subject commit, so a genuinely clean
+re-run was expected to reproduce them, and did. All 7 bundles (the original `original`-policy
+one plus the 6 regenerated) now `tool.dirty: false` and `eval.bundle verify` clean.
+
+**2. Name the specific certified polluter per random seed in the write-up**, not just "six
+independently-valid polluters" as a count. [[05-Testing/real-case-protocol]] and
+`docs/07-Defense/claims-ledger.md` (G9) both corrected: the five distinct real tests are named
+explicitly in the prose now (`SerializeWriterTest_14#test_writer_1/_2/_3`,
+`SerializeWriterTest_15#test_writer_1`), not left for the comparison table alone to carry --
+M2's point that a reader of the prose only should not come away thinking one lucky polluter was
+found faster five times.
+
+**3. The PR template was empty on #164 (contract/schema impact, member/area not ticked).**
+No code or doc fix here -- `.github/pull_request_template.md` already exists and is M2's area;
+this is a note to fill it out properly on my own future PRs, kept here as the record of having
+been told.
+
+**4. A real bug M2 found in `eval.bundle verify`: with zero pairs run (no candidate in scope,
+or the budget cuts before the first pair), the runner tallies the alone runs as the sequence
+(`runner.diagnose._pair_steps`'s own `pair_tally if firsts else alone` -- a documented, deliberate
+choice, since an empty tally is refused elsewhere), but `_recount` fell through to order mode's
+"no reproduce lines" shape and produced an empty `RunTally(0, 0, 0, 0, 0)` instead -- which even
+crashed the re-decide step (`ValueError: sequence.n must be > 0`) rather than just mis-reporting.
+**Test-first:** `test_zero_pairs_run_recounts_the_alone_tally_not_an_empty_one` in
+`eval/tests/test_bundle.py`, confirmed to fail exactly that way on the unfixed code (first with
+the wrong fixture -- `_victim_outcome()`'s own default is a *failing* outcome, not a passing
+one, caught by checking the failure message rather than assuming the first red result was the
+real bug). **Fixed:** `_recount` now detects pair mode from the record header's own
+`search_mode` field (not only non-empty `pair_lines`, which is empty in exactly this case) and
+falls back to the alone tally when zero pairs ran, matching the runner's own shape exactly.
+Verified: 159/159 `eval/tests` OK (up from 158).
+
+**M2's question (W27 + the decoding fix on real fastjson):** already answered from the
+2026-11-21 entry above, before he asked -- rebuilt the container with his fix, ran a real
+diagnosis inside it against the actual fastjson checkout: `CANDIDATE`, 19/19 invocations, no
+`UnicodeDecodeError`.

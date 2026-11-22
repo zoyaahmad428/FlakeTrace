@@ -6,13 +6,13 @@
   },
   "polluters": [
     {
-      "class": "com.alibaba.json.bvt.serializer.SerializeWriterTest_15",
+      "class": "com.alibaba.json.bvt.serializer.SerializeWriterTest_14",
       "method": "test_writer_1"
     }
   ],
   "original_failing_order": [
     {
-      "class": "com.alibaba.json.bvt.serializer.SerializeWriterTest_15",
+      "class": "com.alibaba.json.bvt.serializer.SerializeWriterTest_14",
       "method": "test_writer_1"
     },
     {
@@ -22,7 +22,7 @@
   ],
   "reduced_sequence": [
     {
-      "class": "com.alibaba.json.bvt.serializer.SerializeWriterTest_15",
+      "class": "com.alibaba.json.bvt.serializer.SerializeWriterTest_14",
       "method": "test_writer_1"
     },
     {
@@ -87,7 +87,7 @@
   "deletion_checks": [
     {
       "removed": {
-        "class": "com.alibaba.json.bvt.serializer.SerializeWriterTest_15",
+        "class": "com.alibaba.json.bvt.serializer.SerializeWriterTest_14",
         "method": "test_writer_1"
       },
       "runs": {
@@ -121,21 +121,21 @@
       "reproduce": 0,
       "shuffle": 0,
       "alone": 20,
-      "pair": 88,
+      "pair": 738,
       "search": 0,
       "minimise": 0,
       "deletion": 0,
       "verify": 40
     },
-    "launches": 84,
-    "wall_seconds": 65.792,
-    "analysis_seconds": null,
-    "policy": "random",
+    "launches": 409,
+    "wall_seconds": 581.383,
+    "analysis_seconds": 324.9712812973885,
+    "policy": "ranked",
     "exhausted": false,
     "exhausted_phase": null,
     "candidates": {
       "total": 524,
-      "tried": 43
+      "tried": 368
     }
   }
 }
