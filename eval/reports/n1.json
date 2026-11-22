@@ -86,6 +86,7 @@
     "message": "expected:<<N>> but was:<<N>>",
     "stack_trace": "org.junit.Assert.fail:89\norg.junit.Assert.failNotEquals:835\norg.junit.Assert.assertEquals:647\norg.junit.Assert.assertEquals:633\nodfixture.NegativeAloneFailTest.alwaysFails:10"
   },
+  "reproduced_by": "order",
   "instrumentation_level": "static-only",
   "execution_record_reference": "eval\\reports\\flaketrace-records\\20261120T132743Z-odfixture.NegativeAloneFailTest#alwaysFails.jsonl",
   "source_integrity": {

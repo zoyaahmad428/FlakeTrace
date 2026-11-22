@@ -42,6 +42,7 @@ VALID_REPORT = {
         "message": "expected:<0> but was:<1>",
         "stack_trace": "at odfixture.ConfigVictimTest.expectsDefaultMode(ConfigVictimTest.java:10)",
     },
+    "reproduced_by": "order",
     "instrumentation_level": "static-only",
     "execution_record_reference": "exec-123",
     "source_integrity": {"passed": True, "details": "ok"},
@@ -147,6 +148,7 @@ class TestValidateReport(unittest.TestCase):
         ok["outcome"] = "UNRESOLVED"
         ok["unresolved_reason"] = "NOT_REPRODUCED"
         ok["failure_signature"] = None
+        ok["reproduced_by"] = None
         del ok["assurance"]
         validate_report(ok)  # must not raise
 
@@ -168,6 +170,7 @@ class TestValidateReport(unittest.TestCase):
         bad["outcome"] = "UNRESOLVED"
         bad["unresolved_reason"] = "VICTIM_FAILS_ALONE"
         bad["failure_signature"] = None
+        bad["reproduced_by"] = None
         del bad["assurance"]
         with self.assertRaises(jsonschema.exceptions.ValidationError):
             validate_report(bad)
@@ -180,6 +183,7 @@ class TestValidateReport(unittest.TestCase):
         null_signature["outcome"] = "UNRESOLVED"
         null_signature["unresolved_reason"] = "INFRASTRUCTURE_FAILURE"
         null_signature["failure_signature"] = None
+        null_signature["reproduced_by"] = None
         del null_signature["assurance"]
         validate_report(null_signature)  # must not raise
 

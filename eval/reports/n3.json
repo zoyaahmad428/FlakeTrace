@@ -82,6 +82,7 @@
   "victim_read_location": null,
   "resource_edges": [],
   "failure_signature": null,
+  "reproduced_by": null,
   "instrumentation_level": "static-only",
   "execution_record_reference": "eval\\reports\\flaketrace-records\\20261120T132845Z-odfixture.EnvDependentNegativeTest#onlyFailsUnderCI.jsonl",
   "source_integrity": {

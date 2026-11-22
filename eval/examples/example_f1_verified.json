@@ -1,35 +1,95 @@
 {
   "schema_version": 2,
-  "victim": { "class": "odfixture.ConfigVictimTest", "method": "expectsDefaultMode" },
+  "victim": {
+    "class": "odfixture.ConfigVictimTest",
+    "method": "expectsDefaultMode"
+  },
   "polluters": [
-    { "class": "odfixture.ConfigPolluterTest", "method": "pollute" }
+    {
+      "class": "odfixture.ConfigPolluterTest",
+      "method": "pollute"
+    }
   ],
   "original_failing_order": [
-    { "class": "odfixture.MathUtilTest", "method": "addsTwoNumbers" },
-    { "class": "odfixture.ConfigPolluterTest", "method": "pollute" },
-    { "class": "odfixture.StringUtilTest", "method": "reversesAString" },
-    { "class": "odfixture.ConfigVictimTest", "method": "expectsDefaultMode" }
+    {
+      "class": "odfixture.MathUtilTest",
+      "method": "addsTwoNumbers"
+    },
+    {
+      "class": "odfixture.ConfigPolluterTest",
+      "method": "pollute"
+    },
+    {
+      "class": "odfixture.StringUtilTest",
+      "method": "reversesAString"
+    },
+    {
+      "class": "odfixture.ConfigVictimTest",
+      "method": "expectsDefaultMode"
+    }
   ],
   "reduced_sequence": [
-    { "class": "odfixture.ConfigPolluterTest", "method": "pollute" },
-    { "class": "odfixture.ConfigVictimTest", "method": "expectsDefaultMode" }
+    {
+      "class": "odfixture.ConfigPolluterTest",
+      "method": "pollute"
+    },
+    {
+      "class": "odfixture.ConfigVictimTest",
+      "method": "expectsDefaultMode"
+    }
   ],
   "reproduction": {
-    "n": 20, "passed": 0, "matched": 20, "other": 0, "infra": 0, "confidence": 0.95,
-    "lower": 0.83887484172924, "upper": 1.0
+    "n": 20,
+    "passed": 0,
+    "matched": 20,
+    "other": 0,
+    "infra": 0,
+    "confidence": 0.95,
+    "lower": 0.83887484172924,
+    "upper": 1.0
   },
   "victim_alone": {
-    "n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0, "confidence": 0.95,
-    "lower": 0.0, "upper": 0.16112515827076002
+    "n": 20,
+    "passed": 20,
+    "matched": 0,
+    "other": 0,
+    "infra": 0,
+    "confidence": 0.95,
+    "lower": 0.0,
+    "upper": 0.16112515827076002
   },
-  "shared_resource": { "kind": "static-field", "class": "odfixture.Config", "field": "mode" },
-  "polluter_write_location": { "class": "odfixture.ConfigPolluterTest", "method": "pollute", "bytecode_offset": 1 },
-  "victim_read_location": { "class": "odfixture.ConfigVictimTest", "method": "expectsDefaultMode", "bytecode_offset": 1 },
+  "shared_resource": {
+    "kind": "static-field",
+    "class": "odfixture.Config",
+    "field": "mode"
+  },
+  "polluter_write_location": {
+    "class": "odfixture.ConfigPolluterTest",
+    "method": "pollute",
+    "bytecode_offset": 1
+  },
+  "victim_read_location": {
+    "class": "odfixture.ConfigVictimTest",
+    "method": "expectsDefaultMode",
+    "bytecode_offset": 1
+  },
   "resource_edges": [
     {
-      "shared_resource": { "kind": "static-field", "class": "odfixture.Config", "field": "mode" },
-      "polluter_write_location": { "class": "odfixture.ConfigPolluterTest", "method": "pollute", "bytecode_offset": 1 },
-      "victim_read_location": { "class": "odfixture.ConfigVictimTest", "method": "expectsDefaultMode", "bytecode_offset": 1 }
+      "shared_resource": {
+        "kind": "static-field",
+        "class": "odfixture.Config",
+        "field": "mode"
+      },
+      "polluter_write_location": {
+        "class": "odfixture.ConfigPolluterTest",
+        "method": "pollute",
+        "bytecode_offset": 1
+      },
+      "victim_read_location": {
+        "class": "odfixture.ConfigVictimTest",
+        "method": "expectsDefaultMode",
+        "bytecode_offset": 1
+      }
     }
   ],
   "failure_signature": {
@@ -37,20 +97,44 @@
     "message": "expected:<0> but was:<1>",
     "stack_trace": "at odfixture.ConfigVictimTest.expectsDefaultMode(ConfigVictimTest.java:10)"
   },
+  "reproduced_by": "order",
   "instrumentation_level": "static-only",
   "execution_record_reference": "eval/benchmark/logs/F1.json",
-  "source_integrity": { "passed": true, "details": "No real source-integrity checker exists yet (Member 2's component) -- 'passed: true' is asserted by construction (plain Maven, no instrumentation involved), not independently checked." },
+  "source_integrity": {
+    "passed": true,
+    "details": "No real source-integrity checker exists yet (Member 2's component) -- 'passed: true' is asserted by construction (plain Maven, no instrumentation involved), not independently checked."
+  },
   "outcome": "VERIFIED",
   "unresolved_reason": null,
   "candidate_reasons": [],
   "deletion_checks": [
-    { "removed": { "class": "odfixture.ConfigPolluterTest", "method": "pollute" },
-      "runs": { "n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0 },
-      "status": "NEEDED", "source": "alone-check", "round": 1 }
+    {
+      "removed": {
+        "class": "odfixture.ConfigPolluterTest",
+        "method": "pollute"
+      },
+      "runs": {
+        "n": 20,
+        "passed": 20,
+        "matched": 0,
+        "other": 0,
+        "infra": 0
+      },
+      "status": "NEEDED",
+      "source": "alone-check",
+      "round": 1
+    }
   ],
   "assurance": {
-    "sequence": { "reproduces": "ESTABLISHED", "passes_alone": "ESTABLISHED", "deletion": "DELETION_VERIFIED" },
-    "resource": { "level": "STATIC_OVERLAP", "mechanism": "NOT_ASSESSED" }
+    "sequence": {
+      "reproduces": "ESTABLISHED",
+      "passes_alone": "ESTABLISHED",
+      "deletion": "DELETION_VERIFIED"
+    },
+    "resource": {
+      "level": "STATIC_OVERLAP",
+      "mechanism": "NOT_ASSESSED"
+    }
   },
   "limitations": [
     "reproduction and victim_alone are REAL measured counts: od-fixture's F1 case was actually run 20 times each way via plain Maven inside maven:3.9-eclipse-temurin-8 on 2026-10-09 (eval/tools/run_real_reps.sh) -- not hand-picked. other/infra are 0 by construction: this case is deterministic, confirmed 20/20 or 0/20 every time, never a crash or a different exception. See docs/evidence-m3.md and eval/benchmark/logs/F1.json for the raw run.",

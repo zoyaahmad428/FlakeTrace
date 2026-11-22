@@ -2,7 +2,7 @@
   "bundle_version": 1,
   "kind": "diagnosis",
   "tool": {
-    "commit": "c5eff18f366edf94f7e76003db3903f1afadea44",
+    "commit": "7f95297291a869c63067f67baf2340676e559393",
     "dirty": true
   },
   "subject": {
@@ -27,7 +27,7 @@
     "--records",
     "<records>",
     "--bundle",
-    "<home>/AppData/Local/Temp/claude/802d5b925a00f957/b8e9921a-2ccc-4dab-87ac-bbe44b65f63b/scratchpad/clean-bundles-package"
+    "eval/bundles"
   ],
   "parameters": {
     "n": 20,
@@ -55,12 +55,12 @@
   },
   "reset_assumptions": "Reset between orders: JVM state only: static fields, system properties, loaded classes, threads. Not reset: Files anywhere, the working directory, environment variables, network and external services, the system clock and timezone.",
   "fresh_run": true,
-  "run_date": "2026-11-21",
+  "run_date": "2026-11-22",
   "replay_of": null,
   "files": {
-    "report.json": "42d9b38e966fe5f885f6bf1bd634414ed9e4655797198a81a729b00e036bbe20",
-    "record.jsonl": "3fa00315b214e9443189159eae741e61a417f589eeab8e65ec6b35a50a46dfbd",
-    "replay.md": "779f39f188fcac55ace3711b24140f1aa2903c12ea1f75355fefc7310e8a6138",
+    "report.json": "c420d189caa319030c91ec9c7e4125bfd33ef08dfc982dca61df622daaeecea5",
+    "record.jsonl": "4aead792d4e3148c9baf24ef9418b686631cca7841fa4d32a950960091b9162c",
+    "replay.md": "1c9d5cb01f8b9912d8df9e6a5832fa732fe348b8c5489a2240cf975f020dbfed",
     "environment.txt": "c8a5b97688887f64b05ca871e9cdb0a1160add7b70a92eab776ce7587966f80a"
   }
 }

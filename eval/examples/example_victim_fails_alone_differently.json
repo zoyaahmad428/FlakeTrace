@@ -1,21 +1,45 @@
 {
   "schema_version": 2,
-  "victim": { "class": "com.example.DualFailureVictimTest", "method": "expectsStateTwo" },
+  "victim": {
+    "class": "com.example.DualFailureVictimTest",
+    "method": "expectsStateTwo"
+  },
   "polluters": [],
   "original_failing_order": [
-    { "class": "com.example.DualFailurePolluterTest", "method": "setState" },
-    { "class": "com.example.DualFailureVictimTest", "method": "expectsStateTwo" }
+    {
+      "class": "com.example.DualFailurePolluterTest",
+      "method": "setState"
+    },
+    {
+      "class": "com.example.DualFailureVictimTest",
+      "method": "expectsStateTwo"
+    }
   ],
   "reduced_sequence": [
-    { "class": "com.example.DualFailureVictimTest", "method": "expectsStateTwo" }
+    {
+      "class": "com.example.DualFailureVictimTest",
+      "method": "expectsStateTwo"
+    }
   ],
   "reproduction": {
-    "n": 20, "passed": 0, "matched": 20, "other": 0, "infra": 0, "confidence": 0.95,
-    "lower": 0.83887484172924, "upper": 1.0
+    "n": 20,
+    "passed": 0,
+    "matched": 20,
+    "other": 0,
+    "infra": 0,
+    "confidence": 0.95,
+    "lower": 0.83887484172924,
+    "upper": 1.0
   },
   "victim_alone": {
-    "n": 20, "passed": 0, "matched": 0, "other": 20, "infra": 0, "confidence": 0.95,
-    "lower": 0.0, "upper": 0.16112515827076002
+    "n": 20,
+    "passed": 0,
+    "matched": 0,
+    "other": 20,
+    "infra": 0,
+    "confidence": 0.95,
+    "lower": 0.0,
+    "upper": 0.16112515827076002
   },
   "shared_resource": null,
   "polluter_write_location": null,
@@ -27,9 +51,13 @@
     "message": "expected:<2> but was:<1>",
     "stack_trace": "at com.example.DualFailureVictimTest.expectsStateTwo(DualFailureVictimTest.java:12)"
   },
+  "reproduced_by": "order",
   "instrumentation_level": "static-only",
   "execution_record_reference": "illustrative-only: no real execution record backs this example",
-  "source_integrity": { "passed": true, "details": "Illustrative: no modification detected to any instrumented class." },
+  "source_integrity": {
+    "passed": true,
+    "details": "Illustrative: no modification detected to any instrumented class."
+  },
   "outcome": "UNRESOLVED",
   "unresolved_reason": "VICTIM_FAILS_ALONE_DIFFERENTLY",
   "candidate_reasons": [],

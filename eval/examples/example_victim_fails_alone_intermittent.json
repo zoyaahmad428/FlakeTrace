@@ -1,18 +1,36 @@
 {
   "schema_version": 2,
-  "victim": { "class": "odfixture.NegativeFlakyTest", "method": "sometimesFails" },
+  "victim": {
+    "class": "odfixture.NegativeFlakyTest",
+    "method": "sometimesFails"
+  },
   "polluters": [],
   "original_failing_order": [
-    { "class": "odfixture.NegativeFlakyTest", "method": "sometimesFails" }
+    {
+      "class": "odfixture.NegativeFlakyTest",
+      "method": "sometimesFails"
+    }
   ],
   "reduced_sequence": [],
   "reproduction": {
-    "n": 20, "passed": 8, "matched": 12, "other": 0, "infra": 0, "confidence": 0.95,
-    "lower": 0.3865815006061295, "upper": 0.7811934677397184
+    "n": 20,
+    "passed": 8,
+    "matched": 12,
+    "other": 0,
+    "infra": 0,
+    "confidence": 0.95,
+    "lower": 0.3865815006061295,
+    "upper": 0.7811934677397184
   },
   "victim_alone": {
-    "n": 20, "passed": 8, "matched": 12, "other": 0, "infra": 0, "confidence": 0.95,
-    "lower": 0.3865815006061295, "upper": 0.7811934677397184
+    "n": 20,
+    "passed": 8,
+    "matched": 12,
+    "other": 0,
+    "infra": 0,
+    "confidence": 0.95,
+    "lower": 0.3865815006061295,
+    "upper": 0.7811934677397184
   },
   "shared_resource": null,
   "polluter_write_location": null,
@@ -24,9 +42,13 @@
     "message": null,
     "stack_trace": "at odfixture.NegativeFlakyTest.sometimesFails(NegativeFlakyTest.java:16)"
   },
+  "reproduced_by": "order",
   "instrumentation_level": "static-only",
   "execution_record_reference": "eval/benchmark/logs/N2.json",
-  "source_integrity": { "passed": true, "details": "No real source-integrity checker exists yet (Member 2's component) -- 'passed: true' is asserted by construction (plain Maven, no instrumentation involved), not independently checked." },
+  "source_integrity": {
+    "passed": true,
+    "details": "No real source-integrity checker exists yet (Member 2's component) -- 'passed: true' is asserted by construction (plain Maven, no instrumentation involved), not independently checked."
+  },
   "outcome": "UNRESOLVED",
   "unresolved_reason": "VICTIM_FAILS_ALONE",
   "candidate_reasons": [],

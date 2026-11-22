@@ -1,33 +1,87 @@
 {
   "schema_version": 2,
-  "victim": { "class": "odfixture.ConfigVictimTest", "method": "expectsDefaultMode" },
+  "victim": {
+    "class": "odfixture.ConfigVictimTest",
+    "method": "expectsDefaultMode"
+  },
   "polluters": [
-    { "class": "odfixture.ConfigPolluterTest", "method": "pollute" }
+    {
+      "class": "odfixture.ConfigPolluterTest",
+      "method": "pollute"
+    }
   ],
   "original_failing_order": [
-    { "class": "odfixture.ConfigPolluterTest", "method": "pollute" },
-    { "class": "odfixture.ConfigVictimTest", "method": "expectsDefaultMode" }
+    {
+      "class": "odfixture.ConfigPolluterTest",
+      "method": "pollute"
+    },
+    {
+      "class": "odfixture.ConfigVictimTest",
+      "method": "expectsDefaultMode"
+    }
   ],
   "reduced_sequence": [
-    { "class": "odfixture.ConfigPolluterTest", "method": "pollute" },
-    { "class": "odfixture.ConfigVictimTest", "method": "expectsDefaultMode" }
+    {
+      "class": "odfixture.ConfigPolluterTest",
+      "method": "pollute"
+    },
+    {
+      "class": "odfixture.ConfigVictimTest",
+      "method": "expectsDefaultMode"
+    }
   ],
   "reproduction": {
-    "n": 20, "passed": 0, "matched": 20, "other": 0, "infra": 0, "confidence": 0.95,
-    "lower": 0.83887484172924, "upper": 1.0
+    "n": 20,
+    "passed": 0,
+    "matched": 20,
+    "other": 0,
+    "infra": 0,
+    "confidence": 0.95,
+    "lower": 0.83887484172924,
+    "upper": 1.0
   },
   "victim_alone": {
-    "n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0, "confidence": 0.95,
-    "lower": 0.0, "upper": 0.16112515827076002
+    "n": 20,
+    "passed": 20,
+    "matched": 0,
+    "other": 0,
+    "infra": 0,
+    "confidence": 0.95,
+    "lower": 0.0,
+    "upper": 0.16112515827076002
   },
-  "shared_resource": { "kind": "static-field", "class": "odfixture.Config", "field": "mode" },
-  "polluter_write_location": { "class": "odfixture.ConfigPolluterTest", "method": "pollute", "bytecode_offset": 3 },
-  "victim_read_location": { "class": "odfixture.ConfigVictimTest", "method": "expectsDefaultMode", "bytecode_offset": 5 },
+  "shared_resource": {
+    "kind": "static-field",
+    "class": "odfixture.Config",
+    "field": "mode"
+  },
+  "polluter_write_location": {
+    "class": "odfixture.ConfigPolluterTest",
+    "method": "pollute",
+    "bytecode_offset": 3
+  },
+  "victim_read_location": {
+    "class": "odfixture.ConfigVictimTest",
+    "method": "expectsDefaultMode",
+    "bytecode_offset": 5
+  },
   "resource_edges": [
     {
-      "shared_resource": { "kind": "static-field", "class": "odfixture.Config", "field": "mode" },
-      "polluter_write_location": { "class": "odfixture.ConfigPolluterTest", "method": "pollute", "bytecode_offset": 3 },
-      "victim_read_location": { "class": "odfixture.ConfigVictimTest", "method": "expectsDefaultMode", "bytecode_offset": 5 }
+      "shared_resource": {
+        "kind": "static-field",
+        "class": "odfixture.Config",
+        "field": "mode"
+      },
+      "polluter_write_location": {
+        "class": "odfixture.ConfigPolluterTest",
+        "method": "pollute",
+        "bytecode_offset": 3
+      },
+      "victim_read_location": {
+        "class": "odfixture.ConfigVictimTest",
+        "method": "expectsDefaultMode",
+        "bytecode_offset": 5
+      }
     }
   ],
   "deletion_checks": [],
@@ -36,9 +90,13 @@
     "message": "expected:<0> but was:<1>",
     "stack_trace": "at odfixture.ConfigVictimTest.expectsDefaultMode(ConfigVictimTest.java:10)"
   },
+  "reproduced_by": "order",
   "instrumentation_level": "static-only",
   "execution_record_reference": "eval/benchmark/logs/F1.json",
-  "source_integrity": { "passed": false, "details": "Hypothetical: no real source-integrity checker exists yet (Member 2's component), so this failure is illustrative, not something that was actually detected." },
+  "source_integrity": {
+    "passed": false,
+    "details": "Hypothetical: no real source-integrity checker exists yet (Member 2's component), so this failure is illustrative, not something that was actually detected."
+  },
   "outcome": "UNRESOLVED",
   "unresolved_reason": "SOURCE_INTEGRITY_FAILED",
   "candidate_reasons": [],

@@ -17,7 +17,15 @@ search/minimise lines at all -- its reference signature is read from the record 
 `reference_signature` field instead of re-derived, per the contract, not guessed from the
 record the way a diagnosis bundle's is. INCONSISTENT and BUDGET_EXHAUSTED (diagnosis-only) are
 not yet covered -- verify_bundle says so explicitly rather than guessing; see
-docs/evidence-m3.md."""
+docs/evidence-m3.md.
+
+W35 (ADR-016, Interface 9): a pair-mode bundle has "pair" lines instead of "reproduce"/
+"shuffle" (pair mode never runs either). The reference is the first ADOPTED pair's signature --
+the first candidate whose real failure is confirmed by one re-run of the same [candidate,
+victim] pair, matching `runner.search.find_pair`'s own walk. When no pair is adopted, the
+recounted sequence tally can have `other > 0` (a pair failed once but not on its re-run) even
+though no reference was established -- unlike order mode's equivalent tally, which is always 0
+by construction."""
 
 import json
 import sys
@@ -102,6 +110,30 @@ def _first_real_failure(run_lines: List[dict], victim: str) -> Optional[FailureS
     return None
 
 
+def _pair_firsts_and_reference(pair_lines: List[dict], victim: str):
+    """W35 (ADR-016, Interface 9 P3): walks "pair" lines exactly as runner.search.find_pair
+    does -- a real (non-synthetic) failure is followed by exactly one re-run of the SAME
+    [candidate, victim] pair; the pair is adopted only if that re-run also fails, matching the
+    first run's signature. Returns (firsts: one RunOutcome per candidate's first attempt, in
+    find_pair's own `firsts` list shape; reference: the adopted pair's signature, or None)."""
+    firsts: List[RunOutcome] = []
+    i = 0
+    while i < len(pair_lines):
+        outcome = _victim_from(pair_lines[i], victim)
+        firsts.append(outcome)
+        if outcome.passed or outcome.failure_signature.exception_type.startswith(SYNTHETIC_PREFIX):
+            i += 1
+            continue
+        if i + 1 < len(pair_lines):
+            again = _victim_from(pair_lines[i + 1], victim)
+            if not again.passed and again.failure_signature.matches(outcome.failure_signature):
+                return firsts, outcome.failure_signature
+            i += 2  # the re-run happened and did not match -- move to the next candidate
+        else:
+            i += 1  # cut off by the budget before its re-run could run
+    return firsts, None
+
+
 def _signature_from_dict(sig: Optional[dict]) -> Optional[FailureSignature]:
     if sig is None:
         return None
@@ -139,24 +171,44 @@ def _recount(lines: List[dict], manifest: dict, report: dict) -> dict:
     minimise_lines = [l for l in run_lines if l["step"] == "minimise"]
     reference = _first_real_failure(reproduce_lines, victim)
 
+    pair_lines = [l for l in run_lines if l["step"] == "pair"]
+
     if reference is None:
         # runner.verify.repeat_without_reference's own rule: the alone check finds its own
-        # reference from among its own runs when nothing reproduced first.
+        # reference from among its own runs when nothing reproduced first. In pair mode (W35)
+        # this is also P1 -- the alone check that runs before any pair, with the identical
+        # mechanism -- so no mode-specific branch is needed here.
         alone_reference = _first_real_failure(alone_lines, victim)
         alone_outcomes = [_victim_from(l, victim) for l in alone_lines]
         alone_tally = tally(alone_outcomes, alone_reference)
         if alone_reference is not None:
             return {"reference": alone_reference, "alone": alone_tally, "sequence": alone_tally,
                     "deletion_checks": []}
-        # No reference anywhere: runner.diagnose._steps' RunTally(attempts, attempts-failures, 0, 0,
-        # failures) over the "reproduce" phase's own runs ONLY -- real bug found bundling N3
-        # (2026-11-21): ADR-008's shuffle fallback is a separate phase (tried only when the
-        # discovered order never failed) and is not folded into this tally by _steps either,
-        # even though "shuffle" lines are also eligible places to look for a reference above.
-        attempts = len(reproduce_only_lines)
-        failures = sum(1 for l in reproduce_only_lines if not _victim_from(l, victim).passed)
-        sequence_tally = RunTally(attempts, attempts - failures, 0, 0, failures)
-        return {"reference": None, "alone": alone_tally, "sequence": sequence_tally, "deletion_checks": []}
+        if pair_lines:
+            # W35 (ADR-016, Interface 9 P4/P5): an order-mode bundle never has "pair" lines at
+            # all, so reaching here with some means this is a pair-mode bundle.
+            firsts, pair_reference = _pair_firsts_and_reference(pair_lines, victim)
+            if pair_reference is not None:
+                reference = pair_reference  # fall through to the shared post-reference recount below
+            else:
+                # P5, no pair adopted: runner.diagnose._pair_steps' own
+                # RunTally(len(firsts), len(firsts)-len(failed), 0, len(failed)-crashes, crashes) --
+                # "other" can be > 0 here (a pair failed once but not on its re-run), unlike
+                # order mode's equivalent tally, which is always 0 by construction.
+                failed = [o for o in firsts if not o.passed]
+                crashes = sum(1 for o in failed if o.failure_signature.exception_type.startswith(SYNTHETIC_PREFIX))
+                sequence_tally = RunTally(len(firsts), len(firsts) - len(failed), 0, len(failed) - crashes, crashes)
+                return {"reference": None, "alone": alone_tally, "sequence": sequence_tally, "deletion_checks": []}
+        else:
+            # No reference anywhere: runner.diagnose._steps' RunTally(attempts, attempts-failures, 0, 0,
+            # failures) over the "reproduce" phase's own runs ONLY -- real bug found bundling N3
+            # (2026-11-21): ADR-008's shuffle fallback is a separate phase (tried only when the
+            # discovered order never failed) and is not folded into this tally by _steps either,
+            # even though "shuffle" lines are also eligible places to look for a reference above.
+            attempts = len(reproduce_only_lines)
+            failures = sum(1 for l in reproduce_only_lines if not _victim_from(l, victim).passed)
+            sequence_tally = RunTally(attempts, attempts - failures, 0, 0, failures)
+            return {"reference": None, "alone": alone_tally, "sequence": sequence_tally, "deletion_checks": []}
 
     alone_outcomes = [_victim_from(l, victim) for l in alone_lines]
     alone_tally = tally(alone_outcomes, reference)

@@ -236,17 +236,24 @@ def decide(d: DecisionInput) -> Decision:
         )
 
     if not d.reference_established:
+        # W35 (ADR-016, M2's review): reference_established=False does not mean no real failure
+        # ever occurred -- pair mode's tally can have sequence.other > 0 (a pair failed once,
+        # then passed its re-run, so it was never adopted). "Never reproduced ANY failure" would
+        # be false in that case; say "no CONFIRMED failure" and name the unconfirmed count.
+        unconfirmed = d.sequence.other + d.alone.other
+        unconfirmed_note = f" ({unconfirmed} failed once but not again)" if unconfirmed else ""
         if d.infrastructure_failures_anywhere > 0:
             return result(
                 OUTCOME_UNRESOLVED, REASON_INFRASTRUCTURE_FAILURE,
-                f"No real failure anywhere ({d.sequence.n} sequence run(s), {d.alone.n} alone "
-                f"run(s)), but {d.infrastructure_failures_anywhere} run(s) only crashed or "
-                "timed out -- a tooling problem, not evidence this victim is reliable.",
+                f"No confirmed failure anywhere ({d.sequence.n} sequence run(s), {d.alone.n} "
+                f"alone run(s){unconfirmed_note}), but {d.infrastructure_failures_anywhere} "
+                "run(s) only crashed or timed out -- a tooling problem, not evidence this "
+                "victim is reliable.",
             )
         return result(
             OUTCOME_UNRESOLVED, REASON_NOT_REPRODUCED,
-            f"The sequence never reproduced any failure in {d.sequence.n} run(s), and the victim "
-            f"never failed in {d.alone.n} run(s) alone.",
+            f"No run reproduced a confirmed failure in {d.sequence.n} sequence run(s) and "
+            f"{d.alone.n} alone run(s){unconfirmed_note}.",
         )
 
     if d.alone.matched >= 1:
