@@ -136,3 +136,17 @@ in-process and decides nothing itself:
 - `summary()` takes the `DiagnosisRuns` as `diagnosis` (not `runs`: that name is a local inside it).
 - In pair mode the budget minimum is the reserve plus one pair and its re-run (`reserve + 4`), so a failing pair can
   always be adopted.
+
+## W23 reproduction gaps (2026-11-22)
+
+M1's independent reproduction (PR #159) needed commands `replay.md` did not give. Fixed in `runner/bundle.py` and
+`runner/replay.py`:
+
+- `replay.md` writes `python -m eval.bundle verify "<folder>/<name>"` and `python -m runner replay "<folder>/<name>"
+  --project <subject>` with real values: the output folder as given when relative, else `eval/bundles` (an absolute
+  one would be a personal path); `--project fixtures/od-fixture` for a fixture, else `"CHECKOUT"` or
+  `"CHECKOUT/<module>"` with "CHECKOUT is your clone of <repository> at commit <sha>". Step 1 says to use any
+  FlakeTrace commit that has `eval/bundle.py`: the bundle's own commit can be older than the verifier.
+- The replay's `OS:` row treats `Windows-10-<build>` and `Windows-11-<build>` as the same (Python 3.11 names Windows 11
+  "Windows-10"); a different build or system is still `DIFFERENT`.
+- Committed bundles keep their old `replay.md` (their checksums protect them); M3's README covers them.

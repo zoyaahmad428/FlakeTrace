@@ -81,6 +81,24 @@ class TestCompare(unittest.TestCase):
         self.assertTrue(any(line.startswith("JDK:") and line.endswith("DIFFERENT") for line in lines), lines)
 
 
+class TestOsRow(unittest.TestCase):
+    """M1's W23 reproduction (#159), gap 5: Python 3.11 names Windows 11 "Windows-10"; the same build is not a
+    difference."""
+
+    def os_line(self, old, new):
+        report = a_report()
+        lines, _ = compare(report, report, dict(MANIFEST, environment=dict(MANIFEST["environment"], os=old)),
+                           dict(MANIFEST, environment=dict(MANIFEST["environment"], os=new)))
+        return next(line for line in lines if line.startswith("OS:"))
+
+    def test_same_windows_build_under_two_names_is_the_same(self):
+        self.assertTrue(self.os_line("Windows-11-10.0.26300-SP0", "Windows-10-10.0.26300-SP0").endswith("same"))
+
+    def test_a_different_build_or_system_is_different(self):
+        self.assertTrue(self.os_line("Windows-11-10.0.26300-SP0", "Windows-11-10.0.26100-SP0").endswith("DIFFERENT"))
+        self.assertTrue(self.os_line("Windows-11-10.0.26300-SP0", "Linux-6.8.0-x86_64").endswith("DIFFERENT"))
+
+
 class TestReplay(unittest.TestCase):
     """replay() with the JVM side mocked: prepare_runner gives a fake runner and a discovered list."""
 

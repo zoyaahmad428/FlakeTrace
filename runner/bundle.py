@@ -110,15 +110,30 @@ def manifest(header: dict, *, kind: str, repository: Optional[str], module_path:
     }
 
 
-def _replay_md(header: dict, folder_name: str) -> str:
+def _replay_md(header: dict, folder_name: str, out_folder, repository: Optional[str],
+               module_path: Optional[str]) -> str:
+    """Commands that run as written from the FlakeTrace folder, in cmd or a shell (M1's W23 reproduction, #159):
+    the bundle's real path, quoted (every name has a #), and --project from the subject; no < or > in a command.
+    An absolute output folder is not written (it would be a personal path): shared bundles live in eval/bundles."""
+    parent = Path(out_folder)
+    bundle = f"{(Path('eval/bundles') if parent.is_absolute() else parent).as_posix()}/{folder_name}"
+    commit = header.get("project_commit")
+    if repository == "fixture":
+        project = module_path or "."
+        subject = f"The subject is FlakeTrace's own {module_path or 'repository'}"
+    else:
+        project = f'"CHECKOUT/{module_path}"' if module_path else '"CHECKOUT"'
+        subject = f"CHECKOUT is your clone of {clean_url(repository) if repository else 'the subject'} at commit {commit}"
     return (f"# Check and re-run this bundle\n\n"
-            f"FlakeTrace commit: {header.get('tool_commit')}\n"
-            f"Subject commit: {header.get('project_commit')}\n\n"
-            "1. Check out FlakeTrace at the commit above, and the subject project at its commit.\n"
+            f"Made with FlakeTrace commit: {header.get('tool_commit')}\n"
+            f"Subject commit: {commit}\n\n"
+            "1. Use any FlakeTrace commit that has eval/bundle.py (for example the current main); `replay` prints\n"
+            f"   any difference from the commit above. {subject}.\n"
+            "   Run them from the FlakeTrace folder (on Windows, `py` instead of `python`).\n"
             f"2. Recount the evidence from the record alone:\n\n"
-            f"       python -m eval.bundle verify {folder_name}\n\n"
+            f'       python -m eval.bundle verify "{bundle}"\n\n'
             f"3. Re-run the kept sequence, the victim alone and the deletion checks:\n\n"
-            f"       python -m runner replay {folder_name} --project <checkout of the subject>\n")
+            f'       python -m runner replay "{bundle}" --project {project}\n')
 
 
 def write_bundle(out_folder, report: dict, record_path, *, paths: Dict[str, str], home: Optional[str] = None,
@@ -137,7 +152,7 @@ def write_bundle(out_folder, report: dict, record_path, *, paths: Dict[str, str]
     texts = {
         "report.json": json.dumps(dict(report, execution_record_reference="record.jsonl"), indent=2) + "\n",
         "record.jsonl": "".join(line + "\n" for line in lines),
-        "replay.md": _replay_md(header, folder.name) + extra_md,
+        "replay.md": _replay_md(header, folder.name, out_folder, repository, module_path) + extra_md,
         "environment.txt": environment_text.replace("\r\n", "\n"),
     }
     texts = {name: redact(text, paths, home, user) for name, text in texts.items()}
