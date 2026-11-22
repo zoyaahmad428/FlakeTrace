@@ -83,7 +83,7 @@ def _report(**overrides):
             "removed": P, "runs": {"n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0},
             "status": "NEEDED", "source": "alone-check", "round": 1,
         }],
-        "failure_signature": REF_SIG, "instrumentation_level": "static-only",
+        "failure_signature": REF_SIG, "reproduced_by": "order", "instrumentation_level": "static-only",
         "execution_record_reference": "will be overwritten by write_bundle",
         "source_integrity": {"passed": True, "details": "19 files hashed; all identical"},
         "outcome": "VERIFIED", "unresolved_reason": None, "candidate_reasons": [], "limitations": [],
@@ -201,7 +201,7 @@ class TestVerifyBundleOtherShapes(BundleTestCase):
     def test_not_reproduced_shape(self):
         report = _report(polluters=[], reduced_sequence=[P, V], deletion_checks=[],
                          shared_resource=None, polluter_write_location=None, victim_read_location=None,
-                         resource_edges=[], failure_signature=None,
+                         resource_edges=[], failure_signature=None, reproduced_by=None,
                          reproduction={"n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0,
                                        "confidence": 0.95, "lower": 0.0, "upper": 0.161},
                          victim_alone={"n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0,
@@ -223,7 +223,7 @@ class TestVerifyBundleOtherShapes(BundleTestCase):
         eligible places to look for a reference signature."""
         report = _report(polluters=[], reduced_sequence=[P, V], deletion_checks=[],
                          shared_resource=None, polluter_write_location=None, victim_read_location=None,
-                         resource_edges=[], failure_signature=None,
+                         resource_edges=[], failure_signature=None, reproduced_by=None,
                          reproduction={"n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0,
                                        "confidence": 0.95, "lower": 0.0, "upper": 0.161},
                          victim_alone={"n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0,
@@ -256,6 +256,78 @@ class TestVerifyBundleOtherShapes(BundleTestCase):
                             _victim_outcome(matched=False), note={"removed": "x#y", "round": 1}) for _ in range(20)]
         lines += [_run_line("verify", ["odfixture.ConfigPolluterTest#pollute", "x#y", VICTIM_STR],
                             _victim_outcome(matched=True)) for _ in range(20)]
+        bundle_dir = self.bundle(report=report, lines=lines)
+        self.assertEqual(verify_bundle(bundle_dir), [])
+
+
+class TestPairModeW35(BundleTestCase):
+    """ADR-016 (revised), Interface 9: in a pair-mode bundle the reference is the first adopted
+    pair's signature (the first pair whose re-run also fails), read from "pair" lines -- never
+    "reproduce"/"shuffle" (pair mode has none)."""
+
+    CAND_A = {"class": "x", "method": "a"}
+    CAND_B = {"class": "x", "method": "b"}
+
+    def test_adopted_pair_is_read_as_the_reference(self):
+        """Candidate A fails once but its re-run does not match (not adopted, scan continues);
+        candidate B fails and its re-run matches -- B is the adopted pair."""
+        report = _report(
+            polluters=[self.CAND_B], reduced_sequence=[self.CAND_B, V], reproduced_by="pair",
+            deletion_checks=[{"removed": self.CAND_B, "runs": {"n": 20, "passed": 20, "matched": 0,
+                                                                "other": 0, "infra": 0},
+                              "status": "NEEDED", "source": "alone-check", "round": 1}],
+        )
+        lines = [_header()]
+        lines += [_run_line("alone", [VICTIM_STR], _victim_outcome(matched=False)) for _ in range(20)]
+        lines += [
+            _run_line("pair", ["x#a", VICTIM_STR], _victim_outcome(matched=True)),
+            _run_line("pair", ["x#a", VICTIM_STR], _victim_outcome(other=True)),  # re-run: does not match
+            _run_line("pair", ["x#b", VICTIM_STR], _victim_outcome(matched=True)),
+            _run_line("pair", ["x#b", VICTIM_STR], _victim_outcome(matched=True)),  # re-run: matches -> adopted
+        ]
+        lines += [_run_line("verify", ["x#b", VICTIM_STR], _victim_outcome(matched=True)) for _ in range(20)]
+        bundle_dir = self.bundle(report=report, lines=lines)
+        self.assertEqual(verify_bundle(bundle_dir), [])
+
+    def test_no_pair_adopted_recounts_other_from_unmatched_retries(self):
+        """Neither candidate's pair is adopted: A fails once, passes its re-run; B fails once,
+        its re-run fails but with a different signature. sequence.other must count both -- the
+        tally runner.diagnose._pair_steps itself builds when nothing is adopted."""
+        report = _report(polluters=[], reduced_sequence=[V], deletion_checks=[],
+                         shared_resource=None, polluter_write_location=None, victim_read_location=None,
+                         resource_edges=[], failure_signature=None, reproduced_by=None,
+                         reproduction={"n": 2, "passed": 0, "matched": 0, "other": 2, "infra": 0,
+                                       "confidence": 0.95, "lower": 0.0, "upper": 0.716},
+                         victim_alone={"n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0,
+                                       "confidence": 0.95, "lower": 0.0, "upper": 0.161},
+                         outcome="UNRESOLVED", unresolved_reason="NOT_REPRODUCED")
+        del report["assurance"]
+        lines = [_header()]
+        lines += [_run_line("alone", [VICTIM_STR], _victim_outcome(matched=False)) for _ in range(20)]
+        lines += [
+            _run_line("pair", ["x#a", VICTIM_STR], _victim_outcome(matched=True)),
+            _run_line("pair", ["x#a", VICTIM_STR], _victim_outcome(matched=False)),  # re-run: passes
+            _run_line("pair", ["x#b", VICTIM_STR], _victim_outcome(other=True)),
+            _run_line("pair", ["x#b", VICTIM_STR], _victim_outcome(matched=True)),  # re-run: different signature
+        ]
+        bundle_dir = self.bundle(report=report, lines=lines)
+        self.assertEqual(verify_bundle(bundle_dir), [])
+
+    def test_a_pair_cut_off_before_its_re_run_is_not_adopted(self):
+        """The budget can stop the scan right after a real failure, before its one re-run runs
+        (Interface 6 B3/B7) -- that candidate must not be misread as adopted."""
+        report = _report(polluters=[], reduced_sequence=[V], deletion_checks=[],
+                         shared_resource=None, polluter_write_location=None, victim_read_location=None,
+                         resource_edges=[], failure_signature=None, reproduced_by=None,
+                         reproduction={"n": 1, "passed": 0, "matched": 0, "other": 1, "infra": 0,
+                                       "confidence": 0.95, "lower": 0.0, "upper": 0.95},
+                         victim_alone={"n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0,
+                                       "confidence": 0.95, "lower": 0.0, "upper": 0.161},
+                         outcome="UNRESOLVED", unresolved_reason="NOT_REPRODUCED")
+        del report["assurance"]
+        lines = [_header()]
+        lines += [_run_line("alone", [VICTIM_STR], _victim_outcome(matched=False)) for _ in range(20)]
+        lines += [_run_line("pair", ["x#a", VICTIM_STR], _victim_outcome(matched=True))]  # cut off here
         bundle_dir = self.bundle(report=report, lines=lines)
         self.assertEqual(verify_bundle(bundle_dir), [])
 

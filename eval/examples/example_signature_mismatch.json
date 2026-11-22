@@ -1,19 +1,40 @@
 {
   "schema_version": 2,
-  "victim": { "class": "com.example.FlakySortTest", "method": "checksOrdering" },
+  "victim": {
+    "class": "com.example.FlakySortTest",
+    "method": "checksOrdering"
+  },
   "polluters": [],
   "original_failing_order": [
-    { "class": "com.example.SuspectedPolluterTest", "method": "shufflesState" },
-    { "class": "com.example.FlakySortTest", "method": "checksOrdering" }
+    {
+      "class": "com.example.SuspectedPolluterTest",
+      "method": "shufflesState"
+    },
+    {
+      "class": "com.example.FlakySortTest",
+      "method": "checksOrdering"
+    }
   ],
   "reduced_sequence": [],
   "reproduction": {
-    "n": 20, "passed": 15, "matched": 0, "other": 5, "infra": 0, "confidence": 0.95,
-    "lower": 0.0, "upper": 0.16112515827076002
+    "n": 20,
+    "passed": 15,
+    "matched": 0,
+    "other": 5,
+    "infra": 0,
+    "confidence": 0.95,
+    "lower": 0.0,
+    "upper": 0.16112515827076002
   },
   "victim_alone": {
-    "n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0, "confidence": 0.95,
-    "lower": 0.0, "upper": 0.16112515827076002
+    "n": 20,
+    "passed": 20,
+    "matched": 0,
+    "other": 0,
+    "infra": 0,
+    "confidence": 0.95,
+    "lower": 0.0,
+    "upper": 0.16112515827076002
   },
   "shared_resource": null,
   "polluter_write_location": null,
@@ -25,9 +46,13 @@
     "message": "expected the originally-observed failure to recur",
     "stack_trace": "at com.example.FlakySortTest.checksOrdering(FlakySortTest.java:21)"
   },
+  "reproduced_by": "order",
   "instrumentation_level": "static-only",
   "execution_record_reference": "illustrative-only: no real execution record backs this example",
-  "source_integrity": { "passed": true, "details": "Illustrative: no modification detected to any instrumented class." },
+  "source_integrity": {
+    "passed": true,
+    "details": "Illustrative: no modification detected to any instrumented class."
+  },
   "outcome": "UNRESOLVED",
   "unresolved_reason": "SIGNATURE_MISMATCH",
   "candidate_reasons": [],

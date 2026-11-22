@@ -1,33 +1,87 @@
 {
   "schema_version": 2,
-  "victim": { "class": "com.example.PartiallyFlakyVictimTest", "method": "expectsCleanCounter" },
+  "victim": {
+    "class": "com.example.PartiallyFlakyVictimTest",
+    "method": "expectsCleanCounter"
+  },
   "polluters": [
-    { "class": "com.example.IntermittentPolluterTest", "method": "bumpsCounterUnderContention" }
+    {
+      "class": "com.example.IntermittentPolluterTest",
+      "method": "bumpsCounterUnderContention"
+    }
   ],
   "original_failing_order": [
-    { "class": "com.example.IntermittentPolluterTest", "method": "bumpsCounterUnderContention" },
-    { "class": "com.example.PartiallyFlakyVictimTest", "method": "expectsCleanCounter" }
+    {
+      "class": "com.example.IntermittentPolluterTest",
+      "method": "bumpsCounterUnderContention"
+    },
+    {
+      "class": "com.example.PartiallyFlakyVictimTest",
+      "method": "expectsCleanCounter"
+    }
   ],
   "reduced_sequence": [
-    { "class": "com.example.IntermittentPolluterTest", "method": "bumpsCounterUnderContention" },
-    { "class": "com.example.PartiallyFlakyVictimTest", "method": "expectsCleanCounter" }
+    {
+      "class": "com.example.IntermittentPolluterTest",
+      "method": "bumpsCounterUnderContention"
+    },
+    {
+      "class": "com.example.PartiallyFlakyVictimTest",
+      "method": "expectsCleanCounter"
+    }
   ],
   "reproduction": {
-    "n": 20, "passed": 8, "matched": 12, "other": 0, "infra": 0, "confidence": 0.95,
-    "lower": 0.3865815006061295, "upper": 0.7811934677397184
+    "n": 20,
+    "passed": 8,
+    "matched": 12,
+    "other": 0,
+    "infra": 0,
+    "confidence": 0.95,
+    "lower": 0.3865815006061295,
+    "upper": 0.7811934677397184
   },
   "victim_alone": {
-    "n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0, "confidence": 0.95,
-    "lower": 0.0, "upper": 0.16112515827076002
+    "n": 20,
+    "passed": 20,
+    "matched": 0,
+    "other": 0,
+    "infra": 0,
+    "confidence": 0.95,
+    "lower": 0.0,
+    "upper": 0.16112515827076002
   },
-  "shared_resource": { "kind": "static-field", "class": "com.example.SharedCounter", "field": "value" },
-  "polluter_write_location": { "class": "com.example.IntermittentPolluterTest", "method": "bumpsCounterUnderContention", "bytecode_offset": 4 },
-  "victim_read_location": { "class": "com.example.PartiallyFlakyVictimTest", "method": "expectsCleanCounter", "bytecode_offset": 2 },
+  "shared_resource": {
+    "kind": "static-field",
+    "class": "com.example.SharedCounter",
+    "field": "value"
+  },
+  "polluter_write_location": {
+    "class": "com.example.IntermittentPolluterTest",
+    "method": "bumpsCounterUnderContention",
+    "bytecode_offset": 4
+  },
+  "victim_read_location": {
+    "class": "com.example.PartiallyFlakyVictimTest",
+    "method": "expectsCleanCounter",
+    "bytecode_offset": 2
+  },
   "resource_edges": [
     {
-      "shared_resource": { "kind": "static-field", "class": "com.example.SharedCounter", "field": "value" },
-      "polluter_write_location": { "class": "com.example.IntermittentPolluterTest", "method": "bumpsCounterUnderContention", "bytecode_offset": 4 },
-      "victim_read_location": { "class": "com.example.PartiallyFlakyVictimTest", "method": "expectsCleanCounter", "bytecode_offset": 2 }
+      "shared_resource": {
+        "kind": "static-field",
+        "class": "com.example.SharedCounter",
+        "field": "value"
+      },
+      "polluter_write_location": {
+        "class": "com.example.IntermittentPolluterTest",
+        "method": "bumpsCounterUnderContention",
+        "bytecode_offset": 4
+      },
+      "victim_read_location": {
+        "class": "com.example.PartiallyFlakyVictimTest",
+        "method": "expectsCleanCounter",
+        "bytecode_offset": 2
+      }
     }
   ],
   "failure_signature": {
@@ -35,20 +89,46 @@
     "message": null,
     "stack_trace": "at com.example.PartiallyFlakyVictimTest.expectsCleanCounter(PartiallyFlakyVictimTest.java:11)"
   },
+  "reproduced_by": "order",
   "instrumentation_level": "static-only",
   "execution_record_reference": "illustrative-only: no real execution record backs this example",
-  "source_integrity": { "passed": true, "details": "Illustrative: no modification detected to any instrumented class." },
+  "source_integrity": {
+    "passed": true,
+    "details": "Illustrative: no modification detected to any instrumented class."
+  },
   "outcome": "CANDIDATE",
   "unresolved_reason": null,
-  "candidate_reasons": ["BELOW_REPLAY_THRESHOLD"],
+  "candidate_reasons": [
+    "BELOW_REPLAY_THRESHOLD"
+  ],
   "deletion_checks": [
-    { "removed": { "class": "com.example.IntermittentPolluterTest", "method": "bumpsCounterUnderContention" },
-      "runs": { "n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0 },
-      "status": "NEEDED", "source": "alone-check", "round": 1 }
+    {
+      "removed": {
+        "class": "com.example.IntermittentPolluterTest",
+        "method": "bumpsCounterUnderContention"
+      },
+      "runs": {
+        "n": 20,
+        "passed": 20,
+        "matched": 0,
+        "other": 0,
+        "infra": 0
+      },
+      "status": "NEEDED",
+      "source": "alone-check",
+      "round": 1
+    }
   ],
   "assurance": {
-    "sequence": { "reproduces": "NOT_ESTABLISHED", "passes_alone": "ESTABLISHED", "deletion": "DELETION_VERIFIED" },
-    "resource": { "level": "STATIC_OVERLAP", "mechanism": "NOT_ASSESSED" }
+    "sequence": {
+      "reproduces": "NOT_ESTABLISHED",
+      "passes_alone": "ESTABLISHED",
+      "deletion": "DELETION_VERIFIED"
+    },
+    "resource": {
+      "level": "STATIC_OVERLAP",
+      "mechanism": "NOT_ASSESSED"
+    }
   },
   "limitations": [
     "Hand-written illustrative example, not a recorded benchmark run -- see eval/examples/README.md. Entirely synthetic (com.example.* names), not tied to any real case in this repo.",

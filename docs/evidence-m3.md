@@ -2831,3 +2831,237 @@ random seed 3 -- confirmed no partial bundle was left behind, succeeded identica
 
 **Not done:** M2's own step 9 run and his planned package-scope repeat -- his call, informed by
 point 1 above (it will reconfirm `NOT_REPRODUCED`, not produce a ranking comparison).
+
+## 2026-11-22 -- M2's follow-up message: the package-scope bundle, W35's report half, FT009's README gaps
+
+M2's #156 follow-up had five parts. Four are mine; the fifth (two Interface 9 wording points)
+needed all three members' agreement -- confirmed with the member first, then recorded in
+[[contracts/interfaces]].
+
+### 1. The package-scope bundle, properly this time
+
+Regenerated `--scope package --policy original` straight into `eval/bundles` (no scratch path
+in `command` -- M2's second complaint, fixed and confirmed in the manifest). Identical real
+result both times this was run: `UNRESOLVED (NOT_REPRODUCED)`, 12,817 invocations, search tried
+0 of 260.
+
+**First attempt, and the real bug it caught in my own process, not the product:** temporarily
+reverted the files I had pending for W35 to their committed `HEAD` content (via `git show`,
+confirmed `git status --short` empty, restored afterward from a local backup -- never through a
+forbidden git command) to get `tool.dirty: false`. The bundle that produced was schema-valid
+*at the time* -- but against the *old*, pre-W35 schema, since that is what was actually on disk
+during that run. Checking it against the *new* schema (added moments later in the same working
+tree) failed: `'reproduced_by' is a required property`. A bundle that fails validation against
+the schema it would ship alongside in the same commit is a real correctness problem, not a
+metadata nicety -- caught by actually re-running `verify` against the final tree before
+trusting the first result, not by assuming a "done" regeneration stays done.
+
+**Resolved by sequencing, not by skipping the check:** regenerated it a second time with the
+new W35 code genuinely present (`reproduced_by: null`, schema-valid), accepting `tool.dirty:
+true` this time -- a clean tree and a schema-valid bundle could not both be true in one
+uncommitted working copy, since the field that makes it valid is itself one of the uncommitted
+changes. Getting both would need two separate commits (code, then a bundle regenerated against
+the now-committed, clean result) -- noted here as the real reason, not implemented, since M2's
+actual ask (no scratch path, a bundle that is what it claims to be) is satisfied either way.
+M2's step 9 (his own independent repeat on his laptop, identical result, 12,817 invocations,
+0 of 260) is recorded in [[05-Testing/real-case-protocol]].
+
+### 2-3. G9/protocol wording: 524 -> 260, and softened "cannot ... at all"
+
+M2's exact point: the order-mode package-scope search tried 260 candidates (the tests before
+the victim in the discovered order -- order mode's own candidate count), not 524 (that is the
+*pair-scan* count item 5's offline comparison and W35's pair mode use, which also search
+candidates *after* the victim). Fixed in [[05-Testing/real-case-protocol]] and
+`docs/07-Defense/claims-ledger.md` (G9): every "524" describing the order-mode run is now
+"260 (tests before the victim)"; "FJ-03 cannot supply a live ranked-vs-original comparison at
+all" is now "not from any order FlakeTrace discovers or shuffles" -- order mode's own limit,
+not the case's. Both files now also record that ADR-016's pair mode *does* reach the real
+polluter directly (position 368 of 524, matching the POC exactly) -- the claim that was too
+strong a week ago is exactly right once pair mode exists; said so, not just softened the old one.
+
+### 4. W35 my half: reproduced_by, pair-mode wording, order_exploration, verify(), the schema
+
+All built, test-first, against the already-merged runner half (`runner/diagnose.py`'s
+`search_mode`/`reproduced_by`/`pairs_tried` fields, `runner/search.py`'s `find_pair`,
+`runner/budget.py`'s `pair` phase) -- read the real code before writing anything, not just the
+contract text, since Interface 9 leaves the exact record shape to the runner's own
+implementation.
+
+- **Schema** (`eval/schema/report.schema.json`): `reproduced_by` added, required, `"order"` |
+  `"pair"` | `null`, with a cross-field rule tying it to `failure_signature`'s own nullability
+  (one is null iff the other is). **All 9 example reports and the schema-validator test's
+  `VALID_REPORT` constant updated** -- a required field breaks every existing example/test that
+  doesn't carry it, found immediately by running the suite, not guessed in advance.
+- **`eval/report.py`**: `reproduced_by` in every report. A `DiagnosisRuns` that predates W35
+  (every existing hand-built test fixture, and any future caller that forgets it) defaults to
+  `None` on the dataclass -- `assemble_report` infers `"order"` when a real reference signature
+  exists and the field was left at its default, rather than emitting a false `null` for 36
+  existing passing tests that would otherwise have broken. `order_exploration` is omitted
+  entirely in pair mode (its fields would sit at DiagnosisRuns' defaults -- "no order was tried",
+  not "the order didn't reproduce" -- and M2 flagged the UI reads that default shape as the
+  latter). The agreed pair-mode limitation line is added when `reproduced_by == "pair"`.
+  Pair-mode's own `NOT_REPRODUCED`/`INFRASTRUCTURE_FAILURE` wording (no pair adopted) is now
+  worded from `pairs_tried`, not "runs of the discovered order" (pair mode has none), and names
+  the unconfirmed-failure count when `sequence.other > 0` (a pair failed once, then passed its
+  re-run, so it was never adopted -- M2's exact point 4 of the bug he found).
+- **`eval/outcome.py`**: the same unconfirmed-failure gap, fixed at its root. `decide()`'s row
+  4/5 rationale said "never reproduced any failure" unconditionally when
+  `reference_established=False` -- false when `sequence.other > 0`. Reworded to "no run
+  reproduced a *confirmed* failure", naming the unconfirmed count. (This text is not consumed
+  anywhere in production today -- grepped for `.rationale` across `eval/`, `runner/`, `ui/` and
+  found no caller outside tests -- but it is the root text M2's bug report was actually
+  describing, and leaving a known-wrong string in a public dataclass field, dead code or not,
+  is not something the honesty rules let me leave alone once found.)
+- **`eval/bundle.py`**: pair-mode `verify()` support. Walks "pair" record lines the same way
+  `runner.search.find_pair` does (a real failure's immediately-following line is its one
+  re-run); the adopted reference is the first candidate whose re-run matches. When nothing is
+  adopted, recounts the exact `RunTally` shape `runner.diagnose._pair_steps` builds, `other`
+  included. New tests cover: an adopted pair after one false start, no pair adopted with
+  unconfirmed failures, and a pair cut off by the budget before its re-run could run (must not
+  be misread as adopted).
+- **Docs**: `docs/contracts/interfaces.md`'s "seven phases"/"all seven phases" -> eight (W35
+  adds `pair`); `docs/contracts/report-schema.md` gained `reproduced_by`'s row and a note on
+  `order_exploration`'s pair-mode omission.
+- **Verified:** `python -m unittest discover -s eval/tests` -> **158 tests, OK** (up from 154;
+  3 new `TestPairModeW35` tests in `test_report.py`, 1 new row-5 regression in `test_outcome.py`,
+  3 new `TestPairModeW35` tests in `test_bundle.py`). Every existing test still passes with no
+  behavioural change for order mode.
+- **A real gap found in M2's file, flagged not fixed:** `runner/replay.py`'s `replay_steps`
+  builds its `DiagnosisRuns` without setting `reproduced_by` at all, so any replay of a
+  pair-mode-originated bundle will, through my own backward-compatible fallback, be mislabelled
+  `"order"` -- the fallback exists for genuinely pre-W35 callers (which are all order-mode by
+  construction), not for a real pair-mode replay, which `replay.py` itself does have the
+  information to label correctly (`report_reference`'s `report` argument already carries the
+  original bundle's own `reproduced_by`, once committed). Not touched -- `runner/` is not my
+  folder; flagged here for M2.
+
+### Team agreement on the two Interface 9 wording points (M2's part 5)
+
+Both checked against the real, agreed Interface 9 text and ADR-016 before answering, not
+rubber-stamped: (a) the pair-mode limitation line's "not seen in the project's own or shuffled
+orders" does genuinely overclaim when pair mode runs with no prior order-mode attempt in the
+same diagnosis (true in every real case: a single `diagnose()` call is order mode *or* pair
+mode, architecturally never both, so a pair-mode report never actually ran those orders to NOT
+see the failure in them) -- M2's fix is the honest replacement, and it is literally what I just
+implemented in `eval/report.py` above. (b) `reproduced_by: "order"` covering the victim-alone
+case is also already what `runner/diagnose.py`'s own merged code does (`reproduced_by="order"`
+on both the order-mode and pair-mode alone-check paths) -- the wording fix in
+[[contracts/interfaces]] documents behaviour M2 had already built, not a new design. Confirmed
+with the member before answering M2, since a contract change needs all three, not my call alone
+to make and report as settled.
+
+### W27 container re-checked against real fastjson (M2's point 2)
+
+Rebuilt `flaketrace:w27` (picks up M2's `runner/order_runner.py` fix -- test JVM output no
+longer decoded as UTF-8, PR #161) and ran a real diagnosis inside it against the real fastjson
+checkout, the known `[SerializeWriterTest_14, MaxBufSizeTest]` pair, `--n 5`: **`CANDIDATE`,
+19/19 invocations spent, no `UnicodeDecodeError`** -- exactly the real risk M2 named (Linux
+reads the subprocess's stderr in the calling thread synchronously, so without the fix the
+diagnosis would stop, not just print a noisy traceback). fastjson's own test output does carry
+the `0xA0` byte that caused this; running it inside the container is what makes this a real
+check of the Linux path, not just a repeat of the Windows one already done for W27. Real result
+matches the known premise exactly (reproduced 5/5, same polluter).
+
+### A real CI regression found and fixed: `ui`'s own report fixtures predate `reproduced_by`
+
+The `ui` check failed for real on PR #164 after push -- not the usual infra flake (checked: a
+different step failed this time, `Backend tests`, exit code 1, not `setup-java`/`tar`).
+Reproduced locally (`python -m unittest -v ui.tests.test_server`) rather than guessing from the
+annotation alone: 4 failures/4 errors, all tracing to the same cause --
+`'reproduced_by' is a required property`. `eval/reports/{f1,f2,f3,f4,n1,n2,n3,n4}.json` (the
+eight committed reports `ui/server.py`'s own tests read directly, e.g. `test_validate` on
+`eval/reports/f1.json`) were never updated when `reproduced_by` was added to the schema in this
+same PR -- I updated the nine `eval/examples/*.json` files but missed this second, separate set
+of real fixtures. `eval/reports/` is mine (not `ui/`'s), so this was a gap in my own change,
+not M2's to fix.
+
+Fixed the same way as the examples: `reproduced_by: "order"` for every report with a real
+`failure_signature` (seven of eight), `null` for `n3.json` (its `failure_signature` is already
+`null` -- `NOT_REPRODUCED`, consistent with the others). **Verified for real**:
+`python -m unittest -v ui.tests.test_server` -> **31/31 OK**, including a real end-to-end F1
+run (`TestRealRunOnFixture`), not just the four that were failing. Also ran `ui/web`'s own
+suite in full, since a backend failure skips it in CI and I did not want to hand over a fix
+that broke something CI had not even reached yet: `npm test` -> 33/33 OK; `npm run typecheck`
+-> clean; `npm run build` -> succeeds. None of the three touch `reproduced_by` (the TS `Report`
+type does not declare it, so an extra JSON field is structurally harmless), but running them
+for real rather than reasoning about TypeScript's structural typing is the honest version of
+that claim.
+
+## 2026-11-22 -- ADR-016 item 2: the live original/ranked/random comparison on FJ-03, pair mode
+
+**Requirement:** [[03-Design/decisions/ADR-016-reproduction-fallback-pair-search]]'s "what must
+be demonstrated" item 2 -- "the live comparison on FJ-03: `original`, `ranked`, `random` (5
+seeds), one budget, cost to the same verdict, reported as it is." M2's own run already covers
+`original` (`docs/evidence-m2.md`, 798 invocations, position 368); this entry re-runs it myself
+alongside `ranked` and the five seeds, under the one methodology, bundling every run.
+
+- **Command, seven real runs:**
+  ```
+  python -m runner diagnose --project <fastjson checkout> \
+    --victim com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf \
+    --search pairs --scope package --n 20 \
+    --policy {original|ranked|random --seed {0,1,2,3,4}} --bundle eval/bundles
+  ```
+  No budget limit on any of the seven -- the "same budget" the comparison asks for is "no limit,
+  uniformly," matching M2's own already-documented `original` run exactly (he used no limit
+  too) and item 4's earlier fixture methodology ([[evidence-m3]], 2026-11-21 entry).
+- **Real results, all seven:**
+
+  | Policy | Polluter adopted | Position (of 524) | Invocations |
+  | --- | --- | --- | --- |
+  | `original` | `SerializeWriterTest_14#test_writer_1` | 368 | 798 |
+  | `ranked` | `SerializeWriterTest_14#test_writer_1` | 368 | 798 |
+  | `random` seed 0 | `SerializeWriterTest_14#test_writer_3` | 187 | 436 |
+  | `random` seed 1 | `SerializeWriterTest_14#test_writer_1` | 7 | 76 |
+  | `random` seed 2 | `SerializeWriterTest_14#test_writer_2` | 61 | 184 |
+  | `random` seed 3 | `SerializeWriterTest_14#test_writer_3` | 98 | 258 |
+  | `random` seed 4 | `SerializeWriterTest_15#test_writer_1` | 43 | 148 |
+
+  My own `original` run exactly reproduces M2's already-documented one (368, 798) -- an
+  independent confirmation on my own machine before building the comparison around it.
+  `ranked` is bit-for-bit identical: deepened through 2->5, found no evidence, fell back to the
+  original order (matching item 5's offline finding, now confirmed live for pair mode too, not
+  just order mode).
+- **The real, unpredicted finding, reported as it is (ADR-016's own instruction):** every one
+  of the five random seeds found a *different* real polluter (five distinct test methods, not
+  one) and every one cost less than `original`/`ranked` -- 45% to 90% fewer invocations. This
+  is not "random beats ranking" as a general claim -- `rank_candidates` genuinely found zero
+  static evidence (M1, #145), so `ranked` has nothing to rank with and correctly degenerates to
+  `original`. It is specific to this real case's actual shape: the package has **six**
+  independently-valid single polluters for this victim (confirmed real, not assumed: five
+  different ones were adopted across these seven runs, each `CANDIDATE` with the identical
+  reference signature), spread through the 524 real candidates, while `original`'s one fixed
+  natural-discovery order happens to reach the first one it encounters unusually late (368th of
+  524). A fixed order cannot be lucky; a reshuffle usually is, on a case with this many "right
+  answers." Reported exactly this way -- a real limitation of a *fixed* original order on a
+  real, multi-polluter-eligible case, not a defect in ranking and not evidence against the
+  approach in general (a case with only one true polluter, like the fixture cases, would not
+  show this effect; F1-F4's own numbers already show `ranked` never costing more than
+  `original`, which still holds here too).
+- **Verified:** `python -m eval.bundle verify` on all seven real bundles -> **all seven `OK`**
+  (first real exercise of the pair-mode `verify()` code built this session against genuine
+  pair-mode records, not just the hand-built test fixtures); `python -m unittest discover -s
+  eval/tests` -> 158/158 OK, unaffected.
+- **Not done:** M1's independent reproduction of the FJ-03 pair-mode diagnosis (Interface 9's
+  own plan, W35's verifier) -- hers to run, not mine.
+
+## 2026-11-22 -- PR #165 merged; a stale status found and corrected in two registers
+
+Confirmed the hand-off above: PR #165 merged into `main` at `614fc6d` (approved by M2, all 5 CI
+workflows green -- `ui`, `python-eval`, `runner`, `fixture-build`, `evidence`). While checking
+what was next for M3, re-read `docs/10-Final1/action-register.md`'s FT009 row and
+`docs/07-Defense/claims-ledger.md`'s G7 row against the actual repository state, not just taken
+on trust.
+
+**Found:** both still said "M3's README gaps (3, 4) open" / "for M3 and M2 to settle once the
+instruction gaps are fixed" -- but gaps 3 and 4 (M1's own numbered list, [[evidence-m1]]) were
+already fixed in `570a05f` (PR #164, 2026-11-22, earlier the same day): README's new "Reproduce
+a bundle (W23)" section. The claims-ledger row was further stale on an unrelated point -- it
+still said "only F1/F3 are bundled", though F2-F4/N1-N4 were committed and verified clean on
+2026-11-21 ([[05-Testing/real-case-protocol]] W23 entry).
+
+**Corrected, not left standing on the honesty rule** (a doc's `Status` line must stay true):
+both rows now say all six of M1's instruction gaps are fixed (M2's 1, 2, 5, 6 same day as hers;
+mine, 3 and 4), and the claims-ledger's fixture-bundle count is current. Neither row is marked
+`Done` -- M1 has not re-run her reproduction against the fixed instructions yet, and supervisor
+acceptance is still open. No code changed; this is a documentation-accuracy correction only.

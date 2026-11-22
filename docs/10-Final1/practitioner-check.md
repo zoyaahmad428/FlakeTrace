@@ -110,11 +110,14 @@ before the session. Record pass or fail exactly as observed.
 
 | Part 3 shows (input only) | Part 4 shows (FlakeTrace's answer) |
 | --- | --- |
-| Victim `odfixture.ConfigVictimTest#expectsDefaultMode`; it fails in the suite with `java.lang.AssertionError`; in the report's 20 alone runs it never failed | `report.json`: `VERIFIED (sequence)`, polluter `odfixture.ConfigPolluterTest#pollute`, the alone and sequence tallies, and the resource as a static overlap, not the cause |
+| Victim `odfixture.ConfigVictimTest#expectsDefaultMode`; it fails in the suite with `java.lang.AssertionError` | `report.json`: `VERIFIED (sequence)`, polluter `odfixture.ConfigPolluterTest#pollute`; the alone tally (20 of 20 alone runs passed) and the sequence tally (20 of 20 failed the same way); the resource as a static overlap, not the cause |
 
-**fastjson FJ-03** is the alternative once a diagnosis of it exists. Today it is
-`UNRESOLVED (NOT_REPRODUCED)` through the command, because no full order fails (ADR-016, W35).
-Showing that report is also honest, but it asks a different question.
+**fastjson FJ-03** is the real-code alternative. In order mode it is `UNRESOLVED
+(NOT_REPRODUCED)`, because no full order fails. With pair mode (`--search pairs`, W35, PR #160),
+M2 reports a diagnosis from the victim alone: `CANDIDATE`, polluter
+`SerializeWriterTest_14#test_writer_1`, found after 368 of 524 pairs. Its report would ask a
+harder question (a candidate, a constructed pair, no resource edge), and it is not yet
+independently reproduced (M1 is W35's verifier).
 
 **Show only a report produced by a real run.** These are.
 

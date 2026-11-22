@@ -88,7 +88,14 @@ def _order_exploration(diagnosis: DiagnosisRuns, infrastructure_failures: int) -
     actually tracks it (DiagnosisRuns gaining all five order fields below); otherwise None, and
     the key is omitted entirely -- the schema allows that. `infrastructure_failures` is the
     already-combined total (every phase: given/discovered order, shuffles, alone check) -- not
-    recomputed here, so the report and the outcome always agree."""
+    recomputed here, so the report and the outcome always agree.
+
+    Omitted for pair mode (W35, M2's review): pair mode never ran an order, so these fields would
+    all sit at their DiagnosisRuns default (order_given=False, 0 shuffles, not exhausted) -- not
+    "the order didn't reproduce", just "no order was tried". A reader (the UI included) would
+    misread that default shape as a real finding."""
+    if getattr(diagnosis, "search_mode", "order") == "pairs":
+        return None
     if not all(hasattr(diagnosis, f) for f in _ORDER_EXPLORATION_FIELDS):
         return None
     return {
@@ -180,6 +187,13 @@ def assemble_report(
         "message": ref.message,
         "stack_trace": ref.stack_trace,
     }
+    # W35 (Interface 9): a real diagnose() call always sets this explicitly (order or pairs mode
+    # alike). A DiagnosisRuns built before W35 (or a test fixture) that leaves the dataclass
+    # default (None) always came from the only mode that existed then -- infer "order" rather
+    # than reporting null for a reference that demonstrably was established.
+    reproduced_by = diagnosis.reproduced_by
+    if reproduced_by is None and ref is not None:
+        reproduced_by = "order"
 
     # Claim S3 (W20, ADR-011, Interface 4, PR #121, 2026-11-20): the real repeated-removal
     # deletion check. diagnosis.deletion_checks accumulates every round's checks (a dropped
@@ -284,8 +298,38 @@ def assemble_report(
     order_desc = "given" if getattr(diagnosis, "order_given", True) else "discovered"
     shuffled_orders = getattr(diagnosis, "shuffled_orders", 0)
     shuffle_note = f" (plus {shuffled_orders} shuffled order(s))" if shuffled_orders else ""
+    pair_mode = getattr(diagnosis, "search_mode", "order") == "pairs"
+    pairs_tried = getattr(diagnosis, "pairs_tried", 0)
 
-    if reason == REASON_VICTIM_FAILS_ALONE_DIFFERENTLY:  # row 7
+    # W35 (ADR-016, Interface 9, revised 2026-11-22 after M2's review): the verbatim text states
+    # what pair mode itself does, not what was empirically observed -- a pair-mode diagnosis
+    # never also runs order mode's reproduce/shuffle phases, with or without a prior order-mode
+    # attempt in a separate run, so this is always the honest wording for THIS report.
+    if diagnosis.status == POLLUTER_FOUND and pair_mode and diagnosis.reproduced_by == "pair":
+        limitations.append(
+            "The failure appeared when the polluter ran directly before the victim (a "
+            "constructed pair); pair mode does not run the project's own or shuffled orders."
+        )
+
+    if pair_mode and reason == REASON_NOT_REPRODUCED and not reference_established:
+        # M2's review: with no pair adopted, sequence.other can be > 0 (a pair failed once, then
+        # passed its re-run) -- worded from pairs_tried, not "runs of the order" (there is none).
+        unconfirmed = sequence.other
+        detail = f", {unconfirmed} of them failing once but not on the re-run" if unconfirmed else ""
+        limitations.append(
+            f"Not reproduced: {pairs_tried} candidate pair(s) tried{detail}, {alone.n} runs "
+            f"alone. Across the pairs tried the failure rate is below "
+            f"{decision.sequence_interval[1]:.3f} with {confidence:.0%} confidence (Wilson) -- "
+            "a bound over different candidate pairs, not repeats of one order. This is not "
+            "evidence that the test is reliable."
+        )
+    elif pair_mode and reason == REASON_INFRASTRUCTURE_FAILURE and not reference_established:
+        limitations.append(
+            f"No pair reproduced a confirmed failure in {pairs_tried} candidate pair(s) tried, "
+            f"but {infrastructure_failures} run(s) only crashed or timed out -- a tooling "
+            "problem, not evidence this victim is reliable."
+        )
+    elif reason == REASON_VICTIM_FAILS_ALONE_DIFFERENTLY:  # row 7
         limitations.append(
             f"Victim failed {alone.other}/{alone.n} time(s) alone with a different failure than "
             f"the {sequence.matched}/{sequence.n} reference failures seen after the search's "
@@ -381,6 +425,7 @@ def assemble_report(
         "victim_read_location": edge["victim_read_location"] if edge else None,
         "resource_edges": edges,
         "failure_signature": failure_signature,
+        "reproduced_by": reproduced_by,
         "instrumentation_level": "static-only",
         "execution_record_reference": diagnosis.execution_record,
         "source_integrity": {

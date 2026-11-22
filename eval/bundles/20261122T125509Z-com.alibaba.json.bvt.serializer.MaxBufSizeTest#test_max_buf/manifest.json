@@ -2,7 +2,7 @@
   "bundle_version": 1,
   "kind": "diagnosis",
   "tool": {
-    "commit": "c5eff18f366edf94f7e76003db3903f1afadea44",
+    "commit": "d7139e7fc76c9e3f25b0b36db844ec64f301e654",
     "dirty": true
   },
   "subject": {
@@ -18,26 +18,30 @@
     "<project>",
     "--victim",
     "com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf",
+    "--search",
+    "pairs",
     "--scope",
     "package",
     "--n",
     "20",
     "--policy",
-    "original",
+    "random",
+    "--seed",
+    "4",
     "--records",
     "<records>",
     "--bundle",
-    "<home>/AppData/Local/Temp/claude/802d5b925a00f957/b8e9921a-2ccc-4dab-87ac-bbe44b65f63b/scratchpad/clean-bundles-package"
+    "eval/bundles"
   ],
   "parameters": {
     "n": 20,
     "shuffles": 31,
-    "seed": 0,
+    "seed": 4,
     "budget": {
       "limit_invocations": null,
       "limit_seconds": null
     },
-    "policy": "original",
+    "policy": "random",
     "scope": "package",
     "lifecycle": "class-grouped",
     "workspace": "copy"
@@ -55,12 +59,12 @@
   },
   "reset_assumptions": "Reset between orders: JVM state only: static fields, system properties, loaded classes, threads. Not reset: Files anywhere, the working directory, environment variables, network and external services, the system clock and timezone.",
   "fresh_run": true,
-  "run_date": "2026-11-21",
+  "run_date": "2026-11-22",
   "replay_of": null,
   "files": {
-    "report.json": "42d9b38e966fe5f885f6bf1bd634414ed9e4655797198a81a729b00e036bbe20",
-    "record.jsonl": "3fa00315b214e9443189159eae741e61a417f589eeab8e65ec6b35a50a46dfbd",
-    "replay.md": "779f39f188fcac55ace3711b24140f1aa2903c12ea1f75355fefc7310e8a6138",
+    "report.json": "bd264816ecee085272840349cba399e5997de32d985d55b1bf476d7b19cc3ea1",
+    "record.jsonl": "68b0296d74e935e5dcec52acc71e41fc3f05c715314167b69735f8d8b223080a",
+    "replay.md": "8c452ac9eca849d7fdb9371cf144072ded69a0e9f1e56082a0d27d8c93ff1dea",
     "environment.txt": "c8a5b97688887f64b05ca871e9cdb0a1160add7b70a92eab776ce7587966f80a"
   }
 }

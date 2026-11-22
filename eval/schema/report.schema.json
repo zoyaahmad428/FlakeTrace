@@ -263,6 +263,11 @@
       "required": ["passed", "details"],
       "additionalProperties": false
     },
+    "reproduced_by": {
+      "type": ["string", "null"],
+      "enum": ["order", "pair", null],
+      "description": "W35 (ADR-016, Interface 9). 'order': the failure came from running a full order -- the starting order, a shuffle, or the victim alone (a trivial one-test order), order mode's today's pipeline. 'pair': from an adopted [candidate, victim] pair, pair mode (--search pairs), never given the dataset's polluters. null: never reproduced anywhere (reference_established=False, same condition as a null failure_signature)."
+    },
     "outcome": {
       "type": "string",
       "enum": ["VERIFIED", "CANDIDATE", "UNRESOLVED"]
@@ -306,8 +311,8 @@
     "schema_version", "victim", "polluters", "original_failing_order", "reduced_sequence",
     "reproduction", "victim_alone", "shared_resource", "polluter_write_location",
     "victim_read_location", "resource_edges", "deletion_checks", "failure_signature",
-    "instrumentation_level", "execution_record_reference", "source_integrity", "outcome",
-    "unresolved_reason", "candidate_reasons", "limitations"
+    "reproduced_by", "instrumentation_level", "execution_record_reference", "source_integrity",
+    "outcome", "unresolved_reason", "candidate_reasons", "limitations"
   ],
   "additionalProperties": false,
   "allOf": [
@@ -334,6 +339,14 @@
     {
       "if": { "properties": { "unresolved_reason": { "enum": ["VICTIM_FAILS_ALONE", "VICTIM_FAILS_ALONE_DIFFERENTLY", "SIGNATURE_MISMATCH", null] } } },
       "then": { "properties": { "failure_signature": { "type": "object" } } }
+    },
+    {
+      "if": { "properties": { "failure_signature": { "type": "null" } } },
+      "then": { "properties": { "reproduced_by": { "type": "null" } } }
+    },
+    {
+      "if": { "properties": { "failure_signature": { "type": "object" } } },
+      "then": { "properties": { "reproduced_by": { "enum": ["order", "pair"] } } }
     }
   ]
 }

@@ -1,14 +1,18 @@
 # Real-case protocol — the first real project through the whole pipeline
 
-*v1 · 2026-11-13 · Status: `STEPS 1-8 COMPLETE FOR FJ-03` (2026-11-21, M3). Steps 1-5 complete
-2026-11-19 — see "Findings" below. **Steps 6-9 were blocked** on a real tool gap found while
-doing steps 3-4 (`runner/discovery.py` could not discover or validate an `--order` naming the
-known polluter) — **fixed by M2 2026-11-20** (PR #110,
-[[00-Meta/risk-register]]), unblocking steps 6-9. **Steps 6-8 run for real 2026-11-21** (M3,
-[[evidence-m3]]): `original`, `ranked` and `random` (five seeds) all give the identical real
-verdict at the identical real cost. **Step 9 (independent repeat) is the one piece left**,
-pending M1 or M2 on another machine. The choice of case and the comparator are Member 3's to
-confirm; the supervisor asked to see "a feasible case and protocol" at the next review (FT008).*
+*v1 · 2026-11-13 · Status: `STEPS 1-9 COMPLETE FOR FJ-03 IN ORDER MODE; PAIR MODE (ADR-016)
+SUPERSEDES THE "NO LIVE COMPARISON" FINDING` (2026-11-22, M3/M2). Steps 1-5 complete 2026-11-19
+— see "Findings" below. **Steps 6-9 were blocked** on a real tool gap found while doing steps
+3-4 (`runner/discovery.py` could not discover or validate an `--order` naming the known
+polluter) — **fixed by M2 2026-11-20** (PR #110, [[00-Meta/risk-register]]), unblocking steps
+6-9. **Steps 6-8 run for real 2026-11-21** (M3, corrected 2026-11-22 after review — see below):
+`original`, `ranked` and `random` (five seeds) all give the identical real verdict at the
+identical real cost, and the real package-scope search confirms order mode cannot discover or
+construct a failing order for this case. **Step 9 done 2026-11-22** (M2, independent repeat,
+identical result). **ADR-016's pair mode now reaches FJ-03's real polluter directly from the
+victim alone** (M2, PR #160) — the live ranked-vs-original comparison in pair mode is W35's
+open item. The choice of case and the comparator are Member 3's to confirm; the supervisor
+asked to see "a feasible case and protocol" at the next review (FT008).*
 
 ## Findings (2026-11-19, M3, real runs — native Windows, JDK 24 for the runner itself,
 real Temurin 8 (`1.8.0_512`, downloaded as a portable zip for this build only, not installed)
@@ -81,29 +85,65 @@ above originally said this "confirms end to end, with real JVM runs" that ranked
 saving on FJ-03. That overclaimed what steps 6-8 actually tested: `--order` fixes the run to the
 known pair, so the search has exactly **one** candidate regardless of policy — a 1-candidate
 search cannot demonstrate a *saving*, only that none of the three policies costs more than the
-others (which they don't). It does not test the real, 524-candidate search a policy comparison
-needs. **Checked for real, not just by reading the code**: running the *actual* package-scope
-search (524 candidates, no `--order`, the natural discovered order plus all 31 ADR-008 shuffles,
-`--n 20`, no budget limit) through the product's own CLI gives, for real, `UNRESOLVED
-(NOT_REPRODUCED)` — 12,817 real invocations (reproduce 5,220 + shuffle 7,577 + alone 20), the
-discovered order and every one of the 31 shuffles never fails, and the single-polluter search
-phase (where policy would matter) **never runs** — "search tried 0 of 260 candidates". This is
-not a budget-sizing problem: the search is architecturally gated on `reproduce`/`shuffle`
-establishing a reference signature first, and neither does, for real, on this dense suite
-(matching step 4's original finding, now reconfirmed end to end through the fixed CLI rather
-than the workaround script). **So there is no way to run a live, 524-candidate ranked-vs-original
-comparison on FJ-03** — not with `--order`, not with `--scope package` — regardless of budget.
-The genuine source of "no evidence, no saving" on this case remains the offline comparison (item
-5: `rank_candidates` position = original position, 368 of 524, no JVM runs needed). Bundled as
-`eval/bundles/20261121T205558Z-...` ([[evidence-m3]]).
+others (which they don't). It does not test the real search a policy comparison needs. **Checked
+for real, not just by reading the code**: running the *actual* package-scope search (no
+`--order`, the natural discovered order plus all 31 ADR-008 shuffles, `--n 20`, no budget limit)
+through the product's own CLI gives, for real, `UNRESOLVED (NOT_REPRODUCED)` — 12,817 real
+invocations (reproduce 5,220 + shuffle 7,577 + alone 20), the discovered order and every one of
+the 31 shuffles never fails, and the single-polluter search phase (where policy would matter)
+**never runs** — "search tried 0 of 260 candidates" (the 260 tests before the victim in the
+discovered order — order mode's own candidate count for a single-polluter search, not the
+524-candidate pair-scan count item 5 and pair mode use). This is not a budget-sizing problem:
+the search is architecturally gated on `reproduce`/`shuffle` establishing a reference signature
+first, and neither does, for real, on this dense suite (matching step 4's original finding, now
+reconfirmed end to end through the fixed CLI rather than the workaround script). **So there is
+no way to run a live ranked-vs-original comparison on FJ-03 from any order FlakeTrace discovers
+or shuffles** — not with `--order`, not with `--scope package`, regardless of budget. (Corrected
+2026-11-22, M2's review: "cannot ... at all" was too strong — see ADR-016 below, which finds a
+different way in.) The genuine source of "no evidence, no saving" *in order mode* remains the
+offline comparison (item 5: `rank_candidates` position = original position, 368 of 524, no JVM
+runs needed). Bundled as `eval/bundles/20261121T205558Z-...`, then regenerated into a clean
+commit as `eval/bundles/<2026-11-22 timestamp>-...` once the scratch-path/`tool.dirty` issue M2
+found was fixed ([[evidence-m3]]).
 
-**Step 9 — not yet done.** The independent repeat (M1 or M2, on another machine) is the one
-piece of steps 6-9 left. **Note for whoever runs it:** a repeat of the package-scope search
-above (step 4's `NOT_REPRODUCED` reconfirmed through the real CLI) is a legitimate, different
-check from repeating the trivial 1-candidate `--order` runs — but it will not produce a
-ranked-vs-original comparison either, for the structural reason above. Worth doing for the
-reconfirmation; not a substitute for the still-missing live comparison, which this case cannot
-supply.
+**Step 9 — done 2026-11-22 (M2, independent repeat).** M2 repeated the package-scope search on
+his own machine (JDK 8u502) and got the identical real result: `NOT_REPRODUCED`, 12,817
+invocations, 0 of 260 searched. Steps 6-9 are complete.
+
+**Superseded by ADR-016 (pair mode), 2026-11-22.** The conclusion above is specific to *order
+mode*: FlakeTrace cannot discover or construct a failing **order** for FJ-03. It does not mean
+FJ-03 is unreachable from the victim alone — [ADR-016](../03-Design/decisions/ADR-016-reproduction-fallback-pair-search.md)'s
+pair mode (`--search pairs`) searches `[candidate, victim]` **pairs** instead of orders,
+including candidates after the victim (524 of them, the same count item 5's offline comparison
+uses), and finds the real polluter directly: `CANDIDATE`, `SerializeWriterTest_14#test_writer_1`
+at pair position 368 of 524 (M2, PR #160) — matching the POC's own position exactly.
+
+**The live `original`/`ranked`/`random` comparison in pair mode — done 2026-11-22 (M3, ADR-016's
+"what must be demonstrated" item 2).** Seven real runs, `--search pairs --scope package --n 20`,
+no budget limit (same budget: unconstrained, for all seven):
+
+| Policy | Polluter adopted | Position (of 524) | Invocations | vs. `original` |
+| --- | --- | --- | --- | --- |
+| `original` | `SerializeWriterTest_14#test_writer_1` | 368 | 798 | — |
+| `ranked` | `SerializeWriterTest_14#test_writer_1` | 368 | 798 | identical (no evidence) |
+| `random` seed 0 | `SerializeWriterTest_14#test_writer_3` | 187 | 436 | 45% fewer |
+| `random` seed 1 | `SerializeWriterTest_14#test_writer_1` | 7 | 76 | 90% fewer |
+| `random` seed 2 | `SerializeWriterTest_14#test_writer_2` | 61 | 184 | 77% fewer |
+| `random` seed 3 | `SerializeWriterTest_14#test_writer_3` | 98 | 258 | 68% fewer |
+| `random` seed 4 | `SerializeWriterTest_15#test_writer_1` | 43 | 148 | 81% fewer |
+
+`ranked` matches `original` exactly, as item 5's offline comparison already found (no static
+edge, so the policies are identical by construction here). **A real, honest finding this
+protocol did not predict: every one of the five random seeds beat `original`/`ranked`, often by
+a large margin.** This is not a general claim that random beats ranking -- it is specific to
+this case's real shape: six candidates in the package are each independently a valid single
+polluter for this victim (confirmed real: five different real tests were adopted across the
+seven runs, all `CANDIDATE` with the identical reference signature), spread through the 524
+candidates, while `original`'s fixed natural-discovery order happens to place the first one it
+reaches unusually late (368th). A fixed order has no way to be lucky; a reshuffled one often is.
+Reported exactly as it is, per ADR-016's own instruction -- not spun as "ranking failed" (it
+never had evidence to rank with) or hidden. All seven bundled and `eval.bundle verify` clean
+([[evidence-m3]]).
 
 **Lead:** M3 · **Execution compatibility:** M2 · **Resource coverage:** M1 ·
 **Independent repeat:** M1 or M2 · **Work package:** W26
