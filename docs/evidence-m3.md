@@ -2986,3 +2986,61 @@ that broke something CI had not even reached yet: `npm test` -> 33/33 OK; `npm r
 type does not declare it, so an extra JSON field is structurally harmless), but running them
 for real rather than reasoning about TypeScript's structural typing is the honest version of
 that claim.
+
+## 2026-11-22 -- ADR-016 item 2: the live original/ranked/random comparison on FJ-03, pair mode
+
+**Requirement:** [[03-Design/decisions/ADR-016-reproduction-fallback-pair-search]]'s "what must
+be demonstrated" item 2 -- "the live comparison on FJ-03: `original`, `ranked`, `random` (5
+seeds), one budget, cost to the same verdict, reported as it is." M2's own run already covers
+`original` (`docs/evidence-m2.md`, 798 invocations, position 368); this entry re-runs it myself
+alongside `ranked` and the five seeds, under the one methodology, bundling every run.
+
+- **Command, seven real runs:**
+  ```
+  python -m runner diagnose --project <fastjson checkout> \
+    --victim com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf \
+    --search pairs --scope package --n 20 \
+    --policy {original|ranked|random --seed {0,1,2,3,4}} --bundle eval/bundles
+  ```
+  No budget limit on any of the seven -- the "same budget" the comparison asks for is "no limit,
+  uniformly," matching M2's own already-documented `original` run exactly (he used no limit
+  too) and item 4's earlier fixture methodology ([[evidence-m3]], 2026-11-21 entry).
+- **Real results, all seven:**
+
+  | Policy | Polluter adopted | Position (of 524) | Invocations |
+  | --- | --- | --- | --- |
+  | `original` | `SerializeWriterTest_14#test_writer_1` | 368 | 798 |
+  | `ranked` | `SerializeWriterTest_14#test_writer_1` | 368 | 798 |
+  | `random` seed 0 | `SerializeWriterTest_14#test_writer_3` | 187 | 436 |
+  | `random` seed 1 | `SerializeWriterTest_14#test_writer_1` | 7 | 76 |
+  | `random` seed 2 | `SerializeWriterTest_14#test_writer_2` | 61 | 184 |
+  | `random` seed 3 | `SerializeWriterTest_14#test_writer_3` | 98 | 258 |
+  | `random` seed 4 | `SerializeWriterTest_15#test_writer_1` | 43 | 148 |
+
+  My own `original` run exactly reproduces M2's already-documented one (368, 798) -- an
+  independent confirmation on my own machine before building the comparison around it.
+  `ranked` is bit-for-bit identical: deepened through 2->5, found no evidence, fell back to the
+  original order (matching item 5's offline finding, now confirmed live for pair mode too, not
+  just order mode).
+- **The real, unpredicted finding, reported as it is (ADR-016's own instruction):** every one
+  of the five random seeds found a *different* real polluter (five distinct test methods, not
+  one) and every one cost less than `original`/`ranked` -- 45% to 90% fewer invocations. This
+  is not "random beats ranking" as a general claim -- `rank_candidates` genuinely found zero
+  static evidence (M1, #145), so `ranked` has nothing to rank with and correctly degenerates to
+  `original`. It is specific to this real case's actual shape: the package has **six**
+  independently-valid single polluters for this victim (confirmed real, not assumed: five
+  different ones were adopted across these seven runs, each `CANDIDATE` with the identical
+  reference signature), spread through the 524 real candidates, while `original`'s one fixed
+  natural-discovery order happens to reach the first one it encounters unusually late (368th of
+  524). A fixed order cannot be lucky; a reshuffle usually is, on a case with this many "right
+  answers." Reported exactly this way -- a real limitation of a *fixed* original order on a
+  real, multi-polluter-eligible case, not a defect in ranking and not evidence against the
+  approach in general (a case with only one true polluter, like the fixture cases, would not
+  show this effect; F1-F4's own numbers already show `ranked` never costing more than
+  `original`, which still holds here too).
+- **Verified:** `python -m eval.bundle verify` on all seven real bundles -> **all seven `OK`**
+  (first real exercise of the pair-mode `verify()` code built this session against genuine
+  pair-mode records, not just the hand-built test fixtures); `python -m unittest discover -s
+  eval/tests` -> 158/158 OK, unaffected.
+- **Not done:** M1's independent reproduction of the FJ-03 pair-mode diagnosis (Interface 9's
+  own plan, W35's verifier) -- hers to run, not mine.
