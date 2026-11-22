@@ -1,9 +1,8 @@
 # W32 — Java/Maven practitioner workflow check (FT018)
 
-*v1 · 2026-11-20 · Status: `DRAFT PROTOCOL` by M1. **No practitioner has been contacted and no
-session has been held.** **The acceptance task (M3) is supplied, 2026-11-21** (below). The
-case (M2) still needs its section filled in here, even though the clean F1 bundle for it
-already exists (`eval/bundles/20261121T093338Z-...`, [[evidence-m2]]). Verifier: M3
+*v2 · 2026-11-22 · Status: `READY EXCEPT PARTICIPANT` (M1). **No practitioner has been
+contacted and no session has been held.** The acceptance task (M3) was supplied on 2026-11-21, and
+the case (M2) on 2026-11-21 as a committed F1 bundle (both below). Verifier: M3
 ([[10-Final1/iteration-2-plan]]).*
 
 ## Why this exists
@@ -102,15 +101,22 @@ before the session. Record pass or fail exactly as observed.
 - Where would you run it: on a laptop, in CI on every build, or on demand?
 - What would stop your team from using it?
 
-## The case — to be supplied by M2
+## The case — supplied by M2, 2026-11-21
 
-*Not yet supplied.* It needs the input (victim, the failing order or its source, the failure
-message) and the report FlakeTrace produced for it, from a recorded run. Options:
-- fixture **F1**: simple, and runs in seconds;
-- **fastjson FJ-03**: real, but its ranked and original runs are not yet done
-  ([[05-Testing/real-case-protocol]]).
+**Fixture F1**, as a committed evidence bundle:
+`eval/bundles/20261121T093338Z-odfixture.ConfigVictimTest#expectsDefaultMode/` (Interface 8, [[evidence-m2]]). It holds `report.json`,
+`record.jsonl`, `manifest.json`, `replay.md` and `environment.txt`. M2 made it from a clean
+`main` (`tool.dirty: false`), it replays `same`, and it contains no personal paths.
 
-**Do not show a report that was not produced by a real run.**
+| Part 3 shows (input only) | Part 4 shows (FlakeTrace's answer) |
+| --- | --- |
+| Victim `odfixture.ConfigVictimTest#expectsDefaultMode`; it fails in the suite with `java.lang.AssertionError`; in the report's 20 alone runs it never failed | `report.json`: `VERIFIED (sequence)`, polluter `odfixture.ConfigPolluterTest#pollute`, the alone and sequence tallies, and the resource as a static overlap, not the cause |
+
+**fastjson FJ-03** is the alternative once a diagnosis of it exists. Today it is
+`UNRESOLVED (NOT_REPRODUCED)` through the command, because no full order fails (ADR-016, W35).
+Showing that report is also honest, but it asks a different question.
+
+**Show only a report produced by a real run.** These are.
 
 ## The acceptance task — supplied by M3, 2026-11-21
 

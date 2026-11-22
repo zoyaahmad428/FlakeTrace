@@ -800,3 +800,26 @@ then `javax.xml.bind` missing). JDK 8 built it.
 
 **Rejections:** adding a co-touch term to the ranking rule now. FJ-03 is ground truth, and plan
 rule 4 forbids tuning the rule on it.
+
+## 2026-11-22 — W32: the case section filled from M2's F1 bundle
+
+**Assistance level:** L3 (Core-assist): the assistant read M2's committed F1 bundle
+(`report.json`) and wrote the protocol's "The case" section and status line from it, and
+updated the W32 plan row.
+
+**What I asked:** link M2's F1 bundle from the protocol, as he asked.
+
+**What was retained:** the case section, the status line (`READY EXCEPT PARTICIPANT`) and the W32
+plan row.
+
+**What I changed:** read the section against the bundle's report before committing.
+
+**How it was verified:** the facts in the section were copied from the bundle's `report.json`:
+`VERIFIED`, polluter `ConfigPolluterTest#pollute`, `AssertionError`, alone 20/20 passed. Nothing
+was run.
+
+**Errors found:** the first draft said the victim "passes when run alone", a retired-claim
+phrasing. It was replaced with the measured tally ("in the report's 20 alone runs it never
+failed").
+
+**Rejections:** none.
