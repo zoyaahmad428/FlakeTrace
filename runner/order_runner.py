@@ -204,12 +204,13 @@ class OrderRunner:
             try:
                 finished = subprocess.run(
                     [self._java, "FtHarness", str(result_file), "--lifecycle", self.lifecycle],
-                    input="".join(f"{test}\n" for test in order),
+                    input="".join(f"{test}\n" for test in order).encode("utf-8"),
                     env=_env_with_classpath([self._harness_dir] + self.classpath),
                     cwd=self._working_dir,
-                    capture_output=True,
-                    text=True,
-                    encoding="utf-8",
+                    # Outcomes come from the results file; the tests' own output is never read, so it is not
+                    # captured or decoded (W26b step 9: fastjson prints bytes that are not UTF-8).
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
                     timeout=self._timeout_s,
                 )
                 missing = (
@@ -247,12 +248,11 @@ class OrderRunner:
             result_file = Path(tmp) / "methods.txt"
             subprocess.run(
                 [self._java, "FtHarness", "--list", str(result_file)],
-                input="".join(f"{name}\n" for name in class_names),
+                input="".join(f"{name}\n" for name in class_names).encode("utf-8"),
                 env=_env_with_classpath([self._harness_dir] + self.classpath),
                 cwd=self._working_dir,
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
+                stdout=subprocess.DEVNULL,  # never read; loading a class may print anything
+                stderr=subprocess.DEVNULL,
                 timeout=self._timeout_s,
                 check=True,
             )

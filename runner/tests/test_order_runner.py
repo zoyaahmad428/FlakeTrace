@@ -2,6 +2,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import threading
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -203,7 +204,7 @@ class TestOrderRunnerOnProbes(unittest.TestCase):
             [shutil.which("javac"), "-d", cls.probe_dir]
             + [str(Path(__file__).parent / "resources" / name) for name in
                ("ProbeTest.java", "LegacyJUnit3Test.java", "OrderProbeTest.java", "BrokenSetupProbeTest.java",
-                "StaticInitProbeTest.java", "AssumeSetupProbeTest.java")],
+                "StaticInitProbeTest.java", "AssumeSetupProbeTest.java", "NonUtf8OutputProbeTest.java")],
             env=dict(os.environ, CLASSPATH=os.pathsep.join(jars)),
             check=True,
         )
@@ -285,6 +286,23 @@ class TestOrderRunnerOnProbes(unittest.TestCase):
         results = self.grouped.run_ordered(tests)
         for test in tests:
             self.assertEqual(results[test].failure_signature.exception_type, "java.lang.ClassNotFoundException", test)
+
+    def test_output_that_is_not_utf8_neither_breaks_nor_leaks_an_error(self):
+        """W26b step 9 on fastjson: a test printing 0xA0 crashed the reader thread that decoded the JVM's output
+        (Windows: a traceback; Linux: the error would reach run_ordered). The output is never read, so it must not
+        be decoded."""
+        probe = TestIdentifier("NonUtf8OutputProbeTest", "printsLatin1")
+        crashed = []
+        previous = threading.excepthook
+        threading.excepthook = lambda hook: crashed.append(hook.exc_value)
+        try:
+            results = self.runner.run_ordered([probe])
+            methods = self.runner.list_methods(["NonUtf8OutputProbeTest"])
+        finally:
+            threading.excepthook = previous
+        self.assertEqual(crashed, [])
+        self.assertTrue(results[probe].passed)
+        self.assertEqual(methods, [probe])
 
     def test_grouped_static_initializer_failure_keeps_its_cause(self):
         tests = [TestIdentifier("StaticInitProbeTest", "a"), TestIdentifier("StaticInitProbeTest", "b")]

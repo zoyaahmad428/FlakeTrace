@@ -1821,3 +1821,30 @@ own copy of the code, not from the review's description.
   the unit test with M1's exact strings.
 - Full suite: `py -3 -m unittest discover -s runner/tests -p "test_*.py"` → `Ran 381 tests in 813.833s OK` (with the next commit's runner fix also in the tree).
 - **Limitations:** committed bundles keep their old `replay.md` (checksummed); M3's README findings 3 and 4 are hers.
+
+## W26b step 9: independent repeat of M3's package-scope run; the test-output decoding bug (2026-11-22)
+
+- **Requirement:** real-case protocol step 9 — "an independent repeat of step 6 or 7 by another member on another
+  machine". The run repeated: M3's #156, `--scope package --n 20 --policy original`, no `--order`, no limit.
+- **Setup** (with the member's permission, scratchpad only): Temurin 8u502 (SHA-256 `3f193fe5…` checked against
+  Adoptium's API); fastjson `git fetch --depth 1` of `e05e9c5e4be580691cc55a59f3256595393203a1`;
+  `mvn -B -q -DskipTests test-compile` → exit 0; `JAVA_TOOL_OPTIONS=-Duser.timezone=UTC -Duser.language=en
+  -Duser.country=US`; Windows 11, Python 3.14.
+- **Result** (`py -3 -m runner diagnose --project <fastjson> --victim
+  com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf --scope package --n 20 --policy original`): exit 0 in
+  7 min 12 s, **`UNRESOLVED (NOT_REPRODUCED)`, 12,817 invocations** (reproduce 5,220, shuffle 7,577, alone 20), 31
+  shuffled orders, no infrastructure failure, search tried 0 of 260 — **identical to M3's two runs**. Differences:
+  JDK 8u502 here vs her 8u512; 288 s of runs here vs her 750 s.
+- **Surprise:** twelve `UnicodeDecodeError: 'utf-8' codec can't decode byte 0xa0` tracebacks from Python's
+  subprocess reader threads. Cause: `OrderRunner.run_ordered` and `list_methods` captured the test JVM's output and
+  decoded it as UTF-8, though nothing reads it (outcomes come from the results file); fastjson's tests print 0xA0.
+  Probe: on Windows the reader thread dies and the run continues (outcomes were unaffected); on Linux CPython decodes
+  in the calling thread, so the error would stop the diagnosis (reasoned from CPython's POSIX `subprocess`, not run:
+  no Linux here).
+- **Fix, test-first:** `runner/tests/resources/NonUtf8OutputProbeTest.java` prints 0xA0 on stdout and stderr;
+  `test_output_that_is_not_utf8_neither_breaks_nor_leaks_an_error` → failed (`UnicodeDecodeError('utf-8',
+  b'ok \xa0\n', …)` in a thread). The output is now sent to the null device and the test list passed as bytes →
+  passes; `runner.tests.test_order_runner` → 51 OK; full runner suite → `Ran 381 tests in 813.833s OK`.
+- **Re-run with the fix:** the same command → 7 min 16 s, **0 tracebacks**, the same `NOT_REPRODUCED`, 12,817
+  invocations.
+- **Limitations:** one more machine, same OS family as M3's; the Linux effect is reasoned, not observed.

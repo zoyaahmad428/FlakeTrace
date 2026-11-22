@@ -1275,3 +1275,14 @@ writing tests before the design was approved; the member stopped it, and the des
 
 Ownership checkpoint: why an absolute output folder is not written into `replay.md`; why the committed bundles keep
 their old text.
+
+## 2026-11-22 — W26b step 9; the test-output decoding bug
+
+**Tool:** Claude Code (Claude Opus 5.5), systematic debugging → TDD · **Level:** L2 · **Branch:** `m2/w23-replay-gaps`
+
+**Asked:** run step 9; then fix the decoding bug it surfaced. **Kept:** stop capturing output nobody reads (the
+root cause) instead of a tolerant decoding (a symptom patch); a one-file probe like the others in
+`runner/tests/resources/`; a test that sees the reader thread's failure through `threading.excepthook`, so it fails
+on Windows too. **Not claimed:** the Linux behaviour was reasoned, not run. **What I changed:** *to fill in.*
+
+Ownership checkpoint: why the outcomes were still right; why DEVNULL is the fix and `errors="replace"` would not be.
