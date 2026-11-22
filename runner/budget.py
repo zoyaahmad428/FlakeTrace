@@ -7,8 +7,9 @@ from typing import Dict, List, Optional
 
 from eval.baseline import RunOutcome, TestIdentifier
 
-PHASES = ("reproduce", "shuffle", "alone", "search", "minimise", "deletion", "verify")
-EXPLORE = frozenset({"reproduce", "shuffle", "search", "minimise"})
+# W35: `pair` is pair mode's [candidate, victim] scan (ADR-016, Interface 9 P6), exploration like `search`.
+PHASES = ("reproduce", "shuffle", "alone", "pair", "search", "minimise", "deletion", "verify")
+EXPLORE = frozenset({"reproduce", "shuffle", "pair", "search", "minimise"})
 
 
 @dataclass(frozen=True)
@@ -59,6 +60,7 @@ class BudgetedRunner:
         self._step = "unlabelled"
         self._note: dict = {}
         self.spent = {phase: 0 for phase in PHASES}
+        self._seconds: Dict[str, float] = {}
         self._outcomes: Dict[str, List[RunOutcome]] = {phase: [] for phase in PHASES}
         self.exhausted_phase: Optional[str] = None
 
@@ -117,13 +119,19 @@ class BudgetedRunner:
         cost = len(order)
         if not self.affords(self._step, cost):
             raise BudgetExhausted(self._step)
+        started = self._clock()
         results = self._runner.run_ordered(order)
+        self._seconds[self._step] = self._seconds.get(self._step, 0.0) + self._clock() - started
         self.spent[self._step] = self.spent.get(self._step, 0) + cost
         self._outcomes.setdefault(self._step, []).append(results[self._victim])
         return results
 
     def victim_outcomes(self, phase: str) -> List[RunOutcome]:
         return list(self._outcomes.get(phase, []))
+
+    def seconds_in(self, phase: str) -> float:
+        """Wall seconds spent inside the runs of `phase` (W35: the next: line's estimate)."""
+        return self._seconds.get(phase, 0.0)
 
     def launches_in(self, phase: str) -> int:
         return len(self._outcomes.get(phase, []))

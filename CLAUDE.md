@@ -202,6 +202,7 @@ python3 -m unittest -v runner.tests.test_order_runner   # needs JDK 8+ and Maven
 mvn -B -q -f runner/tests/resources/lifecycle-control/pom.xml test   # lifecycle control under Surefire (ADR-012)
 python3 -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode
 python3 -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode --bundle flaketrace-bundles
+python3 -m runner diagnose --project fixtures/od-fixture --victim odfixture.ConfigVictimTest#expectsDefaultMode --search pairs   # W35: pair mode
 python3 -m runner replay flaketrace-bundles/<bundle-folder> --project fixtures/od-fixture   # W23: same verdict -> exit 0
 mvn -B -q -f evidence/tests/resources/m1-selftest/pom.xml test-compile
 mvn -B -q -f evidence/tests/resources/ft005-controls/pom.xml test-compile

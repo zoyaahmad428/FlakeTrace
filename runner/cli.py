@@ -8,6 +8,7 @@ Exit codes: 0 report written, 2 input wrong, 1 tool failed, 3 no report can be b
 
 import argparse
 import json
+import math
 import re
 import shutil
 import subprocess
@@ -20,7 +21,7 @@ from eval.report import UnhandledStatus, assemble_report
 from evidence.extract import DEFAULT_DEPTH, ExtractError, Project, analyse_pair, report_fields
 from runner.budget import Budget
 from runner.bundle import BundleError, write_bundle
-from runner.diagnose import INCONSISTENT, NOT_REPRODUCED, POLLUTER_FOUND, DiagnoseInputError, diagnose
+from runner.diagnose import INCONSISTENT, NOT_REPRODUCED, POLLUTER_FOUND, SEARCH_MODES, DiagnoseInputError, diagnose
 from runner.deletion import DELETION_RUN, INCONCLUSIVE, NEEDED, NOT_NEEDED, NOT_RUN
 from runner.order_runner import LIFECYCLES, ToolError
 from runner.policy import POLICIES, SCOPES
@@ -68,6 +69,10 @@ def main(argv=None) -> int:
     command.add_argument("--scope", choices=SCOPES, default="module",
                          help="module (default): every discovered test; package: only tests in the victim's "
                               "package (the real-case protocol's scope rule; not with --order) (W25)")
+    command.add_argument("--search", choices=SEARCH_MODES, default="order",
+                         help="order (default): find an order in which the victim fails, then search it; pairs: run "
+                              "[candidate, victim] for every test in scope, for a victim no order makes fail "
+                              "(not with --order) (W35, ADR-016)")
     command.add_argument("--bundle", default=None,
                          help="also write an evidence bundle (report, record, environment, replay commands; "
                               "personal paths removed) into this folder (W23, ADR-013)")
@@ -87,19 +92,23 @@ def main(argv=None) -> int:
         return _error(f"--budget-seconds must be > 0, got {args.budget_seconds:g}", 2)
     if args.scope == "package" and args.order:
         return _error("--scope package cannot be combined with --order: the order file already fixes the tests", 2)
+    if args.search == "pairs" and args.order:
+        # Interface 9 point 1: an order file can hold the answer (a dataset's polluters).
+        return _error("--search pairs cannot be combined with --order: pair mode takes the victim only", 2)
     budget = (Budget(args.budget_invocations, args.budget_seconds)
               if args.budget_invocations is not None or args.budget_seconds is not None else None)
     return run_diagnose(Path(args.project), args.victim, args.n, args.records,
                         Path(args.order) if args.order else None, args.shuffles, args.seed, arguments, args.lifecycle,
                         args.workspace, Path(args.copy_parent) if args.copy_parent else None, budget,
-                        args.policy, args.scope, args.bundle)
+                        args.policy, args.scope, args.bundle, args.search)
 
 
 def run_diagnose(project: Path, victim_id: str, n: int, records: str, order_path: Optional[Path] = None,
                  shuffles: int = 31, seed: int = 0, command: Optional[List[str]] = None,
                  lifecycle: str = "class-grouped", workspace_mode: str = "copy",
                  copy_parent: Optional[Path] = None, budget: Optional[Budget] = None,
-                 policy: str = "original", scope: str = "module", bundle: Optional[str] = None) -> int:
+                 policy: str = "original", scope: str = "module", bundle: Optional[str] = None,
+                 search_mode: str = "order") -> int:
     # Java names only: the victim also becomes part of the record's file name.
     if not _VICTIM.fullmatch(victim_id):
         return _error(f"--victim must be Class#method (Java names, no spaces), got {victim_id!r}", 2)
@@ -121,7 +130,7 @@ def run_diagnose(project: Path, victim_id: str, n: int, records: str, order_path
         with workspace(project, workspace_mode, copy_parent) as work:
             work_path = Path(work).resolve()
             outcome = _diagnose_in(work, project, victim, n, records, order, shuffles, seed, command, lifecycle,
-                                   workspace_mode, budget, policy, scope)
+                                   workspace_mode, budget, policy, scope, search_mode)
     except WorkspaceError as error:
         return _error(str(error), 1)
     if isinstance(outcome, int):
@@ -142,7 +151,7 @@ def run_diagnose(project: Path, victim_id: str, n: int, records: str, order_path
     ddmin_ran = runs.minimise_runs and runs.polluters
     crashes = runs.infrastructure_failures + runs.shuffle_infrastructure_failures + runs.alone_infrastructure_failures
     print(summary(report, report_path, (len(runs.original_order) - 1, runs.minimise_runs) if ddmin_ran else None,
-                  crashes, runs.deletion_checks, runs.budget, runs.search))
+                  crashes, runs.deletion_checks, runs.budget, runs.search, runs))
     if bundle is not None:
         try:
             folder = write_bundle(bundle, report, runs.execution_record, environment_text=_environment_text(),
@@ -179,7 +188,7 @@ def run_replay(bundle: Path, project: Path, out: str, records: str, command: Opt
 
 
 def _diagnose_in(work: Path, project: Path, victim, n, records, order, shuffles, seed, command, lifecycle,
-                 workspace_mode, budget=None, policy="original", scope="module"):
+                 workspace_mode, budget=None, policy="original", scope="module", search_mode="order"):
     """The diagnosis and Member 1's evidence, run in `work`. Returns (runs, fields), or an exit code
     after printing the error. Messages name the user's project, never the temporary copy."""
     def own(text: str) -> str:
@@ -191,7 +200,7 @@ def _diagnose_in(work: Path, project: Path, victim, n, records, order, shuffles,
         runs = diagnose(work, victim, n=n, record_dir=records, original_order=order,
                         shuffles=shuffles, seed=seed, command=command, lifecycle=lifecycle,
                         workspace=workspace_mode, origin=project if workspace_mode == "copy" else None,
-                        budget=budget, policy=policy, scope=scope)
+                        budget=budget, policy=policy, scope=scope, search_mode=search_mode)
     except DiagnoseInputError as error:
         return _error(own(str(error)), 2)
     except subprocess.CalledProcessError as error:
@@ -304,7 +313,8 @@ def budget_line(account) -> str:
     limit = (f"spent {spent} of {account.limit_invocations} invocations" if account.limit_invocations is not None
              else f"spent {spent} invocations, no limit")
     stopped = f"; stopped in {account.exhausted_phase}" if account.exhausted else ""
-    return (f"  budget:     {limit} (reserve {account.reserve_invocations}); search tried "
+    tried = "pairs" if account.spent["pair"] else "search"
+    return (f"  budget:     {limit} (reserve {account.reserve_invocations}); {tried} tried "
             f"{account.candidates_tried} of {account.candidates_total} candidates{stopped}")
 
 
@@ -315,7 +325,7 @@ def _depth_note(edge: dict) -> str:
 
 
 def summary(report: dict, report_path: Path, minimised: Optional[Tuple[int, int]] = None,
-            crashes: int = 0, deletion_checks: Sequence = (), budget=None, search=None) -> str:
+            crashes: int = 0, deletion_checks: Sequence = (), budget=None, search=None, diagnosis=None) -> str:
     """`minimised` = (earlier tests, ddmin runs) when ddmin found the polluters (ADR-007); the report's
     schema has no field for it, so only the summary says how far the order was shrunk.
     `deletion_checks` (W20) may drop tests after ddmin, so ddmin's own count is its round-1 checks."""
@@ -345,7 +355,11 @@ def summary(report: dict, report_path: Path, minimised: Optional[Tuple[int, int]
         lines.append(f"  deletion:   kept tests removed one at a time, {removals[0].runs.n} runs each "
                      f"({sum(c.runs.n for c in removals)} runs): {dropped} dropped as not needed, {unsure} inconclusive"
                      + (f", {not_run} not run (budget)" if not_run else ""))
-    explored = report.get("order_exploration")
+    pairs = diagnosis is not None and diagnosis.search_mode == "pairs"
+    # W35: pair mode ran no starting order or shuffles, so the order lines below do not apply to it.
+    explored = None if pairs else report.get("order_exploration")
+    if pairs:
+        lines += pair_lines(report, diagnosis)
     if explored and explored["reproducing_seed"] is not None:
         lines.append(f"  orders:     reproduced in shuffled order (seed {explored['reproducing_seed']}) "
                      f"after {explored['shuffled_orders_tried']} shuffled orders")
@@ -360,6 +374,8 @@ def summary(report: dict, report_path: Path, minimised: Optional[Tuple[int, int]
                      f"alone {report['victim_alone']['n']}x: {result}")
         lines.append(f"  bound:      failure rate in the {source} order < {report['reproduction']['upper']:.3f} "
                      "(95% Wilson), not proof of reliability")
+        if diagnosis is not None:
+            lines += next_line(diagnosis)
     if report["shared_resource"]:
         resource = " ".join(str(value) for value in report["shared_resource"].values())
         write, read = report["polluter_write_location"], report["victim_read_location"]
@@ -371,7 +387,10 @@ def summary(report: dict, report_path: Path, minimised: Optional[Tuple[int, int]
     reproduced, alone = report["reproduction"], report["victim_alone"]
     # The alone count holds only failures matching the reference signature (claims ledger G1, FT003);
     # "other failure" keeps a victim that fails alone differently (N4) apart from one that passes (F1).
-    if report["unresolved_reason"] == "BUDGET_EXHAUSTED":
+    if pairs and diagnosis.reproduced_by != "pair":
+        # W35 review finding 1: no pair was adopted, so no sequence was verified and none failed "in an order".
+        sequence = "no sequence verified (no pair adopted)"
+    elif report["unresolved_reason"] == "BUDGET_EXHAUSTED":
         # W24: these are only the starting order's runs before the budget ran out, not a verified sequence.
         sequence = (f"no sequence verified (the starting order failed {reproduced['matched']} of {reproduced['n']} "
                     "run(s) before the budget ran out)")
@@ -381,12 +400,49 @@ def summary(report: dict, report_path: Path, minimised: Optional[Tuple[int, int]
                  f"other failure: {alone['other']}/{alone['n']}")
     if search is not None:
         lines += search_line(search, budget.candidates_total if budget is not None else 0,
-                             searched=budget is None or budget.spent["search"] > 0)
+                             searched=budget is None or budget.spent["search"] + budget.spent["pair"] > 0)
     if budget is not None:
         lines.append(budget_line(budget))
     lines.append(f"  report:     {report_path}")
     lines.append(f"  record:     {report['execution_record_reference']}")
     return "\n".join(lines)
+
+
+def pair_lines(report: dict, runs) -> List[str]:
+    """W35 (Interface 9): where a pair-mode failure came from, said plainly (ADR-016 section 3)."""
+    if runs.reproduced_by == "pair":
+        return [f"  pairs:      found in a constructed pair after {runs.pairs_tried} of {runs.scope_size} pairs; "
+                "pair mode does not run the project's own orders"]
+    if runs.pairs_tried == 0 and runs.reproduced_by == "order":
+        return ["  pairs:      none run: the victim fails alone"]
+    notes = [f"{runs.pairs_tried} of {runs.scope_size} pairs tried"]
+    if runs.pairs_tried:
+        # The pairs' first runs are the sequence tally when no pair was adopted (runner.diagnose._pair_steps).
+        if runs.sequence_tally.other:
+            notes.append(f"{runs.sequence_tally.other} failed once and passed when re-run")
+        if runs.sequence_tally.infra:
+            notes.append(f"{runs.sequence_tally.infra} crashed or timed out")
+    if runs.budget is not None and runs.budget.exhausted:
+        notes.append("stopped by the budget")
+    return [f"  pairs:      no pair adopted ({'; '.join(notes)})"]
+
+
+def next_line(runs) -> List[str]:
+    """W35 (Interface 9 P7): order mode found no failing order, so name pair mode. The estimate is an upper bound:
+    every candidate's pair plus the alone and verify runs (2n), at this run's mean seconds per one-test JVM."""
+    start = "  next:       no order reproduced the failure; to search pairs instead, re-run "
+    if runs.order_given:
+        # Pair mode refuses --order, and its candidates would be the discovered tests, not the file's.
+        return [start + "without --order and with --search pairs"]
+    if runs.scope_size == 0:
+        return []
+    scope = " --scope package" if runs.search is not None and runs.search.scope == "package" else ""
+    estimate = ""
+    if runs.launch_seconds is not None:
+        launches = runs.scope_size + 2 * runs.alone_tally.n
+        minutes = max(1, math.ceil(runs.launch_seconds * launches / 60))
+        estimate = f"; at most about {minutes} min at {runs.launch_seconds:.1f} s per JVM launch"
+    return [start + f"with --search pairs{scope} ({runs.scope_size} candidates{estimate})"]
 
 
 class OrderFileError(Exception):

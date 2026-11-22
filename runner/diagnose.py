@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional, Sequence, Tuple
 
-from eval.baseline import FailureSignature, RunTally, TestIdentifier, tally
+from eval.baseline import SYNTHETIC_PREFIX, FailureSignature, RunTally, TestIdentifier, tally
 from runner.budget import Budget, BudgetAccount, BudgetedRunner, BudgetExhausted, reserve
 from runner.deletion import DeletionCheck, check_deletions
 from runner.discovery import DiscoveryConfigError, discover_order, project_selection
@@ -25,7 +25,7 @@ from runner.order_runner import OrderRunner, java_version, maven_test_classpath
 from runner.policy import (DEEPEN_SHARE, POLICIES, SCOPES, EvidenceRanker, SearchPolicy, choose_order,
                            in_package)
 from runner.recording import RecordingRunner
-from runner.search import candidate_order, find_polluter, reproduce
+from runner.search import candidate_order, find_pair, find_polluter, reproduce
 from runner.verify import repeat, repeat_without_reference
 
 POLLUTER_FOUND = "POLLUTER_FOUND"
@@ -35,6 +35,8 @@ INCONSISTENT = "INCONSISTENT"
 NOT_REPRODUCED = "NOT_REPRODUCED"
 # W24 (Interface 6): the budget stopped exploration before a polluter set was found.
 BUDGET_EXHAUSTED = "BUDGET_EXHAUSTED"
+# W35 (ADR-016 revised, Interface 9): order mode (today's pipeline) or pair mode.
+SEARCH_MODES = ("order", "pairs")
 
 
 class DiagnoseInputError(ValueError):
@@ -73,6 +75,15 @@ class DiagnosisRuns:
     budget: Optional[BudgetAccount] = None
     # W25 (Interface 7): how the search ordered its candidates; run_steps always sets it.
     search: Optional[SearchPolicy] = None
+    # W35 (Interface 9): which search ran, and whether the failure came from an order FlakeTrace ran in full
+    # ("order": the starting order, a shuffle or the victim alone) or an adopted pair ("pair"); None if never.
+    search_mode: str = "order"
+    reproduced_by: Optional[str] = None
+    pairs_tried: int = 0  # pairs run in pair mode, re-runs not counted
+    # Runner-internal, for the CLI's next: line (not in Interface 9; eval/ does not read them): the tests in scope
+    # besides the victim, and the mean seconds of one alone run (a one-test JVM, the closest to a pair).
+    scope_size: int = 0
+    launch_seconds: Optional[float] = None
 
 
 def _runs(status, victim, order, reference, polluters, sequence, sequence_tally: RunTally,
@@ -81,19 +92,21 @@ def _runs(status, victim, order, reference, polluters, sequence, sequence_tally:
                          search_runs, **more)
 
 
-def check_budget(budget: Optional[Budget], n: int, start_length: int) -> None:
+def check_budget(budget: Optional[Budget], n: int, start_length: int, pairs: bool = False) -> None:
     """Interface 6 B2: the limit must cover the reserve, one run of the starting order (up to and
-    including the victim) and one candidate pair."""
+    including the victim) and one candidate pair; in pair mode (W35) one pair and its re-run, so a failing
+    pair can be adopted."""
     if budget is None:
         return
     if budget.limit_seconds is not None and budget.limit_seconds <= 0:
         raise DiagnoseInputError(f"the seconds limit must be > 0, got {budget.limit_seconds!r}")
     limit = budget.limit_invocations
-    minimum = reserve(n) + start_length + 2
+    minimum = reserve(n) + (4 if pairs else start_length + 2)
     if limit is not None and limit < minimum:
         raise DiagnoseInputError(
             f"an invocation limit of {limit} is below the minimum {minimum} for n={n}: the verification "
-            f"reserve {reserve(n)}, one run of the starting order ({start_length} tests) and one candidate pair")
+            f"reserve {reserve(n)}, " + ("one candidate pair and its re-run" if pairs else
+                                         f"one run of the starting order ({start_length} tests) and one candidate pair"))
 
 
 def run_steps(
@@ -110,6 +123,7 @@ def run_steps(
     policy: str = "original",
     scope: str = "module",
     ranker_for=None,
+    search_mode: str = "order",
 ) -> DiagnosisRuns:
     """Steps 3-6 of ADR-004 on any OrderRunner, plus ADR-008: shuffled orders when the starting
     order never fails, and the alone check always. Stops early as the ADRs' status tables say.
@@ -126,8 +140,14 @@ def run_steps(
         raise DiagnoseInputError("the ranked policy needs a ranker")
     if priority and policy != "original":
         raise DiagnoseInputError(f"a priority list orders the search itself; it cannot be combined with policy {policy}")
+    if search_mode not in SEARCH_MODES:
+        raise DiagnoseInputError(f"search must be one of {', '.join(SEARCH_MODES)}, got {search_mode!r}")
+    pairs = search_mode == "pairs"
+    if pairs and (order_given or priority):
+        # Interface 9 point 1: a given order or list can hold the answer (a dataset's polluters).
+        raise DiagnoseInputError("pair mode takes the victim only: a given order or priority list is refused")
     full = list(original_order)
-    check_budget(budget, n, full.index(victim) + 1)
+    check_budget(budget, n, full.index(victim) + 1, pairs)
     ledger = BudgetedRunner(runner, budget or Budget(), n, victim, clock)
     chosen = {"search": SearchPolicy(policy, scope, seed_base if policy == "random" else None, [], DEEPEN_SHARE,
                                      None, None), "analysis_seconds": None}
@@ -145,9 +165,59 @@ def run_steps(
                             "notes": {str(test): note for test, note in getattr(ranker, "notes", {}).items()}})
         return order
 
+    if pairs:
+        result = _pair_steps(ledger, full, victim, n, order_search)
+        account = replace(ledger.account(len(full) - 1, policy, chosen["analysis_seconds"]),
+                          candidates_tried=result.pairs_tried)
+        return replace(result, search=chosen["search"], budget=account, search_mode="pairs", scope_size=len(full) - 1,
+                       launch_seconds=_launch_seconds(ledger))
     result, searched = _steps(ledger, full, victim, n, priority, shuffles, seed_base, order_given, order_search)
     return replace(result, search=chosen["search"],
-                   budget=ledger.account(len(searched) - 1, policy, chosen["analysis_seconds"]))
+                   budget=ledger.account(len(searched) - 1, policy, chosen["analysis_seconds"]),
+                   reproduced_by="order" if result.reference_signature is not None else None,
+                   scope_size=len(full) - 1, launch_seconds=_launch_seconds(ledger))
+
+
+def _launch_seconds(ledger: BudgetedRunner) -> Optional[float]:
+    launches = ledger.launches_in("alone")
+    return ledger.seconds_in("alone") / launches if launches else None
+
+
+def _pair_steps(runner: BudgetedRunner, full, victim, n, order_search) -> DiagnosisRuns:
+    """W35 pair mode (ADR-016 revised, Interface 9 P1-P6): the alone check, then [candidate, victim] pairs over
+    every test in scope, then the same certification as order mode."""
+    _label(runner, "alone")
+    alone_reference, alone = repeat_without_reference(runner, victim, n)
+    if alone_reference is not None:
+        return _runs(VICTIM_FAILS_ALONE, victim, [victim], alone_reference, [], [victim], alone, alone, 0,
+                     reproduced_by="order")
+    candidates = order_search([test for test in full if test != victim])
+    _label(runner, "pair")
+    firsts = []
+    try:
+        polluter, reference, tried, _ = find_pair(runner, candidates, victim, firsts)
+    except BudgetExhausted:
+        polluter = reference = None
+    if polluter is None:
+        # Nothing adopted: the pairs' first runs are the tally (a one-off real failure counts as `other`, a crash
+        # as infra); with no candidate at all, the alone runs (M3's report refuses an empty tally).
+        status = BUDGET_EXHAUSTED if runner.exhausted_phase else NOT_REPRODUCED
+        failed = [outcome for outcome in firsts if not outcome.passed]
+        crashes = sum(outcome.failure_signature.exception_type.startswith(SYNTHETIC_PREFIX) for outcome in failed)
+        # Built here, not by tally(): with no reference, classify() refuses a real failure.
+        pair_tally = RunTally(len(firsts), len(firsts) - len(failed), 0, len(failed) - crashes, crashes)
+        return _runs(status, victim, [victim], None, [], [victim], pair_tally if firsts else alone, alone,
+                     0, pairs_tried=len(firsts), infrastructure_failures=crashes,
+                     alone_infrastructure_failures=alone.infra)
+    alone = tally(runner.victim_outcomes("alone"), reference)
+    order = [polluter, victim]
+
+    def cut():
+        # Cannot happen: pairs stop at limit - 3n, the alone runs took n, the deletion check of one polluter is the
+        # alone check (no runs), so the n verify runs (2n) always fit.
+        raise AssertionError("pair mode: the verify runs did not fit the reserve")
+    return replace(_certify(runner, victim, order, reference, [polluter], alone, n, 0, 0, {}, cut),
+                   reproduced_by="pair", pairs_tried=tried)
 
 
 def _steps(runner: BudgetedRunner, full, victim, n, priority, shuffles, seed_base, order_given, order_search):
@@ -227,6 +297,14 @@ def _steps(runner: BudgetedRunner, full, victim, n, priority, shuffles, seed_bas
     except BudgetExhausted:
         # B3/B7: a cut search or ddmin has no repeated evidence, so nothing is blamed (Interface 6 point 3).
         return budget_exhausted(alone)
+    return _certify(runner, victim, order, reference, polluters, alone, n, search_runs, minimise_runs, explore,
+                    lambda: budget_exhausted(alone)[0]), order
+
+
+def _certify(runner: BudgetedRunner, victim, order, reference, polluters, alone, n, search_runs, minimise_runs,
+             explore, cut) -> DiagnosisRuns:
+    """Deletion checks and the sequence check, shared by order and pair mode; `cut()` is the BUDGET_EXHAUSTED
+    diagnosis when no verify run fits."""
     deletion_checks = []
     if polluters:
         # ADR-011: ddmin's single trials can keep a test that is not needed; check each one n times.
@@ -241,7 +319,7 @@ def _steps(runner: BudgetedRunner, full, victim, n, priority, shuffles, seed_bas
     status = POLLUTER_FOUND if polluters else INCONSISTENT
     if repetitions == 0 and polluters:
         runner.affords("verify", len(sequence))  # records the refused run
-        return budget_exhausted(alone)
+        return cut()
     if repetitions == 0:
         # INCONSISTENT: exploration finished, so this is not BUDGET_EXHAUSTED. The full order costs more
         # than the reserve pays for; its one re-check in `minimise` (it passed) is the tally instead.
@@ -252,7 +330,7 @@ def _steps(runner: BudgetedRunner, full, victim, n, priority, shuffles, seed_bas
         if repetitions < n:
             runner.affords("verify", len(sequence))  # B8: the first run that did not fit, after the runs
     return _runs(status, victim, order, reference, polluters, sequence, verified, alone, search_runs,
-                 minimise_runs=minimise_runs, deletion_checks=deletion_checks, **explore), order
+                 minimise_runs=minimise_runs, deletion_checks=deletion_checks, **explore)
 
 
 def diagnose(
@@ -272,6 +350,7 @@ def diagnose(
     budget: Optional[Budget] = None,
     policy: str = "original",
     scope: str = "module",
+    search_mode: str = "order",
 ) -> DiagnosisRuns:
     """`command` is the CLI's argument list, written to the record header; None from Python.
     `lifecycle` is passed to the OrderRunner (ADR-012 section 2) and recorded. When `project_dir` is a
@@ -289,6 +368,13 @@ def diagnose(
         raise DiagnoseInputError(f"policy must be one of {', '.join(POLICIES)}, got {policy!r}")
     if scope not in SCOPES:
         raise DiagnoseInputError(f"scope must be one of {', '.join(SCOPES)}, got {scope!r}")
+    if search_mode not in SEARCH_MODES:
+        raise DiagnoseInputError(f"search must be one of {', '.join(SEARCH_MODES)}, got {search_mode!r}")
+    if search_mode == "pairs" and original_order is not None:
+        # Interface 9 point 1: an order file can hold the answer (a dataset's polluters); pair mode must not see it.
+        raise DiagnoseInputError("--search pairs cannot be combined with --order: pair mode takes the victim only")
+    if search_mode == "pairs" and priority:
+        raise DiagnoseInputError("pair mode takes the victim only: a priority list is refused")
     if scope == "package" and original_order is not None:
         raise DiagnoseInputError("--scope package cannot be combined with --order: the order file already fixes the tests")
     project = Path(project_dir).resolve()
@@ -318,7 +404,7 @@ def diagnose(
     if victim not in order:
         # Checked before the recorder exists, so no empty record is left behind.
         raise DiagnoseInputError(f"victim {victim} is not among the project's tests")
-    check_budget(budget, n, order.index(victim) + 1)
+    check_budget(budget, n, order.index(victim) + 1, search_mode == "pairs")
 
     started = datetime.now(timezone.utc)
     record = Path(record_dir) / f"{started.strftime('%Y%m%dT%H%M%SZ')}-{victim}.jsonl"
@@ -330,10 +416,10 @@ def diagnose(
         budget={"limit_invocations": budget.limit_invocations if budget else None,
                 "limit_seconds": budget.limit_seconds if budget else None,
                 "reserve_invocations": reserve(n)},
-        policy=policy, scope=scope))  # W25 (Interface 7)
+        policy=policy, scope=scope, search_mode=search_mode))  # W25 (Interface 7), W35 (Interface 9)
     result = run_steps(recorder, order, victim, n, priority, shuffles=shuffles, seed_base=seed,
                        order_given=original_order is not None, budget=budget, policy=policy, scope=scope,
-                       ranker_for=lambda candidates, v: EvidenceRanker(project, v, candidates))
+                       ranker_for=lambda candidates, v: EvidenceRanker(project, v, candidates), search_mode=search_mode)
     integrity = integrity_of(compare(before, snapshot(project)),
                              compare(before_source, snapshot(source)) if source is not None else None)
     return replace(result, source_integrity=integrity, execution_record=str(record))

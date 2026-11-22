@@ -1,4 +1,5 @@
 import json
+from dataclasses import replace
 import os
 import platform
 import shutil
@@ -613,7 +614,7 @@ class TestBudget(unittest.TestCase):
         runs = run_steps(runner, order, V, n=20, budget=Budget(80))
         self.assertEqual((runs.status, runs.polluters, runs.alone_tally.n), (BUDGET_EXHAUSTED, [], 20))
         b = runs.budget
-        self.assertEqual(b.spent, {"reproduce": 11, "shuffle": 0, "alone": 20, "search": 8, "minimise": 0,
+        self.assertEqual(b.spent, {"reproduce": 11, "shuffle": 0, "alone": 20, "pair": 0, "search": 8, "minimise": 0,
                                    "deletion": 0, "verify": 0})
         self.assertEqual((b.candidates_tried, b.exhausted_phase, b.launches), (4, "search", 25))
         self.assertEqual((runs.search_runs, runs.sequence, runs.deletion_checks), (4, order, []))
@@ -652,7 +653,7 @@ class TestBudget(unittest.TestCase):
 
     def test_two_kept_tests_one_deletion_check_fits(self):
         free = run_steps(self.both(), [self.P, self.Q, V], V, n=20)
-        self.assertEqual(free.budget.spent, {"reproduce": 3, "shuffle": 0, "alone": 20, "search": 4,
+        self.assertEqual(free.budget.spent, {"reproduce": 3, "shuffle": 0, "alone": 20, "pair": 0, "search": 4,
                                              "minimise": 7, "deletion": 80, "verify": 60})
         runs = run_steps(self.both(), [self.P, self.Q, V], V, n=20, budget=Budget(150))
         self.assertEqual(runs.status, POLLUTER_FOUND)
@@ -842,6 +843,163 @@ class TestSearchPolicy(unittest.TestCase):
         runs = run_steps(victim_fails_when(lambda order: True), self.C + [V], V, n=3, policy="ranked", ranker_for=never)
         self.assertEqual(runs.status, VICTIM_FAILS_ALONE)
         self.assertEqual(runs.search, SearchPolicy("ranked", "module", None, [], 0.2, None, None))
+
+
+class TestPairMode(unittest.TestCase):
+    """W35 (ADR-016 revised, Interface 9 P1-P6): ten candidates; the victim sorts before six of them, and its
+    polluter C7 sorts after it, so no starting order fails (FJ-03's shape)."""
+
+    C = [TestIdentifier(f"pkg.C{i}Test", "c") for i in range(10)]
+
+    def full(self):
+        return self.C[:4] + [V] + self.C[4:]
+
+    def fails_after(self, test):
+        return victim_fails_when(lambda order: test in order[:order.index(V)])
+
+    def report(self, runs):
+        from eval.report import assemble_report
+        from runner.integrity import SourceIntegrity
+        return assemble_report(replace(runs, source_integrity=SourceIntegrity(True, "unchanged"),
+                                       execution_record="r.jsonl"), None)
+
+    def test_order_mode_cannot_reproduce_it(self):
+        runs = run_steps(self.fails_after(self.C[7]), self.full(), V, n=4)
+        self.assertEqual((runs.status, runs.search_mode, runs.reproduced_by, runs.pairs_tried, runs.scope_size),
+                         (NOT_REPRODUCED, "order", None, 0, 10))
+
+    def test_pairs_find_the_polluter_after_the_victim(self):
+        runner = self.fails_after(self.C[7])
+        runs = run_steps(runner, self.full(), V, n=4, search_mode="pairs")
+        self.assertEqual((runs.status, runs.polluters, runs.sequence), (POLLUTER_FOUND, [self.C[7]], [self.C[7], V]))
+        self.assertEqual((runs.search_mode, runs.reproduced_by, runs.pairs_tried, runs.scope_size),
+                         ("pairs", "pair", 8, 10))
+        self.assertEqual((runs.reference_signature, runs.original_order), (REF, [self.C[7], V]))
+        self.assertEqual((runs.sequence_tally.n, runs.sequence_tally.matched), (4, 4))
+        self.assertEqual((runs.alone_tally.n, runs.alone_tally.matched), (4, 0))
+        self.assertEqual((runs.budget.spent["pair"], runs.budget.spent["search"], runs.budget.spent["reproduce"]),
+                         (18, 0, 0))
+        self.assertEqual((runs.budget.candidates_total, runs.budget.candidates_tried), (10, 8))
+        self.assertEqual([c.source for c in runs.deletion_checks], [ALONE_CHECK])
+        self.assertEqual(len(runner.calls), 4 + 9 + 4)  # alone first, 8 pairs + 1 re-run, verify
+        self.assertEqual(runner.calls[0], [V])
+        self.assertEqual(self.report(runs)["outcome"], "CANDIDATE")  # no resource edge given here
+
+    def test_victim_failing_alone_stops_before_any_pair(self):
+        runner = victim_fails_when(lambda order: True)
+        runs = run_steps(runner, self.full(), V, n=3, search_mode="pairs")
+        self.assertEqual((runs.status, runs.reproduced_by, runs.pairs_tried), (VICTIM_FAILS_ALONE, "order", 0))
+        self.assertEqual(len(runner.calls), 3)
+
+    def test_no_pair_fails(self):
+        runs = run_steps(victim_fails_when(lambda order: False), self.full(), V, n=4, search_mode="pairs")
+        self.assertEqual((runs.status, runs.reproduced_by, runs.pairs_tried, runs.polluters),
+                         (NOT_REPRODUCED, None, 10, []))
+        self.assertEqual((runs.sequence_tally.n, runs.sequence_tally.passed), (10, 10))
+        report = self.report(runs)
+        self.assertEqual((report["outcome"], report["unresolved_reason"]), ("UNRESOLVED", "NOT_REPRODUCED"))
+
+    def test_a_crashing_pair_counts_as_an_infrastructure_failure_when_nothing_is_found(self):
+        crash = RunOutcome(passed=False, failure_signature=FailureSignature("flaketrace.Timeout", "", "t"))
+        runner = FakeOrderRunner(lambda order, test: crash if test == V and order[0] == self.C[2] else PASS)
+        runs = run_steps(runner, self.full(), V, n=4, search_mode="pairs")
+        self.assertEqual((runs.status, runs.infrastructure_failures, runs.sequence_tally.infra),
+                         (NOT_REPRODUCED, 1, 1))
+
+    def test_no_candidate_in_scope_tallies_the_alone_runs(self):
+        runs = run_steps(victim_fails_when(lambda order: False), [V], V, n=4, search_mode="pairs")
+        self.assertEqual((runs.status, runs.pairs_tried, runs.sequence_tally.n), (NOT_REPRODUCED, 0, 4))
+        self.assertEqual(self.report(runs)["unresolved_reason"], "NOT_REPRODUCED")
+
+    def test_the_budget_cuts_the_scan(self):
+        runs = run_steps(self.fails_after(self.C[7]), self.full(), V, n=20, search_mode="pairs",
+                         budget=Budget(limit_invocations=60 + 6))
+        self.assertEqual((runs.status, runs.polluters, runs.pairs_tried), (BUDGET_EXHAUSTED, [], 3))
+        self.assertEqual((runs.budget.exhausted_phase, runs.budget.candidates_tried), ("pair", 3))
+        self.assertEqual(self.report(runs)["unresolved_reason"], "BUDGET_EXHAUSTED")
+
+    def test_a_cut_between_a_failing_pair_and_its_re_run_blames_nothing(self):
+        runs = run_steps(self.fails_after(self.C[1]), self.full(), V, n=20, search_mode="pairs",
+                         budget=Budget(limit_invocations=60 + 4))
+        self.assertEqual((runs.status, runs.polluters, runs.reproduced_by), (BUDGET_EXHAUSTED, [], None))
+        self.assertEqual((runs.sequence_tally.n, runs.sequence_tally.other, runs.pairs_tried), (2, 1, 2))
+        self.assertEqual(self.report(runs)["unresolved_reason"], "BUDGET_EXHAUSTED")
+
+    def test_a_one_off_pair_failure_is_reported_but_never_blamed(self):
+        left = [FAIL, PASS]
+        runner = FakeOrderRunner(lambda order, test: left.pop(0) if test == V and order[0] == self.C[2] and left
+                                 else PASS)
+        runs = run_steps(runner, self.full(), V, n=4, search_mode="pairs")
+        self.assertEqual((runs.status, runs.polluters, runs.pairs_tried), (NOT_REPRODUCED, [], 10))
+        self.assertEqual((runs.sequence_tally.passed, runs.sequence_tally.other, runs.infrastructure_failures), (9, 1, 0))
+        report = self.report(runs)
+        self.assertEqual((report["outcome"], report["polluters"]), ("UNRESOLVED", []))
+
+    def test_ranked_runs_the_evidence_candidate_first(self):
+        runner = self.fails_after(self.C[7])
+        asked = []
+
+        def ranker_for(candidates, victim):
+            asked.append(list(candidates))
+            return FakeRanker(candidates, edges={2: {7: 1}}, cut_off=False)
+        runs = run_steps(runner, self.full(), V, n=4, search_mode="pairs", policy="ranked", ranker_for=ranker_for)
+        self.assertEqual(asked, [self.C])
+        self.assertEqual(runner.calls[4], [self.C[7], V])
+        self.assertEqual((runs.pairs_tried, runs.budget.spent["pair"]), (1, 4))
+
+    def test_ranking_line_is_written_for_the_pair_candidates(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            record = Path(tmp) / "r.jsonl"
+            recorder = RecordingRunner(self.fails_after(self.C[7]), record, {"victim": str(V)})
+            run_steps(recorder, self.full(), V, n=2, search_mode="pairs")
+            lines = [json.loads(line) for line in record.read_text(encoding="utf-8").splitlines()]
+        ranking = [line for line in lines if line.get("type") == "ranking"]
+        self.assertEqual(len(ranking), 1)
+        self.assertEqual(ranking[0]["order"], [str(c) for c in self.C])
+        self.assertEqual(sum(line.get("step") == "pair" for line in lines), 9)
+
+    def test_pair_mode_budget_minimum_is_the_reserve_and_one_pair(self):
+        with self.assertRaises(DiagnoseInputError) as error:
+            run_steps(self.fails_after(self.C[7]), self.full(), V, n=20, search_mode="pairs",
+                      budget=Budget(limit_invocations=63))
+        self.assertIn("minimum 64", str(error.exception))  # review finding 3: one pair and its re-run
+        self.assertNotIn("starting order", str(error.exception))
+        runs = run_steps(self.fails_after(self.C[0]), self.full(), V, n=20, search_mode="pairs",
+                         budget=Budget(limit_invocations=64))
+        self.assertEqual((runs.status, runs.polluters), (POLLUTER_FOUND, [self.C[0]]))
+
+    def test_inputs_that_could_carry_the_answer_are_refused(self):
+        for extra in ({"order_given": True}, {"priority": [self.C[7]]}, {"search_mode": "both"}):
+            with self.subTest(extra=extra), self.assertRaises(DiagnoseInputError):
+                run_steps(self.fails_after(self.C[7]), self.full(), V, n=4, **{"search_mode": "pairs", **extra})
+
+    def test_launch_seconds_come_from_the_alone_runs(self):
+        ticks = iter(float(i) for i in range(1000))
+        runs = run_steps(self.fails_after(self.C[7]), self.full(), V, n=4, clock=lambda: next(ticks))
+        self.assertEqual(runs.launch_seconds, 1.0)
+
+    def test_order_mode_records_how_it_reproduced(self):
+        runs = run_steps(victim_fails_when(lambda order: self.C[1] in order[:-1]), self.full(), V, n=2)
+        self.assertEqual((runs.status, runs.search_mode, runs.reproduced_by, runs.pairs_tried),
+                         (POLLUTER_FOUND, "order", "order", 0))
+
+
+class TestDiagnosePairInputs(unittest.TestCase):
+    def test_a_given_order_is_refused_in_pair_mode(self):
+        with self.assertRaises(DiagnoseInputError) as error:
+            diagnose(FIXTURE, V, original_order=[V], search_mode="pairs")
+        self.assertIn("order", str(error.exception))
+
+    def test_a_priority_list_is_refused_before_any_record_is_written(self):
+        # Review finding 11: refused in diagnose(), before the recorder writes a header-only record.
+        with tempfile.TemporaryDirectory() as tmp:
+            records = Path(tmp) / "records"
+            victim = TestIdentifier("odfixture.ConfigVictimTest", "expectsDefaultMode")
+            with mock.patch("runner.diagnose.prepare_runner") as prepare, self.assertRaises(DiagnoseInputError) as error:
+                diagnose(FIXTURE, victim, priority=[victim], search_mode="pairs", record_dir=records)
+            self.assertIn("priority", str(error.exception))
+            prepare.assert_not_called()
+            self.assertFalse(records.exists())
 
 
 class TestRunStepsPolicyInputs(unittest.TestCase):
