@@ -74,10 +74,11 @@ multi-hour run.
 
 ### 3. Honest report
 
-A new report field `reproduced_by`: `"order"` (the starting or a shuffled order) or `"pair"`, or `null` when never
-reproduced. For `"pair"`, a `limitations` line: *"The failure appeared when the polluter ran directly before the
-victim (a constructed pair); it was not seen in the project's own or shuffled orders."* The verdict rules (ADR-010)
-do not change. (Interface 9 fixes the exact fields.)
+A new report field `reproduced_by`: `"order"` (the starting or a shuffled order, or the victim alone) or `"pair"`,
+or `null` when never reproduced. For `"pair"`, a `limitations` line: *"The failure appeared when the polluter ran
+directly before the victim (a constructed pair); pair mode does not run the project's own or shuffled orders."* The
+verdict rules (ADR-010) do not change. (Interface 9 fixes the exact fields.) *Both wordings amended 2026-11-22,
+agreed by M1, M2 and M3 on 2026-11-22 (team group; M1 and M3 in writing), recorded by M2.*
 
 ### 4. Not in this ADR
 

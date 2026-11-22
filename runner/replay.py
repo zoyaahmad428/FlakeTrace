@@ -36,13 +36,16 @@ def report_reference(report: dict) -> FailureSignature:
 
 
 def replay_steps(runner, polluters: List[TestIdentifier], victim: TestIdentifier, reference: FailureSignature,
-                 n: int, original_order: List[TestIdentifier]) -> DiagnosisRuns:
+                 n: int, original_order: List[TestIdentifier], search_mode: str = "order",
+                 reproduced_by: str = "order") -> DiagnosisRuns:
     """R2 on any OrderRunner, in diagnose's order: alone, deletion checks (which may drop a test), then the
-    kept sequence. No budget: the recorded n in full."""
+    kept sequence. No budget: the recorded n in full. `search_mode` and `reproduced_by` are the original's
+    (W35), so a pair-mode bundle replays as pair mode; a victim that now fails alone is "order"."""
     ledger = BudgetedRunner(runner, Budget(), n, victim)
     _label(ledger, "alone")
     alone = repeat(ledger, [victim], victim, reference, n)
-    explore = dict(order_given=True)
+    explore = dict(order_given=True, search_mode=search_mode,
+                   reproduced_by="order" if alone.matched >= 1 else reproduced_by)
     if alone.matched >= 1:
         return DiagnosisRuns(VICTIM_FAILS_ALONE, victim, list(original_order), reference, [], [victim], alone, alone,
                              0, budget=ledger.account(len(original_order) - 1), **explore)
@@ -147,11 +150,13 @@ def replay(bundle_folder, project, out_folder, records, timeout_s: float, worksp
         started = datetime.now(timezone.utc)
         Path(records).mkdir(parents=True, exist_ok=True)
         record = Path(records) / f"{started.strftime('%Y%m%dT%H%M%SZ')}-{victim}.jsonl"
+        # W35: the original's mode, from the checksummed record header (a bundle from before W35 has none: order).
+        search_mode = original.header.get("search_mode") or "order"
         header = record_header(runner, victim, n, project, started, order_given=True, workspace=workspace_mode,
                                command=command, reference_signature=report["failure_signature"],
-                               replay_of=original.manifest["files"]["report.json"])
+                               replay_of=original.manifest["files"]["report.json"], search_mode=search_mode)
         runs = replay_steps(RecordingRunner(runner, record, header), polluters, victim, report_reference(report), n,
-                            order)
+                            order, search_mode, report.get("reproduced_by") or "order")
         integrity = integrity_of(compare_files(before, snapshot(work)),
                                  compare_files(before_source, snapshot(project)) if before_source is not None else None)
         runs = replace(runs, source_integrity=integrity, execution_record=str(record))
