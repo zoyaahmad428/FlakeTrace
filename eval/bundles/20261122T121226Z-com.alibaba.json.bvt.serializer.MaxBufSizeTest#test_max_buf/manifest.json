@@ -1,0 +1,68 @@
+{
+  "bundle_version": 1,
+  "kind": "diagnosis",
+  "tool": {
+    "commit": "d7139e7fc76c9e3f25b0b36db844ec64f301e654",
+    "dirty": true
+  },
+  "subject": {
+    "repository": "https://github.com/alibaba/fastjson",
+    "commit": "e05e9c5e4be580691cc55a59f3256595393203a1",
+    "dirty": false,
+    "module_path": "."
+  },
+  "victim": "com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf",
+  "command": [
+    "diagnose",
+    "--project",
+    "<project>",
+    "--victim",
+    "com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf",
+    "--search",
+    "pairs",
+    "--scope",
+    "package",
+    "--n",
+    "20",
+    "--policy",
+    "ranked",
+    "--records",
+    "<records>",
+    "--bundle",
+    "eval/bundles"
+  ],
+  "parameters": {
+    "n": 20,
+    "shuffles": 31,
+    "seed": 0,
+    "budget": {
+      "limit_invocations": null,
+      "limit_seconds": null
+    },
+    "policy": "ranked",
+    "scope": "package",
+    "lifecycle": "class-grouped",
+    "workspace": "copy"
+  },
+  "environment": {
+    "os": "Windows-11-10.0.26200-SP0",
+    "jdk": "1.8.0_512",
+    "maven": "3.9.11",
+    "junit": "4.12",
+    "python": "3.14.3",
+    "timezone": "UTC",
+    "locale": "en_US",
+    "encoding": "Cp1252",
+    "container_image": null
+  },
+  "reset_assumptions": "Reset between orders: JVM state only: static fields, system properties, loaded classes, threads. Not reset: Files anywhere, the working directory, environment variables, network and external services, the system clock and timezone.",
+  "fresh_run": true,
+  "run_date": "2026-11-22",
+  "replay_of": null,
+  "files": {
+    "report.json": "ea45446c2011531acfebd02f55ea73da73b2a2ecf16a33fa17da28d62a64aeb0",
+    "record.jsonl": "ffac50426256f537d1f2ca364b6c4cd03fb9f00844a5c28e79cf11bef6b2955d",
+    "replay.md": "87805a4f7edd6c3177b52e30f0adffa1877bee3ffe6f1141897dcd7d5c23e1e6",
+    "environment.txt": "c8a5b97688887f64b05ca871e9cdb0a1160add7b70a92eab776ce7587966f80a"
+  }
+}

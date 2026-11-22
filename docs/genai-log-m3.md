@@ -1877,3 +1877,36 @@ assumption that TypeScript's structural typing would tolerate an extra JSON fiel
 Ownership checkpoint: be able to name, without looking it up, which two directories under
 `eval/` both hold report fixtures that need updating whenever the schema gains a new required
 field — and why `ui/`'s test failure was the symptom, not the cause.
+
+## 2026-11-22 — the live pair-mode comparison: reporting a surprise instead of explaining it away
+
+**What I didn't do when the result wasn't what the protocol expected:** every prior write-up
+this session predicted (correctly) that `ranked` would equal `original` on FJ-03, since M1's
+own extractor finding says there is no static edge. What I did not predict, and was tempted to
+quietly reframe once I saw it, was that all five `random` seeds beat both by a wide margin.
+"Random beats ranking" is the kind of headline that invites a defensive explanation before the
+number is even written down. I wrote the real numbers first, then worked out *why* — six
+independently real polluters spread through 524 candidates, with the fixed natural order
+happening to reach its first one at position 368 — and said plainly that this is a property of
+this one case's shape, not a general finding, rather than either hiding the surprise or
+overclaiming it as a result about random search.
+
+**What running all seven for real caught, that reasoning from M2's one documented run would
+not have:** M2's own `original` run already existed, fully documented, with the same expected
+position (368). I re-ran it myself anyway rather than citing his number — it matched exactly,
+which is a real independent confirmation, but running it is also what surfaced that the other
+four random seeds (which I had no way to predict in advance) each landed on a *different* real
+test method as the adopted polluter. That fact — six real single-polluters, not one — only
+exists because I ran the pairs and read which one got adopted each time, not something
+derivable from the earlier static-analysis finding alone.
+
+**What verifying all seven bundles actually tested:** this was the first time `eval/bundle.py`'s
+pair-mode `verify()` code (written this session, tested only against hand-built fixtures until
+now) ran against genuine pair-mode records from a real diagnosis. All seven passed — a real
+check of code that had, until this point, only proven itself against data I had constructed
+myself to match my own understanding of the format.
+
+Ownership checkpoint: be able to explain, without re-deriving it, why "six independently-valid
+polluters" is itself a real finding from this session (not something the earlier offline
+ranking analysis could have told us), and why it is the reason random beat both ranked and
+original here specifically, not evidence about random search in general.

@@ -1,0 +1,70 @@
+{
+  "bundle_version": 1,
+  "kind": "diagnosis",
+  "tool": {
+    "commit": "d7139e7fc76c9e3f25b0b36db844ec64f301e654",
+    "dirty": true
+  },
+  "subject": {
+    "repository": "https://github.com/alibaba/fastjson",
+    "commit": "e05e9c5e4be580691cc55a59f3256595393203a1",
+    "dirty": false,
+    "module_path": "."
+  },
+  "victim": "com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf",
+  "command": [
+    "diagnose",
+    "--project",
+    "<project>",
+    "--victim",
+    "com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf",
+    "--search",
+    "pairs",
+    "--scope",
+    "package",
+    "--n",
+    "20",
+    "--policy",
+    "random",
+    "--seed",
+    "0",
+    "--records",
+    "<records>",
+    "--bundle",
+    "eval/bundles"
+  ],
+  "parameters": {
+    "n": 20,
+    "shuffles": 31,
+    "seed": 0,
+    "budget": {
+      "limit_invocations": null,
+      "limit_seconds": null
+    },
+    "policy": "random",
+    "scope": "package",
+    "lifecycle": "class-grouped",
+    "workspace": "copy"
+  },
+  "environment": {
+    "os": "Windows-11-10.0.26200-SP0",
+    "jdk": "1.8.0_512",
+    "maven": "3.9.11",
+    "junit": "4.12",
+    "python": "3.14.3",
+    "timezone": "UTC",
+    "locale": "en_US",
+    "encoding": "Cp1252",
+    "container_image": null
+  },
+  "reset_assumptions": "Reset between orders: JVM state only: static fields, system properties, loaded classes, threads. Not reset: Files anywhere, the working directory, environment variables, network and external services, the system clock and timezone.",
+  "fresh_run": true,
+  "run_date": "2026-11-22",
+  "replay_of": null,
+  "files": {
+    "report.json": "b30510ad80611fb934d013234e5076d03e2c71999d814fb6586a94eb36f04670",
+    "record.jsonl": "ac3e898e9d0ea256b3e187150ffd2fa681a3a87485810dc94bd7965434d9a28b",
+    "replay.md": "fdf29354209f740faf72d05508b4dc96ba8c2cd9898db268b149cfaa40c2c92c",
+    "environment.txt": "c8a5b97688887f64b05ca871e9cdb0a1160add7b70a92eab776ce7587966f80a"
+  }
+}

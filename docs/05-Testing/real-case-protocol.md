@@ -116,9 +116,34 @@ FJ-03 is unreachable from the victim alone — [ADR-016](../03-Design/decisions/
 pair mode (`--search pairs`) searches `[candidate, victim]` **pairs** instead of orders,
 including candidates after the victim (524 of them, the same count item 5's offline comparison
 uses), and finds the real polluter directly: `CANDIDATE`, `SerializeWriterTest_14#test_writer_1`
-at pair position 368 of 524 (M2, PR #160) — matching the POC's own position exactly. The live
-`original`/`ranked`/`random` comparison in pair mode (ADR-016's "what must be demonstrated" item
-2) is W35's open item, not yet run — see [[evidence-m3]] once it is.
+at pair position 368 of 524 (M2, PR #160) — matching the POC's own position exactly.
+
+**The live `original`/`ranked`/`random` comparison in pair mode — done 2026-11-22 (M3, ADR-016's
+"what must be demonstrated" item 2).** Seven real runs, `--search pairs --scope package --n 20`,
+no budget limit (same budget: unconstrained, for all seven):
+
+| Policy | Polluter adopted | Position (of 524) | Invocations | vs. `original` |
+| --- | --- | --- | --- | --- |
+| `original` | `SerializeWriterTest_14#test_writer_1` | 368 | 798 | — |
+| `ranked` | `SerializeWriterTest_14#test_writer_1` | 368 | 798 | identical (no evidence) |
+| `random` seed 0 | `SerializeWriterTest_14#test_writer_3` | 187 | 436 | 45% fewer |
+| `random` seed 1 | `SerializeWriterTest_14#test_writer_1` | 7 | 76 | 90% fewer |
+| `random` seed 2 | `SerializeWriterTest_14#test_writer_2` | 61 | 184 | 77% fewer |
+| `random` seed 3 | `SerializeWriterTest_14#test_writer_3` | 98 | 258 | 68% fewer |
+| `random` seed 4 | `SerializeWriterTest_15#test_writer_1` | 43 | 148 | 81% fewer |
+
+`ranked` matches `original` exactly, as item 5's offline comparison already found (no static
+edge, so the policies are identical by construction here). **A real, honest finding this
+protocol did not predict: every one of the five random seeds beat `original`/`ranked`, often by
+a large margin.** This is not a general claim that random beats ranking -- it is specific to
+this case's real shape: six candidates in the package are each independently a valid single
+polluter for this victim (confirmed real: five different real tests were adopted across the
+seven runs, all `CANDIDATE` with the identical reference signature), spread through the 524
+candidates, while `original`'s fixed natural-discovery order happens to place the first one it
+reaches unusually late (368th). A fixed order has no way to be lucky; a reshuffled one often is.
+Reported exactly as it is, per ADR-016's own instruction -- not spun as "ranking failed" (it
+never had evidence to rank with) or hidden. All seven bundled and `eval.bundle verify` clean
+([[evidence-m3]]).
 
 **Lead:** M3 · **Execution compatibility:** M2 · **Resource coverage:** M1 ·
 **Independent repeat:** M1 or M2 · **Work package:** W26
