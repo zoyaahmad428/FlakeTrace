@@ -1302,3 +1302,14 @@ root cause) instead of a tolerant decoding (a symptom patch); a one-file probe l
 on Windows too. **Not claimed:** the Linux behaviour was reasoned, not run. **What I changed:** *to fill in.*
 
 Ownership checkpoint: why the outcomes were still right; why DEVNULL is the fix and `errors="replace"` would not be.
+
+## 2026-11-22 — W35 follow-up: replay keeps the mode; agreed wording
+
+**Tool:** Claude Code (Claude Opus 5.5), brainstorming → plan → TDD · **Level:** L2 · **Branch:** `m2/w35-followup`
+
+**Asked:** fix M3's replay finding; record the two agreed Interface 9 wordings; settle E16. **Kept:** the mode read
+from the checksummed record header, not `manifest.json`; a victim that now fails alone is `"order"`. **Rejected:**
+inferring pair mode in `eval/report.py` (M3's file, and a guess where the record already says). **What I changed:**
+*to fill in.*
+
+Ownership checkpoint: why the record header, not the manifest; what a replay of a pair bundle now reports.

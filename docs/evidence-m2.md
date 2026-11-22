@@ -1898,3 +1898,19 @@ own copy of the code, not from the review's description.
 - **Re-run with the fix:** the same command → 7 min 16 s, **0 tracebacks**, the same `NOT_REPRODUCED`, 12,817
   invocations.
 - **Limitations:** one more machine, same OS family as M3's; the Linux effect is reasoned, not observed.
+
+## W35 follow-up: a replayed pair-mode bundle stays pair mode (2026-11-22)
+
+- **Requirement:** M3's finding on PR #164: `replay_steps` never set `reproduced_by`/`search_mode`, so a replayed
+  pair-mode bundle would be reported `reproduced_by: "order"`, with `order_exploration` and without the
+  constructed-pair line.
+- **Test-first:** `test_the_mode_is_carried_and_failing_alone_is_an_order`,
+  `test_a_pair_mode_bundle_replays_as_pair_mode` (a real fake-runner pair-mode report bundled with
+  `search_mode: "pairs"` and replayed through `replay()` and M3's `assemble_report`),
+  `test_an_order_mode_bundle_without_the_fields_stays_order` → 3 errors (`replay_steps() got an unexpected keyword
+  argument 'search_mode'`; `KeyError: 'search_mode'` in the replay's header). After: `runner.tests.test_replay
+  runner.tests.test_bundle` → 39 OK; `eval/tests` → OK.
+- **Docs:** Interface 9's limitation sentence and ADR-016 §3's `"order"` definition reworded as agreed by M1, M2, M3
+  on 2026-11-22; claim E16 settled (M1's reproduction #163, M3's report half #164).
+- **Not run:** a real replay of a committed FJ-03 pair bundle (needs the fastjson checkout's 20+40 JVM runs; the
+  fake-runner test exercises the same path).

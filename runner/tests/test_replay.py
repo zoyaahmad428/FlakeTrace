@@ -43,10 +43,20 @@ class TestReplaySteps(unittest.TestCase):
         runs = replay_steps(FakeOrderRunner(lambda order, test: FAIL), [P], V, REF, 2, [P, V])
         self.assertEqual((runs.status, runs.polluters), ("VICTIM_FAILS_ALONE", []))
 
+    def test_the_mode_is_carried_and_failing_alone_is_an_order(self):
+        """W35: a pair is kept as "pair"; a victim that now fails alone came from the victim alone, an order."""
+        runs = replay_steps(fails_after_p(), [P], V, REF, 3, [P, V], search_mode="pairs", reproduced_by="pair")
+        self.assertEqual((runs.search_mode, runs.reproduced_by), ("pairs", "pair"))
+        alone = replay_steps(FakeOrderRunner(lambda order, test: FAIL), [P], V, REF, 2, [P, V], search_mode="pairs",
+                             reproduced_by="pair")
+        self.assertEqual((alone.status, alone.search_mode, alone.reproduced_by), ("VICTIM_FAILS_ALONE", "pairs", "order"))
+        default = replay_steps(fails_after_p(), [P], V, REF, 3, [P, V])
+        self.assertEqual((default.search_mode, default.reproduced_by), ("order", "order"))
 
-def a_report(runner=None, n=3):
+
+def a_report(runner=None, n=3, search_mode="order"):
     """A real CANDIDATE report (no resource edge) from the fake runner, as diagnose's report would be."""
-    runs = run_steps(runner or fails_after_p(), [P, V], V, n=n)
+    runs = run_steps(runner or fails_after_p(), [P, V], V, n=n, search_mode=search_mode)
     runs = replace(runs, source_integrity=SourceIntegrity(True, "1 file hashed; identical"), execution_record="r.jsonl")
     return assemble_report(runs, None)
 
@@ -102,12 +112,12 @@ class TestOsRow(unittest.TestCase):
 class TestReplay(unittest.TestCase):
     """replay() with the JVM side mocked: prepare_runner gives a fake runner and a discovered list."""
 
-    def bundle(self, report=None, maven=None):
+    def bundle(self, report=None, maven=None, **header):
         tmp = Path(tempfile.mkdtemp(prefix="flaketrace-replay-test-"))
         record = tmp / "20261121T100000Z-pkg.VictimTest#v.jsonl"
         record.write_text(json.dumps({"type": "header", "victim": str(V), "n": 3, "lifecycle": "class-grouped",
                                       "started": "2026-11-21T10:00:00+00:00", "project_commit": "abc",
-                                      "maven_version": maven}) + "\n",
+                                      "maven_version": maven, **header}) + "\n",
                           encoding="utf-8")
         return write_bundle(tmp / "bundles", report or a_report(), record, paths={}, home="C:\\nobody", user="nobody")
 
@@ -132,6 +142,26 @@ class TestReplay(unittest.TestCase):
         header = read_bundle(new).header
         self.assertEqual(header["reference_signature"]["exception_type"], "java.lang.AssertionError")
         self.assertIn("Comparison with the original bundle", (new / "replay.md").read_text(encoding="utf-8"))
+
+    def test_a_pair_mode_bundle_replays_as_pair_mode(self):
+        """W35 (M3's #164 finding): the replay keeps the original's search_mode and reproduced_by, so its report has
+        the constructed-pair line and no order_exploration, instead of being labelled "order"."""
+        original = self.bundle(report=a_report(search_mode="pairs"), search_mode="pairs")
+        code, lines, new = self.run_replay(original)
+        self.assertEqual(code, 0, lines)
+        replayed = read_bundle(new)
+        self.assertEqual((replayed.report["reproduced_by"], replayed.header["search_mode"]), ("pair", "pairs"))
+        self.assertNotIn("order_exploration", replayed.report)
+        self.assertTrue(any("a constructed pair" in line for line in replayed.report["limitations"]))
+
+    def test_an_order_mode_bundle_without_the_fields_stays_order(self):
+        """A bundle from before W35: no search_mode in its header, no reproduced_by in its report."""
+        report = a_report()
+        report.pop("reproduced_by", None)
+        code, lines, new = self.run_replay(self.bundle(report=report))
+        self.assertEqual(code, 0, lines)
+        replayed = read_bundle(new)
+        self.assertEqual((replayed.report["reproduced_by"], replayed.header["search_mode"]), ("order", "order"))
 
     def test_missing_polluter_is_refused(self):
         code, lines, new = self.run_replay(self.bundle(), discovered=(Q, V))

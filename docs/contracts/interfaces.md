@@ -518,7 +518,8 @@ in this run × the number of pairs).
 search_mode: str               # "order" | "pairs" (also in the record header, key "search_mode"). Named
                                # search_mode, not search: DiagnosisRuns.search is W25's SearchPolicy (renamed
                                # 2026-11-22 before any code, agreed by M1, M2, M3)
-reproduced_by: Optional[str]   # "order" | "pair" | None (never reproduced)
+reproduced_by: Optional[str]   # "order" (the starting order, a shuffle, or the victim alone) | "pair" | None
+                               # (never reproduced). "the victim alone" added 2026-11-22, agreed by M1, M2, M3
 pairs_tried: int = 0           # pairs run in pair mode (re-runs not counted)
 ```
 
@@ -526,7 +527,8 @@ pairs_tried: int = 0           # pairs run in pair mode (re-runs not counted)
 
 - `reproduced_by` in the report, required (a schema bump M3 proposes in [report-schema.md](report-schema.md)).
 - For `"pair"`, a `limitations` line, verbatim: *"The failure appeared when the polluter ran directly before the
-  victim (a constructed pair); it was not seen in the project's own or shuffled orders."*
+  victim (a constructed pair); pair mode does not run the project's own or shuffled orders."*
+  (Reworded 2026-11-22, agreed by M1, M2 and M3 on 2026-11-22 (team group; M1 and M3 in writing), recorded by M2: pair mode never runs those orders, so "not seen in them" was not backed.)
 - `NOT_REPRODUCED` in pair mode: the rationale names `pairs_tried`.
 - The verdict rules (ADR-010) do not change.
 - `verify` (Interface 8): in a pair-mode bundle the reference is the first **adopted** pair's signature (the first
