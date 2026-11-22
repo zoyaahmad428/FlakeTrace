@@ -486,6 +486,65 @@ reproduces), and there are no `reproduce`, `shuffle`, `search` or `minimise` lin
 3. M1: ADR-013 §5 — on her own machine, alone: clone, `verify`, `replay` one fixture bundle; record it
    in `docs/evidence-m1.md`, including every step that was unclear.
 
+## Interface 9 — pair mode (W35, ADR-016; M2 produces, M3 consumes and measures)
+
+*Proposed by M2 on 2026-11-22, together with ADR-016's revision. Agreed by M1, M2 and M3 on 2026-11-22 (team
+WhatsApp group, recorded by M2; confirmed by approving the PR that adds this section, #157). Built against [ADR-016](../03-Design/decisions/ADR-016-reproduction-fallback-pair-search.md).
+Not built yet.*
+
+**Input.** `diagnose(search="order" | "pairs")`, CLI `--search order|pairs` (default `order`: today's pipeline,
+unchanged). Pair mode takes the victim only, with the usual scope, policy, budget and `n`. A given `--order` with
+`--search pairs` is refused (exit 2): an order file can hold the answer, and pair mode must not see it.
+
+**The rules the runner (M2) follows in pair mode.**
+
+| # | Rule |
+| --- | --- |
+| P1 | The **alone check** runs first, as today; a victim that fails alone stops as `VICTIM_FAILS_ALONE` |
+| P2 | **Candidates:** every discovered test in scope except the victim, including tests after it in the discovered order. Their order is the policy's (Interface 7 P2); the `ranking` record line is written for this set |
+| P3 | **Each pair** `[c, victim]` runs once, step `pair`. A real (non-synthetic) victim failure is run **once more**; it is adopted only if that run fails again with the same signature (`FailureSignature.matches`). Otherwise the scan continues. Both runs are recorded |
+| P4 | **Adopted:** the pair is the failing order and its signature the reference; then the deletion check (the alone check, ADR-011 §2) and the sequence check `n` times. Status `POLLUTER_FOUND` |
+| P5 | **No pair adopted:** `NOT_REPRODUCED` |
+| P6 | **Budget:** `pair` is a new **exploration** phase (Interface 6 B3), never the reserve; a cut gives `BUDGET_EXHAUSTED`, with `candidates_tried` the pairs run. `BudgetAccount.spent` gains the key `pair` (0 when unused). Interface 6 B8's recount counts its `run` lines |
+
+**In order mode, one addition (P7).** When order mode ends `NOT_REPRODUCED`, the CLI summary adds a `next:` line
+naming `--search pairs` with the candidate count and an estimate in minutes (the mean seconds per JVM launch measured
+in this run × the number of pairs).
+
+**New fields on `DiagnosisRuns`:**
+
+```python
+search: str                    # "order" | "pairs" (also in the record header)
+reproduced_by: Optional[str]   # "order" | "pair" | None (never reproduced)
+pairs_tried: int = 0           # pairs run in pair mode (re-runs not counted)
+```
+
+**What the report assembly (M3) does with them.**
+
+- `reproduced_by` in the report, required (a schema bump M3 proposes in [report-schema.md](report-schema.md)).
+- For `"pair"`, a `limitations` line, verbatim: *"The failure appeared when the polluter ran directly before the
+  victim (a constructed pair); it was not seen in the project's own or shuffled orders."*
+- `NOT_REPRODUCED` in pair mode: the rationale names `pairs_tried`.
+- The verdict rules (ADR-010) do not change.
+- `verify` (Interface 8): in a pair-mode bundle the reference is the first **adopted** pair's signature (the first
+  pair whose re-run also failed), from the `pair` lines.
+
+**Points decided here** (part of what this section's approval agrees to):
+
+1. **`--order` is refused in pair mode**, so a dataset's polluters can never be fed in (the leakage rule).
+2. **A failing pair is adopted only after one re-run** (P3), so one random failure cannot end the scan.
+3. **Pair mode is chosen by the user**; order mode's `NOT_REPRODUCED` names it as the next step (P7).
+4. **`reproduced_by` is required**, so a reader always knows whether the failure came from an order or a pair.
+
+**Who does what, in order.**
+
+1. M2: ADR-016's scripted tests first (fake runner), then the runner, the `pair` phase and record step,
+   `--search`, the `next:` line; real F1–F4, N1–N4 unchanged in order mode; FJ-03 with
+   `--search pairs --scope package` from the victim alone, with a bundle.
+2. M3, in parallel: the schema field, the limitation line, the rationale, `verify` for pair-mode bundles; then the
+   live `original`/`ranked`/`random` comparison on FJ-03 (ADR-016 item 2).
+3. M1: reproduces the FJ-03 pair-mode diagnosis on her own machine (W35's verifier).
+
 ## Open integration questions (decide before code is written against them)
 
 | # | Question | Owner to propose | Status |
