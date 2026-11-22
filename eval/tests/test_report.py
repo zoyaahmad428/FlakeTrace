@@ -664,6 +664,98 @@ class TestAssembleReport(unittest.TestCase):
         self.assertEqual(report["order_exploration"]["infrastructure_failures"], 4)
         validate_report(report)
 
+class TestPairModeW35(unittest.TestCase):
+    """ADR-016 (revised), Interface 9: reproduced_by, the pair-mode limitation line,
+    order_exploration omitted in pair mode, and pair-mode's own NOT_REPRODUCED/
+    INFRASTRUCTURE_FAILURE wording (M2's review of PR #156, 2026-11-22)."""
+
+    def test_adopted_pair_gives_reproduced_by_pair_and_the_agreed_limitation_line(self):
+        diagnosis = _diagnosis(
+            POLLUTER_FOUND, search_mode="pairs", reproduced_by="pair", pairs_tried=368,
+        )
+        report = assemble_report(diagnosis)
+        self.assertEqual(report["reproduced_by"], "pair")
+        self.assertIn(
+            "The failure appeared when the polluter ran directly before the victim (a "
+            "constructed pair); pair mode does not run the project's own or shuffled orders.",
+            report["limitations"],
+        )
+        validate_report(report)
+
+    def test_pair_mode_omits_order_exploration_entirely(self):
+        """order_given/shuffled_orders etc. sit at their DiagnosisRuns defaults in pair mode
+        (no order was ever run) -- including that shape would misread as a real finding."""
+        diagnosis = _diagnosis(
+            POLLUTER_FOUND, search_mode="pairs", reproduced_by="pair", pairs_tried=1,
+        )
+        report = assemble_report(diagnosis)
+        self.assertNotIn("order_exploration", report)
+
+    def test_victim_fails_alone_in_pair_mode_is_reproduced_by_order_not_pair(self):
+        """P1: the alone check runs first in pair mode too, through the same mechanism as any
+        order (Interface 9's revised reproduced_by definition: the victim-alone case is 'order',
+        a trivial one-test order, not a constructed pair)."""
+        diagnosis = _diagnosis(
+            VICTIM_FAILS_ALONE, search_mode="pairs", reproduced_by="order",
+            polluters=[], sequence=[VICTIM],
+            alone_tally=_tally(20, 0, matched=20), sequence_tally=_tally(20, 0, matched=20),
+        )
+        report = assemble_report(diagnosis)
+        self.assertEqual(report["reproduced_by"], "order")
+
+    def test_no_pair_adopted_words_the_limitation_from_pairs_tried_not_an_order(self):
+        """M2's review: with no pair adopted, sequence.other can be > 0 (a pair failed once,
+        then passed its re-run) -- the limitation must say so, worded from pairs_tried, not
+        'runs of the discovered order' (pair mode never runs one)."""
+        diagnosis = _diagnosis(
+            NOT_REPRODUCED, search_mode="pairs", reproduced_by=None, pairs_tried=524,
+            polluters=[], sequence=[VICTIM], reference_signature=None,
+            sequence_tally=_tally(524, 520, matched=0, other=4), alone_tally=_tally(20, 20, matched=0),
+        )
+        report = assemble_report(diagnosis)
+        self.assertIsNone(report["reproduced_by"])
+        self.assertTrue(any(
+            "524 candidate pair(s) tried, 4 of them failing once but not on the re-run" in line
+            for line in report["limitations"]
+        ), report["limitations"])
+        self.assertNotIn("order_exploration", report)
+        validate_report(report)
+
+    def test_no_pair_adopted_at_all_still_words_it_from_pairs_tried(self):
+        """Same case with zero unconfirmed failures (every pair simply passed) -- no false
+        'X failed once' clause, and still no 'order' language."""
+        diagnosis = _diagnosis(
+            NOT_REPRODUCED, search_mode="pairs", reproduced_by=None, pairs_tried=10,
+            polluters=[], sequence=[VICTIM], reference_signature=None,
+            sequence_tally=_tally(10, 10, matched=0), alone_tally=_tally(20, 20, matched=0),
+        )
+        report = assemble_report(diagnosis)
+        line = next(l for l in report["limitations"] if "candidate pair(s) tried" in l)
+        self.assertIn("Not reproduced: 10 candidate pair(s) tried, 20 runs alone.", line)
+        self.assertNotIn("discovered order", line)
+        self.assertNotIn("failing once", line)
+
+    def test_order_mode_is_unaffected_by_the_pair_mode_wording(self):
+        """Regression: an ordinary order-mode NOT_REPRODUCED report keeps its existing text,
+        unchanged by the new pair-mode branch."""
+        diagnosis = _diagnosis(
+            NOT_REPRODUCED, polluters=[], sequence=[POLLUTER, VICTIM], reference_signature=None,
+            sequence_tally=_tally(20, 20, matched=0), alone_tally=_tally(20, 20, matched=0),
+        )
+        report = assemble_report(diagnosis)
+        self.assertIsNone(report["reproduced_by"])
+        self.assertTrue(any("runs of the discovered order" in line for line in report["limitations"]))
+        self.assertIn("order_exploration", report)
+
+    def test_a_diagnosis_predating_w35_defaults_reproduced_by_to_order(self):
+        """A DiagnosisRuns built before reproduced_by existed (the dataclass default None) but
+        with a real reference signature always came from order mode -- the only mode that
+        existed then. assemble_report infers 'order' rather than reporting a false null."""
+        diagnosis = _diagnosis(POLLUTER_FOUND, reproduced_by=None)
+        report = assemble_report(diagnosis)
+        self.assertEqual(report["reproduced_by"], "order")
+
+
     def test_missing_tallies_is_a_value_error_not_a_crash_elsewhere(self):
         diagnosis = DiagnosisRuns(
             status=POLLUTER_FOUND, victim=VICTIM, original_order=[POLLUTER, VICTIM],

@@ -1,29 +1,66 @@
 {
   "schema_version": 2,
-  "victim": { "class": "com.example.OrderInsensitiveTest", "method": "checksSomething" },
+  "victim": {
+    "class": "com.example.OrderInsensitiveTest",
+    "method": "checksSomething"
+  },
   "polluters": [],
   "original_failing_order": [
-    { "class": "com.example.SuspectedPolluterTest", "method": "mutatesSomething" },
-    { "class": "com.example.OrderInsensitiveTest", "method": "checksSomething" }
+    {
+      "class": "com.example.SuspectedPolluterTest",
+      "method": "mutatesSomething"
+    },
+    {
+      "class": "com.example.OrderInsensitiveTest",
+      "method": "checksSomething"
+    }
   ],
   "reduced_sequence": [],
   "reproduction": {
-    "n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0, "confidence": 0.95,
-    "lower": 0.0, "upper": 0.16112515827076002
+    "n": 20,
+    "passed": 20,
+    "matched": 0,
+    "other": 0,
+    "infra": 0,
+    "confidence": 0.95,
+    "lower": 0.0,
+    "upper": 0.16112515827076002
   },
   "victim_alone": {
-    "n": 20, "passed": 20, "matched": 0, "other": 0, "infra": 0, "confidence": 0.95,
-    "lower": 0.0, "upper": 0.16112515827076002
+    "n": 20,
+    "passed": 20,
+    "matched": 0,
+    "other": 0,
+    "infra": 0,
+    "confidence": 0.95,
+    "lower": 0.0,
+    "upper": 0.16112515827076002
   },
-  "shared_resource": { "kind": "static-field", "class": "com.example.Shared", "field": "counter" },
-  "polluter_write_location": { "class": "com.example.SuspectedPolluterTest", "method": "mutatesSomething", "bytecode_offset": 2 },
-  "victim_read_location": { "class": "com.example.OrderInsensitiveTest", "method": "checksSomething", "bytecode_offset": 4 },
+  "shared_resource": {
+    "kind": "static-field",
+    "class": "com.example.Shared",
+    "field": "counter"
+  },
+  "polluter_write_location": {
+    "class": "com.example.SuspectedPolluterTest",
+    "method": "mutatesSomething",
+    "bytecode_offset": 2
+  },
+  "victim_read_location": {
+    "class": "com.example.OrderInsensitiveTest",
+    "method": "checksSomething",
+    "bytecode_offset": 4
+  },
   "resource_edges": [],
   "deletion_checks": [],
   "failure_signature": null,
+  "reproduced_by": null,
   "instrumentation_level": "static-only",
   "execution_record_reference": "illustrative-only: no real execution record backs this example",
-  "source_integrity": { "passed": true, "details": "Illustrative: no modification detected to any instrumented class." },
+  "source_integrity": {
+    "passed": true,
+    "details": "Illustrative: no modification detected to any instrumented class."
+  },
   "outcome": "UNRESOLVED",
   "unresolved_reason": "NOT_REPRODUCED",
   "candidate_reasons": [],

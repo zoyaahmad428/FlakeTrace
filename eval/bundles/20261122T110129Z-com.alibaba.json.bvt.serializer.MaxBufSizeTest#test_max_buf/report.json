@@ -2122,6 +2122,7 @@
   "victim_read_location": null,
   "resource_edges": [],
   "failure_signature": null,
+  "reproduced_by": null,
   "instrumentation_level": "static-only",
   "execution_record_reference": "record.jsonl",
   "source_integrity": {
@@ -2152,13 +2153,14 @@
       "reproduce": 5220,
       "shuffle": 7577,
       "alone": 20,
+      "pair": 0,
       "search": 0,
       "minimise": 0,
       "deletion": 0,
       "verify": 0
     },
     "launches": 71,
-    "wall_seconds": 480.614,
+    "wall_seconds": 467.433,
     "analysis_seconds": null,
     "policy": "original",
     "exhausted": false,

@@ -221,8 +221,9 @@ Budget(
 ```
 
 **Cost.** One `run_ordered(order)` costs `len(order)` test-method invocations (frozen definition D7).
-Every JVM run goes through one wrapper, so no search code counts by hand. The seven phases are the
-record's step labels: `reproduce`, `shuffle`, `alone`, `search`, `minimise`, `deletion`, `verify`.
+Every JVM run goes through one wrapper, so no search code counts by hand. The phases are the
+record's step labels: `reproduce`, `shuffle`, `alone`, `search`, `minimise`, `deletion`, `verify` --
+eight since W35 (ADR-016), which adds `pair` (Interface 9 P6).
 
 **The rules the runner (M2) follows.**
 
@@ -253,7 +254,7 @@ BudgetAccount(
     limit_invocations: Optional[int],
     limit_seconds: Optional[float],
     reserve_invocations: int,        # 3 × n, reported even when there is no limit
-    spent: Dict[str, int],           # all seven phases, 0 when unused
+    spent: Dict[str, int],           # all eight phases (W35 adds "pair"), 0 when unused
     launches: int,                   # JVM runs started
     wall_seconds: float,             # from the first run to the last
     analysis_seconds: Optional[float],  # None in W24; W25 adds ranking time (Interface 5 cache)

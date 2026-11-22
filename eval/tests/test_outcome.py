@@ -99,6 +99,21 @@ class TestDecisionTableRows(unittest.TestCase):
         self.assertEqual(decision.outcome, OUTCOME_UNRESOLVED)
         self.assertEqual(decision.unresolved_reason, REASON_NOT_REPRODUCED)
 
+    def test_row5_with_unconfirmed_failures_says_so_not_never_reproduced_any(self):
+        """W35 (ADR-016, M2's review): pair mode's tally can have sequence.other > 0 with
+        reference_established still False (a pair failed once, then passed its re-run, so it
+        was never adopted). A failure DID appear -- the rationale must not say "never
+        reproduced any failure", which would be false."""
+        d = DecisionInput(**base_kwargs(
+            reference_established=False, infrastructure_failures_anywhere=0,
+            alone=alone(), sequence=sequence(n=524, passed=520, matched=0, other=4),
+        ))
+        decision = decide(d)
+        self.assertEqual(decision.outcome, OUTCOME_UNRESOLVED)
+        self.assertEqual(decision.unresolved_reason, REASON_NOT_REPRODUCED)
+        self.assertNotIn("never reproduced any failure", decision.rationale)
+        self.assertIn("4 failed once but not again", decision.rationale)
+
     def test_row11_not_reproduced_after_reference_was_established_during_search(self):
         """ADR-011's motivating case: single-trial ddmin finds a candidate from one lucky
         observation, but proper re-verification shows it does not actually hold up. Distinct

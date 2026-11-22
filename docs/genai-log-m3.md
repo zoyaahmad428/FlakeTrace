@@ -1807,3 +1807,47 @@ Ownership checkpoint: be able to explain, without re-deriving it live, why a 1-c
 space and the package-scope `NOT_REPRODUCED` result are two *different* real findings, not one
 restated — and why the second one, despite costing nothing less than the first to explain, was
 worth actually running rather than predicting.
+
+## 2026-11-22 — M2's follow-up: five things in one message, and not treating them as one task
+
+**What I did before touching any code:** M2's message bundled a quick fix (1a), two wording
+corrections (1b/1c), a large feature half (W35), a docs gap (4), and two points that explicitly
+needed all three members, not just me (5a/5b). I read ADR-016 and Interface 9 in full before
+writing anything, and asked the member directly for agreement on 5a/5b rather than deciding a
+contract change myself and presenting it as settled — "M2 proposed it and it sounds right" is
+not the same as the agreement CLAUDE.md's contract rule actually asks for.
+
+**What I didn't let slide on the schema change:** adding `reproduced_by` as *required* breaks
+every example and test that doesn't carry it — not a hypothetical, it actually broke 7 tests
+the first time I ran the suite. I didn't make the field optional to dodge that (Interface 9
+says it's required), and I didn't hand-patch each failure individually without understanding
+why — found the real cause (dozens of existing tests build `DiagnosisRuns` directly, predating
+this field entirely) and fixed it at the source: `assemble_report` infers `"order"` for a
+`None` `reproduced_by` with a real reference, which is actually true for every one of those
+tests, not a workaround invented to make red tests green.
+
+**What I fixed that nothing currently uses:** `eval/outcome.py`'s `decide()` had the exact
+wrong rationale text M2 described, but grepping confirmed `.rationale` has no caller in
+production — only tests read it. I still fixed it. Leaving a provably false string in a public
+field because nothing happens to read it yet is exactly the kind of thing that becomes a real
+bug the day someone does read it, and the honesty rules don't carve out an exception for dead
+code.
+
+**What I found and didn't fix:** `runner/replay.py` never sets `reproduced_by` on the
+`DiagnosisRuns` it builds. My own backward-compatibility fallback in `report.py` would paper
+over this by inferring `"order"` — technically making the schema pass, while actually mislabelling
+a replayed pair-mode bundle. I checked whether my fallback was hiding a real gap rather than
+assuming it made everything fine, found that it was, and flagged it for M2 instead of patching
+his file to "fix" a test that would otherwise look green for the wrong reason.
+
+**What I did about the two race conditions I hit:** redoing the package-scope bundle inside a
+background shell while I was still editing `eval/schema/report.schema.json` live produced a
+bundle that failed its own schema validation — the subprocess's already-imported `report.py`
+lacked the new field, but the schema file it re-read from disk had already changed underneath
+it. I didn't just shrug and re-run it hoping it would work; I understood why the mismatch
+happened (module import vs. file read, different timing) before trusting the eventual correct
+result, and made sure not to run real commands concurrently with further schema edits again.
+
+Ownership checkpoint: be able to explain, without reading this log, why `reproduced_by` needed
+a backward-compatible fallback in `report.py` but the pair-mode limitation wording didn't need
+one — and why a field nothing in production reads yet is still worth getting right.

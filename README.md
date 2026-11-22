@@ -119,3 +119,37 @@ docker run --rm -v "C:\path\to\FlakeTrace\flaketrace-bundles:/flaketrace/flaketr
 
 The bundle lands in `flaketrace-bundles/` on the host either way; check it with
 `python -m eval.bundle verify flaketrace-bundles/<folder>`.
+
+## Reproduce a bundle (W23)
+
+To check a bundle someone else made (a committed one under `eval/bundles/`, or one you got from
+a teammate), you only need `verify` (recounts the report from the record, no JVM) and `replay`
+(re-runs the kept evidence for real and compares the verdict). You do **not** need
+`diagnose --bundle` — that is for making a *new* bundle, not for checking an existing one.
+
+Every bundle's own `replay.md` inside it has the exact commands for that bundle, with the real
+path already filled in — read it first. Windows example with real values (no `<...>`
+placeholders, which `cmd` cannot expand), using the committed F1 bundle:
+
+```
+py -m eval.bundle verify "eval/bundles/20261121T093338Z-odfixture.ConfigVictimTest#expectsDefaultMode"
+py -m runner replay "eval/bundles/20261121T093338Z-odfixture.ConfigVictimTest#expectsDefaultMode" --project fixtures/od-fixture
+```
+
+Linux/macOS/Git Bash, same bundle:
+
+```bash
+python3 -m eval.bundle verify "eval/bundles/20261121T093338Z-odfixture.ConfigVictimTest#expectsDefaultMode"
+python3 -m runner replay "eval/bundles/20261121T093338Z-odfixture.ConfigVictimTest#expectsDefaultMode" --project fixtures/od-fixture
+```
+
+For a bundle diagnosing something other than the fixture, `--project` is your own checkout of
+that subject at the commit the bundle's `manifest.json` names — not a path inside this repo.
+
+**Verifying an already-committed bundle:** `replay.md` is written once and checksummed into the
+bundle, so a bundle committed before 2026-11-22 still shows its *original* commands (some use
+the older `<checkout of the subject>` placeholder style). `verify` works unchanged on any
+bundle regardless of when it was made; for `replay`, substitute the real project path yourself
+if the bundle's own `replay.md` predates this section. To reproduce the exact `replay.md`
+wording a specific bundle shows, check out FlakeTrace at that bundle's own `tool.commit`
+(`manifest.json`) rather than the current `main`.
