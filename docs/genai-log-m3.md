@@ -1851,3 +1851,29 @@ result, and made sure not to run real commands concurrently with further schema 
 Ownership checkpoint: be able to explain, without reading this log, why `reproduced_by` needed
 a backward-compatible fallback in `report.py` but the pair-mode limitation wording didn't need
 one — and why a field nothing in production reads yet is still worth getting right.
+
+## 2026-11-22 — the ui check failure was mine, not another flake
+
+**What I didn't do:** the `ui` check failed after I pushed, and the member asked me to fix it
+twice before I actually looked closely. The first time, I was mid-way through checking whether
+it was the already-known infra flake (same annotation-checking workflow as every previous CI
+failure this session) when the member said to leave it. The second time, I checked for real —
+different step failed this time (`Backend tests`, not `setup-java`), which should have been the
+signal to stop pattern-matching on the familiar flake and actually look.
+
+**What I found by reproducing locally, not reading the GitHub annotation alone:** the GitHub
+API log endpoint needed admin rights I don't have, so I ran `ui.tests.test_server` on my own
+machine instead of guessing from the one-line annotation. The real error —
+`'reproduced_by' is a required property` — was mine: I had updated `eval/examples/*.json` for
+the new required field but missed `eval/reports/*.json`, a second, separate set of real
+fixtures `ui/server.py`'s own tests read directly. Both are in `eval/`, both mine — this was
+never M2's bug to chase, even though his folder's test suite is what caught it.
+
+**What I checked before calling it fixed:** ran the full backend suite (31/31, including a real
+F1 end-to-end run) and the full frontend suite CI would have reached next had the backend step
+not failed first (`npm test`, `npm run typecheck`, `npm run build` — all real commands, not an
+assumption that TypeScript's structural typing would tolerate an extra JSON field).
+
+Ownership checkpoint: be able to name, without looking it up, which two directories under
+`eval/` both hold report fixtures that need updating whenever the schema gains a new required
+field — and why `ui/`'s test failure was the symptom, not the cause.

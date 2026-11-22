@@ -2949,3 +2949,40 @@ on both the order-mode and pair-mode alone-check paths) -- the wording fix in
 [[contracts/interfaces]] documents behaviour M2 had already built, not a new design. Confirmed
 with the member before answering M2, since a contract change needs all three, not my call alone
 to make and report as settled.
+
+### W27 container re-checked against real fastjson (M2's point 2)
+
+Rebuilt `flaketrace:w27` (picks up M2's `runner/order_runner.py` fix -- test JVM output no
+longer decoded as UTF-8, PR #161) and ran a real diagnosis inside it against the real fastjson
+checkout, the known `[SerializeWriterTest_14, MaxBufSizeTest]` pair, `--n 5`: **`CANDIDATE`,
+19/19 invocations spent, no `UnicodeDecodeError`** -- exactly the real risk M2 named (Linux
+reads the subprocess's stderr in the calling thread synchronously, so without the fix the
+diagnosis would stop, not just print a noisy traceback). fastjson's own test output does carry
+the `0xA0` byte that caused this; running it inside the container is what makes this a real
+check of the Linux path, not just a repeat of the Windows one already done for W27. Real result
+matches the known premise exactly (reproduced 5/5, same polluter).
+
+### A real CI regression found and fixed: `ui`'s own report fixtures predate `reproduced_by`
+
+The `ui` check failed for real on PR #164 after push -- not the usual infra flake (checked: a
+different step failed this time, `Backend tests`, exit code 1, not `setup-java`/`tar`).
+Reproduced locally (`python -m unittest -v ui.tests.test_server`) rather than guessing from the
+annotation alone: 4 failures/4 errors, all tracing to the same cause --
+`'reproduced_by' is a required property`. `eval/reports/{f1,f2,f3,f4,n1,n2,n3,n4}.json` (the
+eight committed reports `ui/server.py`'s own tests read directly, e.g. `test_validate` on
+`eval/reports/f1.json`) were never updated when `reproduced_by` was added to the schema in this
+same PR -- I updated the nine `eval/examples/*.json` files but missed this second, separate set
+of real fixtures. `eval/reports/` is mine (not `ui/`'s), so this was a gap in my own change,
+not M2's to fix.
+
+Fixed the same way as the examples: `reproduced_by: "order"` for every report with a real
+`failure_signature` (seven of eight), `null` for `n3.json` (its `failure_signature` is already
+`null` -- `NOT_REPRODUCED`, consistent with the others). **Verified for real**:
+`python -m unittest -v ui.tests.test_server` -> **31/31 OK**, including a real end-to-end F1
+run (`TestRealRunOnFixture`), not just the four that were failing. Also ran `ui/web`'s own
+suite in full, since a backend failure skips it in CI and I did not want to hand over a fix
+that broke something CI had not even reached yet: `npm test` -> 33/33 OK; `npm run typecheck`
+-> clean; `npm run build` -> succeeds. None of the three touch `reproduced_by` (the TS `Report`
+type does not declare it, so an extra JSON field is structurally harmless), but running them
+for real rather than reasoning about TypeScript's structural typing is the honest version of
+that claim.

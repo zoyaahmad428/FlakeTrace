@@ -90,6 +90,7 @@
     "message": "",
     "stack_trace": "org.junit.Assert.fail:87\norg.junit.Assert.assertTrue:42\norg.junit.Assert.assertTrue:53\nodfixture.NegativeFlakyTest.sometimesFails:24"
   },
+  "reproduced_by": "order",
   "instrumentation_level": "static-only",
   "execution_record_reference": "eval\\reports\\flaketrace-records\\20261120T132812Z-odfixture.NegativeFlakyTest#sometimesFails.jsonl",
   "source_integrity": {

@@ -112,6 +112,7 @@
     "message": "",
     "stack_trace": "org.junit.Assert.fail:87\norg.junit.Assert.assertTrue:42\norg.junit.Assert.assertFalse:65\norg.junit.Assert.assertFalse:75\nodfixture.FeatureVictimTest.expectsTurboDisabled:10"
   },
+  "reproduced_by": "order",
   "instrumentation_level": "static-only",
   "execution_record_reference": "eval\\reports\\flaketrace-records\\20261120T132314Z-odfixture.FeatureVictimTest#expectsTurboDisabled.jsonl",
   "source_integrity": {
