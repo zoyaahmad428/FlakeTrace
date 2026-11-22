@@ -1806,6 +1806,56 @@ own copy of the code, not from the review's description.
 - **Limitations:** one machine; environment variables and the clock are not testable from Java; detecting such
   leftovers during a diagnosis is FYP-2 (risk register).
 
+## W35, M2's half: pair mode (2026-11-22)
+
+- **Requirement:** ADR-016 (revised, accepted by M1, M2, M3 2026-11-22) and Interface 9 (agreed, `search_mode`
+  rename agreed): a known victim that no order makes fail is diagnosed from `[candidate, victim]` pairs.
+- **Code:** `runner/search.py` (`find_pair`), `runner/budget.py` (the `pair` phase), `runner/diagnose.py`
+  (`_pair_steps`, `_certify` shared by both modes, `search_mode`, four `DiagnosisRuns` fields), `runner/cli.py`
+  (`--search`, the leakage refusal, `pairs:` and `next:` lines).
+- **Test-first:** `TestFindPair` (6) → ImportError; `TestPairMode` + `TestDiagnosePairInputs` (15) → 14 errors
+  (`DiagnosisRuns` has no `search_mode`); `TestSearchMode` (6) → 6 errors (`summary()` arguments, unknown `--search`);
+  budget's pair test and spent dict → 2 failures. All pass after.
+- **Found on the way:** (1) M3's `classify()` refuses a real failure without a reference, so a one-off pair failure
+  that is not adopted is tallied directly (as `other`); a test shows M3's report gives `UNRESOLVED (NOT_REPRODUCED)`,
+  nothing blamed. (2) `summary()` has a local `runs`; the new parameter is `diagnosis` (four TestReports tests caught
+  the clash). (3) Interface 9's field `search` clashed with W25's `DiagnosisRuns.search`; renamed `search_mode` before
+  code, agreed by all three.
+- **Real runs** (Windows 11, JDK 21.0.9, Maven 3.10.0, fixtures/od-fixture):
+  - F1 `--search pairs --bundle`: `VERIFIED (sequence)`, `ConfigPolluterTest#pollute` found after 2 of 17 pairs,
+    66 invocations (20 alone, 3 pair runs, 40 verify), exit 0, 40 s. Its bundle: `replay` → `same`, exit 0; the
+    record has 3 `pair` lines and `"search_mode": "pairs"`; no personal path in the bundle.
+  - N3 order mode (`--n 5`): `NOT_REPRODUCED`, with `next: … re-run with --search pairs (17 candidates, about 1 min
+    at 0.4 s per JVM launch)`. N3 pair mode: `NOT_REPRODUCED`, "no pair failed twice in a row (17 of 17 pairs
+    tried)", 39 invocations.
+  - Full suite: `py -3 -m unittest discover -s runner/tests -p "test_*.py"` → `Ran 411 tests in 829.067s OK` (after the review fixes; 403 OK before them).
+  - **FJ-03 from the victim alone** (with the member's permission: Temurin 8u502, SHA-256 `3f193fe5…` checked against
+    Adoptium's API; fastjson `git fetch --depth 1` of `e05e9c5e4be580691cc55a59f3256595393203a1`, outside this repo;
+    `mvn -B -q -DskipTests test-compile` → exit 0, `git status` empty;
+    `JAVA_TOOL_OPTIONS=-Duser.timezone=UTC -Duser.language=en -Duser.country=US`):
+    `py -3 -m runner diagnose --project <fastjson> --victim com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf
+    --search pairs --scope package --policy original --n 20 --bundle …` → exit 0 in 8 min 1 s: **`CANDIDATE`**,
+    polluter **`SerializeWriterTest_14#test_writer_1`** found after **368 of 524 pairs** (the POC's recorded position
+    for the original order), reproduced 20/20, alone 0/20, deletion check from the alone runs 20/20 passed;
+    **798 invocations** (20 alone, 369 pair runs = 368 + 1 re-run, 40 verify), 409 launches, 315 s of runs.
+    `CANDIDATE`, not `VERIFIED`: no static edge (M1, #145). The record has 369 `pair` lines; no personal path in the
+    bundle. For comparison, order mode on the same scope (M3, #156): 12,817 invocations, `NOT_REPRODUCED`.
+    Candidates are 524, not #156's 260: order mode searches only tests before the victim; pair mode every package
+    test but the victim (Interface 9 P2), as the POC did. This run started before the review fixes below, so its
+    summary printed the old wording; the report and bundle do not contain that line. The bundle is kept outside the
+    repo: `eval.bundle verify` cannot recount a pair-mode bundle until M3's half (review finding 6).
+- **Fresh review** (opus, 12 findings) — fixed test-first: the pair-mode budget minimum is reserve + 4 (one pair and
+  its re-run; at reserve + 2 a failing pair could never be adopted); the `next:` estimate uses the mean seconds of
+  the alone runs (one-test JVMs) and counts candidates + 2n launches, labelled "at most"; `pairs:` says "pair mode
+  does not run the project's own orders" (the old wording was not backed) and names one-off failures, crashes and a
+  budget stop instead of "never failed"; no "starting order" wording in pair mode; `next:` after `--order` says
+  "without --order", and keeps `--scope package`; the unreachable verify cut is an assertion; a priority list is
+  refused before any record is written. For M3/the team: report wording, `order_exploration` and `verify` for pair
+  mode; Interface 9's verbatim limitation sentence; `reproduced_by` "order" for the victim alone.
+- **Limitations:** the `next:` estimate covers the pairs only (not Maven setup or verification) and assumes the
+  run's own seconds per JVM launch; M3's report wording for pair mode (`reproduced_by`, the constructed-pair line,
+  "pairs" instead of "discovered order") is her half of W35.
+
 ## W23 reproduction gaps 1, 2, 5, 6 (2026-11-22)
 
 - **Requirement:** FT009 / claim G7 — M1's independent reproduction (PR #159) found that `replay.md` alone did not get

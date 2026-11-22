@@ -8,11 +8,12 @@ import sys
 import tempfile
 import time
 import unittest
+from dataclasses import replace
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest import mock
 
-from eval.baseline import FailureSignature, RunTally, TestIdentifier
+from eval.baseline import FailureSignature, RunOutcome, RunTally, TestIdentifier
 from eval.report import UnhandledStatus, assemble_report
 from runner.budget import Budget, BudgetAccount
 from runner.deletion import DeletionCheck
@@ -520,7 +521,7 @@ class TestBudgetOptions(unittest.TestCase):
         """After M3's W24 half: exit 0 with a report; the summary does not present the starting order's
         runs as a verified reproduction, and the old "no report yet" text is gone."""
         records = Path(tempfile.mkdtemp())
-        account = BudgetAccount(80, None, 60, {"reproduce": 11, "shuffle": 0, "alone": 20, "search": 8, "minimise": 0,
+        account = BudgetAccount(80, None, 60, {"reproduce": 11, "shuffle": 0, "alone": 20, "pair": 0, "search": 8, "minimise": 0,
                                                "deletion": 0, "verify": 0}, 25, 1.5, None, "original", True,
                                 "search", 10, 4)
         exhausted = runs(BUDGET_EXHAUSTED, records / "r.jsonl", budget=account, sequence_tally=RunTally(1, 0, 1, 0, 0),
@@ -576,6 +577,108 @@ class TestPolicyOptions(unittest.TestCase):
         self.assertEqual(code, 2)
         self.assertIn("cannot be combined with --order", err)
         diagnose.assert_not_called()
+
+
+class TestSearchMode(unittest.TestCase):
+    """W35 (ADR-016 revised, Interface 9): --search, the leakage refusal, the pairs: and next: lines."""
+
+    C = [TestIdentifier(f"pkg.C{i}Test", "c") for i in range(10)]
+
+    def run_with(self, *extra):
+        records = Path(tempfile.mkdtemp())
+        with mock.patch("runner.cli.diagnose", return_value=runs(VICTIM_FAILS_ALONE, records / "r.jsonl")) as diagnose:
+            code, out, err = run_cli(["diagnose", "--project", str(project_with_pom()), "--victim", str(V), *extra])
+        return code, diagnose, err
+
+    def scripted(self, polluter, **kwargs):
+        from eval.tests.fake_runner import FakeOrderRunner
+        from runner.diagnose import run_steps
+        fail = RunOutcome(passed=False, failure_signature=REF)
+        runner = FakeOrderRunner(lambda order, test: fail if test == V and polluter in order[:order.index(V)]
+                                 else RunOutcome(passed=True))
+        result = run_steps(runner, self.C[:4] + [V] + self.C[4:], V, n=4, **kwargs)
+        return replace(result, source_integrity=SourceIntegrity(True, "unchanged"), execution_record="r.jsonl")
+
+    def lines(self, result):
+        report = assemble_report(result, None)
+        return summary(report, Path("r.report.json"), None, 0, result.deletion_checks, result.budget, result.search,
+                       result).splitlines()
+
+    def test_search_reaches_diagnose(self):
+        _, diagnose, _ = self.run_with("--search", "pairs")
+        self.assertEqual(diagnose.call_args.kwargs["search_mode"], "pairs")
+        _, diagnose, _ = self.run_with()
+        self.assertEqual(diagnose.call_args.kwargs["search_mode"], "order")
+        with self.assertRaises(SystemExit) as raised:
+            self.run_with("--search", "both")
+        self.assertEqual(raised.exception.code, 2)
+
+    def test_pairs_with_an_order_exits_2(self):
+        order = Path(tempfile.mkdtemp()) / "order.txt"
+        order.write_text("pkg.PolluterTest#p\npkg.VictimTest#v\n", encoding="utf-8")
+        code, diagnose, err = self.run_with("--search", "pairs", "--order", str(order))
+        self.assertEqual(code, 2)
+        self.assertIn("--search pairs cannot be combined with --order", err)
+        diagnose.assert_not_called()
+
+    def test_a_pair_found_says_it_was_constructed(self):
+        lines = self.lines(self.scripted(self.C[7], search_mode="pairs"))
+        self.assertIn("  pairs:      found in a constructed pair after 8 of 10 pairs; pair mode does not run the "
+                      "project's own orders", lines)
+        self.assertIn("  search:     original order", lines)
+        self.assertFalse(any(line.startswith(("  orders:", "  next:")) for line in lines), lines)
+
+    def test_no_pair_found(self):
+        lines = self.lines(self.scripted(TestIdentifier("pkg.NoneTest", "n"), search_mode="pairs"))
+        self.assertEqual(lines[0], "UNRESOLVED (NOT_REPRODUCED)  pkg.VictimTest#v")
+        self.assertIn("  pairs:      no pair adopted (10 of 10 pairs tried)", lines)
+        self.assertIn("  reproduced: no sequence verified (no pair adopted)   alone (same failure): 0/4, other failure: "
+                      "0/4", lines)
+        self.assertFalse(any(line.startswith(("  orders:", "  bound:", "  next:")) for line in lines), lines)
+
+    def test_one_off_failures_and_crashes_are_named(self):
+        """Review finding 2: a one-off failure is not "never failed"."""
+        from eval.tests.fake_runner import FakeOrderRunner
+        from runner.diagnose import run_steps
+        left = [RunOutcome(passed=False, failure_signature=REF), RunOutcome(passed=True)]
+        crash = RunOutcome(passed=False, failure_signature=FailureSignature("flaketrace.Timeout", "", "t"))
+
+        def outcome(order, test):
+            if test == V and order[0] == self.C[2] and left:
+                return left.pop(0)
+            return crash if test == V and order[0] == self.C[5] else RunOutcome(passed=True)
+        result = run_steps(FakeOrderRunner(outcome), self.C[:4] + [V] + self.C[4:], V, n=4, search_mode="pairs")
+        result = replace(result, source_integrity=SourceIntegrity(True, "unchanged"), execution_record="r.jsonl")
+        self.assertIn("  pairs:      no pair adopted (10 of 10 pairs tried; 1 failed once and passed when re-run; "
+                      "1 crashed or timed out)", self.lines(result))
+
+    def test_a_budget_cut_in_pair_mode_says_pairs(self):
+        lines = self.lines(self.scripted(self.C[7], search_mode="pairs", budget=Budget(limit_invocations=12 + 6)))
+        self.assertEqual(lines[0], "UNRESOLVED (BUDGET_EXHAUSTED)  pkg.VictimTest#v")
+        self.assertIn("  pairs:      no pair adopted (3 of 10 pairs tried; stopped by the budget)", lines)
+        self.assertFalse(any("starting order" in line for line in lines), lines)
+
+    def test_order_mode_not_reproduced_names_pair_mode_with_an_estimate(self):
+        result = replace(self.scripted(self.C[7]), launch_seconds=2.0)
+        self.assertIn("  next:       no order reproduced the failure; to search pairs instead, re-run with "
+                      "--search pairs (10 candidates; at most about 1 min at 2.0 s per JVM launch)", self.lines(result))
+
+    def test_estimate_counts_the_checks_and_rounds_up(self):
+        # Review finding 4: 524 pairs + 4 alone + 4 verify launches at 2.8 s = 1489.6 s -> 25 min.
+        result = replace(self.scripted(self.C[7]), scope_size=524, launch_seconds=2.8)
+        self.assertTrue(any(line.endswith("(524 candidates; at most about 25 min at 2.8 s per JVM launch)")
+                            for line in self.lines(result)))
+
+    def test_next_keeps_the_package_scope(self):
+        result = replace(self.scripted(self.C[7]), launch_seconds=2.0)
+        result = replace(result, search=replace(result.search, scope="package"))
+        self.assertTrue(any("re-run with --search pairs --scope package (" in line for line in self.lines(result)))
+
+    def test_next_after_a_given_order_says_without_it(self):
+        # Review finding 7: pair mode refuses --order, and its candidates would be the discovered tests.
+        result = replace(self.scripted(self.C[7]), launch_seconds=2.0, order_given=True)
+        self.assertIn("  next:       no order reproduced the failure; to search pairs instead, re-run without --order "
+                      "and with --search pairs", self.lines(result))
 
 
 class TestSearchLine(unittest.TestCase):
@@ -679,7 +782,8 @@ class TestReplayCommand(unittest.TestCase):
 
 
 class TestBudgetLine(unittest.TestCase):
-    SPENT = {"reproduce": 1, "shuffle": 0, "alone": 20, "search": 20, "minimise": 0, "deletion": 0, "verify": 40}
+    SPENT = {"reproduce": 1, "shuffle": 0, "alone": 20, "pair": 0, "search": 20, "minimise": 0, "deletion": 0,
+             "verify": 40}
 
     def account(self, limit=None, phase=None, tried=10):
         return BudgetAccount(limit, None, 60, self.SPENT, 51, 3.0, None, "original", phase is not None, phase, 10, tried)
@@ -692,6 +796,11 @@ class TestBudgetLine(unittest.TestCase):
         self.assertEqual(budget_line(self.account(100, "deletion")),
                          "  budget:     spent 81 of 100 invocations (reserve 60); search tried 10 of 10 candidates; "
                          "stopped in deletion")
+
+    def test_pair_mode_says_pairs(self):
+        account = BudgetAccount(None, None, 60, dict(self.SPENT, search=0, pair=18), 51, 3.0, None, "original",
+                                False, None, 10, 8)
+        self.assertTrue(budget_line(account).endswith("; pairs tried 8 of 10 candidates"), budget_line(account))
 
 
 class TestCliOnFixture(unittest.TestCase):

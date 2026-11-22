@@ -32,7 +32,7 @@ class TestBudgetedRunner(unittest.TestCase):
         runner.run_ordered([V])
         runner.run_ordered([V])
         account = runner.account(10)
-        self.assertEqual(account.spent, {"reproduce": 2, "shuffle": 0, "alone": 2, "search": 0,
+        self.assertEqual(account.spent, {"reproduce": 2, "shuffle": 0, "alone": 2, "pair": 0, "search": 0,
                                          "minimise": 0, "deletion": 0, "verify": 0})
         self.assertEqual((account.launches, account.exhausted, account.reserve_invocations), (3, False, 60))
         self.assertEqual((account.limit_invocations, account.exhausted_phase), (None, None))
@@ -48,6 +48,25 @@ class TestBudgetedRunner(unittest.TestCase):
         self.assertEqual(len(fake.calls), 1)
         account = runner.account(10)
         self.assertEqual((account.exhausted, account.exhausted_phase, account.spent["search"]), (True, "search", 2))
+
+    def test_a_pair_run_is_exploration(self):
+        # W35 (Interface 9 P6): pairs never use the verification reserve.
+        fake = passing()
+        runner = ledger(fake, limit=63)
+        runner.step = "pair"
+        runner.run_ordered([C[0], V])
+        with self.assertRaises(BudgetExhausted) as cut:
+            runner.run_ordered([C[1], V])
+        self.assertEqual((cut.exception.phase, runner.account(10).spent["pair"], len(fake.calls)), ("pair", 2, 1))
+
+    def test_seconds_are_measured_per_phase(self):
+        # W35 review finding 4: the next: estimate uses the alone runs' own seconds (one-test JVMs, like a pair).
+        ticks = iter(range(100))
+        runner = ledger(passing(), clock=lambda: float(next(ticks)))
+        runner.step = "alone"
+        runner.run_ordered([V])
+        runner.run_ordered([V])
+        self.assertEqual((runner.seconds_in("alone"), runner.seconds_in("pair")), (2.0, 0.0))
 
     def test_verification_may_use_the_reserve(self):
         fake = passing()

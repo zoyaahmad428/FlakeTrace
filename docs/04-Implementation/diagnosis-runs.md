@@ -70,6 +70,7 @@ verdict stays with M3's `decide()`, so the statistics and decision rules live in
   report (it is open question I3, agreed with M3).
 - **Change the search policy** (W25, Interface 7): `runner/policy.py` (`choose_order`, the deepening loop, `DEEPEN_SHARE`). `run_steps` calls it once, after the alone check. The rule inside `rank_candidates` is M1's and is frozen before measurement; changing it is a new rule with its own commit (Interface 5). Tests: `runner/tests/test_policy.py` (`FakeRanker`) and `TestSearchPolicy` in `test_diagnose.py`.
 - **Change the budget rules** (W24, Interface 6): they live in `runner/budget.py` (`reserve`, `_fits`) and in `run_steps` (start check `check_budget`, the deletion hold-back `n × (kept + 1)`, the verify count). They are a contract: change Interface 6 with M1 and M3 first. Tests: `runner/tests/test_budget.py` and `TestBudget` in `test_diagnose.py` (fake runner, exact invocation counts).
+- **Change pair mode** (W35, Interface 9): `_pair_steps` in `diagnose.py` and `find_pair` in `search.py`. Both modes end in `_certify` (deletion checks, then the sequence check), so a change there changes both. Tests: `TestFindPair` in `test_search.py`, `TestPairMode` in `test_diagnose.py`, `TestSearchMode` in `test_cli.py`.
 - **Add a step**: set `_label(runner, "<step>")` before its runs so the execution record names
   it, and add its counts as new `DiagnosisRuns` fields with defaults so existing callers keep
   working.

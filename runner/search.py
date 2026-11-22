@@ -2,7 +2,7 @@
 
 from typing import List, Optional, Sequence, Tuple
 
-from eval.baseline import SYNTHETIC_PREFIX, FailureSignature, TestIdentifier
+from eval.baseline import SYNTHETIC_PREFIX, FailureSignature, RunOutcome, TestIdentifier
 
 
 def reproduce(
@@ -50,3 +50,22 @@ def find_polluter(
         if not outcome.passed and outcome.failure_signature.matches(reference):
             return candidate, runs
     return None, runs
+
+
+def find_pair(
+    runner, candidates: Sequence[TestIdentifier], victim: TestIdentifier, firsts: Optional[List[RunOutcome]] = None
+) -> Tuple[Optional[TestIdentifier], Optional[FailureSignature], int, List[RunOutcome]]:
+    """W35 pair mode (ADR-016, Interface 9 P3): run [candidate, victim] once per candidate. A real failure is
+    adopted only if one re-run of the same pair fails again with a matching signature, so one random failure
+    cannot end the scan. Returns (polluter, reference, pairs tried, the victim's outcome in each pair's first run).
+    `firsts` is filled as the scan goes, so a caller still has the count when the budget stops it."""
+    firsts = [] if firsts is None else firsts
+    for candidate in candidates:
+        outcome = runner.run_ordered([candidate, victim])[victim]
+        firsts.append(outcome)
+        if outcome.passed or outcome.failure_signature.exception_type.startswith(SYNTHETIC_PREFIX):
+            continue
+        again = runner.run_ordered([candidate, victim])[victim]
+        if not again.passed and again.failure_signature.matches(outcome.failure_signature):
+            return candidate, outcome.failure_signature, len(firsts), firsts
+    return None, None, len(firsts), firsts

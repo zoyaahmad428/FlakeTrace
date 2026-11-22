@@ -490,9 +490,9 @@ reproduces), and there are no `reproduce`, `shuffle`, `search` or `minimise` lin
 
 *Proposed by M2 on 2026-11-22, together with ADR-016's revision. Agreed by M1, M2 and M3 on 2026-11-22 (team
 WhatsApp group, recorded by M2; confirmed by approving the PR that adds this section, #157). Built against [ADR-016](../03-Design/decisions/ADR-016-reproduction-fallback-pair-search.md).
-Not built yet.*
+M2's half built 2026-11-22 (W35, branch `m2/w35-pair-mode`); M3's half (report, `verify`) not yet.*
 
-**Input.** `diagnose(search="order" | "pairs")`, CLI `--search order|pairs` (default `order`: today's pipeline,
+**Input.** `diagnose(search_mode="order" | "pairs")`, CLI `--search order|pairs` (default `order`: today's pipeline,
 unchanged). Pair mode takes the victim only, with the usual scope, policy, budget and `n`. A given `--order` with
 `--search pairs` is refused (exit 2): an order file can hold the answer, and pair mode must not see it.
 
@@ -514,7 +514,9 @@ in this run × the number of pairs).
 **New fields on `DiagnosisRuns`:**
 
 ```python
-search: str                    # "order" | "pairs" (also in the record header)
+search_mode: str               # "order" | "pairs" (also in the record header, key "search_mode"). Named
+                               # search_mode, not search: DiagnosisRuns.search is W25's SearchPolicy (renamed
+                               # 2026-11-22 before any code, agreed by M1, M2, M3)
 reproduced_by: Optional[str]   # "order" | "pair" | None (never reproduced)
 pairs_tried: int = 0           # pairs run in pair mode (re-runs not counted)
 ```

@@ -1263,6 +1263,22 @@ purpose:** detecting leftover state during a diagnosis (needs the filesystem fam
 
 Ownership checkpoint: why a new JVM resets statics but not files; what `--workspace copy` does not protect.
 
+## 2026-11-22 — ADR-016 revision, Interface 9, W35 pair mode
+
+**Tool:** Claude Code (Claude Opus 5.5), brainstorming → plan → TDD · **Level:** L3 · **Branches:** `m2/adr-016`,
+`m2/w35-pair-mode`
+
+**Asked:** step back and judge ADR-016 without bias; then build what the team agreed. **Kept:** pair mode as an
+explicit `--search pairs` (the first, automatic version was over-built); victim-only input with `--order` refused;
+one re-run before a failing pair is adopted; one certification path for both modes (`_certify`); a `next:` line with
+a time estimate measured from the run. **Rejected:** the automatic fallback and "all before" orders (FYP-2); a new
+`runner/pairs.py` (`find_pair` sits beside `find_polluter`). **Wrong at first:** Interface 9 named a field `search`
+that W25 already uses; a `tally()` with no reference cannot hold a real failure; a parameter named `runs` clashed with
+a local. **What I changed:** *to fill in.*
+
+Ownership checkpoint: why pair mode refuses `--order`; why a failing pair is re-run before it is adopted; what
+`reproduced_by` tells a reader; why the `next:` estimate is only for the pairs.
+
 ## 2026-11-22 — W23 replay gaps from M1's reproduction
 
 **Tool:** Claude Code (Claude Opus 5.5), brainstorming → plan → TDD · **Level:** L2 · **Branch:** `m2/w23-replay-gaps`
