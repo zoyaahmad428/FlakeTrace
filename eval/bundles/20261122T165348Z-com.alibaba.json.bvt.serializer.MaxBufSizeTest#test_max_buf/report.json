@@ -7,13 +7,13 @@
   "polluters": [
     {
       "class": "com.alibaba.json.bvt.serializer.SerializeWriterTest_14",
-      "method": "test_writer_1"
+      "method": "test_writer_3"
     }
   ],
   "original_failing_order": [
     {
       "class": "com.alibaba.json.bvt.serializer.SerializeWriterTest_14",
-      "method": "test_writer_1"
+      "method": "test_writer_3"
     },
     {
       "class": "com.alibaba.json.bvt.serializer.MaxBufSizeTest",
@@ -23,7 +23,7 @@
   "reduced_sequence": [
     {
       "class": "com.alibaba.json.bvt.serializer.SerializeWriterTest_14",
-      "method": "test_writer_1"
+      "method": "test_writer_3"
     },
     {
       "class": "com.alibaba.json.bvt.serializer.MaxBufSizeTest",
@@ -88,7 +88,7 @@
     {
       "removed": {
         "class": "com.alibaba.json.bvt.serializer.SerializeWriterTest_14",
-        "method": "test_writer_1"
+        "method": "test_writer_3"
       },
       "runs": {
         "n": 20,
@@ -121,21 +121,21 @@
       "reproduce": 0,
       "shuffle": 0,
       "alone": 20,
-      "pair": 16,
+      "pair": 376,
       "search": 0,
       "minimise": 0,
       "deletion": 0,
       "verify": 40
     },
-    "launches": 48,
-    "wall_seconds": 26.286,
+    "launches": 228,
+    "wall_seconds": 287.118,
     "analysis_seconds": null,
     "policy": "random",
     "exhausted": false,
     "exhausted_phase": null,
     "candidates": {
       "total": 524,
-      "tried": 7
+      "tried": 187
     }
   }
 }

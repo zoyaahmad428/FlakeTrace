@@ -25,7 +25,12 @@ the first candidate whose real failure is confirmed by one re-run of the same [c
 victim] pair, matching `runner.search.find_pair`'s own walk. When no pair is adopted, the
 recounted sequence tally can have `other > 0` (a pair failed once but not on its re-run) even
 though no reference was established -- unlike order mode's equivalent tally, which is always 0
-by construction."""
+by construction. With zero pairs run at all (no candidate was in scope, or the budget cut
+before the first pair), the recounted sequence tally IS the alone tally, matching
+`runner.diagnose._pair_steps`'s own `pair_tally if firsts else alone` -- not an empty
+RunTally(0, 0, 0, 0, 0) (a real bug found from M2's report, 2026-11-22). Pair mode is detected
+from the record header's own `search_mode` field when there are no "pair" lines to detect it
+from otherwise."""
 
 import json
 import sys
@@ -184,13 +189,16 @@ def _recount(lines: List[dict], manifest: dict, report: dict) -> dict:
         if alone_reference is not None:
             return {"reference": alone_reference, "alone": alone_tally, "sequence": alone_tally,
                     "deletion_checks": []}
-        if pair_lines:
-            # W35 (ADR-016, Interface 9 P4/P5): an order-mode bundle never has "pair" lines at
-            # all, so reaching here with some means this is a pair-mode bundle.
+        if pair_lines or header.get("search_mode") == "pairs":
+            # W35 (ADR-016, Interface 9 P4/P5): an order-mode bundle never has "pair" lines, nor
+            # search_mode "pairs" in its header -- reaching here means this is a pair-mode
+            # bundle, even with zero pairs run (no candidate was in scope, or the budget cut
+            # before the first pair; `pair_lines` alone is then empty too, which is why the
+            # header is also checked).
             firsts, pair_reference = _pair_firsts_and_reference(pair_lines, victim)
             if pair_reference is not None:
                 reference = pair_reference  # fall through to the shared post-reference recount below
-            else:
+            elif firsts:
                 # P5, no pair adopted: runner.diagnose._pair_steps' own
                 # RunTally(len(firsts), len(firsts)-len(failed), 0, len(failed)-crashes, crashes) --
                 # "other" can be > 0 here (a pair failed once but not on its re-run), unlike
@@ -199,6 +207,11 @@ def _recount(lines: List[dict], manifest: dict, report: dict) -> dict:
                 crashes = sum(1 for o in failed if o.failure_signature.exception_type.startswith(SYNTHETIC_PREFIX))
                 sequence_tally = RunTally(len(firsts), len(firsts) - len(failed), 0, len(failed) - crashes, crashes)
                 return {"reference": None, "alone": alone_tally, "sequence": sequence_tally, "deletion_checks": []}
+            else:
+                # Zero pairs run at all: _pair_steps' own tally in this shape IS the alone tally
+                # (`pair_tally if firsts else alone` -- M3's report refuses an empty one), not an
+                # empty RunTally(0, 0, 0, 0, 0) (M2's finding, 2026-11-22).
+                return {"reference": None, "alone": alone_tally, "sequence": alone_tally, "deletion_checks": []}
         else:
             # No reference anywhere: runner.diagnose._steps' RunTally(attempts, attempts-failures, 0, 0,
             # failures) over the "reproduce" phase's own runs ONLY -- real bug found bundling N3

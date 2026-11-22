@@ -2,8 +2,8 @@
   "bundle_version": 1,
   "kind": "diagnosis",
   "tool": {
-    "commit": "d7139e7fc76c9e3f25b0b36db844ec64f301e654",
-    "dirty": true
+    "commit": "ec5652b9ad763992d46012c8472266c674afd158",
+    "dirty": false
   },
   "subject": {
     "repository": "https://github.com/alibaba/fastjson",
@@ -27,7 +27,7 @@
     "--policy",
     "random",
     "--seed",
-    "4",
+    "2",
     "--records",
     "<records>",
     "--bundle",
@@ -36,7 +36,7 @@
   "parameters": {
     "n": 20,
     "shuffles": 31,
-    "seed": 4,
+    "seed": 2,
     "budget": {
       "limit_invocations": null,
       "limit_seconds": null
@@ -62,9 +62,9 @@
   "run_date": "2026-11-22",
   "replay_of": null,
   "files": {
-    "report.json": "bd264816ecee085272840349cba399e5997de32d985d55b1bf476d7b19cc3ea1",
-    "record.jsonl": "68b0296d74e935e5dcec52acc71e41fc3f05c715314167b69735f8d8b223080a",
-    "replay.md": "8c452ac9eca849d7fdb9371cf144072ded69a0e9f1e56082a0d27d8c93ff1dea",
+    "report.json": "c1dc0047e73e6e0b8728c445566b2585d45ef4d40d906e227b59e09b891b753b",
+    "record.jsonl": "56baf5cb4822e220d157fec6a2d1cceab90ff20cee464056a22d5aac503df0c1",
+    "replay.md": "546fdbb8425efa97b23e1fa099ec9b9424729d7f84a59fe2000d0d6f66a0a02d",
     "environment.txt": "c8a5b97688887f64b05ca871e9cdb0a1160add7b70a92eab776ce7587966f80a"
   }
 }

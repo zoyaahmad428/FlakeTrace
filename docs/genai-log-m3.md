@@ -1934,3 +1934,58 @@ Ownership checkpoint: be able to say which two files had the stale status, what 
 fix commit was (`570a05f`), and why neither row was marked `Done` even after the correction
 (M1 has not re-run her reproduction against the fixed instructions; supervisor acceptance is
 separate from any of this).
+
+## 2026-11-22 -- FT021's verifier check (L2)
+
+Asked to do real work, not another documentation pass. Picked FT021 because it was the one
+open, unblocked, M3-owned item left after re-surveying the plan and registers that required
+an actual check, not a build: M2's row names M3 as the verifier, and the row was still open.
+
+Read `runner/integrity.py` myself before trusting the claim it backs (only top-level `target/`
+and `.git/` excluded -- checked the `os.walk` filter only fires `if Path(folder) == root`, so
+a nested module's own `target/` is not excluded, matching the stated claim rather than a
+broader one I might have assumed). Then ran the real control test myself rather than accepting
+M2's evidence log: a different JDK (24.0.2 vs. his 21.0.9), different Maven (3.9.11 vs. 3.10.0)
+and different Python (3.14.3) -- a genuinely independent run, not a repeat under the same
+toolchain. Kept: the exact commands and real output in `docs/evidence-m3.md`. Rejected:
+writing the check up as "already verified, no need to re-run" -- the whole point of being
+named verifier is running it myself.
+
+Verified: `FLAKETRACE_REQUIRE_JVM=1 py -3 -m unittest runner.tests.test_order_runner.TestResetControl -v`
+-> 2/2 OK; full `runner.tests.test_order_runner` -> 51/51 OK; `git status --short` clean after
+(no stray marker).
+
+Ownership checkpoint: be able to explain why the hash-exclusion check (`os.walk`'s subfolder
+filter firing only at `root`) means a nested `target/` is *not* excluded, and why that matters
+for keeping the "top-level target/ and .git/" wording honest rather than overstating it.
+
+## 2026-11-22 -- M2's review of #164/#165 addressed (L3)
+
+Asked explicitly to do real work, not another documentation pass, in response to M2's review
+message. Four concrete items plus a question. **Kept:** the member's own insistence (via the
+task) on retrying the bundle regeneration for real rather than accepting a dirty tree as good
+enough, which is what actually surfaced the untracked-file dirty-check quirk -- that would
+never have been found by reasoning about the code alone. **Rejected:** my own first attempt at
+avoiding the test JVMs' heap being constrained by setting `-Xmx` only in `MAVEN_OPTS`, not
+`JAVA_TOOL_OPTIONS` -- caught before wasting a full run, by noticing `JAVA_TOOL_OPTIONS` affects
+every java invocation including the ones under test, not just Maven's own build step.
+
+**What I didn't do:** continue retrying blindly once the OOMs stopped looking transient (three
+in a row with falling free memory, then PowerShell itself failing to start) -- stopped and
+asked the member rather than treating "keep trying" as license to hammer an unstable machine.
+Also did not touch `.github/pull_request_template.md` for M2's PR-template point -- noted as a
+process reminder for my own future PRs, not a repo change.
+
+**Real bug fixed, test-first:** `eval.bundle verify`'s zero-pairs recount bug. First test
+attempt used the wrong fixture (`_victim_outcome()`'s own `matched` parameter defaults `True`,
+not `False` -- caught by reading the actual recount output rather than assuming my test's
+intent matched what I'd written) before it exercised the real bug path at all.
+
+Verified: `py -3 -m unittest eval.tests.test_bundle` -> 15/15 OK; full `eval/tests` -> 159/159
+OK; all 7 real FJ-03 pair-mode comparison bundles `tool.dirty: false` and `eval.bundle verify`
+clean after the regeneration.
+
+Ownership checkpoint: be able to explain why `git status --porcelain` counting an untracked
+file means sequential bundle regeneration into the same folder can never all come out clean
+without moving each one out between runs, and why the zero-pairs fix checks the record
+header's `search_mode` rather than only the presence of "pair" lines.

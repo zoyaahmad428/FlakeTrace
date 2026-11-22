@@ -121,21 +121,21 @@
       "reproduce": 0,
       "shuffle": 0,
       "alone": 20,
-      "pair": 738,
+      "pair": 16,
       "search": 0,
       "minimise": 0,
       "deletion": 0,
       "verify": 40
     },
-    "launches": 409,
-    "wall_seconds": 784.52,
-    "analysis_seconds": 470.69533009675797,
-    "policy": "ranked",
+    "launches": 48,
+    "wall_seconds": 62.793,
+    "analysis_seconds": null,
+    "policy": "random",
     "exhausted": false,
     "exhausted_phase": null,
     "candidates": {
       "total": 524,
-      "tried": 368
+      "tried": 7
     }
   }
 }
