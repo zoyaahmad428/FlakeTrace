@@ -1,8 +1,8 @@
 # ADR-016 — Pair mode: diagnose a known victim when no order makes it fail
 
-**Date:** 2026-11-22 (revised the same day) · **Status:** `PROPOSED (revised)` by M2 — an earlier version (an
-automatic fallback with "all before" orders) was accepted by M1, M2 and M3 on 2026-11-22; on review it was
-over-built, and this revision replaces it. It needs the three ticks again before anything is built ·
+**Date:** 2026-11-22 (revised the same day) · **Status:** `ACCEPTED` (revised) by M1, M2 and M3 on 2026-11-22 (team WhatsApp group, recorded by M2;
+confirmed by approving PR #157). An earlier version (an automatic fallback with "all before" orders) was accepted
+the same day, then found over-built on review; this revision replaces it ·
 **Owner:** M2 (runner) with M3 (report field, measurement) · **Reviewer of the ranking use:** M1 ·
 **Addresses:** M-3 / FT008 (a real case through the whole pipeline), M-2 / FT007 (budget and ranking on real
 code), panel action A5 · **Work package:** W35 (Sprint C) ·
@@ -131,10 +131,10 @@ do not change. (Interface 9 fixes the exact fields.)
 
 ## Agreement
 
-*The earlier version was ticked by all three on 2026-11-22. This revision needs the ticks again.*
+*The earlier version was ticked by all three on 2026-11-22; this revision was ticked again the same day.*
 
 | Member | Agree? | Comment |
 | --- | --- | --- |
-| M1 | ☐ | |
+| M1 | ☑ | Agreed to the revision 2026-11-22 (team group), recorded by M2; confirmed by approving PR #157 |
 | M2 | ☑ | Revised 2026-11-22 after review; replaces the accepted first version |
-| M3 | ☐ | |
+| M3 | ☑ | Agreed to the revision 2026-11-22 (team group), recorded by M2; confirmed by approving PR #157 |

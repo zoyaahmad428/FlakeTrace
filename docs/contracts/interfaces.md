@@ -488,8 +488,8 @@ reproduces), and there are no `reproduce`, `shuffle`, `search` or `minimise` lin
 
 ## Interface 9 — pair mode (W35, ADR-016; M2 produces, M3 consumes and measures)
 
-*Proposed by M2 on 2026-11-22, together with ADR-016's revision. Agreed when M1 and M3 approve (recorded in the
-PR that adds this section). Built against [ADR-016](../03-Design/decisions/ADR-016-reproduction-fallback-pair-search.md).
+*Proposed by M2 on 2026-11-22, together with ADR-016's revision. Agreed by M1, M2 and M3 on 2026-11-22 (team
+WhatsApp group, recorded by M2; confirmed by approving the PR that adds this section, #157). Built against [ADR-016](../03-Design/decisions/ADR-016-reproduction-fallback-pair-search.md).
 Not built yet.*
 
 **Input.** `diagnose(search="order" | "pairs")`, CLI `--search order|pairs` (default `order`: today's pipeline,
