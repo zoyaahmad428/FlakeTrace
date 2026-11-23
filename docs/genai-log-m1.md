@@ -868,3 +868,27 @@ checked the entry against my terminal output before committing.
 Adoptium installer worked.
 
 **Rejections:** changing my system `java` to JDK 8. It stays 25.0.1; JDK 8 is set only in one window.
+
+## 2026-11-22 — W35 follow-up: old bundle against the new `verify`, and a replay
+
+**Assistance level:** L3 (Core-assist): the assistant gave me the `verify` and `replay` commands,
+read `eval/bundle.py`, `runner/replay.py` and `eval/report.py` to explain both results, and drafted
+this entry and the two findings; I ran every command myself.
+
+**What I asked:** verify my W35 bundle with the new code, then replay it.
+
+**What was retained:** the follow-up entry in [[evidence-m1]], and one corrected limitation in my
+W35 entry (`wall_seconds` *is* in the report).
+
+**What I changed:** ran every command; checked the entry against my output before committing.
+
+**How it was verified:** the outputs are copied from my terminal. The two causes come from reading
+the code, with line numbers.
+
+**Errors found:**
+- My earlier W35 entry said wall time was not recorded, but the report has `wall_seconds 167.438`.
+  Corrected.
+- One pasted one-liner was cut short (`SyntaxError`); the rerun is the one recorded.
+
+**Rejections:** editing `runner/replay.py` or `eval/schema` myself. They are M2's and M3's; the
+fixes are described for them.

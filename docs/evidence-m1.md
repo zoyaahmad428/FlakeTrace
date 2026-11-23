@@ -1460,4 +1460,66 @@ static `ThreadLocal` `SerializeWriter.bufLocal`, and the change is a JDK call. T
 **Limitations:**
 - One run, with `--policy original` only. The `ranked`/`random` comparison is M3's measurement.
   `ranked` would keep the same order, because there is no edge.
-- Wall time was not recorded: no timer was used.
+- I did not time the whole command. The report's `budget.wall_seconds` is `167.438` (409 launches); see the follow-up below.
+
+## W35 follow-up: my FJ-03 bundle against M3's new `verify`, and a replay (2026-11-22)
+
+**Why:** after M3's W35 report half (`reproduced_by`, the pair-mode limitation line, `verify` for
+pair-mode bundles) and M2's #167 ("replay a pair-mode bundle as pair mode"), I checked my own
+W35 bundle `%TEMP%\w35-bundle\20261122T105218Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` (written on `7f95297`, before both) with today's
+`main`, `e0db2bb`. Same laptop. JDK 8 (Temurin 8u512) was used only for the replay.
+
+**1. `verify` on the old bundle:**
+`py -3.11 -m eval.bundle verify "<that folder>"` → `report.json does not validate against the
+schema: 'reproduced_by' is a required property` → `exit 1`.
+
+No other problem was printed. `verify_bundle` checks the checksums first and stops on a mismatch,
+then validates the schema, then still recounts and re-decides. So the checksums passed and the
+recount agreed; the only problem is the missing field.
+
+**Finding (M3):** `reproduced_by` became **required** while `schema_version` stayed **2**, so every
+v2 report written before that change now fails `verify`. The committed bundles pass only because
+they were regenerated. This contradicts the root README's "`verify` works unchanged on any bundle
+regardless of when it was made".
+
+**2. `replay` of the old bundle** (JDK 8 set in the window,
+`JAVA_TOOL_OPTIONS=-Duser.timezone=UTC -Duser.language=en -Duser.country=US`):
+`py -3.11 -m runner replay "<old bundle>" --project D:\fj\fastjson --bundle %TEMP%\w35-replay
+--records %TEMP%\w35-replay-rec` → `exit 0`:
+
+| Row | Old bundle → replay |
+| --- | --- |
+| verdict | `CANDIDATE (NO_SUPPORTED_RESOURCE_EVIDENCE)` → the same, **same** |
+| polluters | `SerializeWriterTest_14#test_writer_1` → the same, **same** |
+| sequence | `20/20 matched -> 20/20 matched` |
+| alone | `20/20 passed -> 20/20 passed` |
+| deletion | `test_writer_1 NEEDED -> NEEDED` |
+| subject | `e05e9c5… -> e05e9c5…` **same** |
+| tool | `7f95297… -> e0db2bb…` DIFFERENT (expected) |
+| JDK, OS, Maven, timezone, locale, encoding, lifecycle | `1.8.0_512`, `Windows-10-10.0.26300-SP0`, `3.9.9`, `UTC`, `en_US`, `Cp1252`, `class-grouped`: all **same** |
+
+The replay's bundle `20261122T182731Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` → `verify` → `OK`.
+
+**3. But the replayed report says `reproduced_by: order`**, not `pair`. It has no constructed-pair
+limitation line, and `order_exploration` is absent (as M3 intended for pair mode).
+
+**Cause, from reading `runner/replay.py` on `e0db2bb`:**
+- line 159 passes `report.get("reproduced_by") or "order"`. The old report has no such field, so
+  it falls back to `"order"`, although line 154 has just read `search_mode` from the bundle's
+  record header.
+- `eval/report.py` line 308 writes the pair-mode limitation line only when `reproduced_by ==
+  "pair"`, so that line is lost too.
+
+**Finding (M2):** #167 fixes replay for new pair-mode bundles but not for older ones. A one-line
+fix: derive the fallback from `search_mode` (`"pair"` when `search_mode == "pairs"`).
+
+**Result:**
+- The evidence reproduces again (same verdict, polluter and tallies; JDK, OS and Maven now all
+  `same`).
+- Two backward-compatibility gaps found. Both hit any bundle made before 2026-11-22's W35 schema
+  change:
+  1. `verify` rejects it (M3);
+  2. `replay` labels it `order` (M2).
+
+**Limitation:** that line 154 read `search_mode = "pairs"` from this bundle comes from reading the
+code, not from printing the header.
