@@ -150,3 +150,12 @@ M1's independent reproduction (PR #159) needed commands `replay.md` did not give
 - The replay's `OS:` row treats `Windows-10-<build>` and `Windows-11-<build>` as the same (Python 3.11 names Windows 11
   "Windows-10"); a different build or system is still `DIFFERENT`.
 - Committed bundles keep their old `replay.md` (their checksums protect them); M3's README covers them.
+
+## Replay: the mode comes from the record (2026-11-24)
+
+- `replay` derives `reproduced_by` from the record header's `search_mode` (`"pairs"` → `"pair"`, else `"order"`).
+  Replay only accepts reports that blame polluters; order mode blames only from a failing order, pair mode only from
+  an adopted pair, so the header decides it. A report whose `reproduced_by` disagrees is refused with exit 2 ("the
+  bundle was changed"), before any run — the R2 rule already used for `n` and `lifecycle`.
+- This fixes M1's finding (#169): a bundle written after the runner recorded `search_mode` (#160) but before the
+  report had `reproduced_by` (#164) replayed as `"order"`.
