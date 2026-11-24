@@ -1325,3 +1325,15 @@ fall back to the header), the assistant's first proposal: two sources with a pre
 believed; the member asked for the most logical design and B was chosen. **What I changed:** *to fill in.*
 
 Ownership checkpoint: why `reproduced_by` follows from `search_mode` for every replayable bundle.
+
+## 2026-11-24 — Every committed bundle verified by a test
+
+**Tool:** Claude Code (Claude Opus 5.5), brainstorming → plan → TDD · **Level:** L2 · **Branch:** `m2/ci-verify-bundles`
+
+**Asked:** a guard so a schema change can never silently break committed evidence again. **Kept:** the test in
+`eval/tests/` beside the schema and verifier (M3 agreed), so the person changing them sees it fail locally.
+**Rejected:** extending the runner test (M3 does not run it) or a CI-only step. **Wrong at first:** the re-enactment
+validated v2 reports against v3, which also rejected newer bundles; rewritten to re-enact #164 exactly.
+**What I changed:** *to fill in.*
+
+Ownership checkpoint: why a test that re-enacts the incident proves the guard is not vacuous.

@@ -197,6 +197,7 @@ docs/                                   Obsidian vault — open this folder in O
 pip install -r eval/requirements.txt                    # Python 3.11+ (3.10 minimum; 3.9 cannot install jsonschema)
 python3 -m unittest eval.tests.test_stats eval.tests.test_outcome eval.tests.test_schema_validator \
     eval.tests.test_examples eval.tests.test_baseline eval.tests.test_yield_report
+python3 -m unittest eval.tests.test_committed_bundles      # every committed bundle passes eval.bundle verify
 mvn -B -f fixtures/od-fixture/pom.xml test-compile      # needs JDK 8+ and Maven
 python3 -m unittest -v runner.tests.test_order_runner   # needs JDK 8+ and Maven on PATH
 mvn -B -q -f runner/tests/resources/lifecycle-control/pom.xml test   # lifecycle control under Surefire (ADR-012)
