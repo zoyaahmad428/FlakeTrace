@@ -1,9 +1,13 @@
 # Diagnosis report schema — shared contract
 
-*Schema v2 (ADR-010/ADR-011, W19, 2026-11-18). The decision table and field shapes below
-implement [[03-Design/decisions/ADR-010-verdict-contract-v2]], agreed by all three members
-2026-11-13 (PR #101) and built by Member 3 in W19. Schema v1 (what this file described through
-the Mid) is frozen at tag `mid-eval-v1`.*
+*Schema v3 (ADR-010/ADR-011/ADR-016; bumped from v2 on 2026-11-24, M2's finding). The decision table
+and field shapes below implement [[03-Design/decisions/ADR-010-verdict-contract-v2]], agreed by all
+three members 2026-11-13 (PR #101) and built by Member 3 in W19. Schema v1 (what this file described
+through the Mid) is frozen at tag `mid-eval-v1`. Schema v2 -- this file's own shape from W19 until
+`reproduced_by` (ADR-016, W35) made it required -- is frozen too, at
+[eval/schema/report.v2.schema.json](../../eval/schema/report.v2.schema.json), for the reports
+already committed under it; `eval/schema_validator.py` validates each report against the schema its
+own `schema_version` names, so those 16 bundles stay valid without weakening v3 for new reports.*
 
 This is a **shared contract**. The schema lives at
 [eval/schema/report.schema.json](../../eval/schema/report.schema.json) and the
@@ -23,7 +27,7 @@ document itself.
 
 | Field | Type | Produced by | Meaning |
 | --- | --- | --- | --- |
-| `schema_version` | `2` (fixed) | Member 3 | Which version of this contract the report was built against. |
+| `schema_version` | `3` (fixed; `2` for a report frozen before 2026-11-24) | Member 3 | Which version of this contract the report was built against -- and, since 2026-11-24, which of the two schema files it validates against. |
 | `victim` | `{class, method}` | Member 2 | The test being diagnosed. |
 | `polluters` | `{class, method}[]` | Member 3, from Member 2's raw counts | The test(s) identified as responsible. Empty whenever the outcome is `UNRESOLVED` for any reason except `SOURCE_INTEGRITY_FAILED` — a found candidate is not reported as blamed unless the evidence actually supports it (ADR-010 rows 6–11: "no test is blamed"). |
 | `original_failing_order` | `{class, method}[]` | Member 2 | The full order in which the failure was first observed (the declared/CI order, or what `--order` gave), before minimisation. |
@@ -35,7 +39,7 @@ document itself.
 | `victim_read_location` | `{class, method, bytecode_offset}` or `null` | Member 1 | Where the victim reads the shared resource. Same nulling rule. |
 | `resource_edges` | array of `{shared_resource, polluter_write_location, victim_read_location}` | Member 1 (via Member 3's assembly) | New in v2: every edge Member 1 found, not just the one shown in `shared_resource`. Iteration 1/2 limitation: today's extractor reports at most one edge per polluter, so this has at most one entry until Member 1's W21 lands all edges. Empty whenever `shared_resource` is `null`. |
 | `failure_signature` | `{exception_type, message, stack_trace}` or `null` | Member 2 | The reference failure signature `reproduction`/`victim_alone` are measured against. `null` exactly when no reference failure was ever observed anywhere in the diagnosis (ADR-010 rows 4/5) — this can only happen when `unresolved_reason` is `NOT_REPRODUCED` or `INFRASTRUCTURE_FAILURE`, but not every report with one of those two reasons has a null signature (rows 10/11 reach the same two reasons from a reference established during the search). |
-| `reproduced_by` | `"order"`, `"pair"` or `null` | Member 3 | New, W35 (ADR-016, Interface 9). `"order"`: the failure came from running a full order -- the starting order, a shuffle, or the victim alone (a trivial one-test order). `"pair"`: from an adopted `[candidate, victim]` pair (`--search pairs`). `null` exactly when `failure_signature` is `null` (reference never established). |
+| `reproduced_by` | `"order"`, `"pair"` or `null` | Member 3 | New, W35 (ADR-016, Interface 9). `"order"`: the failure came from running a full order -- the starting order, a shuffle, or the victim alone (a trivial one-test order). `"pair"`: from an adopted `[candidate, victim]` pair (`--search pairs`). `null` exactly when `failure_signature` is `null` (reference never established). Required in schema v3; absent entirely (not even `null`) on every `schema_version: 2` report, since the field did not exist yet. |
 | `order_exploration` | `{order_given, shuffled_orders_tried, orders_exhausted, seed_base, reproducing_seed, infrastructure_failures}`, optional | Member 2 | ADR-008, unchanged by ADR-010. Omitted entirely until the producing fields exist, and always omitted in pair mode (`reproduced_by` can be `"pair"` or `null` from a search that never ran an order at all). |
 | `assurance` | `{sequence: {reproduces, passes_alone, deletion}, resource: {level, mechanism}}` | Member 3 | New in v2 (ADR-010 §6): the report's own evidence levels. Present only when `outcome` is `CANDIDATE` or `VERIFIED`. `deletion` is one of `DELETION_VERIFIED`/`INCONCLUSIVE`/`INCOMPLETE`/`NOT_APPLICABLE` (ADR-011) or `NOT_YET_CHECKED` — Member 3's own addition, flagged for the team's review, meaning ADR-011's deletion checks (W20) have not landed yet. `resource.mechanism` is always `NOT_ASSESSED` until ADR-015 lands (not built). |
 | `instrumentation_level` | `"static-only"` (fixed) | contract constant | Runtime instrumentation is not built. |

@@ -1,0 +1,352 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flaketrace.invalid/schema/report.schema.json",
+  "title": "FlakeTrace diagnosis report",
+  "description": "Schema v2 (ADR-010/ADR-011), FROZEN 2026-11-24 (M2's finding): the pre-W35 report shape, for the 16 bundles already committed under it before reproduced_by existed. report.schema.json (schema_version 3) is the current, active schema -- never edit this file to add a field retroactively; a committed bundle's report.json is part of its checksummed record (ADR-013), so what a real file contains never changes, only which fields schema_version 2 is held to.",
+  "type": "object",
+  "$defs": {
+    "testIdentifier": {
+      "type": "object",
+      "properties": {
+        "class": { "type": "string", "minLength": 1 },
+        "method": { "type": "string", "minLength": 1 }
+      },
+      "required": ["class", "method"],
+      "additionalProperties": false
+    },
+    "codeLocation": {
+      "type": ["object", "null"],
+      "properties": {
+        "class": { "type": "string", "minLength": 1 },
+        "method": { "type": "string", "minLength": 1 },
+        "bytecode_offset": { "type": "integer", "minimum": 0 }
+      },
+      "required": ["class", "method", "bytecode_offset"],
+      "additionalProperties": false
+    },
+    "runTallyWithInterval": {
+      "type": "object",
+      "description": "ADR-010 section 1/6: a RunTally (eval.baseline) plus its Wilson interval, measured against `matched` -- the count that shares the reference failure signature.",
+      "properties": {
+        "n": { "type": "integer", "minimum": 1 },
+        "passed": { "type": "integer", "minimum": 0 },
+        "matched": { "type": "integer", "minimum": 0 },
+        "other": { "type": "integer", "minimum": 0 },
+        "infra": { "type": "integer", "minimum": 0 },
+        "confidence": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1 },
+        "lower": { "type": "number", "minimum": 0, "maximum": 1 },
+        "upper": { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "required": ["n", "passed", "matched", "other", "infra", "confidence", "lower", "upper"],
+      "additionalProperties": false
+    },
+    "sharedResource": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "oneOf": [
+            {
+              "properties": {
+                "kind": { "const": "static-field" },
+                "class": { "type": "string", "minLength": 1 },
+                "field": { "type": "string", "minLength": 1 }
+              },
+              "required": ["kind", "class", "field"],
+              "additionalProperties": false
+            },
+            {
+              "properties": {
+                "kind": { "const": "system-property" },
+                "key": { "type": "string", "minLength": 1 }
+              },
+              "required": ["kind", "key"],
+              "additionalProperties": false
+            }
+          ]
+        }
+      ]
+    },
+    "resourceEdge": {
+      "type": "object",
+      "description": "ADR-010 section 6: one polluter-write/victim-read edge, a static overlap (not a confirmed cause). resource_edges lists every edge Member 1's report_fields found (W21, PR #105), each with the depth at which it was found.",
+      "properties": {
+        "shared_resource": { "$ref": "#/$defs/sharedResource" },
+        "polluter_write_location": { "$ref": "#/$defs/codeLocation" },
+        "victim_read_location": { "$ref": "#/$defs/codeLocation" },
+        "depth": { "type": "integer", "minimum": 1, "description": "Call depth of the deeper of the two first locations (ADR-006); optional for reports built before W21." }
+      },
+      "required": ["shared_resource", "polluter_write_location", "victim_read_location"],
+      "additionalProperties": false
+    },
+    "deletionCheck": {
+      "type": "object",
+      "description": "ADR-011 section 4 / Interface 4 (W20, PR #121): one kept test left out and the rest plus the victim repeated m times. Earlier rounds' checks stay in the list (a dropped test's own entry is still visible) -- the verdict reads only the checks at the highest round.",
+      "properties": {
+        "removed": { "$ref": "#/$defs/testIdentifier" },
+        "runs": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "properties": {
+                "n": { "type": "integer", "minimum": 1 },
+                "passed": { "type": "integer", "minimum": 0 },
+                "matched": { "type": "integer", "minimum": 0 },
+                "other": { "type": "integer", "minimum": 0 },
+                "infra": { "type": "integer", "minimum": 0 }
+              },
+              "required": ["n", "passed", "matched", "other", "infra"],
+              "additionalProperties": false
+            }
+          ],
+          "description": "The victim's m outcomes without this test; null exactly when status is NOT_RUN."
+        },
+        "status": { "type": "string", "enum": ["NEEDED", "NOT_NEEDED", "INCONCLUSIVE", "NOT_RUN"] },
+        "source": { "type": "string", "enum": ["deletion-run", "alone-check"] },
+        "round": { "type": "integer", "minimum": 1 }
+      },
+      "required": ["removed", "runs", "status", "source", "round"],
+      "additionalProperties": false
+    },
+    "failureSignature": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "properties": {
+            "exception_type": { "type": "string", "minLength": 1 },
+            "message": { "type": ["string", "null"] },
+            "stack_trace": { "type": "string" }
+          },
+          "required": ["exception_type", "stack_trace"],
+          "additionalProperties": false
+        }
+      ],
+      "description": "Null exactly when no reference failure was ever observed anywhere in the diagnosis (eval.outcome.DecisionInput.reference_established=False) -- otherwise a real signature is always reported. In practice this means unresolved_reason is NOT_REPRODUCED or INFRASTRUCTURE_FAILURE (ADR-010 rows 4/5) -- but NOT every report with one of those two reasons has a null signature (rows 10/11 reach the same two reasons from a reference that WAS established during the search), and SOURCE_INTEGRITY_FAILED/INCONSISTENT_OUTCOMES/BUDGET_EXHAUSTED can in principle override before reference_established is even known. This schema only strictly REQUIRES an object for reasons that always guarantee a reference by construction (VICTIM_FAILS_ALONE, VICTIM_FAILS_ALONE_DIFFERENTLY, SIGNATURE_MISMATCH) and for VERIFIED/CANDIDATE; every other reason allows either -- see eval/report.py and its tests for the real invariant."
+    },
+    "orderExploration": {
+      "type": "object",
+      "properties": {
+        "order_given": { "type": "boolean" },
+        "shuffled_orders_tried": { "type": "integer", "minimum": 0 },
+        "orders_exhausted": { "type": "boolean" },
+        "seed_base": { "type": "integer" },
+        "reproducing_seed": { "type": ["integer", "null"] },
+        "infrastructure_failures": { "type": "integer", "minimum": 0 }
+      },
+      "required": [
+        "order_given", "shuffled_orders_tried", "orders_exhausted", "seed_base",
+        "reproducing_seed", "infrastructure_failures"
+      ],
+      "additionalProperties": false,
+      "description": "ADR-008: how many orders were tried beyond the given/discovered one, and which (if any) reproduced. Optional on the report -- omitted entirely until the producing fields exist."
+    },
+    "budgetAccount": {
+      "type": "object",
+      "description": "ADR-014 section 3 / Interface 6 (W24): what a diagnosis spent against its execution budget. Optional on the report -- omitted entirely for a DiagnosisRuns built before W24 landed, same as order_exploration above. `candidates` is {\"total\", \"tried\"} here, not the flat candidates_total/candidates_tried of runner.budget.BudgetAccount (M3's schema bump, Interface 6).",
+      "properties": {
+        "limit_invocations": { "type": ["integer", "null"], "minimum": 0 },
+        "limit_seconds": { "type": ["number", "null"], "minimum": 0 },
+        "reserve_invocations": { "type": "integer", "minimum": 0 },
+        "spent": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": 0 },
+          "description": "All seven phases (reproduce, shuffle, alone, search, minimise, deletion, verify); 0 when unused."
+        },
+        "launches": { "type": "integer", "minimum": 0 },
+        "wall_seconds": { "type": "number", "minimum": 0 },
+        "analysis_seconds": { "type": ["number", "null"], "minimum": 0 },
+        "policy": { "type": "string" },
+        "exhausted": { "type": "boolean" },
+        "exhausted_phase": { "type": ["string", "null"] },
+        "candidates": {
+          "type": "object",
+          "properties": {
+            "total": { "type": "integer", "minimum": 0 },
+            "tried": { "type": "integer", "minimum": 0 }
+          },
+          "required": ["total", "tried"],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "limit_invocations", "limit_seconds", "reserve_invocations", "spent", "launches",
+        "wall_seconds", "analysis_seconds", "policy", "exhausted", "exhausted_phase", "candidates"
+      ],
+      "additionalProperties": false
+    },
+    "assurance": {
+      "type": "object",
+      "description": "ADR-010 section 6: the report's own evidence levels, separate from the headline outcome word.",
+      "properties": {
+        "sequence": {
+          "type": "object",
+          "properties": {
+            "reproduces": { "type": "string", "enum": ["ESTABLISHED", "NOT_ESTABLISHED"] },
+            "passes_alone": { "type": "string", "enum": ["ESTABLISHED", "NOT_ESTABLISHED"] },
+            "deletion": {
+              "type": "string",
+              "enum": ["DELETION_VERIFIED", "INCONCLUSIVE", "INCOMPLETE", "NOT_APPLICABLE", "NOT_YET_CHECKED"]
+            }
+          },
+          "required": ["reproduces", "passes_alone", "deletion"],
+          "additionalProperties": false
+        },
+        "resource": {
+          "type": "object",
+          "properties": {
+            "level": { "type": "string", "enum": ["NONE", "STATIC_OVERLAP", "MECHANISM_CONFIRMED"] },
+            "mechanism": { "type": "string", "enum": ["NOT_ASSESSED", "CONFIRMED", "NOT_CONFIRMED"] }
+          },
+          "required": ["level", "mechanism"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["sequence", "resource"],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "schema_version": { "const": 2 },
+    "victim": { "$ref": "#/$defs/testIdentifier" },
+    "polluters": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/testIdentifier" },
+      "minItems": 0
+    },
+    "original_failing_order": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/testIdentifier" },
+      "minItems": 0
+    },
+    "reduced_sequence": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/testIdentifier" },
+      "minItems": 0
+    },
+    "reproduction": { "$ref": "#/$defs/runTallyWithInterval" },
+    "victim_alone": { "$ref": "#/$defs/runTallyWithInterval" },
+    "shared_resource": { "$ref": "#/$defs/sharedResource" },
+    "polluter_write_location": { "$ref": "#/$defs/codeLocation" },
+    "victim_read_location": { "$ref": "#/$defs/codeLocation" },
+    "resource_edges": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/resourceEdge" },
+      "minItems": 0
+    },
+    "deletion_checks": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/deletionCheck" },
+      "minItems": 0
+    },
+    "failure_signature": { "$ref": "#/$defs/failureSignature" },
+    "order_exploration": { "$ref": "#/$defs/orderExploration" },
+    "budget": { "$ref": "#/$defs/budgetAccount" },
+    "assurance": { "$ref": "#/$defs/assurance" },
+    "instrumentation_level": {
+      "type": "string",
+      "enum": ["static-only"],
+      "description": "Fixed to 'static-only' in Iteration 1/2. Runtime instrumentation is not built."
+    },
+    "execution_record_reference": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Pointer to Member 2's recorded execution log/run id for this diagnosis."
+    },
+    "source_integrity": {
+      "type": "object",
+      "properties": {
+        "passed": { "type": "boolean" },
+        "details": { "type": "string" }
+      },
+      "required": ["passed", "details"],
+      "additionalProperties": false
+    },
+    "reproduced_by": {
+      "type": ["string", "null"],
+      "enum": ["order", "pair", null],
+      "description": "W35 (ADR-016, Interface 9). 'order': the failure came from running a full order -- the starting order, a shuffle, or the victim alone (a trivial one-test order), order mode's today's pipeline. 'pair': from an adopted [candidate, victim] pair, pair mode (--search pairs), never given the dataset's polluters. null: never reproduced anywhere (reference_established=False, same condition as a null failure_signature)."
+    },
+    "outcome": {
+      "type": "string",
+      "enum": ["VERIFIED", "CANDIDATE", "UNRESOLVED"]
+    },
+    "unresolved_reason": {
+      "type": ["string", "null"],
+      "enum": [
+        "SOURCE_INTEGRITY_FAILED",
+        "INCONSISTENT_OUTCOMES",
+        "BUDGET_EXHAUSTED",
+        "INFRASTRUCTURE_FAILURE",
+        "NOT_REPRODUCED",
+        "VICTIM_FAILS_ALONE",
+        "VICTIM_FAILS_ALONE_DIFFERENTLY",
+        "SIGNATURE_MISMATCH",
+        null
+      ],
+      "description": "Required (non-null) when outcome is UNRESOLVED, must be null otherwise. ADR-010 (2026-11-13) retires NO_SUPPORTED_RESOURCE_EVIDENCE and BELOW_CONFIDENCE_THRESHOLD as UNRESOLVED reasons -- a reliably-reproducing, passes-alone sequence is CANDIDATE now (see candidate_reasons), never UNRESOLVED. VICTIM_FAILS_ALONE_DIFFERENTLY (FT003) and INCONSISTENT_OUTCOMES/BUDGET_EXHAUSTED (FT010/ADR-014) are new."
+    },
+    "candidate_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "BELOW_REPLAY_THRESHOLD",
+          "DELETION_EVIDENCE_INCOMPLETE",
+          "DELETION_EVIDENCE_INCONCLUSIVE",
+          "NO_SUPPORTED_RESOURCE_EVIDENCE",
+          "BUDGET_EXHAUSTED"
+        ]
+      },
+      "minItems": 0,
+      "description": "ADR-010 section 3 row 12: every certification claim (S1/S3/R1) CANDIDATE did not meet, not just one. Always present; empty unless outcome is CANDIDATE."
+    },
+    "limitations": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "required": [
+    "schema_version", "victim", "polluters", "original_failing_order", "reduced_sequence",
+    "reproduction", "victim_alone", "shared_resource", "polluter_write_location",
+    "victim_read_location", "resource_edges", "deletion_checks", "failure_signature",
+    "instrumentation_level", "execution_record_reference", "source_integrity",
+    "outcome", "unresolved_reason", "candidate_reasons", "limitations"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "outcome": { "const": "UNRESOLVED" } } },
+      "then": { "properties": { "unresolved_reason": { "type": "string" } } }
+    },
+    {
+      "if": { "not": { "properties": { "outcome": { "const": "UNRESOLVED" } } } },
+      "then": { "properties": { "unresolved_reason": { "type": "null" } } }
+    },
+    {
+      "if": { "not": { "properties": { "outcome": { "const": "CANDIDATE" } } } },
+      "then": { "properties": { "candidate_reasons": { "maxItems": 0 } } }
+    },
+    {
+      "if": { "properties": { "outcome": { "const": "CANDIDATE" } } },
+      "then": { "properties": { "candidate_reasons": { "minItems": 1 }, "assurance": { "type": "object" } } }
+    },
+    {
+      "if": { "properties": { "outcome": { "const": "VERIFIED" } } },
+      "then": { "properties": { "assurance": { "type": "object" } } }
+    },
+    {
+      "if": { "properties": { "unresolved_reason": { "enum": ["VICTIM_FAILS_ALONE", "VICTIM_FAILS_ALONE_DIFFERENTLY", "SIGNATURE_MISMATCH", null] } } },
+      "then": { "properties": { "failure_signature": { "type": "object" } } }
+    },
+    {
+      "if": { "properties": { "failure_signature": { "type": "null" } } },
+      "then": { "properties": { "reproduced_by": { "type": "null" } } }
+    },
+    {
+      "if": { "properties": { "failure_signature": { "type": "object" } } },
+      "then": { "properties": { "reproduced_by": { "enum": ["order", "pair"] } } }
+    }
+  ]
+}

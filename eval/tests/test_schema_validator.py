@@ -11,7 +11,7 @@ import jsonschema
 from eval.schema_validator import load_schema, validate_report
 
 VALID_REPORT = {
-    "schema_version": 2,
+    "schema_version": 3,
     "victim": {"class": "odfixture.ConfigVictimTest", "method": "expectsDefaultMode"},
     "polluters": [{"class": "odfixture.ConfigPolluterTest", "method": "pollute"}],
     "original_failing_order": [
@@ -204,6 +204,44 @@ class TestValidateReport(unittest.TestCase):
 
         bad = copy.deepcopy(VALID_REPORT)
         bad["order_exploration"] = {"order_given": True}  # missing required sub-fields
+        with self.assertRaises(jsonschema.exceptions.ValidationError):
+            validate_report(bad)
+
+
+class TestSchemaVersionDispatch(unittest.TestCase):
+    """2026-11-24, M2's finding: reproduced_by (W35) became required while schema_version
+    stayed 2, so all 16 bundles committed before W35 failed validate_report. Fixed by bumping
+    the active schema to v3 (reproduced_by required) and keeping a frozen v2 copy (it is not)
+    for reports that declare schema_version 2 -- each report validates against the schema
+    version it names, per eval/schema/report.v2.schema.json's own description."""
+
+    def test_schema_version_3_report_validates_against_the_current_schema(self):
+        validate_report(VALID_REPORT)  # must not raise -- schema_version 3, has reproduced_by
+
+    def test_schema_version_2_report_without_reproduced_by_passes(self):
+        """A report shaped exactly like the 16 pre-W35 bundles: schema_version 2, no
+        reproduced_by key at all (not even null -- the field did not exist when it was
+        written)."""
+        legacy = copy.deepcopy(VALID_REPORT)
+        legacy["schema_version"] = 2
+        del legacy["reproduced_by"]
+        validate_report(legacy)  # must not raise
+
+    def test_schema_version_3_report_missing_reproduced_by_still_fails(self):
+        """Bumping the active schema to v3 must not silently weaken it: a NEW report that
+        forgot to set reproduced_by is still a real bug, not forgiven."""
+        bad = copy.deepcopy(VALID_REPORT)
+        del bad["reproduced_by"]
+        with self.assertRaises(jsonschema.exceptions.ValidationError):
+            validate_report(bad)
+
+    def test_schema_version_2_report_with_reproduced_by_present_is_still_checked(self):
+        """The v2 schema does not require reproduced_by, but if it IS present (should not
+        happen in practice -- a legacy report never has it), it is still type-checked, not
+        ignored."""
+        bad = copy.deepcopy(VALID_REPORT)
+        bad["schema_version"] = 2
+        bad["reproduced_by"] = "not-a-real-value"
         with self.assertRaises(jsonschema.exceptions.ValidationError):
             validate_report(bad)
 

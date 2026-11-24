@@ -3170,3 +3170,67 @@ Verified: 159/159 `eval/tests` OK (up from 158).
 2026-11-21 entry above, before he asked -- rebuilt the container with his fix, ran a real
 diagnosis inside it against the actual fastjson checkout: `CANDIDATE`, 19/19 invocations, no
 `UnicodeDecodeError`.
+
+## 2026-11-24 -- M2's #168 review: schema v3, versioned validation
+
+M2 reviewed PR #168 himself and confirmed the pair walk and comparison numbers. He also found
+(and M1 independently hit the same thing on her own machine, PR #169) a real, urgent problem:
+`reproduced_by` became **required** when W35 landed, but `schema_version` stayed **2** -- so
+every one of the **16 bundles committed before W35** now failed `eval.bundle verify`, including
+the F1 bundle behind FT009 and the W32 case.
+
+**Reproduced for real first:** ran `eval.bundle verify` on all 24 committed bundles --
+**16 of 24 failed** with `'reproduced_by' is a required property`, exactly matching M2's count.
+
+**Considered and rejected a third option before picking between M2's two:** backfilling
+`reproduced_by: "order"` into the 16 old `report.json` files directly. Every one of them is
+provably order-mode (pre-W35, so order mode by construction), so the value isn't ambiguous --
+but doing this would mean recomputing their `manifest.json` checksums to match doctored content,
+which is exactly the "fix the checksum after tampering" case `eval.bundle.verify`'s own tests
+exist to catch (ADR-013). A committed bundle's `report.json` is part of a checksummed record;
+not something to edit after the fact even for an unambiguous value.
+
+**Asked the member which of M2's two real options to build** (schema v3 with versioned
+validation, vs. making `reproduced_by` optional in v2) -- chosen: **schema v3**, since making
+the field merely optional would let a *future* bug that drops it from a brand-new report pass
+silently, which the honesty rules don't let stand once seen.
+
+**Built, test-first:**
+- `eval/schema/report.schema.json` (the active schema): `schema_version` bumped `2` -> `3`;
+  `reproduced_by` stays required.
+- `eval/schema/report.v2.schema.json` (new): a frozen copy of the pre-W35 shape --
+  `reproduced_by` not required -- for the 16 old bundles; its own description says it is never
+  edited to add a field retroactively.
+- `eval/schema_validator.py`: `load_schema(schema_version)` picks the matching file (2 or 3);
+  an unrecognized version falls through to the current schema, where its `schema_version` const
+  mismatch itself produces the `ValidationError` -- no separate "unknown version" branch needed.
+  `validate_report` dispatches on the report's own `schema_version` when no schema is passed
+  explicitly, so `eval.bundle.verify_bundle`'s existing call site needed no change at all.
+- `eval/report.py`: `SCHEMA_VERSION` bumped `2` -> `3`, so every report built from now on is
+  checked against the strict schema.
+- 4 new tests in `eval/tests/test_schema_validator.py`: a v3 report validates; a v2 report
+  without `reproduced_by` at all now passes; a v3 report missing it still fails (the strictness
+  the "optional" alternative would have given up); a v2 report where the field IS present but
+  wrong is still type-checked, not silently ignored.
+- `eval/examples/*.json` (9) and `eval/reports/*.json` (8) bumped to `schema_version: 3` --
+  they already carry `reproduced_by` and represent current output, not frozen history.
+
+**Verified:** all 24 committed bundles re-`verify`d -> **all OK** (the 16 that failed, confirmed
+failing first); `python -m unittest discover -s eval/tests` -> **163/163 OK** (up from 159);
+`python -m unittest -v ui.tests.test_server` -> **31/31 OK**, including a real end-to-end F1
+run. The 16 old bundles themselves were never touched -- same bytes, same checksums, same
+`schema_version: 2` -- only which schema that version is validated against changed.
+
+**The package-scope bundle (20261122T110129Z), still `tool.dirty: true`:** regenerated from a
+genuinely clean tree (same save/revert/restore technique as 2026-11-22's bundles, since this fix
+itself was uncommitted at the time), using the cached fastjson checkout and portable JDK 8 from
+earlier in the session. Real result unchanged: `UNRESOLVED (NOT_REPRODUCED)`, 12,817
+invocations, search tried 0 of 260 candidates. New bundle `tool.dirty: false`, `verify` clean;
+old one removed.
+
+**PR template reminder:** acknowledged, no code change -- `.github/pull_request_template.md`
+already exists (M2's area); this is a note to fill it out on my own future PRs.
+
+**Documented:** ADR-016 (the schema bump is a direct consequence of its own `reproduced_by`
+field) and `docs/contracts/report-schema.md`'s `schema_version`/`reproduced_by` rows, both dated
+2026-11-24.

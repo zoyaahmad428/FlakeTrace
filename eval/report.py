@@ -72,7 +72,7 @@ from runner.diagnose import (
     BUDGET_EXHAUSTED, DiagnosisRuns, INCONSISTENT, NOT_REPRODUCED, POLLUTER_FOUND, VICTIM_FAILS_ALONE,
 )
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3  # W35 (ADR-016); bumped from 2 on 2026-11-24, M2's finding -- see eval/schema_validator.py
 
 _ORDER_EXPLORATION_FIELDS = (
     "order_given", "shuffled_orders", "orders_exhausted", "shuffle_seed_base", "reproducing_seed",

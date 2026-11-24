@@ -1989,3 +1989,31 @@ Ownership checkpoint: be able to explain why `git status --porcelain` counting a
 file means sequential bundle regeneration into the same folder can never all come out clean
 without moving each one out between runs, and why the zero-pairs fix checks the record
 header's `search_mode` rather than only the presence of "pair" lines.
+
+## 2026-11-24 -- schema v3, versioned validation (L3)
+
+A real contract/schema decision, not mine to make alone even though M2 deferred the choice to
+me: asked the member which of M2's two options to build before writing any code, since this is
+exactly the kind of call the project's own rules say needs agreement, not an AI picking for
+convenience.
+
+**Kept:** my own instinct that "just make it optional" would quietly weaken a real check going
+forward -- confirmed by the member's choice, not assumed. **Rejected, before building either of
+M2's two options:** my own third idea (backfill the missing field into the 16 old committed
+`report.json` files, since the value is unambiguous for all of them). Caught myself on this one
+specifically because it would require recomputing checksums to match edited content -- the
+precise "fix the checksum after tampering" shape this project's own bundle tests exist to
+reject. Not a close call once named correctly; worth recording because it looked reasonable for
+a few seconds first.
+
+Verified: the 16 previously-failing bundles confirmed failing first (`'reproduced_by' is a
+required property`, matching M2's count exactly), then confirmed fixed, not assumed; full
+`eval/tests` 163/163 and `ui.tests.test_server` 31/31 OK; the 16 old bundles' own files
+untouched (same bytes -- did not re-hash or re-verify them against themselves, just confirmed
+`git status` showed no diff on any of their files after the fix).
+
+Ownership checkpoint: be able to explain why an *unrecognized* schema_version needs no special
+error-handling branch (it falls through to the current schema and fails on that schema's own
+`const` mismatch), and why bumping `eval/report.py`'s `SCHEMA_VERSION` to 3 was necessary, not
+just the schema file -- a report built today must actually be checked by the stricter schema,
+or the whole point of choosing v3 over "optional" is lost.
