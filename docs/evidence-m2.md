@@ -1932,3 +1932,19 @@ own copy of the code, not from the review's description.
 - **Committed bundles:** none would be refused (header mode vs report field, all 24): 7 `pairs`/`pair`, 17
   `order`/no field.
 - **Not run:** a real replay of M1's bundle (it is on her laptop); the probe exercises the same `replay()` path.
+
+## Every committed bundle verified by a test (2026-11-24)
+
+- **Requirement:** after #164, 16 of the 24 committed bundles failed `eval.bundle verify` for two days unnoticed:
+  no test ran the verifier on `eval/bundles/` (`runner/tests/test_bundle.py::TestCommittedBundles` checks only
+  checksums and line endings).
+- **Code:** `eval/tests/test_committed_bundles.py` (M3's folder, added with her agreement; her tests untouched):
+  `test_every_committed_bundle_verifies` and `test_the_check_catches_a_required_field_without_a_version_bump`
+  (the #164 incident re-enacted: the v2 schema made to require `reproduced_by`).
+- **Surprise, fixed in the test:** the first re-enactment validated v2 reports against v3; it also rejected the 8
+  newer bundles (v3 requires `schema_version: 3`), so it did not re-enact #164. Re-enacted as #164 actually was: v2
+  itself requiring the field.
+- **Result:** `py -3 -m unittest -v eval.tests.test_committed_bundles` → 2 OK; the re-enactment names exactly the
+  16 pre-W35 bundles, first problem `report.json does not validate against the schema: 'reproduced_by' is a
+  required property` (the real incident's message). `py -3 -m unittest discover -s eval/tests -p "test_*.py"` →
+  `Ran 165 tests OK`. CI runs it: the python-eval job lists every `eval/tests/test_*.py`.
