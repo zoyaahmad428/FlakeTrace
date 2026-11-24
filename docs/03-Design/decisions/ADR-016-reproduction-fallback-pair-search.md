@@ -80,6 +80,15 @@ directly before the victim (a constructed pair); pair mode does not run the proj
 verdict rules (ADR-010) do not change. (Interface 9 fixes the exact fields.) *Both wordings amended 2026-11-22,
 agreed by M1, M2 and M3 on 2026-11-22 (team group; M1 and M3 in writing), recorded by M2.*
 
+**Schema bumped to v3, 2026-11-24 (M2's finding, M1 independently hit the same thing; M3's fix).** Making
+`reproduced_by` required while `schema_version` stayed 2 meant every report written before this ADR landed --
+16 already-committed bundles -- failed `eval.bundle verify`. `eval/schema/report.schema.json` is now
+`schema_version: 3` (reproduced_by required); `eval/schema/report.v2.schema.json` is a frozen copy of the
+pre-W35 shape (it is not required there) for reports that still declare `schema_version: 2`.
+`eval/schema_validator.py` picks the schema a report's own `schema_version` names. The 16 old bundles are
+untouched -- their `report.json` is part of a checksummed record (ADR-013); only which schema `schema_version 2`
+is validated against changed, never a real committed file.
+
 ### 4. Not in this ADR
 
 | Item | When | Why |

@@ -385,7 +385,7 @@ class TestAssembleReport(unittest.TestCase):
     def test_polluter_found_with_edge_gives_verified(self):
         fields = resource_fields(POLLUTER_ACCESS, VICTIM_ACCESS)
         report = assemble_report(_alone_checked(), fields)
-        self.assertEqual(report["schema_version"], 2)
+        self.assertEqual(report["schema_version"], 3)
         self.assertEqual(report["outcome"], "VERIFIED")
         self.assertIsNone(report["unresolved_reason"])
         self.assertEqual(report["candidate_reasons"], [])

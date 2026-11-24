@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://flaketrace.invalid/schema/report.schema.json",
   "title": "FlakeTrace diagnosis report",
-  "description": "Schema v2 (ADR-010/ADR-011) evidence report for one victim test. Field ownership is documented in docs/contracts/report-schema.md.",
+  "description": "Schema v3 (ADR-010/ADR-011/ADR-016; bumped 2026-11-24 from v2, M2's finding): the current, active report shape. reproduced_by is required here (W35). report.v2.schema.json is the frozen pre-W35 shape, for reports already committed with schema_version 2 -- see eval/schema_validator.py's version dispatch. Field ownership is documented in docs/contracts/report-schema.md.",
   "type": "object",
   "$defs": {
     "testIdentifier": {
@@ -208,7 +208,7 @@
     }
   },
   "properties": {
-    "schema_version": { "const": 2 },
+    "schema_version": { "const": 3 },
     "victim": { "$ref": "#/$defs/testIdentifier" },
     "polluters": {
       "type": "array",
