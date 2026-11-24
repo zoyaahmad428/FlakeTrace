@@ -132,6 +132,14 @@ def replay(bundle_folder, project, out_folder, records, timeout_s: float, worksp
     if (parameters.get("n"), parameters.get("lifecycle") or "class-grouped") != (n, lifecycle):
         return 2, [f"manifest.json and the record disagree on n or lifecycle ({parameters.get('n')}, "
                    f"{parameters.get('lifecycle')} vs {n}, {lifecycle}); the bundle was changed"], None
+    # W35, design B: the mode comes from the record. A replayable report blames polluters, which order mode does only
+    # from a failing order and pair mode only from an adopted pair, so reproduced_by follows from search_mode (a
+    # bundle from before W35 has no search_mode: order). A report that says otherwise was changed, as for n above.
+    search_mode = original.header.get("search_mode") or "order"
+    reproduced_by = "pair" if search_mode == "pairs" else "order"
+    if report.get("reproduced_by") not in (None, reproduced_by):
+        return 2, [f"report.json says reproduced_by {report['reproduced_by']!r} but the record's search_mode "
+                   f"{search_mode!r} means {reproduced_by!r}; the bundle was changed"], None
     bundle_root = Path(bundle_folder).resolve()
     for chosen in (Path(out_folder).resolve(), Path(records).resolve()):
         if chosen == bundle_root or bundle_root in chosen.parents:
@@ -150,13 +158,11 @@ def replay(bundle_folder, project, out_folder, records, timeout_s: float, worksp
         started = datetime.now(timezone.utc)
         Path(records).mkdir(parents=True, exist_ok=True)
         record = Path(records) / f"{started.strftime('%Y%m%dT%H%M%SZ')}-{victim}.jsonl"
-        # W35: the original's mode, from the checksummed record header (a bundle from before W35 has none: order).
-        search_mode = original.header.get("search_mode") or "order"
         header = record_header(runner, victim, n, project, started, order_given=True, workspace=workspace_mode,
                                command=command, reference_signature=report["failure_signature"],
                                replay_of=original.manifest["files"]["report.json"], search_mode=search_mode)
         runs = replay_steps(RecordingRunner(runner, record, header), polluters, victim, report_reference(report), n,
-                            order, search_mode, report.get("reproduced_by") or "order")
+                            order, search_mode, reproduced_by)
         integrity = integrity_of(compare_files(before, snapshot(work)),
                                  compare_files(before_source, snapshot(project)) if before_source is not None else None)
         runs = replace(runs, source_integrity=integrity, execution_record=str(record))

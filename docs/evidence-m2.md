@@ -1914,3 +1914,21 @@ own copy of the code, not from the review's description.
   on 2026-11-22; claim E16 settled (M1's reproduction #163, M3's report half #164).
 - **Not run:** a real replay of a committed FJ-03 pair bundle (needs the fastjson checkout's 20+40 JVM runs; the
   fake-runner test exercises the same path).
+
+## Replay takes the mode from the record (M1's #169 finding) (2026-11-24)
+
+- **Requirement:** M1's #169 — her FJ-03 pair bundle, written on `7f95297` (after #160, before #164), replayed as
+  `reproduced_by: "order"`, without the constructed-pair line.
+- **Reproduced** with a probe using the test suite's helpers (a fake-runner pair-mode report without the field,
+  header `search_mode: "pairs"`): `exit 0 | replay header search_mode: pairs | replayed reproduced_by: order |
+  constructed-pair line: False`.
+- **Root cause:** `runner/replay.py` passed `report.get("reproduced_by") or "order"`, although it had just read
+  `search_mode: "pairs"` from the checksummed header; #167's tests covered "both present" and "both absent" only.
+- **Design B** (approved): derive from the header; refuse a disagreeing report (exit 2), as R2 does for `n`/`lifecycle`.
+- **Test-first:** `test_a_pair_bundle_from_before_the_report_field_replays_as_pair` → `AssertionError: 'order' !=
+  'pair'`; `test_a_report_that_disagrees_with_its_record_is_refused` → error (replay went on to `prepare_runner`).
+  After: `runner.tests.test_replay runner.tests.test_bundle` → 41 OK; `eval/tests` → OK; the probe → `pair`, the
+  constructed-pair line present.
+- **Committed bundles:** none would be refused (header mode vs report field, all 24): 7 `pairs`/`pair`, 17
+  `order`/no field.
+- **Not run:** a real replay of M1's bundle (it is on her laptop); the probe exercises the same `replay()` path.

@@ -154,6 +154,30 @@ class TestReplay(unittest.TestCase):
         self.assertNotIn("order_exploration", replayed.report)
         self.assertTrue(any("a constructed pair" in line for line in replayed.report["limitations"]))
 
+    def test_a_pair_bundle_from_before_the_report_field_replays_as_pair(self):
+        """M1's #169: a bundle written after the runner recorded search_mode (#160) but before the report had
+        reproduced_by (#164). The record header is the source: a replayable pair-mode bundle is always "pair"."""
+        report = a_report(search_mode="pairs")
+        report.pop("reproduced_by")
+        code, lines, new = self.run_replay(self.bundle(report=report, search_mode="pairs"))
+        self.assertEqual(code, 0, lines)
+        replayed = read_bundle(new)
+        self.assertEqual(replayed.report["reproduced_by"], "pair")
+        self.assertTrue(any("a constructed pair" in line for line in replayed.report["limitations"]))
+
+    def test_a_report_that_disagrees_with_its_record_is_refused(self):
+        """Design B: like n and lifecycle (R2), the record decides; a report saying otherwise was changed."""
+        report = dict(a_report(search_mode="pairs"), reproduced_by="order")
+        with mock.patch("runner.replay.prepare_runner") as prepare:
+            project = Path(tempfile.mkdtemp(prefix="flaketrace-replay-project-"))
+            out = Path(tempfile.mkdtemp(prefix="flaketrace-replay-out-"))
+            code, lines, new = replay(self.bundle(report=report, search_mode="pairs"), project, out / "bundles",
+                                      out / "records", 60, "in-place", ["replay"])
+        self.assertEqual((code, new), (2, None))
+        self.assertIn("reproduced_by", lines[0])
+        self.assertIn("the bundle was changed", lines[0])
+        prepare.assert_not_called()
+
     def test_an_order_mode_bundle_without_the_fields_stays_order(self):
         """A bundle from before W35: no search_mode in its header, no reproduced_by in its report."""
         report = a_report()

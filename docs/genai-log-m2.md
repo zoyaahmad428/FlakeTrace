@@ -1313,3 +1313,15 @@ inferring pair mode in `eval/report.py` (M3's file, and a guess where the record
 *to fill in.*
 
 Ownership checkpoint: why the record header, not the manifest; what a replay of a pair bundle now reports.
+
+## 2026-11-24 — Replay takes the mode from the record
+
+**Tool:** Claude Code (Claude Opus 5.5), systematic debugging → brainstorming → plan → TDD · **Level:** L2 ·
+**Branch:** `m2/replay-old-pair-bundles`
+
+**Asked:** fix M1's replay finding, the most logical way, not the easiest. **Kept:** design B — one source (the
+checksummed header), a disagreeing report refused like `n`/`lifecycle`. **Rejected:** design A (trust the report,
+fall back to the header), the assistant's first proposal: two sources with a precedence rule, a disagreement silently
+believed; the member asked for the most logical design and B was chosen. **What I changed:** *to fill in.*
+
+Ownership checkpoint: why `reproduced_by` follows from `search_mode` for every replayable bundle.
