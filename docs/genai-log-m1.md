@@ -931,3 +931,23 @@ them to me, and drafted the entry from my output; I ran every command myself on 
 **Errors found:** none.
 
 **Rejections:** none.
+
+## 2026-11-25 — A2: the runtime-fallback explanation
+
+**Assistance level:** L3 (Core-assist): the assistant read ADR-001, ADR-015 and my code's
+limitation text, checked `evidence/` and my note for causal wording (none found outside the
+"not the cause" phrasing), and drafted section 3a and the A2 row.
+
+**What I asked:** write the A2 explanation (M2's request).
+
+**What was retained:** section 3a of [[04-Implementation/evidence-collector]] and the A2 row in
+[[10-Final1/action-register]].
+
+**What I changed:** read the section before committing.
+
+**How it was verified:** each statement was checked against ADR-001, ADR-015,
+`evidence/extract.py`'s `FIXED_LIMITATIONS` and my FJ-03 entry. Nothing was run.
+
+**Errors found:** none.
+
+**Rejections:** saying the fallback is built or scheduled for the Final. It is not.
