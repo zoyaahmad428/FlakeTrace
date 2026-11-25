@@ -95,6 +95,35 @@ measured comparison).
 - **Input errors** (missing directory, unknown class/method, bad depth, bad flag combination): exit code 2
   with `error: …` on stderr. javap missing or failing: exit code 1.
 
+## 3a. Is anything injected? Static evidence, and the runtime fallback
+
+*Panel action A2 (proposal defence): "Say whether trace instructions are injected". Written
+2026-11-25.*
+
+- **No.** FlakeTrace injects nothing into the code under test: no agent and no source edits. The
+  evidence collector reads the **compiled** `.class` files with `javap` (ADR-001). The runner builds
+  the project normally with Maven (`test-compile`) and re-runs the project's own tests in chosen
+  orders, on a disposable copy by default (ADR-012).
+  The report states this as `instrumentation_level: "static-only"`.
+- **What the static evidence is.** An edge means: the polluter's code *may* write a resource that
+  the victim's code *may* read. It is a **potential overlap: a possible mechanism, not confirmed as
+  the cause** (claims ledger G3, FT005). Every report carries the fixed limitations, the first of
+  which is "Static analysis only; no runtime evidence". `assurance.resource` is
+  `STATIC_OVERLAP` (or `NONE` when no edge was found), with `mechanism: NOT_ASSESSED`; it is
+  never `MECHANISM_CONFIRMED`. Section 3 lists what static
+  analysis cannot see.
+- **The approved runtime fallback, and its status.** ADR-001 approved a **runtime Java agent** as
+  the fallback for cases static evidence cannot resolve. It would instrument bytecode **in
+  memory**, on a temporary copy, and only for the already-reduced sequence. It was deferred
+  because of its skill risk and the risk of perturbing the failure. ADR-015 (accepted as a
+  **spike** only, W34, a stretch goal) proposes a cheaper test of the same question: change only
+  the named resource and see whether the failure goes away. **Neither is built.** No report today
+  claims more than a static overlap.
+- **A real case that needs it.** On fastjson FJ-03 the static evidence finds **no** edge. The
+  pollution goes through a static `ThreadLocal` that both tests only read, via a JDK call (section
+  3; [[evidence-m1]]). So FlakeTrace says `CANDIDATE [NO_SUPPORTED_RESOURCE_EVIDENCE]`, not
+  `VERIFIED`. Only runtime observation or an intervention could name the resource there.
+
 ## 4. How to modify it
 
 - **Add a supported system-property method** (e.g. a new `Properties` accessor): add one entry

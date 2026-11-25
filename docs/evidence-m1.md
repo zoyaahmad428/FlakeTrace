@@ -1523,3 +1523,88 @@ fix: derive the fallback from `search_mode` (`"pair"` when `search_mode == "pair
 
 **Limitation:** that line 154 read `search_mode = "pairs"` from this bundle comes from reading the
 code, not from printing the header.
+
+## #169 findings closed: my old FJ-03 bundle re-checked after the fixes (2026-11-25)
+
+**Requirement:** re-run my #169 checks once M3's #170 (schema v3, each report validated against
+its own version) and M2's #171 (replay takes `reproduced_by` from the record) were merged. Same
+laptop; FlakeTrace `main` at `021008b`; the same old bundle,
+`%TEMP%\w35-bundle\20261122T105218Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` (written on `7f95297`).
+
+**Window setup:**
+- `set JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-8.0.512.9-hotspot` and
+  `set JAVA_TOOL_OPTIONS=-Duser.timezone=UTC -Duser.language=en -Duser.country=US`.
+- My `set PATH=…` line had a typo (`sset`) and did not run, so `PATH` kept my default JDK 25.
+- The test JVM was still JDK 8: replay reports `JDK: 1.8.0_512 -> 1.8.0_512 same`. `javap` came
+  from my default JDK 25.
+
+**1. `verify` on the old bundle:** `py -3.11 -m eval.bundle verify "<old bundle>"` → `OK`. Under
+#169 the same command failed with `'reproduced_by' is a required property`.
+
+**2. `replay` of the old bundle:**
+`py -3.11 -m runner replay "<old bundle>" --project D:\fj\fastjson --bundle %TEMP%\w35-replay2
+--records %TEMP%\w35-replay2-rec`.
+- My first attempt was stopped with Ctrl+C while the evidence extraction was still running (a
+  `KeyboardInterrupt` traceback in `javap`). This was my interrupt, not a tool error.
+- The second attempt ran to `exit 0`:
+  - verdict `CANDIDATE (NO_SUPPORTED_RESOURCE_EVIDENCE) -> … same`;
+  - polluters `SerializeWriterTest_14#test_writer_1 -> … same`;
+  - sequence `20/20 matched -> 20/20 matched`; alone `20/20 passed -> 20/20 passed`;
+  - deletion `test_writer_1 NEEDED -> NEEDED`; subject `e05e9c5… -> e05e9c5… same`;
+  - tool `7f95297… -> 021008b…` DIFFERENT (expected);
+  - JDK, OS, Maven, timezone, locale, encoding and lifecycle all `same`.
+- The new bundle `20261125T162830Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` → `verify` → `OK`. Its report: `CANDIDATE reproduced_by= pair`,
+  with the limitation line "The failure appeared when the polluter ran directly before the victim
+  (a constructed pair); pair mode does not run the project's own or shuffled orders."
+
+**Result:** both #169 findings are **closed**. The old v2 bundle verifies, and the replay labels it
+`pair`, with the constructed-pair line.
+
+## FT006 on a real project: normal (Surefire) and diagnostic (FlakeTrace) execution on FJ-03 (2026-11-25)
+
+**Requirement:** FT006, "M1 compares normal and diagnostic execution … needed before any
+real-project claim". The action-register row says "Open: FT006 on a real project". My W22 run did
+the comparison on the lifecycle control (PR #108); this does it on the real case, fastjson FJ-03.
+
+**Setup:** my laptop; fastjson at `e05e9c5` in `D:\fj\fastjson`, built unmodified (W35 entry);
+`JAVA_HOME` = Temurin 8u512 (Maven runs the tests on it); `JAVA_TOOL_OPTIONS=-Duser.timezone=UTC
+-Duser.language=en -Duser.country=US`.
+
+**Normal execution, Maven Surefire** (fastjson's own `pom.xml`, JUnit 4.12 provider, one forked
+JVM). Two class orders, the two tests only:
+- `mvn -B surefire:test -Dtest="SerializeWriterTest_14#test_writer_1,MaxBufSizeTest#test_max_buf"
+  -Dsurefire.runOrder=reversealphabetical -DtrimStackTrace=false
+  -Dsurefire.failIfNoSpecifiedTests=false`, with the polluter first → `exit 1`:
+  - `Running com.alibaba.json.bvt.serializer.SerializeWriterTest_14`, `Tests run: 1, Failures: 0`;
+  - `Running com.alibaba.json.bvt.serializer.MaxBufSizeTest`, `Tests run: 1, Failures: 1`.
+
+  The `.txt` report shows `junit.framework.AssertionFailedError at
+  junit.framework.Assert.fail(Assert.java:55) … at
+  com.alibaba.json.bvt.serializer.MaxBufSizeTest.test_max_buf(MaxBufSizeTest.java:20)`, followed
+  by reflection and JUnit runner frames.
+- The same command with `-Dsurefire.runOrder=alphabetical` (victim first) → `exit 0`; both
+  `Tests run: 1, Failures: 0`.
+- `git status --short` in fastjson printed nothing afterwards.
+
+**Diagnostic execution, FlakeTrace:** my W35 run's report (`--search pairs`) gives the reference
+signature `junit.framework.AssertionFailedError`: `junit.framework.Assert.fail:55`,
+`Assert.assertTrue:22`, `Assert.assertNotNull:256`, `Assert.assertNotNull:248`,
+`TestCase.assertNotNull:417`, `com.alibaba.json.bvt.serializer.MaxBufSizeTest.test_max_buf:20`.
+Victim alone: 20/20 passed. `[polluter, victim]`: 20/20 matched.
+
+**The comparison:**
+
+| | Normal (Surefire) | Diagnostic (FlakeTrace) |
+| --- | --- | --- |
+| Polluter then victim | victim fails | victim fails 20/20 with the same signature |
+| Victim first or alone | passes | passes 20/20 alone |
+| Failure type | `junit.framework.AssertionFailedError` | the same |
+| Stack, to the test method | `Assert.fail:55 … MaxBufSizeTest.test_max_buf:20` | the same six frames (FlakeTrace cuts at the JUnit runner frames) |
+| Class-level setup | none: both classes are JUnit 3 `TestCase`s with no `setUp`/`@BeforeClass` | the same; ADR-012 §2 names JUnit 3 as always run per method |
+
+**Result:** on a real project, normal Maven execution and FlakeTrace's diagnostic execution agree
+on the outcome in both orders and on the failure signature. **Limitations:**
+- one real case, and one Surefire run per order;
+- JUnit 3 only, so it does not exercise class-grouped lifecycle on real code (the lifecycle control
+  covers that);
+- I did not run `diagnose` in order mode with Surefire's two-test order.
