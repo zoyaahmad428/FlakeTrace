@@ -1608,3 +1608,59 @@ on the outcome in both orders and on the failure signature. **Limitations:**
 - JUnit 3 only, so it does not exercise class-grouped lifecycle on real code (the lifecycle control
   covers that);
 - I did not run `diagnose` in order mode with Surefire's two-test order.
+
+## W27: the pinned container on a second machine, my laptop (2026-11-25)
+
+**Requirement:** [[10-Final1/iteration-2-plan]] W27, "a fixture diagnosis runs in the container
+on a second machine" (M3 built it 2026-11-21; "M1 runs it"). M2's item 2 for me.
+
+**Setup:** my laptop, Windows 11, Docker Desktop 4.98.0, engine 29.9.2 (`linux x86_64`, Linux
+containers on WSL2). A fresh clone `D:\ft-w27` of `main` at `021008b`, so the image was built
+from `main` only, with none of my untracked files. Nothing in the clone was edited.
+
+**Build:** `docker build -t flaketrace:w27 .`
+- **First attempt failed** at step 5/6 (`pip3 install … -r eval/requirements.txt`, 51.3 s): pip
+  collected `jsonschema==4.26.0`, `attrs`, `jsonschema-specifications` and `referencing`, then
+  after about 44 s printed `ERROR: Could not find a version that satisfies the requirement
+  rpds-py>=0.25.0 (from jsonschema) (from versions: none)`. Exit code 1. The base image (pinned
+  by digest `sha256:e20e4fc0…`) and the `apt-get` step had completed.
+- **Second attempt, unchanged:** `docker build --progress=plain -t flaketrace:w27 . >
+  w27-build2.txt 2>&1` → `exit=0`. Image Id
+  `sha256:c6d873a642e58d9fe78cf92141be036366a4c77fad466d716b01116ee9dfaf17`.
+- I did not find the cause of the first failure. `findstr /i "rpds Successfully" w27-build2.txt`
+  printed nothing, so the second log does not show which `rpds-py` was installed; I did not
+  read that log further. Since the same unchanged `Dockerfile` built on the retry, a transient
+  network failure reaching PyPI is the likely explanation, but it is **not confirmed**.
+
+**Run:** `docker run --rm -v "D:\ft-w27\flaketrace-bundles:/flaketrace/flaketrace-bundles"
+flaketrace:w27 diagnose --project fixtures/od-fixture --victim
+odfixture.ConfigVictimTest#expectsDefaultMode --bundle flaketrace-bundles` → `exit=0`:
+- `VERIFIED (sequence)`, polluter `odfixture.ConfigPolluterTest#pollute`;
+- resource `static-field odfixture.Config mode (write odfixture.ConfigPolluterTest#pollute@1 ->
+  read odfixture.ConfigVictimTest#expectsDefaultMode@1)`, "static overlap: a possible mechanism,
+  not confirmed as the cause";
+- reproduced 20/20 (lower bound 0.839), alone (same failure) 0/20, other failure 0/20;
+- search: original order; budget: 67 invocations, no limit (reserve 60), 2 of 2 candidates;
+- bundle `flaketrace-bundles/20261125T172901Z-odfixture.ConfigVictimTest#expectsDefaultMode`.
+
+This matches M3's container run ([[evidence-m3]], 2026-11-21: `VERIFIED (sequence)`, same
+polluter, 67 invocations) and F1's ground truth.
+
+**Bundle check on the host (Windows, outside the container):** `py -3.11 -m eval.bundle verify
+"flaketrace-bundles\20261125T172901Z-odfixture.ConfigVictimTest#expectsDefaultMode"` → `OK`,
+`exit=0`. Its `environment.txt`: Temurin `1.8.0_452-b09`, Maven 3.9.9, `en_US`, `UTF-8`, OS
+`linux` `6.6.87.2-microsoft-standard-wsl2` `amd64`, `JAVA_TOOL_OPTIONS` picked up.
+
+**Clone unchanged:** `git status --short` → only `?? w27-build2.txt` (my build log);
+`git diff --stat` → nothing. `flaketrace-bundles/` is in `.gitignore`.
+
+**Differences from M3's machine:** a different WSL2 kernel (`6.6.87.2` here, `6.18.58.1` in M3's
+bundle); the same JDK patch `1.8.0_452`, as expected from the same pinned image.
+
+**Limitations:**
+- the fixture only (F1), one run; no real project in the container on my machine;
+- the first build failed and the cause is not confirmed (above);
+- the image is for reproducibility, not isolation (the `Dockerfile` says so); the hardened
+  sandbox stays a later target;
+- the report and record written inside the container (`flaketrace-records/`) were discarded with
+  it (`--rm`); only the bundle was mounted to the host.

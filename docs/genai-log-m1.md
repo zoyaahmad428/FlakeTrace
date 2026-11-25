@@ -951,3 +951,26 @@ limitation text, checked `evidence/` and my note for causal wording (none found 
 **Errors found:** none.
 
 **Rejections:** saying the fallback is built or scheduled for the Final. It is not.
+
+## 2026-11-25 — W27: the container on my laptop
+
+**Assistance level:** L3 (Core-assist): the assistant gave the build, run and check commands
+(fresh clone, Windows volume form from the README), read the first build failure, suggested an
+unchanged retry, and drafted the entry and the doc rows from my output.
+
+**What I asked:** run M3's pinned container on my machine (M2's item 2).
+
+**What was retained:** the W27 entry in [[evidence-m1]]; the W27 row in
+[[10-Final1/iteration-2-plan]], the FT006/FT021 row in [[10-Final1/action-register]] and my row
+in [[09-Team/members]].
+
+**What I changed:** ran every command; checked the entry against my output before committing.
+
+**How it was verified:** every result is copied from my own terminal output.
+
+**Errors found:** the assistant's first `verify` command kept a `<folder from dir /b>`
+placeholder, which `cmd` passed literally (`not a readable bundle`); re-run with the real folder
+name → `OK`.
+
+**Rejections:** editing the `Dockerfile` to add a pip retry. It is M3's file; noted for her
+instead.
