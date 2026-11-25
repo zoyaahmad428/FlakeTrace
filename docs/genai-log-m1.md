@@ -912,3 +912,22 @@ from my output; I ran every command myself on my laptop.
 - I interrupted the first replay; the second completed.
 
 **Rejections:** none.
+
+## 2026-11-25 — FT006 on a real project (FJ-03, Surefire vs FlakeTrace)
+
+**Assistance level:** L3 (Core-assist): the assistant chose the comparison (Surefire's own
+`runOrder` on the two FJ-03 tests), tested the commands first on fastjson in its container, gave
+them to me, and drafted the entry from my output; I ran every command myself on my laptop.
+
+**What I asked:** do what the FT006 row still needs from me (M2's request).
+
+**What was retained:** the FT006 entry in [[evidence-m1]] and the FT006 row in
+[[10-Final1/action-register]].
+
+**What I changed:** ran every command; checked the entry against my output before committing.
+
+**How it was verified:** every result is copied from my own terminal output.
+
+**Errors found:** none.
+
+**Rejections:** none.

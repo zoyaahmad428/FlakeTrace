@@ -1559,3 +1559,52 @@ laptop; FlakeTrace `main` at `021008b`; the same old bundle,
 
 **Result:** both #169 findings are **closed**. The old v2 bundle verifies, and the replay labels it
 `pair`, with the constructed-pair line.
+
+## FT006 on a real project: normal (Surefire) and diagnostic (FlakeTrace) execution on FJ-03 (2026-11-25)
+
+**Requirement:** FT006, "M1 compares normal and diagnostic execution … needed before any
+real-project claim". The action-register row says "Open: FT006 on a real project". My W22 run did
+the comparison on the lifecycle control (PR #108); this does it on the real case, fastjson FJ-03.
+
+**Setup:** my laptop; fastjson at `e05e9c5` in `D:\fj\fastjson`, built unmodified (W35 entry);
+`JAVA_HOME` = Temurin 8u512 (Maven runs the tests on it); `JAVA_TOOL_OPTIONS=-Duser.timezone=UTC
+-Duser.language=en -Duser.country=US`.
+
+**Normal execution, Maven Surefire** (fastjson's own `pom.xml`, JUnit 4.12 provider, one forked
+JVM). Two class orders, the two tests only:
+- `mvn -B surefire:test -Dtest="SerializeWriterTest_14#test_writer_1,MaxBufSizeTest#test_max_buf"
+  -Dsurefire.runOrder=reversealphabetical -DtrimStackTrace=false
+  -Dsurefire.failIfNoSpecifiedTests=false`, with the polluter first → `exit 1`:
+  - `Running com.alibaba.json.bvt.serializer.SerializeWriterTest_14`, `Tests run: 1, Failures: 0`;
+  - `Running com.alibaba.json.bvt.serializer.MaxBufSizeTest`, `Tests run: 1, Failures: 1`.
+
+  The `.txt` report shows `junit.framework.AssertionFailedError at
+  junit.framework.Assert.fail(Assert.java:55) … at
+  com.alibaba.json.bvt.serializer.MaxBufSizeTest.test_max_buf(MaxBufSizeTest.java:20)`, followed
+  by reflection and JUnit runner frames.
+- The same command with `-Dsurefire.runOrder=alphabetical` (victim first) → `exit 0`; both
+  `Tests run: 1, Failures: 0`.
+- `git status --short` in fastjson printed nothing afterwards.
+
+**Diagnostic execution, FlakeTrace:** my W35 run's report (`--search pairs`) gives the reference
+signature `junit.framework.AssertionFailedError`: `junit.framework.Assert.fail:55`,
+`Assert.assertTrue:22`, `Assert.assertNotNull:256`, `Assert.assertNotNull:248`,
+`TestCase.assertNotNull:417`, `com.alibaba.json.bvt.serializer.MaxBufSizeTest.test_max_buf:20`.
+Victim alone: 20/20 passed. `[polluter, victim]`: 20/20 matched.
+
+**The comparison:**
+
+| | Normal (Surefire) | Diagnostic (FlakeTrace) |
+| --- | --- | --- |
+| Polluter then victim | victim fails | victim fails 20/20 with the same signature |
+| Victim first or alone | passes | passes 20/20 alone |
+| Failure type | `junit.framework.AssertionFailedError` | the same |
+| Stack, to the test method | `Assert.fail:55 … MaxBufSizeTest.test_max_buf:20` | the same six frames (FlakeTrace cuts at the JUnit runner frames) |
+| Class-level setup | none: both classes are JUnit 3 `TestCase`s with no `setUp`/`@BeforeClass` | the same; ADR-012 §2 names JUnit 3 as always run per method |
+
+**Result:** on a real project, normal Maven execution and FlakeTrace's diagnostic execution agree
+on the outcome in both orders and on the failure signature. **Limitations:**
+- one real case, and one Surefire run per order;
+- JUnit 3 only, so it does not exercise class-grouped lifecycle on real code (the lifecycle control
+  covers that);
+- I did not run `diagnose` in order mode with Surefire's two-test order.
