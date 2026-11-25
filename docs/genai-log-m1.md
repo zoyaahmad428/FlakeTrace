@@ -892,3 +892,23 @@ the code, with line numbers.
 
 **Rejections:** editing `runner/replay.py` or `eval/schema` myself. They are M2's and M3's; the
 fixes are described for them.
+
+## 2026-11-25 — #169 findings closed (re-check after #170 and #171)
+
+**Assistance level:** L3 (Core-assist): the assistant gave me the commands and drafted this entry
+from my output; I ran every command myself on my laptop.
+
+**What I asked:** re-run my #169 checks after M2's and M3's fixes (M2's request).
+
+**What was retained:** the entry in [[evidence-m1]].
+
+**What I changed:** ran every command; checked the entry against my output before committing.
+
+**How it was verified:** every result is copied from my own terminal output.
+
+**Errors found:**
+- My `set PATH` line had a typo (`sset`), so `javap` came from JDK 25; the test JVM was JDK 8 via
+  `JAVA_HOME`.
+- I interrupted the first replay; the second completed.
+
+**Rejections:** none.

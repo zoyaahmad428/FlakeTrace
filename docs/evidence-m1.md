@@ -1523,3 +1523,39 @@ fix: derive the fallback from `search_mode` (`"pair"` when `search_mode == "pair
 
 **Limitation:** that line 154 read `search_mode = "pairs"` from this bundle comes from reading the
 code, not from printing the header.
+
+## #169 findings closed: my old FJ-03 bundle re-checked after the fixes (2026-11-25)
+
+**Requirement:** re-run my #169 checks once M3's #170 (schema v3, each report validated against
+its own version) and M2's #171 (replay takes `reproduced_by` from the record) were merged. Same
+laptop; FlakeTrace `main` at `021008b`; the same old bundle,
+`%TEMP%\w35-bundle\20261122T105218Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` (written on `7f95297`).
+
+**Window setup:**
+- `set JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-8.0.512.9-hotspot` and
+  `set JAVA_TOOL_OPTIONS=-Duser.timezone=UTC -Duser.language=en -Duser.country=US`.
+- My `set PATH=…` line had a typo (`sset`) and did not run, so `PATH` kept my default JDK 25.
+- The test JVM was still JDK 8: replay reports `JDK: 1.8.0_512 -> 1.8.0_512 same`. `javap` came
+  from my default JDK 25.
+
+**1. `verify` on the old bundle:** `py -3.11 -m eval.bundle verify "<old bundle>"` → `OK`. Under
+#169 the same command failed with `'reproduced_by' is a required property`.
+
+**2. `replay` of the old bundle:**
+`py -3.11 -m runner replay "<old bundle>" --project D:\fj\fastjson --bundle %TEMP%\w35-replay2
+--records %TEMP%\w35-replay2-rec`.
+- My first attempt was stopped with Ctrl+C while the evidence extraction was still running (a
+  `KeyboardInterrupt` traceback in `javap`). This was my interrupt, not a tool error.
+- The second attempt ran to `exit 0`:
+  - verdict `CANDIDATE (NO_SUPPORTED_RESOURCE_EVIDENCE) -> … same`;
+  - polluters `SerializeWriterTest_14#test_writer_1 -> … same`;
+  - sequence `20/20 matched -> 20/20 matched`; alone `20/20 passed -> 20/20 passed`;
+  - deletion `test_writer_1 NEEDED -> NEEDED`; subject `e05e9c5… -> e05e9c5… same`;
+  - tool `7f95297… -> 021008b…` DIFFERENT (expected);
+  - JDK, OS, Maven, timezone, locale, encoding and lifecycle all `same`.
+- The new bundle `20261125T162830Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` → `verify` → `OK`. Its report: `CANDIDATE reproduced_by= pair`,
+  with the limitation line "The failure appeared when the polluter ran directly before the victim
+  (a constructed pair); pair mode does not run the project's own or shuffled orders."
+
+**Result:** both #169 findings are **closed**. The old v2 bundle verifies, and the replay labels it
+`pair`, with the constructed-pair line.
