@@ -81,6 +81,8 @@ real `runner.diagnose.run_steps` and `eval.report.assemble_report`. Details and 
 Not checked by us: FT006 against a real project, FT008, FT009 on a second machine, and every
 report and worksheet finding (taken from the supervisor's audit).
 
+*Since then (status 2026-11-26; the check above is kept as it was):* FT006 against a real project — fastjson FJ-03 under Maven Surefire gives the same failure as FlakeTrace's diagnosis (M1, 2026-11-25, PR #173); FT008 — FJ-03 run through the whole pipeline, order mode `NOT_REPRODUCED` (M3 #156, repeated by M2) and pair mode `CANDIDATE` from the victim alone (W35, reproduced by M1 #163), with a live comparison (M3 #165); FT009 on a second machine — M1's bundle reproduction (#159) and the W27 image on her laptop (#174). See [[10-Final1/action-register]] for each row's status.
+
 ## Decisions only the supervisor can make
 
 Tracked with their answers in [[10-Final1/supervisor-agenda]].
