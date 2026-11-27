@@ -2161,3 +2161,15 @@ new command run otherwise, per the task's own "existing evidence only".
 Ownership checkpoint: be able to explain why N1-N4 show `—` for resource kind rather than a
 blank cell, and why the FT005 controls' missing bundle is a real, stated gap rather than
 something to paper over.
+
+## 2026-11-27 -- task 8: repeated M2's W39 seed-2 run (L1)
+
+M2 asked for this directly (PR #182's "could you repeat one run"), not a self-chosen check.
+Ran the same command he gave, same real checkout, same pinned JDK 8 -- result identical
+(`CANDIDATE`, `test_writer_2`, 184/400 invocations, 61/524 pairs). Added it to the real
+budgeted-run table in `real-case-protocol.md` next to the unconstrained one it sits beside, not
+as a separate disconnected note.
+
+Verified: `eval.bundle verify` on the new bundle -> OK; the real invocation/pair counts match
+M2's recorded run exactly, confirmed by reading both side by side, not from memory of the
+earlier message.
