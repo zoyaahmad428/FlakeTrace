@@ -3030,10 +3030,13 @@ alongside `ranked` and the five seeds, under the one methodology, bundling every
   less than `original`/`ranked` -- 45% to 90% fewer invocations. This
   is not "random beats ranking" as a general claim -- `rank_candidates` genuinely found zero
   static evidence (M1, #145), so `ranked` has nothing to rank with and correctly degenerates to
-  `original`. It is specific to this real case's actual shape: the package has **six**
-  independently-valid single polluters for this victim (the 524-candidate scan's own count --
-  a different number from the seven runs here, where four distinct identities were adopted,
-  each `CANDIDATE` with the identical reference signature), spread through the 524 real
+  `original`. It is specific to this real case's actual shape: **six** candidates in the
+  package each independently make the victim fail when run directly before it in a
+  `[candidate, victim]` pair *(precision fix, M1's review 2026-11-27: this is the POC's own
+  real `scan_FJ-03.csv`, `od_relevant` column -- an actual executed pair per candidate, not an
+  inference from these seven runs)* -- a different number from the seven runs here, where four
+  distinct identities were adopted, each `CANDIDATE` with the identical reference signature,
+  spread through the 524 real
   candidates, while `original`'s one fixed natural-discovery order happens to reach the first
   one it encounters unusually late (368th of
   524). A fixed order cannot be lucky; a reshuffle usually is, on a case with this many "right
@@ -3589,7 +3592,39 @@ pinned JDK 8: `CANDIDATE`, `SerializeWriterTest_14#test_writer_2`, 184 of 400 in
 `eval/bundles/20261127T130117Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf`,
 `eval.bundle verify` -> OK.
 
-**Not yet done (usage limit reached mid-task):** adding this repeat to the W37/W39 result
-table in `real-case-protocol.md`, the genai-log/register rows for this task, and committing
-the bundle. The real run and its verify are done and correct; only the write-up and hand-off
-are outstanding.
+Added to the W39 result table in `real-case-protocol.md`; genai-log and register rows written;
+bundle committed (PR #190).
+
+## 2026-11-27 -- M1's W37 review: two missing lines, two precision fixes
+
+M1 reviewed #180 for real (not just the number): recounted the seven bundles herself, got the
+same four distinct, all `CANDIDATE`, resource `NONE` -- confirms my count independently. She
+named four concrete gaps in `real-case-protocol.md`, not in the number itself.
+
+**1-2. Why there's no edge, and why that's not proof of independence.** Both sentences are
+real, established facts (`evidence-m1.md`'s own bytecode analysis of `SerializeWriter.bufLocal`
+and `evidence-collector.md` §3), already in my evidence log per her own note -- just missing
+from the protocol doc readers are actually pointed to. Added both, verbatim to her wording,
+right after "no static edge, so the policies are identical by construction here".
+
+**3. "The question" still said "the same certified result".** Found it -- `real-case-protocol
+.md`'s own "## The comparison" section, line 272-273. Fixed to "the same verdict" (every FJ-03
+endpoint is `CANDIDATE`, never `VERIFIED`).
+
+**4. Does "six candidates ... each independently a valid single polluter" mean each makes the
+victim fail when run directly before it?** Checked rather than just agreeing: read
+`POC/src/step_scan.py` (and `step_scan_wide.py`) -- `od_relevant` is computed from an actual
+executed `[candidate, victim]` run per candidate (`want = "FAIL"`, `r["od_relevant"] = "YES" if
+r["victim_status"] == want`), not a static or inferred classification. Counted the real file:
+`POC/results/scan_FJ-03.csv` has exactly 6 rows with `od_relevant: YES` --
+`SerializeWriterTest_14#test_writer_1/_2/_3` and `SerializeWriterTest_15#test_writer_1/_2/_3`.
+**M1's suggested phrasing is exactly right, and now stated as a checked fact, not an
+assumption**: reworded in both `real-case-protocol.md` and `evidence-m3.md`'s own earlier entry
+that had the same imprecision. Also named the real detail this check surfaced: two of the six
+(`SerializeWriterTest_15#test_writer_2`, `#test_writer_3`) were never actually encountered by
+any of the seven real FlakeTrace runs -- a fact M1's question made me go find, not something I
+already knew.
+
+**Verified:** `python -m unittest discover -s eval/tests` -> 165/165 OK (docs-only change); the
+`od_relevant` count re-derived from the real CSV with a one-line script, not quoted from
+memory.
