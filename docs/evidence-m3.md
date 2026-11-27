@@ -3579,3 +3579,17 @@ order, vs. a constructed pair), not a comparison of which search mode is "better
 
 **Verified:** no new command run (the task's own instruction: existing evidence only); every
 cited bundle re-verified; `python -m unittest discover -s eval/tests` -> 165/165 OK, unaffected.
+
+## 2026-11-27 -- task 8 (W39): repeated M2's seed-2 budgeted FJ-03 run, for his verifier column
+
+M2's PR #182 asked me directly to repeat one of his four W39 runs for the verifier column.
+Repeated `random` seed 2 under `--budget-invocations 400`, same real fastjson checkout, same
+pinned JDK 8: `CANDIDATE`, `SerializeWriterTest_14#test_writer_2`, 184 of 400 invocations spent,
+61 of 524 pairs tried -- **identical** to M2's own recorded result. Bundle
+`eval/bundles/20261127T130117Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf`,
+`eval.bundle verify` -> OK.
+
+**Not yet done (usage limit reached mid-task):** adding this repeat to the W37/W39 result
+table in `real-case-protocol.md`, the genai-log/register rows for this task, and committing
+the bundle. The real run and its verify are done and correct; only the write-up and hand-off
+are outstanding.

@@ -154,8 +154,29 @@ Reported exactly as it is, per ADR-016's own instruction -- not spun as "ranking
 never had evidence to rank with) or hidden. All seven bundled and `eval.bundle verify` clean
 ([[evidence-m3]]).
 
+**W39 -- the same comparison under a stated budget, not unconstrained.** Every run above spent
+whatever it needed (798 invocations for `original`/`ranked`, 76-436 for the random seeds); W39
+(M-2, FT007) asks the same question under one shared, stated limit instead. M2 ran it
+2026-11-27, `--search pairs --scope package --budget-invocations 400` (reserve 60, so 340 for
+the search):
+
+| Policy | Result | Invocations spent | Bundle |
+| --- | --- | --- | --- |
+| `original` | `UNRESOLVED (BUDGET_EXHAUSTED)`, 170 of 524 pairs tried, nothing blamed | 360 of 400 | `eval/bundles/20261127T103734Z-...` |
+| `random` seed 1 | `CANDIDATE`, `SerializeWriterTest_14#test_writer_1` | 76 of 400 | `eval/bundles/20261127T104310Z-...` |
+| `random` seed 2 | `CANDIDATE`, `SerializeWriterTest_14#test_writer_2` | 184 of 400 | `eval/bundles/20261127T104600Z-...` |
+| `random` seed 3 | `CANDIDATE`, `SerializeWriterTest_14#test_writer_3` | 258 of 400 | `eval/bundles/20261127T104934Z-...` |
+
+Exactly the outcome the unconstrained runs above predicted: `original` needed 798 (> 400, so it
+runs out); every random seed that needed less than 400 unconstrained still finds its polluter
+within the same 400 here, at the same cost. **M3's independent repeat, 2026-11-27**: re-ran
+`random` seed 2 myself, same real fastjson checkout, same pinned JDK 8 -- `CANDIDATE`,
+`SerializeWriterTest_14#test_writer_2`, 184 of 400 invocations, 61 of 524 pairs tried,
+**identical** to M2's own run. Bundle `eval/bundles/20261127T130117Z-...`, `eval.bundle verify`
+-> OK.
+
 **Lead:** M3 · **Execution compatibility:** M2 · **Resource coverage:** M1 ·
-**Independent repeat:** M1 or M2 · **Work package:** W26
+**Independent repeat:** M1 or M2 · **Work package:** W26, W39
 
 ---
 
