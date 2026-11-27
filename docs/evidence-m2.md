@@ -2007,3 +2007,14 @@ own copy of the code, not from the review's description.
   step-5 row = CANDIDATE, pair, package, original, seed 0, `SerializeWriterTest_14#test_writer_1`, 798, 2026-11-22;
   random seed 1 = 76 invocations; a 21-Nov run = given order; the package order run = never, 12,817. `npx vitest run` →
   `Tests 47 passed`; `npx tsc --noEmit` → exit 0; `npx vite build` → built. **Not yet clicked in a browser** (task 7).
+
+## UI demo, task 6: honest not-built labels (2026-11-27)
+
+- **Requirement:** design goal 5 — every label true today.
+- **Code:** `ui/web/src/lib/labels.ts` — `budget` and `ranking` removed (the Advanced options run both); `runtime`:
+  "NOT BUILT — ADR-001's fallback replaced by ADR-015's spike (W34, stretch); awaits the supervisor"; `container`:
+  "IN THE COMMAND LINE ONLY (docker run flaketrace:w27, W27) — NOT FROM THE UI; a hardened container for untrusted
+  projects is FYP-2"; new `replay`: "IN THE COMMAND LINE ONLY (py -m runner replay, W23) — NOT IN THE UI", shown with the
+  committed evidence; the ranking label removed from the Diagnosis step.
+- **Test-first:** `labels.test.ts` → 2 failures (old wording; `budget`/`ranking` still present). After: `npx vitest run`
+  → `Tests 48 passed`; `npx tsc --noEmit` → exit 0; `npx vite build` → built.

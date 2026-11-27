@@ -2,7 +2,10 @@
 
 Shows what `py -m runner diagnose` produces, on the nine screens of the proposal-stage UI. Every value
 comes from a report the CLI wrote; parts FlakeTrace has not built are greyed out and labelled
-"NOT BUILT YET — PLANNED FOR …" or "NOT BUILT — NOT IN CURRENT PLAN".
+"NOT BUILT YET — PLANNED FOR …" or "NOT BUILT — NOT IN CURRENT PLAN", and parts built only in the command line
+(replay, the W27 container) "IN THE COMMAND LINE ONLY …". The Target step's Advanced options run the CLI's search,
+scope, policy, budget and bundle options; the Source step opens committed bundles from `eval/bundles/` (verified when
+opened) and checks any bundle folder.
 
 | Part | What |
 | --- | --- |

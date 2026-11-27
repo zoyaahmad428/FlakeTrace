@@ -1,7 +1,5 @@
 import { useStore } from "../state";
 import { toView } from "../lib/report";
-import { UNBUILT } from "../lib/labels";
-import { NotBuilt } from "../components/NotBuilt";
 import { FlowNav, Missing, Panel, ScreenHeader, Status, TestName } from "../components/ui";
 
 function Order({ tests, polluters, victim }: { tests: string[]; polluters: string[]; victim: string }) {
@@ -64,7 +62,6 @@ export default function DiagnosisScreen() {
         <Panel title="How the failure was reproduced">
           <p className="text-ink-2">{v.reproduced}</p>
         </Panel>
-        <NotBuilt item={UNBUILT.ranking} />
       </div>
       <FlowNav back={() => go("target")} next={() => go("result")} nextLabel="See the certificate" />
     </>

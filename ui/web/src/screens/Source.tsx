@@ -181,6 +181,9 @@ export default function SourceScreen() {
               </Status>
             )}
           </div>
+          <div className="mt-4">
+            <NotBuilt item={UNBUILT.replay} />
+          </div>
         </Panel>
       </div>
       <FlowNav next={() => go("target")} nextLabel="Choose the failing test" />
