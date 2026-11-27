@@ -1,7 +1,5 @@
 import { useStore } from "../state";
 import { toView } from "../lib/report";
-import { UNBUILT } from "../lib/labels";
-import { NotBuilt } from "../components/NotBuilt";
 import { FlowNav, Missing, Panel, ScreenHeader, Status, TestName } from "../components/ui";
 
 function Order({ tests, polluters, victim }: { tests: string[]; polluters: string[]; victim: string }) {
@@ -61,10 +59,9 @@ export default function DiagnosisScreen() {
         <Panel title="Reduced sequence" aside={`${v.reducedSequence.length} of ${v.originalOrder.length} tests`}>
           <Order tests={v.reducedSequence} polluters={v.polluters} victim={v.victim} />
         </Panel>
-        <Panel title="Order exploration">
-          <p className="text-ink-2">{v.exploration}</p>
+        <Panel title="How the failure was reproduced">
+          <p className="text-ink-2">{v.reproduced}</p>
         </Panel>
-        <NotBuilt item={UNBUILT.ranking} />
       </div>
       <FlowNav back={() => go("target")} next={() => go("result")} nextLabel="See the certificate" />
     </>

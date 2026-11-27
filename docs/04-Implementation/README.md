@@ -6,6 +6,7 @@ this folder holds the four-point ownership note for each component.
 | Component | Code | Owner | Note |
 | --- | --- | --- | --- |
 | Order runner (no sandbox), planner, minimiser/verifier, certificate, CLI | `runner/` | M2 | [[04-Implementation/sandbox-runner]] (order runner, W6) · [[04-Implementation/diagnosis-runs]] (W7) · [[04-Implementation/diagnose-cli]] (W9) |
+| Web UI over the CLI (ADR-009), the Final demo | `ui/` | M2 | [[04-Implementation/web-ui]] |
 | Evidence collector, resource graph | `evidence/` | M1 | [[04-Implementation/evidence-collector]] (Phases 2–3: lifecycle attribution, call depth) |
 | Outcome decision, statistics, schema, baselines, manifest | `eval/` | M3 | see [[evidence-m3]] |
 | Seeded fixtures | `fixtures/` | M3 | [[05-Testing/fixture-suite]] |

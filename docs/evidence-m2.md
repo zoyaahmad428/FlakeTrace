@@ -1948,3 +1948,124 @@ own copy of the code, not from the review's description.
   16 pre-W35 bundles, first problem `report.json does not validate against the schema: 'reproduced_by' is a
   required property` (the real incident's message). `py -3 -m unittest discover -s eval/tests -p "test_*.py"` →
   `Ran 165 tests OK`. CI runs it: the python-eval job lists every `eval/tests/test_*.py`.
+
+## UI demo, task 1: the run options reach the CLI (2026-11-27)
+
+- **Requirement:** the UI is the Final demo (design `docs/superpowers/specs/2026-11-27-ui-demo-design.md`, approved);
+  the server passed only `--n` and `--order`.
+- **Code:** `ui/server.py` — `OPTIONS` (request field → CLI flag and check), `check_diagnose_request`, `Jobs.start(...,
+  options)`, the bundle in the job's folder and in the result, `job_timeout` (default 1800 s, env
+  `FLAKETRACE_UI_JOB_TIMEOUT_S`), `health()["job_timeout_s"]`; `ui/tests/fake_cli.py` writes a bundle folder when asked.
+- **Test-first:** `TestRunOptions` (6 tests) → 11 subtests "unexpectedly None", 1 refusal mismatch, 2 errors
+  (`job_timeout` missing). After: `py -3 -m unittest ui.tests.test_server` → `Ran 37 tests OK` (including the real F1
+  run).
+
+## UI demo, task 2: committed bundles and checking a folder (2026-11-27)
+
+- **Requirement:** design goals 4 and 5a — open committed evidence with a fresh `verify`; check a bundle folder by path
+  (demo step 6, M2's choice A).
+- **Code:** `ui/server.py` — `list_bundles()`, `open_bundle(name)` (exact folder names only), `check_bundle(path)`
+  (`eval.bundle.verify_bundle`, read-only); `GET /api/bundles`, `GET /api/bundles/<name>`, `POST /api/check-bundle`.
+- **Test-first:** `TestCommittedEvidence` (6 tests) → 5 errors (`cannot import name …`), 1 failure (404 for
+  `/api/bundles`). After: 6 OK — the step-5 FJ-03 bundle verifies; a copy with `"n": 20` changed to 21 in
+  `report.json` → `ok: false`, problem names the checksum; `..`, `..%2Freports`, an absolute path, an unknown name →
+  404 / not opened; a missing or non-bundle folder → `ok: false` with a reason. `ui.tests.test_server` → `Ran 43
+  tests OK`.
+
+## UI demo, task 3: how the failure was reproduced (2026-11-27)
+
+- **Requirement:** design goal 3 — the Diagnosis step says how the failure was reproduced, from the report alone.
+- **Code:** `ui/web/src/lib/report.ts` — `reproducedKind(r)` (`pair` / `order` / `given order` / `never`; a report without
+  `reproduced_by`, schema v2, is order mode, as replay reads it), `invocations(r)`, `toView(r).reproduced`; the schema
+  comment now says v3; `Diagnosis.tsx` panel "How the failure was reproduced".
+- **Test-first:** 5 tests on real committed bundles → 5 failures (`reproducedKind is not a function`). After: the
+  step-5 FJ-03 bundle → "Found in a constructed pair … after 368 of 524 pairs. Pair mode does not run the project's own
+  orders.", 798 invocations; a 21-Nov FJ-03 bundle (no `reproduced_by`, `order_given: true`) → "given order"; the
+  package-scope order run → never, "31 shuffled orders tried …", 12,817 invocations. `npm test` → `Tests 38 passed`;
+  `npx tsc --noEmit` → exit 0.
+
+## UI demo, task 4: the Advanced run options (2026-11-27)
+
+- **Requirement:** design goal 1 — the Target step runs the demo's options with the CLI's names and defaults.
+- **Code:** new `ui/web/src/lib/request.ts` (`Form`, `DEFAULT_FORM`, `toRequest`: only what differs from the CLI's
+  default is sent; an empty budget box is "no limit"); `api.ts` request, health and job types; `state.tsx` uses
+  `toRequest` and names a run's bundle path; `Target.tsx` "Advanced run options" (search, scope, policy, seed,
+  shuffles, both budgets, bundle; lifecycle and workspace read-only) replacing the "budget: not in the UI" label, and
+  the run's time limit from health.
+- **Test-first:** `request.test.ts` (5 tests) → `Cannot find module './request'`. After: `npx vitest run` → `Tests 43
+  passed`; `npx tsc --noEmit` → exit 0; `npx vite build` → built. **Not yet clicked in a browser** (task 7).
+
+## UI demo, task 5: committed evidence and checking a folder, in the UI (2026-11-27)
+
+- **Requirement:** design goals 4 and 5a, on screen.
+- **Code:** new `ui/web/src/lib/bundles.ts` (`BundleEntry`, `bundleRow` — reproduced by, scope, policy, seed, polluter,
+  invocations, date, from Task 3's `reproducedKind`/`invocations`; `committedLabel`: "Committed bundle … — pre-run on
+  <date>, not run now"); `api.ts` `bundles()`, `bundle(name)` (name URL-encoded: every name holds a `#`),
+  `checkBundle(path)`; `state.tsx` `Loaded.verify`; `Source.tsx` "Committed evidence" table (opening a row runs verify
+  on the server) and "Check a bundle folder"; `Certificate.tsx` "Evidence bundle check" panel.
+- **Test-first:** `bundles.test.ts` (4 tests, real committed bundles) → `Cannot find module './bundles'`. After: the
+  step-5 row = CANDIDATE, pair, package, original, seed 0, `SerializeWriterTest_14#test_writer_1`, 798, 2026-11-22;
+  random seed 1 = 76 invocations; a 21-Nov run = given order; the package order run = never, 12,817. `npx vitest run` →
+  `Tests 47 passed`; `npx tsc --noEmit` → exit 0; `npx vite build` → built. **Not yet clicked in a browser** (task 7).
+
+## UI demo, task 6: honest not-built labels (2026-11-27)
+
+- **Requirement:** design goal 5 — every label true today.
+- **Code:** `ui/web/src/lib/labels.ts` — `budget` and `ranking` removed (the Advanced options run both); `runtime`:
+  "NOT BUILT — ADR-001's fallback replaced by ADR-015's spike (W34, stretch); awaits the supervisor"; `container`:
+  "IN THE COMMAND LINE ONLY (docker run flaketrace:w27, W27) — NOT FROM THE UI; a hardened container for untrusted
+  projects is FYP-2"; new `replay`: "IN THE COMMAND LINE ONLY (py -m runner replay, W23) — NOT IN THE UI", shown with the
+  committed evidence; the ranking label removed from the Diagnosis step.
+- **Test-first:** `labels.test.ts` → 2 failures (old wording; `budget`/`ranking` still present). After: `npx vitest run`
+  → `Tests 48 passed`; `npx tsc --noEmit` → exit 0; `npx vite build` → built.
+
+## UI demo, task 7: the real server, every demo path (2026-11-27)
+
+- **Requirement:** the UI is the demo; each step of demo plan v2 must work through the real backend.
+- **Run:** `py -3 ui/server.py` (branch `m2/ui-demo`, Windows 11, JDK 21.0.9, Maven 3.10.0), driven over its HTTP API
+  by a script (the same calls the web app makes):
+  - health → `job_timeout_s` 1800, no tool missing;
+  - F1 with `search: pairs`, `bundle: true` → done in 42 s: `VERIFIED`, `ConfigPolluterTest`, `reproduced_by: pair`,
+    the bundle written into the job's folder, `check-bundle` on it → OK;
+  - F1 with `budget_invocations: 66` → `UNRESOLVED (BUDGET_EXHAUSTED)` in 28 s (demo step 4);
+  - pairs with a known order → 400, "--search pairs cannot be combined with --order: pair mode takes the victim only";
+  - `/api/bundles` → 24; the step-5 FJ-03 bundle opened → `verify` OK in 0.2 s, CANDIDATE, `pair`;
+  - a copy with `"n": 20` changed to 21 → "report.json does not match its checksum in manifest.json; the bundle was
+    changed"; the committed bundle → OK.
+- **Surprise:** `verify` on opening took 0.2 s inside the server, not the ~3 s measured per CLI call (that was mostly
+  Python start-up per command), so verifying at listing time would also have been affordable; verify-on-open is kept,
+  since a changed bundle is then always caught.
+- **Not done here:** clicking through the screens in a browser on the demo machine — that is W33's rehearsal.
+
+## UI demo: the fresh review's 13 findings, fixed (2026-11-27)
+
+- **Review:** a fresh opus reviewer on the whole branch; 3 Important, 10 Minor; every number in demo plan v2 checked
+  against the committed bundles and found right. All 13 fixed (the member's standing rule: minors are not deferred).
+- **Server, test-first** (`TestReviewFixes`, 6 tests → 4 failures, 2 errors: `JSONDecodeError`, `ValueError: could not
+  convert string to float: 'abc'`): one unreadable bundle no longer hides the list (its own row, with the reason; others
+  still open); a path in quotes (Windows "Copy as path") is checked; a file is "not a folder"; a live run's bundle
+  carries its verify result; refusals in the CLI's order; negative seeds accepted, as the CLI does; a bad timeout setting
+  falls back to 30 min. `py -3 -m unittest ui.tests.test_server` → `Ran 49 tests OK`.
+- **Web, test-first** (9 failures, plus a missing `job.ts`): a pair-mode "victim fails alone" report now says so (it
+  said "Never reproduced"); a budget stop in pair mode is named; a given order names its test count; a cleared seed or
+  shuffles box is the default, not 0; the "pre-run" label comes first, so a narrow header keeps it; an unreadable
+  bundle is its own row; a finished run does not replace a report opened after it started (the Target step offers it);
+  a bundle-open error shows in its own panel and only the last click counts; the `#` in a bundle name is encoded (the
+  test fails when `encodeURIComponent` is removed, passes when restored). `npx vitest run` → `Tests 57 passed`;
+  `npx tsc --noEmit` → exit 0; `npx vite build` → built.
+- **Correction:** the "tsc exit 0" lines in tasks 3–6 above came from `npx tsc --noEmit | tail -5; echo $?`, which
+  prints `tail`'s exit code. Run without the pipe, `tsc` reported two errors (fixed here); the whole tree is now clean.
+- **New:** `docs/04-Implementation/web-ui.md`, the four-point note the plan listed (finding 13).
+
+## Vault close-out after the supervisor's 23 Nov review (2026-11-27)
+
+- **Requirement:** the supervisor's Proposed Student Action Plan (R20261123): FT009 compatibility, FT008 counts
+  and wording, current artefacts; plus A4–A6, A10, M-2, M-3 completion tests ([[10-Final1/supervisor-review-2026-11-23]]).
+- **Bundles still verify on current `main` (`4f1ad39`):** `python3 -m unittest eval.tests.test_committed_bundles`
+  → `Ran 2 tests in 2.266s OK` (Linux, Python 3; each report validated against the schema its own
+  `schema_version` names, `eval/schema_validator.py`). Not the W36 matrix: that is M3's.
+- **FT008 recount:** read `polluters` from `report.json` of the seven FJ-03 pair-mode bundles dated
+  2026-11-22 in `eval/bundles/` → `SerializeWriterTest_14#test_writer_1` (×3), `#test_writer_3` (×2),
+  `#test_writer_2` (×1), `SerializeWriterTest_15#test_writer_1` (×1): **four distinct**, not five as the
+  protocol, [[evidence-m3]] and the claims ledger said. Claims ledger E16/G9 corrected; protocol and M3's log are W37.
+- **Not run:** any Java/Maven command (no JVM run needed for this change).

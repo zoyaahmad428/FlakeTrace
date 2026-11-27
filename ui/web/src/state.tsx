@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { api, ApiError, retryWhileDown, type DiagnoseRequest, type Health, type Job } from "./lib/api";
-import { outcomeText, resourceName, testName, type Report } from "./lib/report";
+import { api, ApiError, retryWhileDown, type Health, type Job } from "./lib/api";
+import { DEFAULT_FORM, toRequest, type Form } from "./lib/request";
+import { finishedRunLoad, keepsWhatIsOpen, type Loaded } from "./lib/job";
+import { outcomeText, resourceName, testName } from "./lib/report";
 import { plural, shortName } from "./lib/format";
 
 export type StepId = "source" | "target" | "diagnosis" | "result" | "graph" | "repair" | "verify" | "evosuite" | "export";
@@ -17,8 +19,7 @@ export const STEPS: { id: StepId; label: string }[] = [
   { id: "export", label: "Export" },
 ];
 
-export type Loaded = { report: Report; from: string; validated: boolean };
-export type Form = { project: string; victim: string; n: number; order: string };
+export type { Form, Loaded };
 
 export type State = {
   step: StepId;
@@ -26,6 +27,7 @@ export type State = {
   healthError: string | null;
   form: Form;
   loaded: Loaded | null;
+  loadedAt: number | null;
   job: Job | null;
   jobStartedAt: number | null;
   jobError: string | null;
@@ -56,7 +58,6 @@ export function summary(step: StepId, s: State): string {
   }
 }
 
-const orderLines = (text: string) => text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
 
 type Store = {
   s: State;
@@ -71,8 +72,9 @@ const initial: State = {
   step: "source",
   health: null,
   healthError: null,
-  form: { project: "", victim: "", n: 20, order: "" },
+  form: DEFAULT_FORM,
   loaded: null,
+  loadedAt: null,
   job: null,
   jobStartedAt: null,
   jobError: null,
@@ -96,7 +98,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const set = useCallback((patch: Partial<State>) => setState((prev) => ({ ...prev, ...patch })), []);
   const go = useCallback((step: StepId) => setState((prev) => (canVisit(step, prev) ? { ...prev, step } : prev)), []);
   const setForm = useCallback((patch: Partial<Form>) => setState((prev) => ({ ...prev, form: { ...prev.form, ...patch } })), []);
-  const load = useCallback((loaded: Loaded) => setState((prev) => ({ ...prev, loaded, step: "diagnosis" })), []);
+  const load = useCallback((loaded: Loaded) => setState((prev) => ({ ...prev, loaded, loadedAt: Date.now(), step: "diagnosis" })), []);
 
   const refreshHealth = useCallback(() => {
     set({ health: null, healthError: null });
@@ -117,7 +119,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             set({ job });
             setTimeout(() => poll(id), POLL_MS);
           } else if (job.state === "done" && job.report) {
-            setState((prev) => ({ ...prev, job, loaded: { report: job.report!, from: `Live run: ${job.report_path}`, validated: true }, step: "diagnosis" }));
+            setState((prev) =>
+              keepsWhatIsOpen(prev) ? { ...prev, job } : { ...prev, job, loaded: finishedRunLoad(job), loadedAt: null, step: "diagnosis" },
+            );
           } else {
             set({ job });
           }
@@ -133,8 +137,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const diagnose = useCallback(() => {
     const { form } = current.current;
-    const order = orderLines(form.order);
-    const req: DiagnoseRequest = { project: form.project.trim(), victim: form.victim.trim(), n: form.n, ...(order.length ? { order } : {}) };
+    const req = toRequest(form);
     set({ job: null, jobError: null });
     api
       .diagnose(req)

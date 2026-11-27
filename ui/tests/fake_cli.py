@@ -23,6 +23,8 @@ def main(argv):
     if mode == "args":
         (records / "args.json").write_text(json.dumps(args), encoding="utf-8")
         shutil.copy(F1_REPORT, records / "run-x.report.json")
+        if "--bundle" in args:  # as the real CLI does: one bundle folder inside the given folder
+            (Path(args[args.index("--bundle") + 1]) / "run-x").mkdir(parents=True)
         return 0
     if mode == "unicode-error":
         print("error: café ✓ failed", file=sys.stderr)

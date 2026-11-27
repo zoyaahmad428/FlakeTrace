@@ -1,6 +1,7 @@
 import { plural } from "./format";
 
-// Mirrors eval/schema/report.schema.json, schema v2 (read-only consumer, ADR-009; ADR-010).
+// Mirrors eval/schema/report.schema.json, schema v3; a v2 report (before W35) has no reproduced_by
+// (read-only consumer, ADR-009; ADR-010; ADR-016).
 export type TestId = { class: string; method: string };
 // ADR-010: every run is passed, matched (the reference failure), other (a different real failure) or infra.
 export type WilsonCount = {
@@ -18,6 +19,8 @@ export type OrderExploration = {
   reproducing_seed: number | null;
   infrastructure_failures: number;
 };
+// W24: what the diagnosis spent; only the parts the UI reads.
+export type BudgetAccount = { spent: Record<string, number>; exhausted?: boolean; candidates?: { tried: number; total: number } };
 export type Outcome = "VERIFIED" | "CANDIDATE" | "UNRESOLVED";
 export type ResourceEdge = {
   shared_resource: SharedResource; polluter_write_location: CodeLocation; victim_read_location: CodeLocation; depth?: number;
@@ -35,6 +38,9 @@ export type Report = {
   victim_read_location: CodeLocation | null;
   failure_signature: FailureSignature | null;
   order_exploration?: OrderExploration;
+  // W35: "pair" = an adopted [candidate, victim] pair; "order" = an order run in full; absent before schema v3.
+  reproduced_by?: "order" | "pair" | null;
+  budget?: BudgetAccount;
   instrumentation_level: string;
   execution_record_reference: string;
   source_integrity: { passed: boolean; details: string };
@@ -102,6 +108,7 @@ export type ReportView = {
   integrity: string;
   integrityPassed: boolean;
   exploration: string;
+  reproduced: string;
   instrumentation: string;
   limitations: string[];
 };
@@ -139,7 +146,7 @@ function loc(l: CodeLocation | null, owners: TestId[], inside: string, outside: 
 function exploration(r: Report): string {
   const e = r.order_exploration;
   if (!e) return "This report does not record how orders were explored.";
-  const start = e.order_given ? "The failing order was given with --order. " : "";
+  const start = e.order_given ? `The failing order (${plural(r.original_failing_order.length, "test")}) was given with --order. ` : "";
   const crashes = e.infrastructure_failures ? ` ${plural(e.infrastructure_failures, "run")} crashed or timed out.` : "";
   if (e.reproducing_seed !== null) {
     return `${start}Reproduced with a shuffled order (seed ${e.reproducing_seed}) after ${plural(e.shuffled_orders_tried, "shuffled order")}.${crashes}`;
@@ -152,6 +159,36 @@ function exploration(r: Report): string {
   }
   const exhausted = e.orders_exhausted ? " Every distinct order was tried." : "";
   return `${start}${plural(e.shuffled_orders_tried, "shuffled order")} tried (seeds from ${e.seed_base}); none reproduced the failure.${exhausted}${crashes}`;
+}
+
+export type ReproducedKind = "pair" | "order" | "given order" | "never";
+
+// One rule for the Diagnosis step and the committed-evidence table. A report without reproduced_by (schema v2)
+// came from order mode, as replay reads it; "given order" means the order came from --order, not a search.
+export function reproducedKind(r: Report): ReproducedKind {
+  if (r.reproduced_by === "pair") return "pair";
+  if (r.failure_signature === null) return "never";
+  return r.order_exploration?.order_given ? "given order" : "order";
+}
+
+export function invocations(r: Report): number | null {
+  return r.budget ? Object.values(r.budget.spent).reduce((sum, n) => sum + n, 0) : null;
+}
+
+function reproduction(r: Report): string {
+  const pairs = r.budget?.candidates;
+  if (reproducedKind(r) === "pair") {
+    const tried = pairs ? `, after ${pairs.tried} of ${pairs.total} pairs` : "";
+    return `Found in a constructed pair: the polluter ran directly before the victim${tried}. ` +
+      "Pair mode does not run the project's own orders.";
+  }
+  // Pair mode writes no order_exploration (eval/report.py), so its reports are told apart here.
+  if (!r.order_exploration && pairs) {
+    if (reproducedKind(r) !== "never") return "The victim failed when run alone; no pairs were run.";
+    const stopped = r.budget?.exhausted ? "; the budget stopped the search" : "";
+    return `Never reproduced: no pair failed twice in a row (${pairs.tried} of ${pairs.total} pairs tried)${stopped}.`;
+  }
+  return exploration(r);
 }
 
 export function toView(r: Report): ReportView {
@@ -187,6 +224,7 @@ export function toView(r: Report): ReportView {
     integrity: r.source_integrity.details,
     integrityPassed: r.source_integrity.passed,
     exploration: exploration(r),
+    reproduced: reproduction(r),
     instrumentation: r.instrumentation_level,
     limitations: r.limitations,
   };

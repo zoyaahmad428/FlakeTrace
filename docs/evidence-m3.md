@@ -3023,15 +3023,19 @@ alongside `ranked` and the five seeds, under the one methodology, bundling every
   original order (matching item 5's offline finding, now confirmed live for pair mode too, not
   just order mode).
 - **The real, unpredicted finding, reported as it is (ADR-016's own instruction):** every one
-  of the five random seeds found a *different* real polluter (five distinct test methods, not
-  one) and every one cost less than `original`/`ranked` -- 45% to 90% fewer invocations. This
+  of the five random seeds found a real polluter *(corrected 2026-11-27, after the supervisor's
+  23 Nov review -- this was wrong at the time: two seeds, 0 and 3, both adopted the same
+  `test_writer_3`, so "every seed found a different one" overclaims; four distinct identities
+  were adopted across all seven runs, not five -- see [[claims-ledger]] G9)* and every one cost
+  less than `original`/`ranked` -- 45% to 90% fewer invocations. This
   is not "random beats ranking" as a general claim -- `rank_candidates` genuinely found zero
   static evidence (M1, #145), so `ranked` has nothing to rank with and correctly degenerates to
   `original`. It is specific to this real case's actual shape: the package has **six**
-  independently-valid single polluters for this victim (confirmed real, not assumed: five
-  different ones were adopted across these seven runs, each `CANDIDATE` with the identical
-  reference signature), spread through the 524 real candidates, while `original`'s one fixed
-  natural-discovery order happens to reach the first one it encounters unusually late (368th of
+  independently-valid single polluters for this victim (the 524-candidate scan's own count --
+  a different number from the seven runs here, where four distinct identities were adopted,
+  each `CANDIDATE` with the identical reference signature), spread through the 524 real
+  candidates, while `original`'s one fixed natural-discovery order happens to reach the first
+  one it encounters unusually late (368th of
   524). A fixed order cannot be lucky; a reshuffle usually is, on a case with this many "right
   answers." Reported exactly this way -- a real limitation of a *fixed* original order on a
   real, multi-polluter-eligible case, not a defect in ranking and not evidence against the
@@ -3138,11 +3142,13 @@ deterministic given the policy/seed and the pinned subject commit, so a genuinel
 re-run was expected to reproduce them, and did. All 7 bundles (the original `original`-policy
 one plus the 6 regenerated) now `tool.dirty: false` and `eval.bundle verify` clean.
 
-**2. Name the specific certified polluter per random seed in the write-up**, not just "six
-independently-valid polluters" as a count. [[05-Testing/real-case-protocol]] and
-`docs/07-Defense/claims-ledger.md` (G9) both corrected: the five distinct real tests are named
-explicitly in the prose now (`SerializeWriterTest_14#test_writer_1/_2/_3`,
-`SerializeWriterTest_15#test_writer_1`), not left for the comparison table alone to carry --
+**2. Name the specific polluter per random seed in the write-up** (M2's own wording at the
+time said "certified" -- corrected 2026-11-27 to `CANDIDATE`, since none of these has resource
+evidence confirming it; see below), not just "six independently-valid polluters" as a count.
+[[05-Testing/real-case-protocol]] and `docs/07-Defense/claims-ledger.md` (G9) both corrected:
+the real tests are named explicitly in the prose now (`SerializeWriterTest_14#test_writer_1/_2/_3`,
+`SerializeWriterTest_15#test_writer_1` -- **four** distinct identities, not five as first
+written; fixed the same day), not left for the comparison table alone to carry --
 M2's point that a reader of the prose only should not come away thinking one lucky polluter was
 found faster five times.
 
