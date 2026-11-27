@@ -1983,3 +1983,14 @@ own copy of the code, not from the review's description.
   orders.", 798 invocations; a 21-Nov FJ-03 bundle (no `reproduced_by`, `order_given: true`) → "given order"; the
   package-scope order run → never, "31 shuffled orders tried …", 12,817 invocations. `npm test` → `Tests 38 passed`;
   `npx tsc --noEmit` → exit 0.
+
+## UI demo, task 4: the Advanced run options (2026-11-27)
+
+- **Requirement:** design goal 1 — the Target step runs the demo's options with the CLI's names and defaults.
+- **Code:** new `ui/web/src/lib/request.ts` (`Form`, `DEFAULT_FORM`, `toRequest`: only what differs from the CLI's
+  default is sent; an empty budget box is "no limit"); `api.ts` request, health and job types; `state.tsx` uses
+  `toRequest` and names a run's bundle path; `Target.tsx` "Advanced run options" (search, scope, policy, seed,
+  shuffles, both budgets, bundle; lifecycle and workspace read-only) replacing the "budget: not in the UI" label, and
+  the run's time limit from health.
+- **Test-first:** `request.test.ts` (5 tests) → `Cannot find module './request'`. After: `npx vitest run` → `Tests 43
+  passed`; `npx tsc --noEmit` → exit 0; `npx vite build` → built. **Not yet clicked in a browser** (task 7).

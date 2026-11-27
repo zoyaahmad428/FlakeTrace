@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { api, ApiError, retryWhileDown, type DiagnoseRequest, type Health, type Job } from "./lib/api";
+import { api, ApiError, retryWhileDown, type Health, type Job } from "./lib/api";
+import { DEFAULT_FORM, toRequest, type Form } from "./lib/request";
 import { outcomeText, resourceName, testName, type Report } from "./lib/report";
 import { plural, shortName } from "./lib/format";
 
@@ -18,7 +19,7 @@ export const STEPS: { id: StepId; label: string }[] = [
 ];
 
 export type Loaded = { report: Report; from: string; validated: boolean };
-export type Form = { project: string; victim: string; n: number; order: string };
+export type { Form };
 
 export type State = {
   step: StepId;
@@ -56,7 +57,6 @@ export function summary(step: StepId, s: State): string {
   }
 }
 
-const orderLines = (text: string) => text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
 
 type Store = {
   s: State;
@@ -71,7 +71,7 @@ const initial: State = {
   step: "source",
   health: null,
   healthError: null,
-  form: { project: "", victim: "", n: 20, order: "" },
+  form: DEFAULT_FORM,
   loaded: null,
   job: null,
   jobStartedAt: null,
@@ -117,7 +117,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             set({ job });
             setTimeout(() => poll(id), POLL_MS);
           } else if (job.state === "done" && job.report) {
-            setState((prev) => ({ ...prev, job, loaded: { report: job.report!, from: `Live run: ${job.report_path}`, validated: true }, step: "diagnosis" }));
+            setState((prev) => ({ ...prev, job, loaded: { report: job.report!, from: `Live run: ${job.report_path}${job.bundle ? ` · bundle: ${job.bundle.path}` : ""}`, validated: true }, step: "diagnosis" }));
           } else {
             set({ job });
           }
@@ -133,8 +133,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const diagnose = useCallback(() => {
     const { form } = current.current;
-    const order = orderLines(form.order);
-    const req: DiagnoseRequest = { project: form.project.trim(), victim: form.victim.trim(), n: form.n, ...(order.length ? { order } : {}) };
+    const req = toRequest(form);
     set({ job: null, jobError: null });
     api
       .diagnose(req)
