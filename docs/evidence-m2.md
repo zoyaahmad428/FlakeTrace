@@ -2018,3 +2018,21 @@ own copy of the code, not from the review's description.
   committed evidence; the ranking label removed from the Diagnosis step.
 - **Test-first:** `labels.test.ts` → 2 failures (old wording; `budget`/`ranking` still present). After: `npx vitest run`
   → `Tests 48 passed`; `npx tsc --noEmit` → exit 0; `npx vite build` → built.
+
+## UI demo, task 7: the real server, every demo path (2026-11-27)
+
+- **Requirement:** the UI is the demo; each step of demo plan v2 must work through the real backend.
+- **Run:** `py -3 ui/server.py` (branch `m2/ui-demo`, Windows 11, JDK 21.0.9, Maven 3.10.0), driven over its HTTP API
+  by a script (the same calls the web app makes):
+  - health → `job_timeout_s` 1800, no tool missing;
+  - F1 with `search: pairs`, `bundle: true` → done in 42 s: `VERIFIED`, `ConfigPolluterTest`, `reproduced_by: pair`,
+    the bundle written into the job's folder, `check-bundle` on it → OK;
+  - F1 with `budget_invocations: 66` → `UNRESOLVED (BUDGET_EXHAUSTED)` in 28 s (demo step 4);
+  - pairs with a known order → 400, "--search pairs cannot be combined with --order: pair mode takes the victim only";
+  - `/api/bundles` → 24; the step-5 FJ-03 bundle opened → `verify` OK in 0.2 s, CANDIDATE, `pair`;
+  - a copy with `"n": 20` changed to 21 → "report.json does not match its checksum in manifest.json; the bundle was
+    changed"; the committed bundle → OK.
+- **Surprise:** `verify` on opening took 0.2 s inside the server, not the ~3 s measured per CLI call (that was mostly
+  Python start-up per command), so verifying at listing time would also have been affordable; verify-on-open is kept,
+  since a changed bundle is then always caught.
+- **Not done here:** clicking through the screens in a browser on the demo machine — that is W33's rehearsal.
