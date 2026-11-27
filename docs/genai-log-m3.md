@@ -2071,3 +2071,28 @@ was never actually conflated. `eval/tests` 165/165 OK, unaffected (no code chang
 
 Ownership checkpoint: be able to name the real file still showing the wrong wording
 (`demo-plan.md`) and explain why I flagged it instead of fixing it myself.
+
+## 2026-11-27 -- M2's task list, item 2: W36's bundle-verification matrix (L2)
+
+**Kept:** generating the 24-row table with a script reading the real files, not typing it by
+hand -- the task is explicitly about trustworthy record-keeping, so a transcription slip in the
+record itself would defeat the point.
+
+**Rejected:** leaving the Replay column blank without explaining why, or guessing at a per-row
+answer to avoid an empty column. Checked `runner/replay.py` instead (read-only) and found the
+honest, verifiable answer -- it isn't version-aware at all, so "which versions does it support"
+has a real answer ("all of them, by construction") rather than an invented one.
+
+**What I didn't do:** touch `runner/replay.py` to add the replay column myself, even though I
+could read enough of it to answer the version question. Running it for the FJ-03 bundles needs
+a real fastjson checkout this session doesn't have mounted, and it's M2's file regardless --
+asked him rather than producing a partial, unverified column.
+
+Verified: the matrix and the "24 of 24 OK" claim both come from one script run against the
+real committed bundles at a named commit (`41fc150`), not from memory of the earlier,
+smaller checks; 9 malformed/tampered control tests re-run for real alongside it.
+
+Ownership checkpoint: be able to explain why the task's "never write 'all bundles verify'
+without naming the checker version" rule matters -- the checker itself changed once already
+(#164), so a verdict with no commit attached stops being evidence the moment the checker
+changes again.
