@@ -3371,3 +3371,82 @@ hand-off message, not something I can do myself in this session.
 **Verified:** no code changed; the recount is a read-only check against already-committed,
 checksummed bundle files. `python -m unittest discover -s eval/tests` -> 165/165 OK (unaffected,
 confirmed anyway).
+
+## 2026-11-27 -- M2's task list, item 2 (W36/FT009): the bundle-verification matrix
+
+**Checker commit: `41fc150f44fa866c4ae845bd4b117da859dc7b05`** (`main`, after PR #180) -- named
+explicitly because the task rule says never write "all bundles verify" without it: the checker
+(`eval/bundle.py`) itself can change (exactly what happened in #164 -> #170), so a verdict with
+no commit attached is not evidence of anything by the time anyone reads it later.
+
+**All 24 committed bundles, read for real, not summarised:**
+
+| Bundle | Schema v | Expected (report's own outcome) | Actual (`verify_bundle` at `41fc150`) | Replay |
+| --- | --- | --- | --- | --- |
+| `20261121T093338Z-odfixture.ConfigVictimTest#expectsDefaultMode` | 2 | `VERIFIED` | OK | not yet run |
+| `20261121T162830Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` | 2 | `CANDIDATE(NO_SUPPORTED_RESOURCE_EVIDENCE)` | OK | not yet run |
+| `20261121T184546Z-odfixture.ConfigVictimTest#expectsDefaultMode` | 2 | `VERIFIED` | OK | not yet run |
+| `20261121T184816Z-odfixture.FeatureVictimTest#expectsTurboDisabled` | 2 | `VERIFIED` | OK | not yet run |
+| `20261121T184910Z-odfixture.ToggleVictimTest#expectsNotBothFlagsSet` | 2 | `VERIFIED` | OK | not yet run |
+| `20261121T185039Z-odfixture.AlwaysEarlyVictimTest#expectsLateFlagUnset` | 2 | `VERIFIED` | OK | not yet run |
+| `20261121T185141Z-odfixture.NegativeAloneFailTest#alwaysFails` | 2 | `UNRESOLVED(VICTIM_FAILS_ALONE)` | OK | not yet run |
+| `20261121T185218Z-odfixture.NegativeFlakyTest#sometimesFails` | 2 | `UNRESOLVED(VICTIM_FAILS_ALONE)` | OK | not yet run |
+| `20261121T185248Z-odfixture.EnvDependentNegativeTest#onlyFailsUnderCI` | 2 | `UNRESOLVED(NOT_REPRODUCED)` | OK | not yet run |
+| `20261121T185339Z-odfixture.DualFailureVictimTest#expectsStateTwo` | 2 | `UNRESOLVED(VICTIM_FAILS_ALONE_DIFFERENTLY)` | OK | not yet run |
+| `20261121T185847Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` | 2 | `CANDIDATE(NO_SUPPORTED_RESOURCE_EVIDENCE)` | OK | not yet run |
+| `20261121T190427Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` | 2 | `CANDIDATE(NO_SUPPORTED_RESOURCE_EVIDENCE)` | OK | not yet run |
+| `20261121T191519Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` | 2 | `CANDIDATE(NO_SUPPORTED_RESOURCE_EVIDENCE)` | OK | not yet run |
+| `20261121T192924Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` | 2 | `CANDIDATE(NO_SUPPORTED_RESOURCE_EVIDENCE)` | OK | not yet run |
+| `20261121T195429Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` | 2 | `CANDIDATE(NO_SUPPORTED_RESOURCE_EVIDENCE)` | OK | not yet run |
+| `20261121T200523Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` | 2 | `CANDIDATE(NO_SUPPORTED_RESOURCE_EVIDENCE)` | OK | not yet run |
+| `20261122T120044Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` | 2 | `CANDIDATE(NO_SUPPORTED_RESOURCE_EVIDENCE)` | OK | not yet run |
+| `20261122T162104Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` | 2 | `CANDIDATE(NO_SUPPORTED_RESOURCE_EVIDENCE)` | OK | not yet run |
+| `20261122T165348Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` | 2 | `CANDIDATE(NO_SUPPORTED_RESOURCE_EVIDENCE)` | OK | not yet run |
+| `20261122T170257Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` | 2 | `CANDIDATE(NO_SUPPORTED_RESOURCE_EVIDENCE)` | OK | not yet run |
+| `20261122T171204Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` | 2 | `CANDIDATE(NO_SUPPORTED_RESOURCE_EVIDENCE)` | OK | not yet run |
+| `20261122T174219Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` | 2 | `CANDIDATE(NO_SUPPORTED_RESOURCE_EVIDENCE)` | OK | not yet run |
+| `20261122T174845Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` | 2 | `CANDIDATE(NO_SUPPORTED_RESOURCE_EVIDENCE)` | OK | not yet run |
+| `20261124T151413Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` | 2 | `UNRESOLVED(NOT_REPRODUCED)` | OK | not yet run |
+
+**24 of 24 OK.** Generated with a short script reading `report.json`'s own `outcome`/
+`unresolved_reason`/`candidate_reasons` for "Expected" and calling the real `eval.bundle.
+verify_bundle` for "Actual" -- not hand-transcribed, to rule out a copy error in 24 rows.
+**Every bundle is still `schema_version: 2`** -- no bundle has been written with schema v3's
+code since it landed (2026-11-24); the first one that is will be the real test of the v2/v3
+dispatch on a genuinely new report, not a replayed or hand-built one.
+
+**The malformed and tampered controls**, run for real alongside the matrix (not just cited from
+memory):
+- `eval.tests.test_bundle.TestVerifyBundleHappyPath`: `test_a_bundle_with_no_manifest_is_a_clear_problem_not_a_crash`,
+  `test_changing_a_report_count_is_caught_by_recount`,
+  `test_changing_one_byte_of_the_record_breaks_the_checksum`,
+  `test_deleting_one_alone_line_with_the_checksum_fixed_is_still_caught_by_recount` (ADR-013's
+  own point: fixing the checksum after tampering must not hide the mismatch).
+- `eval.tests.test_bundle.TestVerifyReplayBundle`: `test_replay_without_a_reference_signature_in_the_header_is_a_clear_problem`.
+- `eval.tests.test_committed_bundles.TestCommittedBundles`: `test_every_committed_bundle_verifies`,
+  `test_the_check_catches_a_required_field_without_a_version_bump` (M2's own re-enactment of the
+  #164 incident, confirming the check would have caught it).
+
+`python -m unittest eval.tests.test_bundle.TestVerifyBundleHappyPath eval.tests.test_bundle.
+TestVerifyReplayBundle eval.tests.test_committed_bundles` -> **9 tests, OK**.
+
+**The Replay column is empty, on purpose, not forgotten:** replaying most of these bundles needs
+the real subject checkout (the fixture is fast; the fifteen FJ-03 ones need the actual fastjson
+source at the bundle's own pinned commit, which this session does not have mounted right now).
+`runner/replay.py` is M2's file. Asked him for this column rather than guessing or running a
+partial version myself.
+
+**Checked (read-only) whether `replay` is itself schema-version sensitive, since the task asked
+to "state which versions `replay` supports":** grepped `runner/replay.py` for `schema_version`
+and the validator -- no hits. It reads and writes via `record.jsonl`'s own fields directly, not
+through `report.json`'s schema at all; a report's schema only matters once something *else*
+(`eval.bundle.verify_bundle`) is run on whatever `replay` writes. So the honest answer is "all
+of them, by construction" -- not a version `replay` was built to support, a version it never
+checks.
+
+**Not done (M2's own ask, not mine):** telling M1 to do her solo repeat of this check -- noted
+in the hand-off message.
+
+**Verified:** `python -m unittest discover -s eval/tests` -> 165/165 OK; the matrix and control
+results above are both from real commands run against `41fc150`, not summarised from an earlier
+run.
