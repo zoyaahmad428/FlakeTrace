@@ -137,15 +137,19 @@ edge, so the policies are identical by construction here). **A real, honest find
 protocol did not predict: every one of the five random seeds beat `original`/`ranked`, often by
 a large margin.** This is not a general claim that random beats ranking -- it is specific to
 this case's real shape: six candidates in the package are each independently a valid single
-polluter for this victim (confirmed real: five distinct real tests were adopted across the
-seven runs -- `test_writer_1`, `test_writer_2` and `test_writer_3` of `SerializeWriterTest_14`,
-and `test_writer_1` of `SerializeWriterTest_15` -- each `CANDIDATE` with the identical reference
-signature), spread through the 524 candidates, while `original`'s fixed natural-discovery order
-happens to place the first one it reaches unusually late (368th). Each seed's saving is to *a*
-certified polluter, not always the *same* one -- M2's point, worth saying explicitly rather
-than leaving it implicit in the table above: a reader who only reads the prose should not come
-away thinking one lucky polluter was just found faster five times. A fixed order has no way to
-be lucky; a reshuffled one often is.
+polluter for this victim (the 524-candidate scan's own count, a different number from the
+seven runs below). Across the seven runs here, **four** distinct real tests were adopted
+*(corrected 2026-11-27 from "five", after the supervisor's 23 Nov review -- M2 recounted the
+seven committed bundles)* -- `test_writer_1`, `test_writer_2` and `test_writer_3` of
+`SerializeWriterTest_14`, and `test_writer_1` of `SerializeWriterTest_15` -- each `CANDIDATE`
+with the identical reference signature, spread through the 524 candidates, while `original`'s
+fixed natural-discovery order happens to place the first one it reaches unusually late (368th).
+Each seed's saving is to *a* `CANDIDATE` polluter, not always the *same* one -- M2's point,
+worth saying explicitly rather than leaving it implicit in the table above (and never
+"certified": every endpoint here is `CANDIDATE`, not `VERIFIED` -- there is no resource
+evidence to confirm any of them, corrected the same day): a reader who only reads the prose
+should not come away thinking one lucky polluter was just found faster five times. A fixed
+order has no way to be lucky; a reshuffled one often is.
 Reported exactly as it is, per ADR-016's own instruction -- not spun as "ranking failed" (it
 never had evidence to rank with) or hidden. All seven bundled and `eval.bundle verify` clean
 ([[evidence-m3]]).
