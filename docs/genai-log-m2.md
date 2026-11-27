@@ -1338,6 +1338,21 @@ validated v2 reports against v3, which also rejected newer bundles; rewritten to
 
 Ownership checkpoint: why a test that re-enacts the incident proves the guard is not vacuous.
 
+## 2026-11-27 — The web UI as the Final demo
+
+**Tool:** Claude Code (Claude Opus 5.5), brainstorming (with a builder check) → plan → TDD, native · **Level:** L3 ·
+**Branch:** `m2/ui-demo`
+
+**Asked:** the UI is the demo; make it run what the demo shows and label only what is true. **Kept:** approach B
+(run options + committed bundles with a fresh verify) and step 6 option A (check a folder by path), both the member's
+choices; the CLI's names, defaults and refusals in the server; one rule (`reproducedKind`) for the Diagnosis step and
+the evidence table; a UI run's bundle never in the repository. **Found by the builder check:** the seven 21-Nov FJ-03
+bundles ran with a given two-test order — labelled "given order", not order mode reproducing FJ-03. **Rejected:**
+presets (hide parameters); a UI button that tampers (looks staged). **What I changed:** *to fill in.*
+
+Ownership checkpoint: why a committed bundle is labelled "pre-run, not run now"; why the checksum, not the recount,
+catches a changed number; what the UI cannot do (replay, live FJ-03).
+
 ## 2026-11-27 — Vault close-out after the supervisor's 23 Nov review
 
 **Tool:** Claude Code (Claude Opus 5.5) · **Level:** L3 · **Branch:** `docs/post-review-closeout`

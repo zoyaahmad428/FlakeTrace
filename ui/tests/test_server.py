@@ -8,6 +8,7 @@ import threading
 import time
 import unittest
 import urllib.error
+import urllib.parse
 import urllib.request
 from contextlib import contextmanager
 from pathlib import Path
@@ -107,6 +108,173 @@ class TestCheckRequest(unittest.TestCase):
                      {"project": "p", "victim": "a.B#c", "order": ["a.B#c", ""]}):
             with self.subTest(body=body):
                 self.assertIsNotNone(check_diagnose_request(body))
+
+
+class TestRunOptions(unittest.TestCase):
+    """The demo's options (search, scope, policy, seed, shuffles, budget, bundle) reach the CLI under its own flag
+    names, with its own defaults and refusals."""
+
+    BASE = {"project": "p", "victim": "a.B#c"}
+
+    def args_for(self, **options):
+        jobs = fake_jobs("args")
+        done = wait(jobs, jobs.start("proj", "a.B#c", options=options)["id"])
+        return done, json.loads((Path(done["report_path"]).parent / "args.json").read_text(encoding="utf-8"))
+
+    def test_every_option_reaches_the_command(self):
+        done, args = self.args_for(search="pairs", scope="package", policy="random", seed=3, shuffles=5,
+                                   budget_invocations=80, budget_seconds=2.5, bundle=True)
+        flag = lambda name: args[args.index(name) + 1]
+        self.assertEqual((flag("--search"), flag("--scope"), flag("--policy"), flag("--seed"), flag("--shuffles")),
+                         ("pairs", "package", "random", "3", "5"))
+        self.assertEqual((flag("--budget-invocations"), flag("--budget-seconds")), ("80", "2.5"))
+        self.assertEqual(Path(flag("--bundle")), Path(done["report_path"]).parent / "bundles")
+        self.assertEqual(done["bundle"]["path"], str(Path(flag("--bundle")) / "run-x"))
+
+    def test_defaults_add_no_flag(self):
+        done, args = self.args_for()
+        for name in ("--search", "--scope", "--policy", "--seed", "--shuffles", "--budget-invocations",
+                     "--budget-seconds", "--bundle"):
+            self.assertNotIn(name, args)
+        self.assertNotIn("bundle", done)
+
+    def test_good_options_are_accepted(self):
+        self.assertIsNone(check_diagnose_request(dict(self.BASE, search="pairs", scope="package", policy="ranked",
+                                                      seed=0, shuffles=0, budget_invocations=1, budget_seconds=0.5,
+                                                      bundle=False)))
+
+    def test_bad_options_are_rejected(self):
+        for extra in ({"search": "both"}, {"scope": "repo"}, {"policy": "best"}, {"seed": 1.5}, {"seed": True},
+                      {"shuffles": -1}, {"budget_invocations": 0}, {"budget_invocations": "80"},
+                      {"budget_seconds": 0}, {"budget_seconds": True}, {"bundle": "yes"}):
+            with self.subTest(extra=extra):
+                self.assertIsNotNone(check_diagnose_request(dict(self.BASE, **extra)))
+
+    def test_the_cli_refusals_are_the_same(self):
+        order = {"order": ["a.B#c"]}
+        self.assertEqual(check_diagnose_request(dict(self.BASE, search="pairs", **order)),
+                         "--search pairs cannot be combined with --order: pair mode takes the victim only")
+        self.assertEqual(check_diagnose_request(dict(self.BASE, scope="package", **order)),
+                         "--scope package cannot be combined with --order: the order file already fixes the tests")
+
+    def test_the_job_timeout_comes_from_the_environment_and_is_in_health(self):
+        from ui import server
+        self.assertEqual(server.job_timeout({}), 1800)
+        self.assertEqual(server.job_timeout({"FLAKETRACE_UI_JOB_TIMEOUT_S": "90"}), 90)
+        self.assertEqual(server.health()["job_timeout_s"], server.JOB_TIMEOUT_S)
+
+
+BUNDLES = REPO / "eval" / "bundles"
+STEP5 = "20261122T120044Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf"
+
+
+class TestCommittedEvidence(unittest.TestCase):
+    """Design goals 4 and 5a: committed bundles listed and opened with a fresh verify; any bundle folder checked."""
+
+    def test_every_committed_bundle_is_listed_with_its_parameters(self):
+        from ui.server import list_bundles
+        entries = {entry["name"]: entry for entry in list_bundles()}
+        self.assertEqual(set(entries), {path.parent.name for path in BUNDLES.rglob("manifest.json")})
+        step5 = entries[STEP5]
+        self.assertEqual((step5["search"], step5["scope"], step5["policy"], step5["seed"], step5["run_date"]),
+                         ("pairs", "package", "original", 0, "2026-11-22"))
+        self.assertEqual(step5["report"]["reproduced_by"], "pair")
+        self.assertEqual(entries["20261121T093338Z-odfixture.ConfigVictimTest#expectsDefaultMode"]["search"], "order")
+
+    def test_an_opened_bundle_is_verified_now(self):
+        from ui.server import open_bundle
+        opened = open_bundle(STEP5)
+        self.assertEqual((opened["name"], opened["verify"]), (STEP5, {"ok": True, "problem": None}))
+        self.assertEqual(opened["report"]["outcome"], "CANDIDATE")
+
+    def test_names_outside_the_list_are_not_opened(self):
+        from ui.server import open_bundle
+        for name in ("nope", "../reports", "..", str(BUNDLES / STEP5), STEP5 + "/report.json", ""):
+            with self.subTest(name=name):
+                self.assertIsNone(open_bundle(name))
+
+    def test_a_changed_copy_fails_its_check_and_the_committed_one_does_not(self):
+        from ui.server import check_bundle
+        with tempfile.TemporaryDirectory() as tmp:
+            copy = Path(tmp) / "fj03-copy"
+            shutil.copytree(BUNDLES / STEP5, copy)
+            self.assertEqual(check_bundle(str(copy)), {"ok": True, "problem": None})
+            report = copy / "report.json"
+            report.write_bytes(report.read_bytes().replace(b'"n": 20', b'"n": 21', 1))
+            checked = check_bundle(str(copy))
+            self.assertFalse(checked["ok"])
+            self.assertIn("checksum", checked["problem"])
+        self.assertTrue(check_bundle(str(BUNDLES / STEP5))["ok"])
+
+    def test_a_missing_or_non_bundle_folder_is_a_clear_no(self):
+        from ui.server import check_bundle
+        with tempfile.TemporaryDirectory() as tmp:
+            for path in (str(Path(tmp) / "missing"), tmp, ""):
+                with self.subTest(path=path):
+                    checked = check_bundle(path)
+                    self.assertFalse(checked["ok"])
+                    self.assertTrue(checked["problem"])
+
+    def test_over_http(self):
+        with serving(fake_jobs("report")) as (_, base):
+            status, listed = call(base, "GET", "/api/bundles")
+            self.assertEqual((status, len(listed)), (200, len(list(BUNDLES.rglob("manifest.json")))))
+            status, opened = call(base, "GET", "/api/bundles/" + urllib.parse.quote(STEP5, safe=""))
+            self.assertEqual((status, opened["verify"]["ok"]), (200, True))
+            for path in ("/api/bundles/nope", "/api/bundles/..%2Freports", "/api/bundles/%2E%2E"):
+                with self.subTest(path=path):
+                    self.assertEqual(call(base, "GET", path)[0], 404)
+            status, checked = call(base, "POST", "/api/check-bundle", {"path": str(BUNDLES / STEP5)})
+            self.assertEqual((status, checked), (200, {"ok": True, "problem": None}))
+            self.assertEqual(call(base, "POST", "/api/check-bundle", {"path": 7})[0], 400)
+
+
+class TestReviewFixes(unittest.TestCase):
+    """Fixes from the fresh review of m2/ui-demo (2026-11-27), each seen failing first."""
+
+    def test_a_broken_bundle_is_its_own_row_and_the_rest_still_open(self):
+        from ui import server
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            shutil.copytree(BUNDLES / STEP5, root / STEP5)
+            broken = root / "20991231T000000Z-x.Y#z"
+            broken.mkdir()
+            (broken / "manifest.json").write_text("{ truncated", encoding="utf-8")
+            with mock.patch.object(server, "BUNDLES", root):
+                rows = {row["name"]: row for row in server.list_bundles()}
+                self.assertIsNone(rows[broken.name]["report"])
+                self.assertIn("manifest.json", rows[broken.name]["error"])
+                self.assertEqual(rows[STEP5]["report"]["outcome"], "CANDIDATE")
+                opened = server.open_bundle(broken.name)
+                self.assertFalse(opened["verify"]["ok"])
+                self.assertTrue(server.open_bundle(STEP5)["verify"]["ok"])
+
+    def test_a_quoted_path_from_copy_as_path_is_checked(self):
+        from ui.server import check_bundle
+        self.assertEqual(check_bundle(f'"{BUNDLES / STEP5}"'), {"ok": True, "problem": None})
+        self.assertEqual(check_bundle(f"  '{BUNDLES / STEP5}'  "), {"ok": True, "problem": None})
+
+    def test_a_file_is_not_called_a_missing_folder(self):
+        from ui.server import check_bundle
+        problem = check_bundle(str(BUNDLES / STEP5 / "report.json"))["problem"]
+        self.assertIn("not a folder", problem)
+
+    def test_a_live_runs_bundle_carries_its_verify_result(self):
+        jobs = fake_jobs("args")
+        done = wait(jobs, jobs.start("proj", "a.B#c", options={"bundle": True})["id"])
+        self.assertEqual(set(done["bundle"]), {"path", "verify"})
+        self.assertFalse(done["bundle"]["verify"]["ok"])  # FakeCli's empty folder is not a bundle: said, not hidden
+
+    def test_the_refusals_come_in_the_clis_order_and_seeds_may_be_negative(self):
+        both = {"project": "p", "victim": "a.B#c", "order": ["a.B#c"], "search": "pairs", "scope": "package"}
+        self.assertEqual(check_diagnose_request(both),
+                         "--scope package cannot be combined with --order: the order file already fixes the tests")
+        self.assertIsNone(check_diagnose_request({"project": "p", "victim": "a.B#c", "seed": -3}))
+
+    def test_a_bad_timeout_setting_falls_back_to_the_default(self):
+        from ui import server
+        self.assertEqual(server.job_timeout({"FLAKETRACE_UI_JOB_TIMEOUT_S": "abc"}), 1800)
+        self.assertEqual(server.job_timeout({"FLAKETRACE_UI_JOB_TIMEOUT_S": "-5"}), 1800)
 
 
 class TestJobs(unittest.TestCase):

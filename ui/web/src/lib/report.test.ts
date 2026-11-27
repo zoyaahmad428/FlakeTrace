@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { looksLikeReport, toView, type Report } from "./report";
+import { invocations, looksLikeReport, reproducedKind, toView, type Report } from "./report";
 
 const REPORTS = fileURLToPath(new URL("../../../../eval/reports/", import.meta.url));
 const read = (name: string) => JSON.parse(readFileSync(`${REPORTS}${name}.json`, "utf-8")) as Report;
@@ -91,5 +91,68 @@ describe("details", () => {
   it("recognises a report by its required fields", () => {
     expect(looksLikeReport(read("f1"))).toBe(true);
     for (const bad of [null, [], {}, { outcome: "VERIFIED" }, "text"]) expect(looksLikeReport(bad)).toBe(false);
+  });
+});
+
+const BUNDLES = fileURLToPath(new URL("../../../../eval/bundles/", import.meta.url));
+const bundle = (name: string) => JSON.parse(readFileSync(`${BUNDLES}${name}/report.json`, "utf-8")) as Report;
+const FJ03 = "com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf";
+
+describe("how the failure was reproduced (UI demo design, goal 3), on committed bundles", () => {
+  it("names a constructed pair, with the pairs tried, for FJ-03 in pair mode (demo step 5)", () => {
+    const r = bundle(`20261122T120044Z-${FJ03}`);
+    expect(reproducedKind(r)).toBe("pair");
+    expect(toView(r).reproduced).toBe(
+      "Found in a constructed pair: the polluter ran directly before the victim, after 368 of 524 pairs. " +
+        "Pair mode does not run the project's own orders.",
+    );
+    expect(invocations(r)).toBe(798);
+  });
+
+  it("says a given order was given, for a report from before reproduced_by existed", () => {
+    const r = bundle(`20261121T162830Z-${FJ03}`);
+    expect("reproduced_by" in r).toBe(false);
+    expect(reproducedKind(r)).toBe("given order");
+    expect(toView(r).reproduced).toBe(
+      "The failing order (2 tests) was given with --order. The given order reproduced the failure; no shuffled orders were needed.",
+    );
+  });
+
+  it("says never, with what was tried, when nothing reproduced", () => {
+    const r = bundle(`20261124T151413Z-${FJ03}`);
+    expect(reproducedKind(r)).toBe("never");
+    expect(toView(r).reproduced).toBe("31 shuffled orders tried (seeds from 0); none reproduced the failure.");
+    expect(invocations(r)).toBe(12817);
+  });
+
+  it("keeps today's text for an order-mode fixture report", () => {
+    expect(reproducedKind(read("f1"))).toBe("order");
+    expect(toView(read("f1")).reproduced).toBe("The original order reproduced the failure; no shuffled orders were needed.");
+  });
+
+  it("has no invocation count without a budget account", () => {
+    const { budget, ...r } = bundle(`20261122T120044Z-${FJ03}`);
+    expect(budget).toBeDefined();
+    expect(invocations(r as Report)).toBeNull();
+  });
+});
+
+describe("review fixes (2026-11-27)", () => {
+  const step5 = () => bundle(`20261122T120044Z-${FJ03}`);
+
+  it("says the victim failed alone, never 'never reproduced', for a pair-mode victim that fails alone", () => {
+    const r = { ...step5(), outcome: "UNRESOLVED", unresolved_reason: "VICTIM_FAILS_ALONE", reproduced_by: "order",
+                polluters: [], budget: { ...step5().budget!, candidates: { tried: 0, total: 524 } } } as Report;
+    expect(reproducedKind(r)).toBe("order");
+    expect(toView(r).reproduced).toBe("The victim failed when run alone; no pairs were run.");
+  });
+
+  it("says when the budget stopped a pair search that found nothing", () => {
+    const r = { ...step5(), outcome: "UNRESOLVED", unresolved_reason: "BUDGET_EXHAUSTED", reproduced_by: null,
+                failure_signature: null, polluters: [],
+                budget: { ...step5().budget!, exhausted: true, candidates: { tried: 40, total: 524 } } } as Report;
+    expect(toView(r).reproduced).toBe(
+      "Never reproduced: no pair failed twice in a row (40 of 524 pairs tried); the budget stopped the search.",
+    );
   });
 });
