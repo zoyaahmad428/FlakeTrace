@@ -3407,13 +3407,18 @@ no commit attached is not evidence of anything by the time anyone reads it later
 | `20261122T174219Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` | 2 | `CANDIDATE(NO_SUPPORTED_RESOURCE_EVIDENCE)` | OK | not yet run |
 | `20261122T174845Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` | 2 | `CANDIDATE(NO_SUPPORTED_RESOURCE_EVIDENCE)` | OK | not yet run |
 | `20261124T151413Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` | 2 | `UNRESOLVED(NOT_REPRODUCED)` | OK | not yet run |
+| `20261127T103734Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` (W39, `original`) | **3** | `UNRESOLVED(BUDGET_EXHAUSTED)` | OK | exit 2, "nothing to replay" (M2, PR #184) |
+| `20261127T104310Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` (W39, `random` seed 1) | **3** | `CANDIDATE(NO_SUPPORTED_RESOURCE_EVIDENCE)` | OK | `CANDIDATE -> CANDIDATE same`, exit 0, `reproduced_by: pair` with the constructed-pair line, replay bundle `verify` OK (M2, PR #184) |
+| `20261127T104600Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` (W39, `random` seed 2) | **3** | `CANDIDATE(NO_SUPPORTED_RESOURCE_EVIDENCE)` | OK | not yet run |
+| `20261127T104934Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` (W39, `random` seed 3) | **3** | `CANDIDATE(NO_SUPPORTED_RESOURCE_EVIDENCE)` | OK | not yet run |
 
-**24 of 24 OK.** Generated with a short script reading `report.json`'s own `outcome`/
-`unresolved_reason`/`candidate_reasons` for "Expected" and calling the real `eval.bundle.
-verify_bundle` for "Actual" -- not hand-transcribed, to rule out a copy error in 24 rows.
-**Every bundle is still `schema_version: 2`** -- no bundle has been written with schema v3's
-code since it landed (2026-11-24); the first one that is will be the real test of the v2/v3
-dispatch on a genuinely new report, not a replayed or hand-built one.
+**28 of 28 OK** *(24 as of the matrix's first build, 2026-11-27 morning; M2's W39 PR #182 added
+4 more the same day, appended above rather than re-tabulated from scratch)*. Generated with a
+short script reading `report.json`'s own `outcome`/`unresolved_reason`/`candidate_reasons` for
+"Expected" and calling the real `eval.bundle.verify_bundle` for "Actual" -- not hand-transcribed,
+to rule out a copy error across 28 rows. **The four W39 bundles are the first ever committed
+with `schema_version: 3`** -- the real test of the v2/v3 dispatch on a genuinely new report
+(not replayed or hand-built) that the first version of this entry said was still pending.
 
 **The malformed and tampered controls**, run for real alongside the matrix (not just cited from
 memory):
@@ -3497,3 +3502,32 @@ row with her result," not just a status-line edit.
 default, local-path `--no-hardlinks`, real GitHub remote); a real diagnosis run and `verify` on
 the GitHub-clone build specifically, since that is the scenario that matters. No code changed
 beyond PR #179's already-merged fix.
+
+## 2026-11-27 -- two follow-ups from M2's PR #184, in my own files
+
+M2's W36 replay PR named two real gaps in my files directly, not as a new numbered task --
+addressed both before moving to task 4, since leaving them would mean the matrix and README
+stay wrong a turn longer than necessary.
+
+**1. The matrix needed the four W39 bundles.** Added all four (checker commit unchanged,
+`41fc150` was superseded by later merges but the matrix note already says the check was
+re-run, not a fresh commit worth re-stamping for four rows) -- all `schema_version: 3`, the
+first ever committed under it. Filled the Replay column from M2's PR #184 for the two he
+actually ran (`original`: exit 2 "nothing to replay"; `random` seed 1: `CANDIDATE -> CANDIDATE
+same`); left seeds 2 and 3 as "not yet run" rather than guessing they'd behave the same.
+Re-verified all 28 committed bundles together (not just the 4 new ones in isolation) -> 28/28
+OK.
+
+**2. `eval/bundles/README.md`'s fixture table named 8 folders that no longer exist** -- the
+2026-11-21 clean-tree regeneration (this file's own later section) renamed them, and the table
+was never updated to match. Checked each of the 8 real replacement folders' actual
+`report.json` before touching the table, not just renamed the timestamp and left the
+descriptive text alone: caught a real, if expected, discrepancy doing this -- N2's alone tally
+in the current committed bundle is 9/20, not the 13/20 the table still said (N2 is
+deliberately intermittent; the old number was real for the bundle that no longer exists, not
+an error, but it is wrong for the one now committed). Corrected it to the real current number
+rather than leaving the old one standing next to a new folder name.
+
+**Verified:** `python -m unittest discover -s eval/tests` -> 165/165 OK; all 28 committed
+bundles `verify` clean; every number in the corrected README table re-read from the actual
+current `report.json` files, not carried over from the stale table.

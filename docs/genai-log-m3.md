@@ -2120,3 +2120,19 @@ specifically, since that is the one that represents a real teammate's clone.
 Ownership checkpoint: be able to explain why a local-path `git clone` on the same drive behaves
 differently from cloning over the network (hardlinked loose objects vs. an unpacked packfile),
 and why that distinction is exactly what separates a real finding from a test artifact.
+
+## 2026-11-27 -- two follow-ups M2's PR #184 named in my files (L1)
+
+**Kept:** fixing both before starting task 4, since M2 named them as real problems in files I
+own, not optional polish.
+
+**Caught, not assumed:** before renaming the 8 stale folders in `eval/bundles/README.md`, read
+each real replacement's `report.json` rather than just substituting the new timestamp into the
+old sentence. That's what surfaced N2's real number changing (13/20 -> 9/20) -- a renamed-only
+fix would have kept a number that no longer matches the actual committed file.
+
+Verified: 28/28 committed bundles `verify` clean after adding the 4 W39 rows; every number in
+the corrected README table re-read from the real current files.
+
+Ownership checkpoint: be able to explain why N2's "13/20" wasn't an error when it was written,
+but is one now that the folder it described no longer exists.
