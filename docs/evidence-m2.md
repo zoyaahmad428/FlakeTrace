@@ -1971,3 +1971,15 @@ own copy of the code, not from the review's description.
   `report.json` → `ok: false`, problem names the checksum; `..`, `..%2Freports`, an absolute path, an unknown name →
   404 / not opened; a missing or non-bundle folder → `ok: false` with a reason. `ui.tests.test_server` → `Ran 43
   tests OK`.
+
+## UI demo, task 3: how the failure was reproduced (2026-11-27)
+
+- **Requirement:** design goal 3 — the Diagnosis step says how the failure was reproduced, from the report alone.
+- **Code:** `ui/web/src/lib/report.ts` — `reproducedKind(r)` (`pair` / `order` / `given order` / `never`; a report without
+  `reproduced_by`, schema v2, is order mode, as replay reads it), `invocations(r)`, `toView(r).reproduced`; the schema
+  comment now says v3; `Diagnosis.tsx` panel "How the failure was reproduced".
+- **Test-first:** 5 tests on real committed bundles → 5 failures (`reproducedKind is not a function`). After: the
+  step-5 FJ-03 bundle → "Found in a constructed pair … after 368 of 524 pairs. Pair mode does not run the project's own
+  orders.", 798 invocations; a 21-Nov FJ-03 bundle (no `reproduced_by`, `order_given: true`) → "given order"; the
+  package-scope order run → never, "31 shuffled orders tried …", 12,817 invocations. `npm test` → `Tests 38 passed`;
+  `npx tsc --noEmit` → exit 0.
