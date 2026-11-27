@@ -2145,3 +2145,19 @@ existing register's own phrase ("awaiting supervisor acceptance", from FT005's r
 writing new wording for the same concept.
 
 Verified: eval/tests 165/165 OK (docs-only).
+
+## 2026-11-27 -- task 6: the A5 scenario table (L1)
+
+**Kept:** re-verifying every cited bundle rather than trusting the W36 matrix's already-real
+entries -- cheap to check, and the day's own earlier finding (the README's 8 stale folder
+names) was exactly the kind of drift this table could have repeated silently.
+
+**Rejected:** inventing a bundle path for the two FT005 controls to fill the column evenly.
+They genuinely have none (run before bundles existed as a format); said so explicitly instead.
+
+Verified: both FJ-03 bundle paths re-checked with `eval.bundle verify` before citing them; no
+new command run otherwise, per the task's own "existing evidence only".
+
+Ownership checkpoint: be able to explain why N1-N4 show `—` for resource kind rather than a
+blank cell, and why the FT005 controls' missing bundle is a real, stated gap rather than
+something to paper over.
