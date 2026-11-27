@@ -2173,3 +2173,25 @@ as a separate disconnected note.
 Verified: `eval.bundle verify` on the new bundle -> OK; the real invocation/pair counts match
 M2's recorded run exactly, confirmed by reading both side by side, not from memory of the
 earlier message.
+
+## 2026-11-27 -- M1's W37 review (L2)
+
+**Kept:** checking her fourth point rather than just agreeing it sounded right. "Each
+independently a valid single polluter" was MY OWN earlier wording, written during a session
+merge, and I was not actually sure at the time whether it meant a checked fact or an inference
+from the seven runs. Read the real POC script (`step_scan.py`) instead of guessing -- it turned
+out to be a genuinely executed `[candidate, victim]` run per candidate, so her suggested exact
+wording was correct, and I could say so as a checked fact, not a hopeful rephrasing.
+
+**Rejected:** copying her two explanatory sentences in verbatim without checking they are
+actually backed by something real first -- confirmed both against `evidence-m1.md`'s own
+bytecode findings and `evidence-collector.md` before adding them, even though she is the
+authoritative source for `evidence/` and almost certainly right.
+
+Verified: `POC/results/scan_FJ-03.csv` read directly and counted with a one-line script -- 6
+rows `od_relevant: YES`, not assumed from the number already in the prose.
+
+Ownership checkpoint: be able to explain what `od_relevant` actually measures in the POC's own
+code (a real executed pair, not a static classification), and name the two of the six real
+relevant candidates that none of the seven FlakeTrace runs this session ran ever happened to
+encounter.

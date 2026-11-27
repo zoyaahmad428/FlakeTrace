@@ -133,12 +133,25 @@ no budget limit (same budget: unconstrained, for all seven):
 | `random` seed 4 | `SerializeWriterTest_15#test_writer_1` | 43 | 148 | 81% fewer |
 
 `ranked` matches `original` exactly, as item 5's offline comparison already found (no static
-edge, so the policies are identical by construction here). **A real, honest finding this
-protocol did not predict: every one of the five random seeds beat `original`/`ranked`, often by
-a large margin.** This is not a general claim that random beats ranking -- it is specific to
-this case's real shape: six candidates in the package are each independently a valid single
-polluter for this victim (the 524-candidate scan's own count, a different number from the
-seven runs below). Across the seven runs here, **four** distinct real tests were adopted
+edge, so the policies are identical by construction here). *(M1's review, 2026-11-27: why there
+is no edge -- the pollution goes through the static `ThreadLocal` `SerializeWriter.bufLocal`.
+Both tests only *read* that field; the change happens inside the JDK call `ThreadLocal.set`,
+which the extractor does not follow ([[04-Implementation/evidence-collector]] §3). That no edge
+is not proof of independence: the sequence evidence above already shows the order dependence
+directly; the resource just is not visible to static analysis.)*
+
+**A real, honest finding this protocol did not predict: every one of the five random seeds beat
+`original`/`ranked`, often by a large margin.** This is not a general claim that random beats
+ranking -- it is specific to this case's real shape: **six** candidates in the package each
+independently make the victim fail when run directly before it in a `[candidate, victim]` pair
+-- the POC's own real `scanwide`/`scan` check (`POC/results/scan_FJ-03.csv`'s `od_relevant`
+column, confirmed by reading the real file, not assumed from a summary):
+`SerializeWriterTest_14#test_writer_1/_2/_3` and `SerializeWriterTest_15#test_writer_1/_2/_3`.
+Two of those six
+(`SerializeWriterTest_15#test_writer_2` and `#test_writer_3`) were never actually encountered by
+any of these seven real FlakeTrace runs -- a real, different number from the seven runs below,
+named separately rather than conflated with it. Across the seven runs here, **four** distinct
+real tests were adopted
 *(corrected 2026-11-27 from "five", after the supervisor's 23 Nov review -- M2 recounted the
 seven committed bundles)* -- `test_writer_1`, `test_writer_2` and `test_writer_3` of
 `SerializeWriterTest_14`, and `test_writer_1` of `SerializeWriterTest_15` -- each `CANDIDATE`
@@ -270,7 +283,10 @@ exists now, and are the **preparatory output for the next supervision meeting**.
 ## The comparison
 
 **The question:** under the same execution budget, does evidence-ranked search reach the same
-certified result with fewer test-method invocations than searching in the original order?
+verdict with fewer test-method invocations than searching in the original order? *(Corrected
+2026-11-27, M1's review: said "certified result" -- on FJ-03 every endpoint is `CANDIDATE`,
+never `VERIFIED`, so "certified" overclaims here too, the same correction G9 and this
+protocol's own comparison section already made.)*
 
 | | |
 | --- | --- |
