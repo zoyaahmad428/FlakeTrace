@@ -2136,3 +2136,12 @@ the corrected README table re-read from the real current files.
 
 Ownership checkpoint: be able to explain why N2's "13/20" wasn't an error when it was written,
 but is one now that the folder it described no longer exists.
+
+## 2026-11-27 -- tasks 4 (already done) and 5 (A8/A9) (L1)
+
+Checked task 4's claim against the actual file rather than assuming it from memory of having
+done it earlier -- confirmed intact through every subsequent merge. For task 5, matched the
+existing register's own phrase ("awaiting supervisor acceptance", from FT005's row) instead of
+writing new wording for the same concept.
+
+Verified: eval/tests 165/165 OK (docs-only).

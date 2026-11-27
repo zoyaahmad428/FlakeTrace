@@ -3531,3 +3531,18 @@ rather than leaving the old one standing next to a new folder name.
 **Verified:** `python -m unittest discover -s eval/tests` -> 165/165 OK; all 28 committed
 bundles `verify` clean; every number in the corrected README table re-read from the actual
 current `report.json` files, not carried over from the stale table.
+
+## 2026-11-27 -- M2's task list, task 4 (already done) and task 5 (W36 row A8/A9)
+
+**Task 4** (record the schema v3 agreement in `report-schema.md`) was already complete --
+added during the earlier "M2's three-item list" round, before the numbered task list existed.
+Checked it survived every merge since: intact, names both M1's and M2's agreement, the actual
+schema file untouched. No new commit for this one.
+
+**Task 5**: A8 and A9 still said FT003/FT004/M1's bundle reproduction were open; both are done
+(reproduced by M1, 2026-11-20 and 2026-11-22 respectively). Reworded both to say so and to use
+this register's own established phrase, "**Awaiting supervisor acceptance**" (checked against
+FT005's row, which already uses it, rather than inventing new wording). A9's bundle count
+updated 24 -> 28 (the four W39 bundles added earlier today).
+
+**Verified:** `python -m unittest discover -s eval/tests` -> 165/165 OK (docs-only change).
