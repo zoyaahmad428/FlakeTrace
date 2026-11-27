@@ -2096,3 +2096,27 @@ Ownership checkpoint: be able to explain why the task's "never write 'all bundle
 without naming the checker version" rule matters -- the checker itself changed once already
 (#164), so a verdict with no commit attached stops being evidence the moment the checker
 changes again.
+
+## 2026-11-27 -- M2's task list, item 3: W27's clean-clone rebuild (L2)
+
+**Kept:** doing the stronger check the task actually asked for (a genuine fresh clone) instead
+of re-citing the earlier fix's own working-directory build as if it already satisfied this.
+
+**Caught, not assumed:** the first clean-clone attempt failed for real (`invalid file request`
+on a `.git` object), reproduced twice. Did not stop at "found the workaround" (`--no-hardlinks`)
+-- the actual question the task cares about is whether a teammate's real clone would hit this,
+so built from the real GitHub remote too, which never creates the hardlinked objects that
+triggered it. Concluded it is a genuine quirk but not a reliability gap, with a real test behind
+that conclusion, not a guess.
+
+**Rejected:** writing up the hardlink failure as a W27 defect, which is what it would have
+looked like if I'd stopped after the first failed clone instead of asking whether it generalises
+to how people actually clone this repo.
+
+Verified: three separate `docker build --no-cache` runs (local-path default, `--no-hardlinks`,
+real GitHub clone); a real F1 diagnosis and `eval.bundle verify` on the GitHub-clone build
+specifically, since that is the one that represents a real teammate's clone.
+
+Ownership checkpoint: be able to explain why a local-path `git clone` on the same drive behaves
+differently from cloning over the network (hardlinked loose objects vs. an unpacked packfile),
+and why that distinction is exactly what separates a real finding from a test artifact.

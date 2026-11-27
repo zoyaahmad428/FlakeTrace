@@ -3450,3 +3450,50 @@ in the hand-off message.
 **Verified:** `python -m unittest discover -s eval/tests` -> 165/165 OK; the matrix and control
 results above are both from real commands run against `41fc150`, not summarised from an earlier
 run.
+
+## 2026-11-27 -- M2's task list, item 3 (W27 reliability): rebuilt from a genuine fresh clone
+
+The pin fix itself (`eval/requirements.txt`, `Dockerfile`'s `--retries 5`) was already built and
+merged (PR #179, earlier the same day). Task 3 specifically asks to "rebuild from a clean
+clone, run the F1 diagnosis, show the result unchanged" -- a stronger check than rebuilding in
+my own working directory, which is what the earlier fix's own verification actually did. Did
+the stronger version, not just re-cited the earlier one.
+
+**First attempt caught a real, if unrelated, problem, not assumed clean:** cloned the repo to a
+scratch path with `git clone <local path> <scratch path>` and ran `docker build --no-cache`.
+Failed: `ERROR: invalid file request .git/objects/04/9d9133...`. Reproduced twice (two different
+scratch locations), so not a fluke. Narrowed it before concluding anything: the object file in
+question is an ordinary tree object, identical in content and permissions in both the source
+repo and the clone -- what differs is the **link count** (3 in both, meaning `git clone` had
+hardlinked the object rather than copying it, the default for a *local-path* source on the same
+filesystem). `git clone --no-hardlinks` to the same scratch path built cleanly. **The real
+question was whether this affects anyone else**, not whether the workaround exists: cloned from
+the actual GitHub remote (`https://github.com/zoyaahmad428/FlakeTrace.git`) instead of a local
+path -- a real network clone never creates loose hardlinked objects at all (it unpacks a
+packfile), so the failure mode cannot occur. Built `--no-cache` from that clone: succeeded.
+**Conclusion: a real Docker-Desktop-on-Windows quirk with hardlinked read-only git objects, but
+not a W27 reliability gap** -- nobody clones this repo from a local path on the same drive;
+GitHub (what M1, M2 and CI all actually do) never hits it.
+
+**The real check, from the genuine GitHub clone:**
+```
+git clone https://github.com/zoyaahmad428/FlakeTrace.git <scratch>
+docker build --no-cache -t flaketrace:w27-githubclone .
+docker run --rm -v "<scratch>\flaketrace-bundles:/flaketrace/flaketrace-bundles" \
+  flaketrace:w27-githubclone diagnose --project fixtures/od-fixture \
+  --victim odfixture.ConfigVictimTest#expectsDefaultMode --bundle flaketrace-bundles
+```
+-> `VERIFIED (sequence)`, `ConfigPolluterTest#pollute`, 67 invocations -- **unchanged**, matching
+every earlier run of this case (this session's 2026-11-21 and 2026-11-27 runs, M1's 2026-11-25
+second-machine run). `python -m eval.bundle verify` on the resulting bundle -> OK. Test clones,
+images and the scratch bundle folder removed afterward.
+
+**W27 closed with M1's second-machine result**, per the task -- the row and this entry both
+name it (2026-11-25, her laptop, Docker Desktop 4.98.0, WSL2 kernel 6.6.87.2): identical verdict
+and invocation count to every run on this machine, which is the real content of "closing the
+row with her result," not just a status-line edit.
+
+**Verified:** real `docker build --no-cache` from three different clone methods (local-path
+default, local-path `--no-hardlinks`, real GitHub remote); a real diagnosis run and `verify` on
+the GitHub-clone build specifically, since that is the scenario that matters. No code changed
+beyond PR #179's already-merged fix.
