@@ -3546,3 +3546,36 @@ FT005's row, which already uses it, rather than inventing new wording). A9's bun
 updated 24 -> 28 (the four W39 bundles added earlier today).
 
 **Verified:** `python -m unittest discover -s eval/tests` -> 165/165 OK (docs-only change).
+
+## 2026-11-27 -- task 6 (W40/A5): the scenario table
+
+New doc `docs/07-Defense/a5-scenario-table.md`, 12 rows, existing evidence only -- no command
+run new for this table; every row re-checked against what is already real, not re-derived from
+memory of earlier entries.
+
+**Scenario kind** taken from `fixtures/od-fixture/ground_truth.json`'s own `category` field
+(written before any run, per that file's own `authored_before_any_run` note) for the fixture
+rows -- not invented wording. **Resource kind** taken from each real `report.json`'s own
+`shared_resource.kind`. The four negative controls (N1-N4) show `—` for resource kind, not a
+blank cell left by accident: no polluter is ever blamed for them, so there is no resource to
+report (ADR-010's "no test is blamed" rule).
+
+**A real gap found, stated rather than papered over:** the two FT005 controls
+(`controls.RestoringVictimTest#check`, `controls.TwoFieldVictimTest#check`) have no committed
+bundle -- they were run with `--records`, not `--bundle`, before Interface 8 existed
+(`docs/evidence-m2.md`, 2026-11-20). The table says "*not bundled*" and names the real source
+entry instead of inventing a bundle path or quietly dropping the two rows.
+
+**Every bundle path in the table re-verified before being cited**, not copied from an earlier
+table: `eval.bundle verify` on both FJ-03 rows (`20261124T151413Z` order mode, `20261122T120044Z`
+pair mode) -> OK, OK. The fixture rows (F1-F4, N1-N4) use the real current folder names already
+corrected in `eval/bundles/README.md` earlier today, not the stale ones from before the
+2026-11-21 regeneration.
+
+**What the table does not claim, said explicitly**: not that one real case generalises (A10 and
+"is one case enough for FYP-1" stay the supervisor's); not that pair mode's `CANDIDATE` beats
+order mode's `NOT_REPRODUCED` -- the two rows answer different questions (any discoverable
+order, vs. a constructed pair), not a comparison of which search mode is "better".
+
+**Verified:** no new command run (the task's own instruction: existing evidence only); every
+cited bundle re-verified; `python -m unittest discover -s eval/tests` -> 165/165 OK, unaffected.
