@@ -59,6 +59,17 @@ export default function DiagnosisScreen() {
         <Panel title="Reduced sequence" aside={`${v.reducedSequence.length} of ${v.originalOrder.length} tests`}>
           <Order tests={v.reducedSequence} polluters={v.polluters} victim={v.victim} />
         </Panel>
+        <Panel title="Deletion checks" aside="ADR-011: each kept test removed, the rest re-run">
+          {v.deletions.length ? (
+            <ul className="grid gap-1 text-ink-2">
+              {v.deletions.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-ink-2">No deletion checks in this report: they run only when polluters are found.</p>
+          )}
+        </Panel>
         <Panel title="How the failure was reproduced">
           <p className="text-ink-2">{v.reproduced}</p>
         </Panel>

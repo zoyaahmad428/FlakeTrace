@@ -2117,3 +2117,18 @@ own copy of the code, not from the review's description.
   (`20261121T094724Z`, `…152045Z`, `…152110Z`, `…152152Z`, `…152241Z`, `…152302Z`, `…152321Z`, `…152513Z`; the bundles
   were regenerated clean in #168); my first N3 attempt used one of those names and failed with "not a readable bundle".
   M3's file — sent to her. M3's matrix also needs the four W39 (v3) rows.
+
+## W40 A4: how the code block is isolated, and the UI's deletion checks (2026-11-27)
+
+- **Requirement:** panel action A4 — "completes when the one-page answer is written and shown on F3 in the demo".
+- **Page:** `docs/07-Defense/a4-isolation.md` — runs (JVM state only, G5), sequence (search, delta debugging, `m` = 20
+  removals; 1-minimal under that rule, D9), resource (static overlap, G3), each with how sure we are; F3 worked from its
+  committed bundle `20261121T184910Z-…` (17 earlier tests → 2 polluters, each removed for 20 runs, victim passed 20/20,
+  `NEEDED`; 20/20, alone 0/20; `Toggles.flagA`/`flagB`, `STATIC_OVERLAP`, `NOT_ASSESSED`); what it does not claim; ADR-015
+  for FYP-2. Every number read from the bundle.
+- **Found while writing it:** the web UI did not show `deletion_checks` at all (only one generic limitation line), so the
+  page's first draft overclaimed the demo; corrected, then fixed in the UI (the member chose to show it).
+- **UI, test-first:** `report.ts` `toView(...).deletions` and a "Deletion checks" panel on the Diagnosis step. 4 tests on
+  real committed bundles (F3 → two `NEEDED` lines; FJ-03 → the one-polluter alone-check line; a budget-cut `NOT_RUN` and a
+  round-2 line; none for an unresolved report) → 4 failures. After: `npx vitest run` → `Tests 61 passed`;
+  `npx tsc --noEmit` → exit 0 (unpiped); `npx vite build` → built. **Not clicked in a browser** (W33 rehearsal).

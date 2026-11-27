@@ -39,5 +39,6 @@ folder by path. Nothing is simulated: every value comes from a file the CLI or `
   `Form`/`toRequest` (`lib/request.ts`) and to the Advanced section (`screens/Target.tsx`). Tests:
   `ui/tests/test_server.py` `TestRunOptions`, `ui/web/src/lib/request.test.ts`.
 - **A new committed-evidence column:** `lib/bundles.ts` `bundleRow` and its test, then `screens/Source.tsx`.
+- **The Diagnosis step's panels:** `lib/report.ts` `toView` (`reproduced`, `deletions`) and `report.test.ts`, which runs on real committed bundles.
 - **A label for something not built:** `lib/labels.ts` and `labels.test.ts`; keep each label true today.
 - Tests: `py -3 -m unittest ui.tests.test_server`; in `ui/web`: `npx vitest run`, `npx tsc --noEmit`, `npx vite build`.

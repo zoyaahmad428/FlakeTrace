@@ -21,6 +21,11 @@ export type OrderExploration = {
 };
 // W24: what the diagnosis spent; only the parts the UI reads.
 export type BudgetAccount = { spent: Record<string, number>; exhausted?: boolean; candidates?: { tried: number; total: number } };
+// W20 (ADR-011): each kept test left out and the rest re-run; `alone-check` reuses the alone runs (one polluter).
+export type DeletionCheck = {
+  removed: TestId; runs: { n: number; passed: number } | null;
+  status: "NEEDED" | "NOT_NEEDED" | "INCONCLUSIVE" | "NOT_RUN"; source: string; round: number;
+};
 export type Outcome = "VERIFIED" | "CANDIDATE" | "UNRESOLVED";
 export type ResourceEdge = {
   shared_resource: SharedResource; polluter_write_location: CodeLocation; victim_read_location: CodeLocation; depth?: number;
@@ -41,6 +46,7 @@ export type Report = {
   // W35: "pair" = an adopted [candidate, victim] pair; "order" = an order run in full; absent before schema v3.
   reproduced_by?: "order" | "pair" | null;
   budget?: BudgetAccount;
+  deletion_checks?: DeletionCheck[];
   instrumentation_level: string;
   execution_record_reference: string;
   source_integrity: { passed: boolean; details: string };
@@ -109,6 +115,7 @@ export type ReportView = {
   integrityPassed: boolean;
   exploration: string;
   reproduced: string;
+  deletions: string[];
   instrumentation: string;
   limitations: string[];
 };
@@ -175,6 +182,15 @@ export function invocations(r: Report): number | null {
   return r.budget ? Object.values(r.budget.spent).reduce((sum, n) => sum + n, 0) : null;
 }
 
+function deletionLine(c: DeletionCheck): string {
+  const round = c.round > 1 ? `Round ${c.round} — removed` : "Removed";
+  const test = testName(c.removed);
+  if (c.status === "NOT_RUN" || !c.runs) return `${round} ${test}: not run, the budget ran out → ${c.status}`;
+  if (c.source === "alone-check")
+    return `${round} ${test} (the only polluter): the victim alone passed ${c.runs.passed} of ${c.runs.n} runs → ${c.status}`;
+  return `${round} ${test}: the victim passed ${c.runs.passed} of ${c.runs.n} runs without it → ${c.status}`;
+}
+
 function reproduction(r: Report): string {
   const pairs = r.budget?.candidates;
   if (reproducedKind(r) === "pair") {
@@ -225,6 +241,7 @@ export function toView(r: Report): ReportView {
     integrityPassed: r.source_integrity.passed,
     exploration: exploration(r),
     reproduced: reproduction(r),
+    deletions: (r.deletion_checks ?? []).map(deletionLine),
     instrumentation: r.instrumentation_level,
     limitations: r.limitations,
   };
