@@ -5,16 +5,24 @@ it closes only when its verifier has reproduced it ([[10-Final1/iteration-2-plan
 
 ## Waiting on you
 
+*Replaced 2026-11-27 (M2) after the supervisor's 23 Nov review
+([[10-Final1/supervisor-review-2026-11-23]]). The earlier items here (W16, W18, W19, W22
+verifications) are done and recorded in [[evidence-m1]] and [[evidence-m3]]. Work in this order;
+no calendar slots; the Final is tentatively 4 December.*
+
 | For | What | Where | Why it matters |
 | --- | --- | --- | --- |
-| **M1** | **Run the lifecycle control (W22 verification)** — steps under "W22 job 3" below, on your own machine. When it matches, M2 makes `class-grouped` the default | branch `m2/w22-record-env` | ADR-012 §3; FT006 closes only with your independent run |
-| **M1** | Verify W18: run the commands under "W18" below on your machine and record the result in [[evidence-m1]] | PR from `m2/w18-tallies` | You are W18's verifier; FT003 needs an independent reproduction |
-| **M3** | W19 can now read `alone_tally` / `sequence_tally` from `DiagnosisRuns`. When it does, remove the old count fields and the `NO_SINGLE_POLLUTER` alias (or ask M2 to) | `runner/diagnose.py`, your `eval/report.py`, `eval/outcome.py` | Until then the verdict for FT003 is still the Mid's |
-| **M3** | Review W19 step 1 in **your** file `eval/baseline.py`: `classify`, `RunTally`, `tally`, `SYNTHETIC_PREFIX`, and 14 tests in `eval/tests/test_baseline.py` | PR from `m2/w19-runtally` | Written for you by agreement (2026-11-13); W18 and your W19 build on it |
-| **M3** | Add a line for the new types to `eval/README.md` (your file; M2 did not edit it) | `eval/README.md` | Keep your README true |
-| **M3** | Check W16 consistency: run the phrase search below over `runner/` and `ui/`, read the new CLI and UI wording against claims ledger G1–G4 | PR from `m2/w16-retire-claims` | You are W16's verifier |
-| **M3** | Your part of W16: the `VERIFIED` rationale in `eval/outcome.py` line 218 still says "victim never failed alone, and a resource edge supports it" — G1 and G3 | `eval/` | W16's "Done when" covers every folder; M2 must not edit `eval/` except `eval/baseline.py` |
-| **M1** | Your part of W16: check the resource wording `evidence/` puts in reports (`FIXED_LIMITATIONS`, `report_fields`) against ledger G3. A search by M2 found no "cause" or "mechanism" in `evidence/extract.py`, so this may need no change — your call | `evidence/` | Same reason |
+| **M3** | **W37 first:** correct "five distinct" to **four** distinct adopted polluters (`SerializeWriterTest_14#test_writer_1/2/3`, `SerializeWriterTest_15#test_writer_1`; M2 recounted from the seven bundles 2026-11-27) and "certified polluter" to `CANDIDATE` in **your** files; name the scan's six relevant tests as a separate number; keep order mode's 12,817 separate. The claims ledger (E16, G9) is already corrected in this change | [[05-Testing/real-case-protocol]] (lines ~140–145), [[evidence-m3]] (append a dated correction, do not rewrite history), the result table | FT008/FT017; the supervisor named this exact mismatch |
+| **M3** | **W36:** the bundle version matrix — every committed bundle, its schema version, the checker commit that verifies it, expected vs actual, plus the malformed and tampered controls. Ask M2 for the replay column | [[evidence-m3]], `eval/bundle.py`, `eval/schema_validator.py` | FT009, his Priority 1. Never write "all bundles verify" without naming the checker |
+| **M3** | W40 (A5): a scenario table — scenario kind → case → verdict → bundle, from F1–F4, N1–N4, the two FT005 controls and FJ-03 (order and pair mode) | a new section in [[evidence-m3]] or `eval/README.md` | Panel action A5 |
+| **M3** | W29a: deliver the corrected, editable worksheet (FT015) to the supervisor and record the date | — | FT015 stays open until it is delivered |
+| **M1** | **W32 (FT018):** contact one Java/Maven/JUnit practitioner today; hold the session, or record every attempt and the blocker so the supervisor can agree a substitute | [[10-Final1/practitioner-check]] | His Priority 4; nothing has been attempted yet |
+| **M1** | **W36 check:** once M3's matrix is in, re-run your bundle reproduction **alone**, using only the fixed README, on a current (schema v3) bundle; record what was unclear, or "none" | [[evidence-m1]] | Closes your FT009 repeat |
+| **M1** | W37: check M3's FJ-03 wording — why there is no static edge (JDK `ThreadLocal.set`), and why no edge is not proof of independence | [[05-Testing/real-case-protocol]] | You own the resource interpretation |
+| **M1** | W30 poster and W29b clipped worksheet table — ask the supervisor for the poster date if it is not known | — | Both still unsupplied |
+| **M1, M3** | W40 (A6): each write a short note on the nearest existing tool to your own part and how FlakeTrace differs; cite only sources you opened | your own evidence log, then report v2 | Panel action A6; the oral will ask |
+| **All** | W38: your chapters of report v2.0, against the current build; M2 sets up the skeleton and compiles | `mid-eval-report/`, [[10-Final1/report-v2-plan]] | Not yet started; the report is assessed separately from the demo |
+| **M1, M3** | Review M2's PR #177 (the web UI for the Final demo): M3 checks the committed-evidence table reads your seven FJ-03 runs; M1 checks the runtime-evidence label matches her §3a | PR #177 | The demo runs from it |
 
 ## Changes, newest first
 

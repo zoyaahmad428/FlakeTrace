@@ -1948,3 +1948,16 @@ own copy of the code, not from the review's description.
   16 pre-W35 bundles, first problem `report.json does not validate against the schema: 'reproduced_by' is a
   required property` (the real incident's message). `py -3 -m unittest discover -s eval/tests -p "test_*.py"` →
   `Ran 165 tests OK`. CI runs it: the python-eval job lists every `eval/tests/test_*.py`.
+
+## Vault close-out after the supervisor's 23 Nov review (2026-11-27)
+
+- **Requirement:** the supervisor's Proposed Student Action Plan (R20261123): FT009 compatibility, FT008 counts
+  and wording, current artefacts; plus A4–A6, A10, M-2, M-3 completion tests ([[10-Final1/supervisor-review-2026-11-23]]).
+- **Bundles still verify on current `main` (`4f1ad39`):** `python3 -m unittest eval.tests.test_committed_bundles`
+  → `Ran 2 tests in 2.266s OK` (Linux, Python 3; each report validated against the schema its own
+  `schema_version` names, `eval/schema_validator.py`). Not the W36 matrix: that is M3's.
+- **FT008 recount:** read `polluters` from `report.json` of the seven FJ-03 pair-mode bundles dated
+  2026-11-22 in `eval/bundles/` → `SerializeWriterTest_14#test_writer_1` (×3), `#test_writer_3` (×2),
+  `#test_writer_2` (×1), `SerializeWriterTest_15#test_writer_1` (×1): **four distinct**, not five as the
+  protocol, [[evidence-m3]] and the claims ledger said. Claims ledger E16/G9 corrected; protocol and M3's log are W37.
+- **Not run:** any Java/Maven command (no JVM run needed for this change).

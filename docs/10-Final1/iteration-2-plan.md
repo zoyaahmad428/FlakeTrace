@@ -15,6 +15,10 @@ budget and ranking → one real case. Paperwork with hard dates runs alongside.
 > ⚠ **Dates are estimates.** The poster is probably due **16–20 November** and the Final probably
 > falls **30 November – 4 December**, from the handbook's week numbers. Confirm both. If the Final
 > is earlier than assumed, use the cut order at the end of this file.
+>
+> **Update 2026-11-27:** the supervisor's review of 23 November gives the Final as **4 December,
+> tentative and unannounced**. Remaining work is the close-out W36–W40 below
+> ([[10-Final1/supervisor-review-2026-11-23]]).
 
 ---
 
@@ -70,6 +74,27 @@ load off the member the supervisor identified as the integration bottleneck. If 
 Member 2 to keep it, change this row — and record the choice either way, because the handbook
 asks for ownership changes to be recorded when they happen. **Recorded 2026-11-13: the team agreed
 that Member 3 owns W27** ([[06-Meetings/2026-11-13-post-mid-planning]]).
+
+### Close-out after the supervisor's 23 November review · added 2026-11-27
+
+*Proposed by M2 (2026-11-27) from the supervisor's Proposed Student Action Plan and the team's own
+open items ([[10-Final1/supervisor-review-2026-11-23]]); M1 and M3 to confirm by approving the PR.
+**No calendar slots:** work in this order as fast as dependencies allow. The only date is the
+tentative Final, 4 December; aim to freeze (W33) two days before it.*
+
+| WP | Work | Owner | Verifier | Needs | Done when |
+| --- | --- | --- | --- | --- | --- |
+| **W36** | **FT009 bundle version matrix.** One recorded table for all committed bundles: bundle, schema version, which checker (tool commit) verifies it, expected and actual result; plus the malformed and tampered controls (`eval/tests/test_bundle.py`, `test_committed_bundles.py`). State which versions `replay` supports. Original bundle bytes and checksums never rewritten | M3; M2 the replay column | M1 re-runs it on her machine, alone, with the fixed README (also closes her FT009 repeat) | — | The matrix is in [[evidence-m3]] with commands and tool SHA; M1's repeat is in [[evidence-m1]]; no doc says "all bundles verify" without naming the checker |
+| **W37** | **FT008/FT017 real-case counts and wording.** The seven FJ-03 comparison runs adopt **four** distinct polluters (`SerializeWriterTest_14#test_writer_1`, `#test_writer_2`, `#test_writer_3`, `SerializeWriterTest_15#test_writer_1`; recounted by M2 from the committed bundles 2026-11-27). The 524-candidate scan's six relevant tests are a different number: name both separately. Every endpoint is `CANDIDATE`, so never "certified polluter". Keep order mode's `NOT_REPRODUCED` (12,817 invocations) separate. Costs are test-method invocations, not JVM launches | M3 (protocol, [[evidence-m3]], result table); M1 the interpretation; M2 checks mode and configuration labels | M1 | — | [[05-Testing/real-case-protocol]], claims ledger E16/G9, the member logs and the result table agree with the seven report/record pairs |
+| **W38** | **One build for the Final (FT011/FT017/FT022).** Current architecture and decision figures regenerated from their sources (historical Mid figures kept, labelled historical); stale status rows fixed; **report v2.0** (W28), **poster** (W30), **deck** (W33) and worksheet (W29b) all name the same build and trace requirements to implemented / pending work | All; M2 integrates and compiles | M3 checks status against code; M1 the abstract | W36, W37 for the numbers | [[10-Final1/report-v2-plan]] checklist; every artefact names the build SHA |
+| **W39** | **Budget on the real case (M-2, FT007).** FJ-03 pair mode under one stated limit (e.g. `--budget-invocations 400`): `original` and two or three `random` seeds, each with a bundle. Expected from the unconstrained runs, **not yet run**: `original` (798 needed) stops `BUDGET_EXHAUSTED`; seeds that needed 76–258 reach `CANDIDATE` | M2 | M3 repeats one run and adds them to the W37 table | — | Bundles committed and verified; result table updated; claim G8 names the real-case run |
+| **W40** | **Written answers for panel actions A4, A5, A6.** A4: one page, "what is isolated and how sure we are" — the minimal sequence with deletion evidence; the resource only as static overlap; resource confirmation is FYP-2 (ADR-015). A5: a scenario table — each scenario kind → case → verdict → bundle, from cases that already exist. A6: each member writes the nearest existing tool to their own part and how FlakeTrace differs, citing only sources they opened | A4 M2 + M1; A5 M3; A6 each member | Another member reads each against the evidence | — | Linked from [[10-Final1/action-register]] rows A4–A6; used in report v2 |
+
+Still open from above and part of the close-out: **W32** (FT018 practitioner session, or the
+documented attempts and an agreed substitute), **W29a** (FT013–FT015: signatures, declarations,
+deliver the corrected worksheet), **W33** (freeze, tag `final1-v1`, 15-minute rehearsal with each
+member presenting their own part, labelled backup recording). The supervisor asked that no broad
+new algorithm or compulsory second real project be added before the Final.
 
 ## The critical path
 

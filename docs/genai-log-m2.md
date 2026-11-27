@@ -1337,3 +1337,18 @@ validated v2 reports against v3, which also rejected newer bundles; rewritten to
 **What I changed:** *to fill in.*
 
 Ownership checkpoint: why a test that re-enacts the incident proves the guard is not vacuous.
+
+## 2026-11-27 — Vault close-out after the supervisor's 23 Nov review
+
+**Tool:** Claude Code (Claude Opus 5.5) · **Level:** L3 · **Branch:** `docs/post-review-closeout`
+
+**Asked:** read the supervisor's review and the vault, then update the vault so all three members can start the
+remaining work; tell me first what would change. **Kept:** a review note from the student action plan only (the
+rest of the package is marked private and is not quoted); close-out packages W36–W40; register rows A4–A6, A10,
+M-2, M-3, FT007, FT008, FT009, FT010 each with "Completes when"; agenda v3; claims ledger four-vs-five fix;
+`architecture.md` status and naming (order runner now; sandbox planned for FYP-2 Iteration 3); handover items.
+**Rejected:** editing M3's frozen protocol and evidence log (left as W37 items for him); a first draft that quoted
+scores and probe results from the private part of the package (removed). **Wrong at first:** none recorded beyond
+that. **What I changed:** *to fill in.*
+
+Ownership checkpoint: why "order runner" and not "sandbox runner"; what each W36–W40 package needs to be Done.
