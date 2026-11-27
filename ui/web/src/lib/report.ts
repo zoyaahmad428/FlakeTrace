@@ -20,7 +20,7 @@ export type OrderExploration = {
   infrastructure_failures: number;
 };
 // W24: what the diagnosis spent; only the parts the UI reads.
-export type BudgetAccount = { spent: Record<string, number>; candidates?: { tried: number; total: number } };
+export type BudgetAccount = { spent: Record<string, number>; exhausted?: boolean; candidates?: { tried: number; total: number } };
 export type Outcome = "VERIFIED" | "CANDIDATE" | "UNRESOLVED";
 export type ResourceEdge = {
   shared_resource: SharedResource; polluter_write_location: CodeLocation; victim_read_location: CodeLocation; depth?: number;
@@ -146,7 +146,7 @@ function loc(l: CodeLocation | null, owners: TestId[], inside: string, outside: 
 function exploration(r: Report): string {
   const e = r.order_exploration;
   if (!e) return "This report does not record how orders were explored.";
-  const start = e.order_given ? "The failing order was given with --order. " : "";
+  const start = e.order_given ? `The failing order (${plural(r.original_failing_order.length, "test")}) was given with --order. ` : "";
   const crashes = e.infrastructure_failures ? ` ${plural(e.infrastructure_failures, "run")} crashed or timed out.` : "";
   if (e.reproducing_seed !== null) {
     return `${start}Reproduced with a shuffled order (seed ${e.reproducing_seed}) after ${plural(e.shuffled_orders_tried, "shuffled order")}.${crashes}`;
@@ -182,7 +182,12 @@ function reproduction(r: Report): string {
     return `Found in a constructed pair: the polluter ran directly before the victim${tried}. ` +
       "Pair mode does not run the project's own orders.";
   }
-  if (!r.order_exploration && pairs) return `Never reproduced: no pair failed twice in a row (${pairs.tried} of ${pairs.total} pairs tried).`;
+  // Pair mode writes no order_exploration (eval/report.py), so its reports are told apart here.
+  if (!r.order_exploration && pairs) {
+    if (reproducedKind(r) !== "never") return "The victim failed when run alone; no pairs were run.";
+    const stopped = r.budget?.exhausted ? "; the budget stopped the search" : "";
+    return `Never reproduced: no pair failed twice in a row (${pairs.tried} of ${pairs.total} pairs tried)${stopped}.`;
+  }
   return exploration(r);
 }
 

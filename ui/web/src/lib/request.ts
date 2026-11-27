@@ -5,12 +5,13 @@ import type { DiagnoseRequest } from "./api";
 export type Form = {
   project: string; victim: string; n: number; order: string;
   search: "order" | "pairs"; scope: "module" | "package"; policy: "original" | "ranked" | "random";
-  seed: number; shuffles: number; budgetInvocations: string; budgetSeconds: string; bundle: boolean;
+  // Number boxes are kept as their text: a cleared box means "the CLI's default", never 0 (review, 2026-11-27).
+  seed: string; shuffles: string; budgetInvocations: string; budgetSeconds: string; bundle: boolean;
 };
 
 export const DEFAULT_FORM: Form = {
-  project: "", victim: "", n: 20, order: "", search: "order", scope: "module", policy: "original", seed: 0,
-  shuffles: 31, budgetInvocations: "", budgetSeconds: "", bundle: false,
+  project: "", victim: "", n: 20, order: "", search: "order", scope: "module", policy: "original", seed: "0",
+  shuffles: "31", budgetInvocations: "", budgetSeconds: "", bundle: false,
 };
 
 export const orderLines = (text: string) => text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
@@ -23,8 +24,11 @@ export function toRequest(form: Form): DiagnoseRequest {
   if (form.search !== DEFAULT_FORM.search) req.search = form.search;
   if (form.scope !== DEFAULT_FORM.scope) req.scope = form.scope;
   if (form.policy !== DEFAULT_FORM.policy) req.policy = form.policy;
-  if (form.seed !== DEFAULT_FORM.seed) req.seed = form.seed;
-  if (form.shuffles !== DEFAULT_FORM.shuffles) req.shuffles = form.shuffles;
+  const chosen = (text: string, fallback: string) => (text.trim() && text.trim() !== fallback ? Number(text) : null);
+  const seed = chosen(form.seed, DEFAULT_FORM.seed);
+  const shuffles = chosen(form.shuffles, DEFAULT_FORM.shuffles);
+  if (seed !== null) req.seed = seed;
+  if (shuffles !== null) req.shuffles = shuffles;
   if (form.budgetInvocations.trim()) req.budget_invocations = Number(form.budgetInvocations);
   if (form.budgetSeconds.trim()) req.budget_seconds = Number(form.budgetSeconds);
   if (form.bundle) req.bundle = true;

@@ -18,7 +18,7 @@ function entry(name: string, search: string): BundleEntry {
 describe("committed evidence (UI demo design, goal 4)", () => {
   it("labels a committed bundle as pre-run, never as run now", () => {
     expect(committedLabel(`20261122T120044Z-${FJ03}`, "2026-11-22")).toBe(
-      `Committed bundle 20261122T120044Z-${FJ03} — pre-run on 2026-11-22, not run now`,
+      `Pre-run on 2026-11-22, not run now — committed bundle 20261122T120044Z-${FJ03}`,
     );
   });
 
@@ -39,5 +39,13 @@ describe("committed evidence (UI demo design, goal 4)", () => {
     expect(bundleRow(entry(`20261121T162830Z-${FJ03}`, "order")).reproduced).toBe("given order");
     const never = bundleRow(entry(`20261124T151413Z-${FJ03}`, "order"));
     expect([never.reproduced, never.polluter, never.invocations]).toEqual(["never", "—", 12817]);
+  });
+});
+
+describe("review fixes (2026-11-27)", () => {
+  it("lists an unreadable bundle as its own row instead of hiding the table", () => {
+    const row = bundleRow({ name: "20991231T000000Z-x.Y#z", run_date: null, search: null, scope: null, policy: null,
+                            seed: null, report: null, error: "cannot read this bundle" });
+    expect([row.reproduced, row.outcome, row.victim]).toEqual(["unreadable", "—", "cannot read this bundle"]);
   });
 });

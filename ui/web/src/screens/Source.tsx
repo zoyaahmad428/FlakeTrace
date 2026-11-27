@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useStore } from "../state";
 import { api, isBackendDown, type ReportEntry } from "../lib/api";
 import { bundleRow, committedLabel, type BundleEntry, type VerifyResult } from "../lib/bundles";
@@ -16,6 +16,8 @@ export default function SourceScreen() {
 
   const [bundles, setBundles] = useState<BundleEntry[]>([]);
   const [opening, setOpening] = useState<string | null>(null);
+  const [bundleError, setBundleError] = useState<string | null>(null);
+  const latest = useRef<string | null>(null);
   const [checkPath, setCheckPath] = useState("");
   const [checked, setChecked] = useState<VerifyResult | null>(null);
 
@@ -25,14 +27,20 @@ export default function SourceScreen() {
   }, [s.health]);
 
   // verify runs on the server when the bundle is opened (about 3 s), never from a cache.
+  // Only the last row clicked is shown, even if an earlier click answers later (review, 2026-11-27).
   const openBundle = (name: string) => {
+    latest.current = name;
     setOpening(name);
-    setOpenError(null);
+    setBundleError(null);
     api
       .bundle(name)
-      .then((b) => load({ report: b.report, from: committedLabel(b.name, b.run_date), validated: true, verify: b.verify }))
-      .catch((e: Error) => setOpenError(e.message))
-      .finally(() => setOpening(null));
+      .then((b) => {
+        if (latest.current !== name) return;
+        if (!b.report) setBundleError(`${name}: ${b.error ?? "cannot be read"}; ${b.verify.problem ?? ""}`);
+        else load({ report: b.report, from: committedLabel(b.name, b.run_date), validated: true, verify: b.verify });
+      })
+      .catch((e: Error) => latest.current === name && setBundleError(e.message))
+      .finally(() => latest.current === name && setOpening(null));
   };
 
   const checkFolder = () => {
@@ -152,7 +160,7 @@ export default function SourceScreen() {
                         <td className="py-1.5 pr-3">
                           <Button size="sm" busy={opening === row.name} onClick={() => openBundle(row.name)}>{row.name.slice(0, 16)}</Button>
                         </td>
-                        <td className="py-1.5 pr-3"><TestName fq={row.victim} role="victim" /></td>
+                        <td className="py-1.5 pr-3">{row.reproduced === "unreadable" ? <span className="text-ink-2">{row.victim}</span> : <TestName fq={row.victim} role="victim" />}</td>
                         <td className="py-1.5 pr-3"><Badge tone={outcomeTone(row.outcome as Outcome)}>{outcomeLabel(row.outcome)}</Badge></td>
                         <td className="py-1.5 pr-3">{row.reproduced}</td>
                         <td className="py-1.5 pr-3">{row.scope}</td>
@@ -168,6 +176,7 @@ export default function SourceScreen() {
               </table>
             </div>
           )}
+          {bundleError && <Status state="error">{bundleError}</Status>}
           <div className="mt-5">
             <Field label="Check a bundle folder (eval.bundle verify, read-only)" htmlFor="checkPath" hint="Any folder on this computer, for example a copy you changed by hand. Nothing is written.">
               <div className="flex flex-wrap gap-2">

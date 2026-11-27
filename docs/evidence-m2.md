@@ -2036,3 +2036,23 @@ own copy of the code, not from the review's description.
   Python start-up per command), so verifying at listing time would also have been affordable; verify-on-open is kept,
   since a changed bundle is then always caught.
 - **Not done here:** clicking through the screens in a browser on the demo machine — that is W33's rehearsal.
+
+## UI demo: the fresh review's 13 findings, fixed (2026-11-27)
+
+- **Review:** a fresh opus reviewer on the whole branch; 3 Important, 10 Minor; every number in demo plan v2 checked
+  against the committed bundles and found right. All 13 fixed (the member's standing rule: minors are not deferred).
+- **Server, test-first** (`TestReviewFixes`, 6 tests → 4 failures, 2 errors: `JSONDecodeError`, `ValueError: could not
+  convert string to float: 'abc'`): one unreadable bundle no longer hides the list (its own row, with the reason; others
+  still open); a path in quotes (Windows "Copy as path") is checked; a file is "not a folder"; a live run's bundle
+  carries its verify result; refusals in the CLI's order; negative seeds accepted, as the CLI does; a bad timeout setting
+  falls back to 30 min. `py -3 -m unittest ui.tests.test_server` → `Ran 49 tests OK`.
+- **Web, test-first** (9 failures, plus a missing `job.ts`): a pair-mode "victim fails alone" report now says so (it
+  said "Never reproduced"); a budget stop in pair mode is named; a given order names its test count; a cleared seed or
+  shuffles box is the default, not 0; the "pre-run" label comes first, so a narrow header keeps it; an unreadable
+  bundle is its own row; a finished run does not replace a report opened after it started (the Target step offers it);
+  a bundle-open error shows in its own panel and only the last click counts; the `#` in a bundle name is encoded (the
+  test fails when `encodeURIComponent` is removed, passes when restored). `npx vitest run` → `Tests 57 passed`;
+  `npx tsc --noEmit` → exit 0; `npx vite build` → built.
+- **Correction:** the "tsc exit 0" lines in tasks 3–6 above came from `npx tsc --noEmit | tail -5; echo $?`, which
+  prints `tail`'s exit code. Run without the pipe, `tsc` reported two errors (fixed here); the whole tree is now clean.
+- **New:** `docs/04-Implementation/web-ui.md`, the four-point note the plan listed (finding 13).

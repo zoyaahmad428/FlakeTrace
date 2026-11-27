@@ -129,7 +129,7 @@ class TestRunOptions(unittest.TestCase):
                          ("pairs", "package", "random", "3", "5"))
         self.assertEqual((flag("--budget-invocations"), flag("--budget-seconds")), ("80", "2.5"))
         self.assertEqual(Path(flag("--bundle")), Path(done["report_path"]).parent / "bundles")
-        self.assertEqual(done["bundle"], {"path": str(Path(flag("--bundle")) / "run-x")})
+        self.assertEqual(done["bundle"]["path"], str(Path(flag("--bundle")) / "run-x"))
 
     def test_defaults_add_no_flag(self):
         done, args = self.args_for()
@@ -144,7 +144,7 @@ class TestRunOptions(unittest.TestCase):
                                                       bundle=False)))
 
     def test_bad_options_are_rejected(self):
-        for extra in ({"search": "both"}, {"scope": "repo"}, {"policy": "best"}, {"seed": -1}, {"seed": 1.5},
+        for extra in ({"search": "both"}, {"scope": "repo"}, {"policy": "best"}, {"seed": 1.5}, {"seed": True},
                       {"shuffles": -1}, {"budget_invocations": 0}, {"budget_invocations": "80"},
                       {"budget_seconds": 0}, {"budget_seconds": True}, {"bundle": "yes"}):
             with self.subTest(extra=extra):
@@ -227,6 +227,54 @@ class TestCommittedEvidence(unittest.TestCase):
             status, checked = call(base, "POST", "/api/check-bundle", {"path": str(BUNDLES / STEP5)})
             self.assertEqual((status, checked), (200, {"ok": True, "problem": None}))
             self.assertEqual(call(base, "POST", "/api/check-bundle", {"path": 7})[0], 400)
+
+
+class TestReviewFixes(unittest.TestCase):
+    """Fixes from the fresh review of m2/ui-demo (2026-11-27), each seen failing first."""
+
+    def test_a_broken_bundle_is_its_own_row_and_the_rest_still_open(self):
+        from ui import server
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            shutil.copytree(BUNDLES / STEP5, root / STEP5)
+            broken = root / "20991231T000000Z-x.Y#z"
+            broken.mkdir()
+            (broken / "manifest.json").write_text("{ truncated", encoding="utf-8")
+            with mock.patch.object(server, "BUNDLES", root):
+                rows = {row["name"]: row for row in server.list_bundles()}
+                self.assertIsNone(rows[broken.name]["report"])
+                self.assertIn("manifest.json", rows[broken.name]["error"])
+                self.assertEqual(rows[STEP5]["report"]["outcome"], "CANDIDATE")
+                opened = server.open_bundle(broken.name)
+                self.assertFalse(opened["verify"]["ok"])
+                self.assertTrue(server.open_bundle(STEP5)["verify"]["ok"])
+
+    def test_a_quoted_path_from_copy_as_path_is_checked(self):
+        from ui.server import check_bundle
+        self.assertEqual(check_bundle(f'"{BUNDLES / STEP5}"'), {"ok": True, "problem": None})
+        self.assertEqual(check_bundle(f"  '{BUNDLES / STEP5}'  "), {"ok": True, "problem": None})
+
+    def test_a_file_is_not_called_a_missing_folder(self):
+        from ui.server import check_bundle
+        problem = check_bundle(str(BUNDLES / STEP5 / "report.json"))["problem"]
+        self.assertIn("not a folder", problem)
+
+    def test_a_live_runs_bundle_carries_its_verify_result(self):
+        jobs = fake_jobs("args")
+        done = wait(jobs, jobs.start("proj", "a.B#c", options={"bundle": True})["id"])
+        self.assertEqual(set(done["bundle"]), {"path", "verify"})
+        self.assertFalse(done["bundle"]["verify"]["ok"])  # FakeCli's empty folder is not a bundle: said, not hidden
+
+    def test_the_refusals_come_in_the_clis_order_and_seeds_may_be_negative(self):
+        both = {"project": "p", "victim": "a.B#c", "order": ["a.B#c"], "search": "pairs", "scope": "package"}
+        self.assertEqual(check_diagnose_request(both),
+                         "--scope package cannot be combined with --order: the order file already fixes the tests")
+        self.assertIsNone(check_diagnose_request({"project": "p", "victim": "a.B#c", "seed": -3}))
+
+    def test_a_bad_timeout_setting_falls_back_to_the_default(self):
+        from ui import server
+        self.assertEqual(server.job_timeout({"FLAKETRACE_UI_JOB_TIMEOUT_S": "abc"}), 1800)
+        self.assertEqual(server.job_timeout({"FLAKETRACE_UI_JOB_TIMEOUT_S": "-5"}), 1800)
 
 
 class TestJobs(unittest.TestCase):

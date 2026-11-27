@@ -15,7 +15,7 @@ export type Job = {
   kind?: JobKind;
   message?: string;
   output_tail?: string;
-  bundle?: { path: string };
+  bundle?: { path: string; verify?: VerifyResult };
 };
 export type DiagnoseRequest = {
   project: string; victim: string; n: number; order?: string[];
@@ -78,6 +78,6 @@ export const api = {
   validate: (report: unknown) => post<{ valid: boolean; message: string | null }>("validate", report),
   bundles: () => call<BundleEntry[]>("bundles"),
   // Every committed bundle name holds a #: encoded, so it reaches the server as one path segment.
-  bundle: (name: string) => call<{ name: string; run_date: string | null; report: Report; verify: VerifyResult }>(`bundles/${encodeURIComponent(name)}`),
+  bundle: (name: string) => call<{ name: string; run_date: string | null; report: Report | null; error?: string | null; verify: VerifyResult }>(`bundles/${encodeURIComponent(name)}`),
   checkBundle: (path: string) => post<VerifyResult>("check-bundle", { path }),
 };

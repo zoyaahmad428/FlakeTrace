@@ -3,6 +3,7 @@ import { useStore } from "../state";
 import { api, type JobKind, type ReportEntry } from "../lib/api";
 import { WILSON_FLOOR } from "../lib/report";
 import type { Form } from "../lib/request";
+import { finishedRunLoad } from "../lib/job";
 import { Button, Field, FlowNav, Panel, ScreenHeader, Status, Terminal, inputClass } from "../components/ui";
 
 const FAILED_TITLE: Record<JobKind, string> = {
@@ -23,7 +24,7 @@ function Elapsed({ since }: { since: number }) {
 }
 
 export default function TargetScreen() {
-  const { s, go, setForm, diagnose } = useStore();
+  const { s, go, setForm, diagnose, load } = useStore();
   const [fixtures, setFixtures] = useState<ReportEntry[]>([]);
   useEffect(() => {
     api.reports().then(setFixtures).catch(() => setFixtures([]));
@@ -106,11 +107,11 @@ export default function TargetScreen() {
                   <option value="random">random</option>
                 </select>
               </Field>
-              <Field label="Seed (--seed)" htmlFor="seed" hint="Default 0. The first shuffle seed, and the random policy's seed.">
-                <input id="seed" type="number" min={0} className={inputClass} value={s.form.seed} onChange={(e) => setForm({ seed: Number(e.target.value) })} />
+              <Field label="Seed (--seed)" htmlFor="seed" hint="Default 0 (empty: the default). The first shuffle seed, and the random policy's seed.">
+                <input id="seed" type="number" className={inputClass} value={s.form.seed} onChange={(e) => setForm({ seed: e.target.value })} />
               </Field>
-              <Field label="Shuffled orders (--shuffles)" htmlFor="shuffles" hint="Default 31: tried when the starting order never fails.">
-                <input id="shuffles" type="number" min={0} className={inputClass} value={s.form.shuffles} onChange={(e) => setForm({ shuffles: Number(e.target.value) })} />
+              <Field label="Shuffled orders (--shuffles)" htmlFor="shuffles" hint="Default 31 (empty: the default): tried when the starting order never fails.">
+                <input id="shuffles" type="number" min={0} className={inputClass} value={s.form.shuffles} onChange={(e) => setForm({ shuffles: e.target.value })} />
               </Field>
               <Field label="Budget: invocations (--budget-invocations)" htmlFor="budgetInvocations" hint="Empty: no limit, still counted. 3 × n are kept for verification.">
                 <input id="budgetInvocations" type="number" min={1} className={inputClass} value={s.form.budgetInvocations} onChange={(e) => setForm({ budgetInvocations: e.target.value })} />
@@ -148,6 +149,12 @@ export default function TargetScreen() {
               </Status>
               {job.command && <Terminal className="mt-3" wrap text={job.command} />}
             </>
+          )}
+          {job?.state === "done" && job.report && s.loaded?.report !== job.report && (
+            <Status state="idle">
+              This run finished while another report was open.{" "}
+              <Button size="sm" onClick={() => load(finishedRunLoad(job))}>Open this run's report</Button>
+            </Status>
           )}
           {job?.state === "failed" && (
             <>

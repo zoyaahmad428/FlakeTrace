@@ -39,7 +39,12 @@ RUNNER = [sys.executable, "-m", "runner"]
 def job_timeout(environ) -> float:
     """Seconds one diagnosis may take. 30 min by default: a package-scope pair-mode run of FJ-03's size took 8 min of
     runs plus ~3 min of Maven build (evidence-m2); FLAKETRACE_UI_JOB_TIMEOUT_S overrides it."""
-    return float(environ.get("FLAKETRACE_UI_JOB_TIMEOUT_S", 1800))
+    try:
+        seconds = float(environ.get("FLAKETRACE_UI_JOB_TIMEOUT_S", 1800))
+    except ValueError:
+        seconds = 0
+    # A setting that is not a positive number must not stop the server from starting (review, 2026-11-27).
+    return seconds if seconds > 0 else 1800.0
 
 
 JOB_TIMEOUT_S = job_timeout(os.environ)
@@ -51,7 +56,7 @@ OPTIONS = {
     "search": ("--search", lambda v: v in SEARCHES, f"search must be one of {', '.join(SEARCHES)}"),
     "scope": ("--scope", lambda v: v in SCOPES, f"scope must be one of {', '.join(SCOPES)}"),
     "policy": ("--policy", lambda v: v in POLICIES, f"policy must be one of {', '.join(POLICIES)}"),
-    "seed": ("--seed", _whole(0), "seed must be a whole number from 0"),
+    "seed": ("--seed", lambda v: not isinstance(v, bool) and isinstance(v, int), "seed must be a whole number"),
     "shuffles": ("--shuffles", _whole(0), "shuffles must be a whole number from 0"),
     "budget_invocations": ("--budget-invocations", _whole(1), "budget_invocations must be a whole number from 1"),
     "budget_seconds": ("--budget-seconds",
@@ -106,7 +111,8 @@ def job_result(returncode: int, stdout: str, stderr: str, records: Path) -> dict
         done = {"state": "done", "report": report, "report_path": str(reports[-1])}
         bundles = sorted(path for path in (records / "bundles").glob("*") if path.is_dir())
         if bundles:
-            done["bundle"] = {"path": str(bundles[-1])}
+            # Design goal 5: the job result names the bundle and its verify result.
+            done["bundle"] = {"path": str(bundles[-1]), "verify": check_bundle(str(bundles[-1]))}
         return done
     if returncode == 3:
         lines = [line.strip() for line in stdout.splitlines()
@@ -155,10 +161,11 @@ def check_diagnose_request(body) -> Optional[str]:
     if "bundle" in body and not isinstance(body["bundle"], bool):
         return "bundle must be true or false"
     # The CLI's own refusals, word for word (runner/cli.py), so the UI never starts what the CLI would refuse.
-    if order and body.get("search") == "pairs":
-        return "--search pairs cannot be combined with --order: pair mode takes the victim only"
+    # In the CLI's order (runner/cli.py checks scope first), so a request with both gets the CLI's message.
     if order and body.get("scope") == "package":
         return "--scope package cannot be combined with --order: the order file already fixes the tests"
+    if order and body.get("search") == "pairs":
+        return "--search pairs cannot be combined with --order: pair mode takes the victim only"
     return None
 
 
@@ -261,35 +268,54 @@ def list_bundles() -> list:
     """Every committed bundle in eval/bundles/: its parameters (manifest.json), its mode (the record header's
     search_mode; a bundle from before W35 has none: order) and its report. Not verified here: verify takes about 3 s
     per bundle, so it runs when one is opened (design goal 4)."""
-    entries = []
-    for folder in sorted(path.parent for path in BUNDLES.glob("*/manifest.json")):
+    return [_bundle_entry(folder) for folder in _bundle_folders()]
+
+
+def _bundle_folders() -> list:
+    return sorted(path.parent for path in BUNDLES.glob("*/manifest.json"))
+
+
+def _bundle_entry(folder: Path) -> dict:
+    """One row; a folder whose files cannot be read is still listed, with the reason, so one damaged bundle never
+    hides the others (review, 2026-11-27)."""
+    entry = {"name": folder.name, "run_date": None, "search": None, "scope": None, "policy": None, "seed": None,
+             "report": None, "error": None}
+    try:
         manifest = json.loads((folder / "manifest.json").read_text(encoding="utf-8"))
         with open(folder / "record.jsonl", encoding="utf-8") as record:
             header = json.loads(record.readline())
         parameters = manifest.get("parameters") or {}
-        entries.append({"name": folder.name, "run_date": manifest.get("run_date"),
-                        "search": header.get("search_mode") or "order", "scope": parameters.get("scope"),
-                        "policy": parameters.get("policy"), "seed": parameters.get("seed"),
-                        "report": json.loads((folder / "report.json").read_text(encoding="utf-8"))})
-    return entries
+        entry.update(run_date=manifest.get("run_date"), search=header.get("search_mode") or "order",
+                     scope=parameters.get("scope"), policy=parameters.get("policy"), seed=parameters.get("seed"),
+                     report=json.loads((folder / "report.json").read_text(encoding="utf-8")))
+    except (OSError, ValueError, AttributeError) as error:
+        entry.update(report=None, error=f"cannot read this bundle (manifest.json, record.jsonl or report.json): {error}")
+    return entry
 
 
 def check_bundle(path: str) -> dict:
     """eval.bundle's own verify on any folder, read-only: {"ok", "problem"} with the first problem's first line."""
-    folder = Path(path) if isinstance(path, str) and path.strip() else None
-    if folder is None or not folder.is_dir():
+    # Windows' "Copy as path" adds double quotes (review, 2026-11-27): one pair of surrounding quotes is dropped.
+    text = path.strip() if isinstance(path, str) else ""
+    if len(text) >= 2 and text[0] == text[-1] and text[0] in "\"'":
+        text = text[1:-1].strip()
+    folder = Path(text) if text else None
+    if folder is None or not folder.exists():
         return {"ok": False, "problem": f"no such folder: {path!r}"}
+    if not folder.is_dir():
+        return {"ok": False, "problem": f"not a folder: {text}; give the bundle's folder, not one of its files"}
     problems = verify_bundle(folder)
     return {"ok": not problems, "problem": problems[0].splitlines()[0] if problems else None}
 
 
 def open_bundle(name: str) -> Optional[dict]:
     """One committed bundle, by its exact folder name only (nothing outside eval/bundles/), verified now."""
-    entry = next((entry for entry in list_bundles() if entry["name"] == name), None)
-    if entry is None:
+    folder = next((folder for folder in _bundle_folders() if folder.name == name), None)
+    if folder is None:
         return None
-    return {"name": name, "run_date": entry["run_date"], "report": entry["report"],
-            "verify": check_bundle(str(BUNDLES / name))}
+    entry = _bundle_entry(folder)
+    return {"name": name, "run_date": entry["run_date"], "report": entry["report"], "error": entry["error"],
+            "verify": check_bundle(str(folder))}
 
 
 def get_report(name: str) -> Optional[dict]:

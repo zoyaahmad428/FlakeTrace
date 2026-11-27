@@ -114,7 +114,7 @@ describe("how the failure was reproduced (UI demo design, goal 3), on committed 
     expect("reproduced_by" in r).toBe(false);
     expect(reproducedKind(r)).toBe("given order");
     expect(toView(r).reproduced).toBe(
-      "The failing order was given with --order. The given order reproduced the failure; no shuffled orders were needed.",
+      "The failing order (2 tests) was given with --order. The given order reproduced the failure; no shuffled orders were needed.",
     );
   });
 
@@ -134,5 +134,25 @@ describe("how the failure was reproduced (UI demo design, goal 3), on committed 
     const { budget, ...r } = bundle(`20261122T120044Z-${FJ03}`);
     expect(budget).toBeDefined();
     expect(invocations(r as Report)).toBeNull();
+  });
+});
+
+describe("review fixes (2026-11-27)", () => {
+  const step5 = () => bundle(`20261122T120044Z-${FJ03}`);
+
+  it("says the victim failed alone, never 'never reproduced', for a pair-mode victim that fails alone", () => {
+    const r = { ...step5(), outcome: "UNRESOLVED", unresolved_reason: "VICTIM_FAILS_ALONE", reproduced_by: "order",
+                polluters: [], budget: { ...step5().budget!, candidates: { tried: 0, total: 524 } } } as Report;
+    expect(reproducedKind(r)).toBe("order");
+    expect(toView(r).reproduced).toBe("The victim failed when run alone; no pairs were run.");
+  });
+
+  it("says when the budget stopped a pair search that found nothing", () => {
+    const r = { ...step5(), outcome: "UNRESOLVED", unresolved_reason: "BUDGET_EXHAUSTED", reproduced_by: null,
+                failure_signature: null, polluters: [],
+                budget: { ...step5().budget!, exhausted: true, candidates: { tried: 40, total: 524 } } } as Report;
+    expect(toView(r).reproduced).toBe(
+      "Never reproduced: no pair failed twice in a row (40 of 524 pairs tried); the budget stopped the search.",
+    );
   });
 });
