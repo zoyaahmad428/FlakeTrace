@@ -1,3 +1,4 @@
+import type { BundleEntry, VerifyResult } from "./bundles";
 import type { Report } from "./report";
 
 export type Health = { tools: Record<string, string | null>; missing: string[]; python: string; fixture: string; job_timeout_s: number };
@@ -75,4 +76,8 @@ export const api = {
   diagnose: (req: DiagnoseRequest) => post<{ job_id: string }>("diagnose", req),
   job: (id: string) => call<Job>(`jobs/${encodeURIComponent(id)}`),
   validate: (report: unknown) => post<{ valid: boolean; message: string | null }>("validate", report),
+  bundles: () => call<BundleEntry[]>("bundles"),
+  // Every committed bundle name holds a #: encoded, so it reaches the server as one path segment.
+  bundle: (name: string) => call<{ name: string; run_date: string | null; report: Report; verify: VerifyResult }>(`bundles/${encodeURIComponent(name)}`),
+  checkBundle: (path: string) => post<VerifyResult>("check-bundle", { path }),
 };

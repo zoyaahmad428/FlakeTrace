@@ -1994,3 +1994,16 @@ own copy of the code, not from the review's description.
   the run's time limit from health.
 - **Test-first:** `request.test.ts` (5 tests) → `Cannot find module './request'`. After: `npx vitest run` → `Tests 43
   passed`; `npx tsc --noEmit` → exit 0; `npx vite build` → built. **Not yet clicked in a browser** (task 7).
+
+## UI demo, task 5: committed evidence and checking a folder, in the UI (2026-11-27)
+
+- **Requirement:** design goals 4 and 5a, on screen.
+- **Code:** new `ui/web/src/lib/bundles.ts` (`BundleEntry`, `bundleRow` — reproduced by, scope, policy, seed, polluter,
+  invocations, date, from Task 3's `reproducedKind`/`invocations`; `committedLabel`: "Committed bundle … — pre-run on
+  <date>, not run now"); `api.ts` `bundles()`, `bundle(name)` (name URL-encoded: every name holds a `#`),
+  `checkBundle(path)`; `state.tsx` `Loaded.verify`; `Source.tsx` "Committed evidence" table (opening a row runs verify
+  on the server) and "Check a bundle folder"; `Certificate.tsx` "Evidence bundle check" panel.
+- **Test-first:** `bundles.test.ts` (4 tests, real committed bundles) → `Cannot find module './bundles'`. After: the
+  step-5 row = CANDIDATE, pair, package, original, seed 0, `SerializeWriterTest_14#test_writer_1`, 798, 2026-11-22;
+  random seed 1 = 76 invocations; a 21-Nov run = given order; the package order run = never, 12,817. `npx vitest run` →
+  `Tests 47 passed`; `npx tsc --noEmit` → exit 0; `npx vite build` → built. **Not yet clicked in a browser** (task 7).

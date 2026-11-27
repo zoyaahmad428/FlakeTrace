@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { api, ApiError, retryWhileDown, type Health, type Job } from "./lib/api";
 import { DEFAULT_FORM, toRequest, type Form } from "./lib/request";
+import type { VerifyResult } from "./lib/bundles";
 import { outcomeText, resourceName, testName, type Report } from "./lib/report";
 import { plural, shortName } from "./lib/format";
 
@@ -18,7 +19,8 @@ export const STEPS: { id: StepId; label: string }[] = [
   { id: "export", label: "Export" },
 ];
 
-export type Loaded = { report: Report; from: string; validated: boolean };
+// `verify`: eval.bundle's own check, run when a committed bundle is opened (UI demo design, goal 4).
+export type Loaded = { report: Report; from: string; validated: boolean; verify?: VerifyResult };
 export type { Form };
 
 export type State = {

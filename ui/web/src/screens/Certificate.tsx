@@ -1,6 +1,6 @@
 import { useStore } from "../state";
 import { WILSON_FLOOR, toView } from "../lib/report";
-import { Badge, FlowNav, Missing, Panel, ScreenHeader, TONE, Terminal } from "../components/ui";
+import { Badge, FlowNav, Missing, Panel, ScreenHeader, Status, TONE, Terminal } from "../components/ui";
 
 function Count({ label, value, bounds, detail }: { label: string; value: string; bounds: string; detail?: string }) {
   return (
@@ -28,6 +28,15 @@ export default function CertificateScreen() {
         The outcome, how reliably the failure replays, and what the result does not cover.
       </ScreenHeader>
       <div className="grid gap-5">
+        {s.loaded.verify && (
+          <Panel title="Evidence bundle check" aside={s.loaded.from}>
+            <Status state={s.loaded.verify.ok ? "idle" : "error"} className="">
+              {s.loaded.verify.ok
+                ? "eval.bundle verify, run just now: OK — the checksums match and the record recounts to this report."
+                : `eval.bundle verify, run just now: ${s.loaded.verify.problem}`}
+            </Status>
+          </Panel>
+        )}
         <Panel>
           <h2 className={`text-[2.2rem] font-semibold leading-none ${TONE[v.outcomeTone].text}`}>{v.outcome}</h2>
           {v.reason && <p className="mt-2 text-ink-2">{v.reason}</p>}
