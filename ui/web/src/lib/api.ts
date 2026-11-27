@@ -1,6 +1,7 @@
+import type { BundleEntry, VerifyResult } from "./bundles";
 import type { Report } from "./report";
 
-export type Health = { tools: Record<string, string | null>; missing: string[]; python: string; fixture: string };
+export type Health = { tools: Record<string, string | null>; missing: string[]; python: string; fixture: string; job_timeout_s: number };
 export type ReportEntry = { name: string; victim: string; outcome: string };
 export type JobKind = "input" | "tool" | "no_report" | "timeout" | "invalid_report";
 export type Job = {
@@ -14,8 +15,14 @@ export type Job = {
   kind?: JobKind;
   message?: string;
   output_tail?: string;
+  bundle?: { path: string; verify?: VerifyResult };
 };
-export type DiagnoseRequest = { project: string; victim: string; n: number; order?: string[] };
+export type DiagnoseRequest = {
+  project: string; victim: string; n: number; order?: string[];
+  // The CLI's run options (ui/server.py OPTIONS); an absent field is the CLI's default.
+  search?: "order" | "pairs"; scope?: "module" | "package"; policy?: "original" | "ranked" | "random";
+  seed?: number; shuffles?: number; budget_invocations?: number; budget_seconds?: number; bundle?: boolean;
+};
 
 export const BACKEND_DOWN = "Backend not running. Start ui\\start.cmd, then press Check again.";
 
@@ -69,4 +76,8 @@ export const api = {
   diagnose: (req: DiagnoseRequest) => post<{ job_id: string }>("diagnose", req),
   job: (id: string) => call<Job>(`jobs/${encodeURIComponent(id)}`),
   validate: (report: unknown) => post<{ valid: boolean; message: string | null }>("validate", report),
+  bundles: () => call<BundleEntry[]>("bundles"),
+  // Every committed bundle name holds a #: encoded, so it reaches the server as one path segment.
+  bundle: (name: string) => call<{ name: string; run_date: string | null; report: Report | null; error?: string | null; verify: VerifyResult }>(`bundles/${encodeURIComponent(name)}`),
+  checkBundle: (path: string) => post<VerifyResult>("check-bundle", { path }),
 };

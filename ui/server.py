@@ -13,6 +13,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import urllib.parse
 import uuid
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -23,15 +24,45 @@ REPO = Path(__file__).resolve().parents[1]
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
-from eval.schema_validator import validate_report  # noqa: E402  (needs REPO on sys.path)
+from eval.bundle import verify_bundle  # noqa: E402  (needs REPO on sys.path)
+from eval.schema_validator import validate_report  # noqa: E402
 
 HOST = "127.0.0.1"
 PORT = 8765
 REPORTS = REPO / "eval" / "reports"
+BUNDLES = REPO / "eval" / "bundles"
 FIXTURE = REPO / "fixtures" / "od-fixture"
 TOOLS = ("java", "javac", "javap", "mvn")
 RUNNER = [sys.executable, "-m", "runner"]
-JOB_TIMEOUT_S = 600
+
+
+def job_timeout(environ) -> float:
+    """Seconds one diagnosis may take. 30 min by default: a package-scope pair-mode run of FJ-03's size took 8 min of
+    runs plus ~3 min of Maven build (evidence-m2); FLAKETRACE_UI_JOB_TIMEOUT_S overrides it."""
+    try:
+        seconds = float(environ.get("FLAKETRACE_UI_JOB_TIMEOUT_S", 1800))
+    except ValueError:
+        seconds = 0
+    # A setting that is not a positive number must not stop the server from starting (review, 2026-11-27).
+    return seconds if seconds > 0 else 1800.0
+
+
+JOB_TIMEOUT_S = job_timeout(os.environ)
+# The demo's run options (design 2026-11-27): request field -> (CLI flag, check). Defaults are the CLI's, so an
+# absent field adds no flag; the CLI stays the authority and its exit 2 is still reported as an input error.
+SEARCHES, SCOPES, POLICIES = ("order", "pairs"), ("module", "package"), ("original", "ranked", "random")
+_whole = lambda low: lambda v: not isinstance(v, bool) and isinstance(v, int) and v >= low
+OPTIONS = {
+    "search": ("--search", lambda v: v in SEARCHES, f"search must be one of {', '.join(SEARCHES)}"),
+    "scope": ("--scope", lambda v: v in SCOPES, f"scope must be one of {', '.join(SCOPES)}"),
+    "policy": ("--policy", lambda v: v in POLICIES, f"policy must be one of {', '.join(POLICIES)}"),
+    "seed": ("--seed", lambda v: not isinstance(v, bool) and isinstance(v, int), "seed must be a whole number"),
+    "shuffles": ("--shuffles", _whole(0), "shuffles must be a whole number from 0"),
+    "budget_invocations": ("--budget-invocations", _whole(1), "budget_invocations must be a whole number from 1"),
+    "budget_seconds": ("--budget-seconds",
+                       lambda v: not isinstance(v, bool) and isinstance(v, (int, float)) and v > 0,
+                       "budget_seconds must be a number above 0"),
+}
 TAIL_LINES = 20
 MAX_N = 1000
 MAX_BODY = 1024 * 1024
@@ -77,7 +108,12 @@ def job_result(returncode: int, stdout: str, stderr: str, records: Path) -> dict
         report, why = load_valid_report(reports[-1])
         if report is None:
             return {"state": "failed", "kind": "invalid_report", "message": why, "output_tail": output}
-        return {"state": "done", "report": report, "report_path": str(reports[-1])}
+        done = {"state": "done", "report": report, "report_path": str(reports[-1])}
+        bundles = sorted(path for path in (records / "bundles").glob("*") if path.is_dir())
+        if bundles:
+            # Design goal 5: the job result names the bundle and its verify result.
+            done["bundle"] = {"path": str(bundles[-1]), "verify": check_bundle(str(bundles[-1]))}
+        return done
     if returncode == 3:
         lines = [line.strip() for line in stdout.splitlines()
                  if line.strip().startswith(("No report:", "record:"))]
@@ -119,6 +155,17 @@ def check_diagnose_request(body) -> Optional[str]:
     if order is not None and (not isinstance(order, list)
                               or not all(isinstance(test, str) and test.strip() for test in order)):
         return "order must be a list of non-empty Class#method strings"
+    for name, (_, ok, message) in OPTIONS.items():
+        if name in body and not ok(body[name]):
+            return message
+    if "bundle" in body and not isinstance(body["bundle"], bool):
+        return "bundle must be true or false"
+    # The CLI's own refusals, word for word (runner/cli.py), so the UI never starts what the CLI would refuse.
+    # In the CLI's order (runner/cli.py checks scope first), so a request with both gets the CLI's message.
+    if order and body.get("scope") == "package":
+        return "--scope package cannot be combined with --order: the order file already fixes the tests"
+    if order and body.get("search") == "pairs":
+        return "--search pairs cannot be combined with --order: pair mode takes the victim only"
     return None
 
 
@@ -133,7 +180,8 @@ class Jobs:
         self._jobs = {}
         self._running = None
 
-    def start(self, project: str, victim: str, n: int = 20, order: Optional[List[str]] = None) -> dict:
+    def start(self, project: str, victim: str, n: int = 20, order: Optional[List[str]] = None,
+              options: Optional[dict] = None) -> dict:
         with self._lock:
             if self._running is not None:
                 raise Busy(dict(self._jobs[self._running]))
@@ -146,6 +194,13 @@ class Jobs:
                 order_file = records / "order.txt"
                 order_file.write_text("\n".join(order) + "\n", encoding="utf-8")
                 args += ["--order", str(order_file)]
+            options = options or {}
+            for name, (flag, _, _) in OPTIONS.items():
+                if options.get(name) is not None:
+                    args += [flag, str(options[name])]
+            if options.get("bundle"):
+                # Into the job's own folder: the UI never writes into the repository (design, builder check 1).
+                args += ["--bundle", str(records / "bundles")]
             command = self.runner + args
             job = {"id": uuid.uuid4().hex[:12], "state": "running", "started": datetime.now().strftime("%H:%M:%S"),
                    "command": subprocess.list2cmdline(command), "records": str(records)}
@@ -187,13 +242,14 @@ class Jobs:
 
 
 REPORT_PATH = re.compile(r"/api/reports/([\w-]+)")
+BUNDLE_PATH = re.compile(r"/api/bundles/([^/]+)")
 JOB_PATH = re.compile(r"/api/jobs/(\w+)")
 
 
 def health() -> dict:
     tools = {tool: shutil.which(tool) for tool in TOOLS}
     return {"tools": tools, "missing": [tool for tool, path in tools.items() if path is None],
-            "python": sys.version.split()[0], "fixture": str(FIXTURE)}
+            "python": sys.version.split()[0], "fixture": str(FIXTURE), "job_timeout_s": JOB_TIMEOUT_S}
 
 
 def list_reports() -> list:
@@ -206,6 +262,60 @@ def list_reports() -> list:
             entries.append({"name": path.stem, "victim": f"{victim['class']}#{victim['method']}",
                             "outcome": report["outcome"]})
     return entries
+
+
+def list_bundles() -> list:
+    """Every committed bundle in eval/bundles/: its parameters (manifest.json), its mode (the record header's
+    search_mode; a bundle from before W35 has none: order) and its report. Not verified here: verify takes about 3 s
+    per bundle, so it runs when one is opened (design goal 4)."""
+    return [_bundle_entry(folder) for folder in _bundle_folders()]
+
+
+def _bundle_folders() -> list:
+    return sorted(path.parent for path in BUNDLES.glob("*/manifest.json"))
+
+
+def _bundle_entry(folder: Path) -> dict:
+    """One row; a folder whose files cannot be read is still listed, with the reason, so one damaged bundle never
+    hides the others (review, 2026-11-27)."""
+    entry = {"name": folder.name, "run_date": None, "search": None, "scope": None, "policy": None, "seed": None,
+             "report": None, "error": None}
+    try:
+        manifest = json.loads((folder / "manifest.json").read_text(encoding="utf-8"))
+        with open(folder / "record.jsonl", encoding="utf-8") as record:
+            header = json.loads(record.readline())
+        parameters = manifest.get("parameters") or {}
+        entry.update(run_date=manifest.get("run_date"), search=header.get("search_mode") or "order",
+                     scope=parameters.get("scope"), policy=parameters.get("policy"), seed=parameters.get("seed"),
+                     report=json.loads((folder / "report.json").read_text(encoding="utf-8")))
+    except (OSError, ValueError, AttributeError) as error:
+        entry.update(report=None, error=f"cannot read this bundle (manifest.json, record.jsonl or report.json): {error}")
+    return entry
+
+
+def check_bundle(path: str) -> dict:
+    """eval.bundle's own verify on any folder, read-only: {"ok", "problem"} with the first problem's first line."""
+    # Windows' "Copy as path" adds double quotes (review, 2026-11-27): one pair of surrounding quotes is dropped.
+    text = path.strip() if isinstance(path, str) else ""
+    if len(text) >= 2 and text[0] == text[-1] and text[0] in "\"'":
+        text = text[1:-1].strip()
+    folder = Path(text) if text else None
+    if folder is None or not folder.exists():
+        return {"ok": False, "problem": f"no such folder: {path!r}"}
+    if not folder.is_dir():
+        return {"ok": False, "problem": f"not a folder: {text}; give the bundle's folder, not one of its files"}
+    problems = verify_bundle(folder)
+    return {"ok": not problems, "problem": problems[0].splitlines()[0] if problems else None}
+
+
+def open_bundle(name: str) -> Optional[dict]:
+    """One committed bundle, by its exact folder name only (nothing outside eval/bundles/), verified now."""
+    folder = next((folder for folder in _bundle_folders() if folder.name == name), None)
+    if folder is None:
+        return None
+    entry = _bundle_entry(folder)
+    return {"name": name, "run_date": entry["run_date"], "report": entry["report"], "error": entry["error"],
+            "verify": check_bundle(str(folder))}
 
 
 def get_report(name: str) -> Optional[dict]:
@@ -246,6 +356,12 @@ class Handler(BaseHTTPRequestHandler):
         if match:
             report = get_report(match.group(1))
             return self._send(200, report) if report else self._send(404, {"error": "not_found"})
+        if path == "/api/bundles":
+            return self._send(200, list_bundles())
+        match = BUNDLE_PATH.fullmatch(path)
+        if match:
+            opened = open_bundle(urllib.parse.unquote(match.group(1)))
+            return self._send(200, opened) if opened else self._send(404, {"error": "not_found"})
         match = JOB_PATH.fullmatch(path)
         if match:
             job = self.server.jobs.get(match.group(1))
@@ -279,11 +395,16 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(400, {"error": "bad_request", "message": problem})
             try:
                 job = self.server.jobs.start(body["project"].strip(), body["victim"].strip(), body.get("n", 20),
-                                             body.get("order"))
+                                             body.get("order"), {name: body[name] for name in [*OPTIONS, "bundle"]
+                                                                 if name in body})
             except Busy as busy:
                 return self._send(409, {"error": "busy", "message": "a diagnosis is already running",
                                         "started": busy.job["started"], "command": busy.job["command"]})
             return self._send(202, {"job_id": job["id"]})
+        if path == "/api/check-bundle":
+            if not isinstance(body, dict) or not isinstance(body.get("path"), str):
+                return self._send(400, {"error": "bad_request", "message": "path must be a string"})
+            return self._send(200, check_bundle(body["path"]))
         if path == "/api/validate":
             problem = report_problem(body)
             return self._send(200, {"valid": problem is None, "message": problem})

@@ -33,3 +33,22 @@ describe("retryWhileDown (start.cmd opens the page before the backend is up)", (
     expect(calls).toBe(1);
   });
 });
+
+describe("review fix 11 (2026-11-27): a bundle name's # reaches the server", () => {
+  it("encodes the name as one path segment", async () => {
+    const { api } = await import("./api");
+    const seen: string[] = [];
+    const original = globalThis.fetch;
+    globalThis.fetch = (async (url: string) => {
+      seen.push(url);
+      return new Response(JSON.stringify({ name: "x", run_date: null, report: {}, verify: { ok: true, problem: null } }),
+                          { status: 200, headers: { "Content-Type": "application/json" } });
+    }) as typeof fetch;
+    try {
+      await api.bundle("20261122T120044Z-a.B#c");
+    } finally {
+      globalThis.fetch = original;
+    }
+    expect(seen).toEqual(["/api/bundles/20261122T120044Z-a.B%23c"]);
+  });
+});

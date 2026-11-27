@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useStore } from "../state";
 import { api, type JobKind, type ReportEntry } from "../lib/api";
 import { WILSON_FLOOR } from "../lib/report";
-import { UNBUILT } from "../lib/labels";
-import { NotBuilt } from "../components/NotBuilt";
+import type { Form } from "../lib/request";
+import { finishedRunLoad } from "../lib/job";
 import { Button, Field, FlowNav, Panel, ScreenHeader, Status, Terminal, inputClass } from "../components/ui";
 
 const FAILED_TITLE: Record<JobKind, string> = {
@@ -24,7 +24,7 @@ function Elapsed({ since }: { since: number }) {
 }
 
 export default function TargetScreen() {
-  const { s, go, setForm, diagnose } = useStore();
+  const { s, go, setForm, diagnose, load } = useStore();
   const [fixtures, setFixtures] = useState<ReportEntry[]>([]);
   useEffect(() => {
     api.reports().then(setFixtures).catch(() => setFixtures([]));
@@ -82,9 +82,57 @@ export default function TargetScreen() {
               <input id="floor" className={inputClass} value={WILSON_FLOOR.toFixed(2)} readOnly disabled />
             </Field>
           </div>
-          <div className="mt-4">
-            <NotBuilt item={UNBUILT.budget} />
-          </div>
+        </Panel>
+
+        <Panel title="Advanced run options" aside="the command line's options and defaults">
+          <details>
+            <summary className="cursor-pointer text-ink-2">Search, scope, policy, budget, evidence bundle</summary>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <Field label="Search (--search)" htmlFor="search" hint="pairs: [candidate, victim] for every test in scope, for a victim no order makes fail (ADR-016). Not with a known order.">
+                <select id="search" className={inputClass} value={s.form.search} onChange={(e) => setForm({ search: e.target.value as Form["search"] })}>
+                  <option value="order">order (default)</option>
+                  <option value="pairs">pairs</option>
+                </select>
+              </Field>
+              <Field label="Scope (--scope)" htmlFor="scope" hint="package: only tests in the victim's package. Not with a known order.">
+                <select id="scope" className={inputClass} value={s.form.scope} onChange={(e) => setForm({ scope: e.target.value as Form["scope"] })}>
+                  <option value="module">module (default)</option>
+                  <option value="package">package</option>
+                </select>
+              </Field>
+              <Field label="Policy (--policy)" htmlFor="policy" hint="The order candidates are tried in. ranked uses static evidence; a rank orders the search, it never says what caused the failure.">
+                <select id="policy" className={inputClass} value={s.form.policy} onChange={(e) => setForm({ policy: e.target.value as Form["policy"] })}>
+                  <option value="original">original (default)</option>
+                  <option value="ranked">ranked</option>
+                  <option value="random">random</option>
+                </select>
+              </Field>
+              <Field label="Seed (--seed)" htmlFor="seed" hint="Default 0 (empty: the default). The first shuffle seed, and the random policy's seed.">
+                <input id="seed" type="number" className={inputClass} value={s.form.seed} onChange={(e) => setForm({ seed: e.target.value })} />
+              </Field>
+              <Field label="Shuffled orders (--shuffles)" htmlFor="shuffles" hint="Default 31 (empty: the default): tried when the starting order never fails.">
+                <input id="shuffles" type="number" min={0} className={inputClass} value={s.form.shuffles} onChange={(e) => setForm({ shuffles: e.target.value })} />
+              </Field>
+              <Field label="Budget: invocations (--budget-invocations)" htmlFor="budgetInvocations" hint="Empty: no limit, still counted. 3 × n are kept for verification.">
+                <input id="budgetInvocations" type="number" min={1} className={inputClass} value={s.form.budgetInvocations} onChange={(e) => setForm({ budgetInvocations: e.target.value })} />
+              </Field>
+              <Field label="Budget: seconds (--budget-seconds)" htmlFor="budgetSeconds" hint="Empty: no limit. Stops searching; verification still runs.">
+                <input id="budgetSeconds" type="number" min={0} step="any" className={inputClass} value={s.form.budgetSeconds} onChange={(e) => setForm({ budgetSeconds: e.target.value })} />
+              </Field>
+              <Field label="Evidence bundle (--bundle)" htmlFor="bundle" hint="Written into this run's own folder, never into the repository.">
+                <label className="flex items-center gap-2 text-ink-2">
+                  <input id="bundle" type="checkbox" checked={s.form.bundle} onChange={(e) => setForm({ bundle: e.target.checked })} />
+                  write an evidence bundle
+                </label>
+              </Field>
+              <Field label="Lifecycle (--lifecycle)" htmlFor="lifecycle" hint="Fixed in the UI at the command line's default (ADR-012).">
+                <input id="lifecycle" className={inputClass} value="class-grouped" readOnly disabled />
+              </Field>
+              <Field label="Workspace (--workspace)" htmlFor="workspace" hint="Fixed in the UI at the default: a disposable copy (ADR-012).">
+                <input id="workspace" className={inputClass} value="copy" readOnly disabled />
+              </Field>
+            </div>
+          </details>
         </Panel>
 
         <Panel title="Run">
@@ -92,6 +140,7 @@ export default function TargetScreen() {
             Diagnose
           </Button>
           {blocked && !running && <Status state="idle">{blocked}</Status>}
+          {s.health && <p className="mt-2 text-sm text-ink-3">A run is stopped after {Math.round(s.health.job_timeout_s / 60)} min.</p>}
           {s.jobError && <Status state="warn">{s.jobError}</Status>}
           {running && s.jobStartedAt !== null && (
             <>
@@ -100,6 +149,12 @@ export default function TargetScreen() {
               </Status>
               {job.command && <Terminal className="mt-3" wrap text={job.command} />}
             </>
+          )}
+          {job?.state === "done" && job.report && s.loaded?.report !== job.report && (
+            <Status state="idle">
+              This run finished while another report was open.{" "}
+              <Button size="sm" onClick={() => load(finishedRunLoad(job))}>Open this run's report</Button>
+            </Status>
           )}
           {job?.state === "failed" && (
             <>
