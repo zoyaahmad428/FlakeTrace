@@ -1367,3 +1367,13 @@ scores and probe results from the private part of the package (removed). **Wrong
 that. **What I changed:** *to fill in.*
 
 Ownership checkpoint: why "order runner" and not "sandbox runner"; what each W36–W40 package needs to be Done.
+
+## 2026-11-27 — W39: FJ-03 under a stated budget
+
+**Tool:** Claude Code (Claude Opus 5.5) · **Level:** L2 · **Branch:** `m2/w39-budgeted-fj03`
+
+**Asked:** run FJ-03 pair mode under one stated limit, record the real output, commit the bundles. **Kept:** the
+prediction written before the runs; a clean local clone so the bundles are `tool.dirty: false`; records outside the
+clone. **Found:** the demo plan's "certified polluter" (flagged by M3), corrected. **What I changed:** *to fill in.*
+
+Ownership checkpoint: why 400 invocations leave 340 for the pairs; why `original` blames nothing when it stops.

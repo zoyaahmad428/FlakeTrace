@@ -1,0 +1,13 @@
+$ java -version
+Picked up JAVA_TOOL_OPTIONS: -Duser.timezone=UTC -Duser.language=en -Duser.country=US
+openjdk version "1.8.0_502"
+OpenJDK Runtime Environment (Temurin)(build 1.8.0_502-b07)
+OpenJDK 64-Bit Server VM (Temurin)(build 25.502-b07, mixed mode)
+
+$ mvn -v
+Apache Maven 3.10.0 (c43a36b8d67be7e0805a411bc0898af1a51f5472)
+Maven home: C:\tools\apache-maven-3.10.0-bin\apache-maven-3.10.0
+Java version: 1.8.0_502, vendor: Temurin, runtime: <home>\AppData\Local\Temp\claude\2a82ec50247b65b7\a3a4bdcd-b14f-4e1a-af25-e9676c03b49a\scratchpad\jdk8\jdk8u502-b07\jre
+Default locale: en_US, platform encoding: Cp1252, time zone: UTC
+OS name: "windows 11", version: "10.0", arch: "amd64", family: "windows"
+Picked up JAVA_TOOL_OPTIONS: -Duser.timezone=UTC -Duser.language=en -Duser.country=US

@@ -93,3 +93,16 @@ covers today (POLLUTER_FOUND/CANDIDATE/VERIFIED, VICTIM_FAILS_ALONE/_DIFFERENTLY
 NOT_REPRODUCED with no reference ever established, and a `kind: "replay"` bundle's own shape)
 and which it does not yet (INCONSISTENT, BUDGET_EXHAUSTED) — `verify_bundle` says so explicitly
 for those rather than guessing at a number.
+
+## W39: FJ-03 under a stated budget (M2, 2026-11-27)
+
+Added by M2 with M3's agreement (2026-11-27). Pair mode, package scope, `--budget-invocations 400`, `--n 20`, made
+from a clean clone of `main` at `bfb2f93` (`tool.dirty: false`), Temurin 8u502, `JAVA_TOOL_OPTIONS=-Duser.timezone=UTC
+-Duser.language=en -Duser.country=US`. Each `verify` clean.
+
+| Bundle | Policy, seed | Real result |
+| --- | --- | --- |
+| `20261127T103734Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf/` | `original` | `UNRESOLVED (BUDGET_EXHAUSTED)`: 170 of 524 pairs, 360 of 400 invocations, nothing blamed |
+| `20261127T104310Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf/` | `random`, 1 | `CANDIDATE`: `SerializeWriterTest_14#test_writer_1` after 7 pairs, 76 invocations |
+| `20261127T104600Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf/` | `random`, 2 | `CANDIDATE`: `SerializeWriterTest_14#test_writer_2` after 61 pairs, 184 invocations |
+| `20261127T104934Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf/` | `random`, 3 | `CANDIDATE`: `SerializeWriterTest_14#test_writer_3` after 98 pairs, 258 invocations |
