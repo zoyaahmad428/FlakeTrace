@@ -1399,3 +1399,19 @@ fill in.*
 
 Ownership checkpoint: what "1-minimal under the rule" means and what it does not promise; why the resource is only a
 static overlap.
+
+## 2026-11-27 — W40 A6: M2's nearest-baseline note
+
+**Tool:** Claude Code (Claude Opus 5.5), brainstorming · **Level:** L2 · **Branch:** `m2/w40-a6-baseline`
+
+**Asked:** my nearest-baseline note (iFixFlakies-style search and minimisation against mine), citing only sources I
+opened. **Kept:** only [3], [4], [5], [28] (the four I opened); [11] left uncited; every FlakeTrace fact from our own
+committed evidence. **Corrected:** our iFixFlakies literature note listed "active budget allocation by expected information
+gain" and "clean-container replay" as what we add — neither is built (the adaptive policy is FYP-2, ADR-014 §7; replay
+runs in fresh JVMs on a disposable copy); both lines in `docs/01-Literature/per-paper/ifixflakies.md` now say planned
+or built, and this note says what was built. **Not done by the assistant:** it could not open the papers; the
+paper facts come from the team notes and are listed for me to check against each paper. **What I changed:** *to fill
+in.*
+
+Ownership checkpoint: what iFixFlakies' Minimizer does and does not do that my runner does; why we cannot claim to be
+cheaper than it or RankF.
