@@ -2092,3 +2092,28 @@ own copy of the code, not from the review's description.
   flag); corrected, and the budgeted runs added.
 - **Limitations:** one run per policy and seed, one machine; seed 0 (436 needed) and seed 4 (148) not run; M3 to
   repeat one run.
+
+## W36: the replay column of the bundle matrix (2026-11-27)
+
+- **Requirement:** W36 (supervisor review 23 Nov, P1/FT009): state which bundle versions `runner replay` supports, run
+  on at least one v2 and one v3 bundle. M3's matrix (#181, at `41fc150`) lists 24 bundles, all v2, and reasons from
+  `runner/replay.py` that replay supports every version "by construction"; the four W39 bundles (#182) are the first
+  schema-v3 bundles.
+- **Predictions, before running:** both replayable bundles `same`, exit 0; both unresolved ones refused, exit 2.
+- **Runs** (`main` `eb7589f`, Windows 11; fixtures with JDK 21.0.9, FJ-03 with Temurin 8u502 and
+  `JAVA_TOOL_OPTIONS=-Duser.timezone=UTC -Duser.language=en -Duser.country=US`):
+  `py -3 -m runner replay <bundle> --project <fixtures/od-fixture | fastjson e05e9c5> --bundle <scratch> --records <scratch>`
+
+| Bundle | Schema | Outcome | `runner replay` (real run, 2026-11-27) |
+| --- | --- | --- | --- |
+| F1 `20261121T093338Z-odfixture.ConfigVictimTest#expectsDefaultMode` | v2 | `VERIFIED` | exit 0: `VERIFIED -> VERIFIED same`; polluter, sequence 20/20, alone, deletion `NEEDED` same; tool commit `03ada56 -> eb7589f` DIFFERENT (expected); the replay's bundle `verify` OK |
+| FJ-03 W39 seed 1 `20261127T104310Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` | v3 | `CANDIDATE` | exit 0 in 3 min 48 s (JDK 8u502, fastjson `e05e9c5`): `CANDIDATE (NO_SUPPORTED_RESOURCE_EVIDENCE) -> same`; polluter `SerializeWriterTest_14#test_writer_1`, 20/20, alone 20/20 passed, deletion `NEEDED` same; JDK, OS, Maven, timezone, locale, encoding, lifecycle same; the replay's report is schema v3 with `reproduced_by: pair` and the constructed-pair line; its bundle `verify` OK; fastjson's `git status` empty |
+| N3 `20261121T185248Z-odfixture.EnvDependentNegativeTest#onlyFailsUnderCI` | v2 | `UNRESOLVED` | exit 2: "nothing to replay: no polluter was blamed" (R1) |
+| FJ-03 W39 original `20261127T103734Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` | v3 | `UNRESOLVED` | exit 2: the same refusal |
+
+- **Answer:** `runner replay` supports schema **v2 and v3** bundles — shown by running it on one of each, both `same`,
+  both new bundles `verify` OK; it refuses an unresolved report on either version (R1). Every prediction held.
+- **Found on the way:** the bundles README's fixture table names eight folders that no longer exist
+  (`20261121T094724Z`, `…152045Z`, `…152110Z`, `…152152Z`, `…152241Z`, `…152302Z`, `…152321Z`, `…152513Z`; the bundles
+  were regenerated clean in #168); my first N3 attempt used one of those names and failed with "not a readable bundle".
+  M3's file — sent to her. M3's matrix also needs the four W39 (v3) rows.
