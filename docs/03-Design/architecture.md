@@ -1,11 +1,20 @@
 # Architecture
 
+*Status (2026-11-27): Iteration 2's additions are **built**, except the resource intervention
+(ADR-015, a spike not started) — see the section below. **Naming:** component 2 is called the
+**order runner** for what exists: one fresh JVM per order, run in a disposable copy of the project,
+with a per-run timeout and the budget ledger. It is **not a sandbox**: there is no containment from
+the analysed project, so only trusted projects are supported (ADR-012). A **sandbox (hardened
+container) is planned for FYP-2 Iteration 3** ([[00-Meta/roadmap]]). "Sandbox runner" in older text
+below and in the Mid documents names that target, not the current build. The W27 image pins tool
+versions for reproducibility; it is not hardening.*
+
 *Status (2026-11-13): target architecture for the whole project. Iteration 1 implemented part of
 it (next paragraph). **Iteration 2's additions are in the section "Iteration 2 — what changes"
 below**, proposed in ADR-010 to ADR-015 after the Mid review.*
 
 *Status (2026-10-11): target architecture for the whole project; Iteration 1 implements part of it.
-Implemented: sandbox runner (`runner/order_runner.py`, one fresh JVM per order, per-run timeout,
+Implemented: order runner — called "sandbox runner" at the time (`runner/order_runner.py`, one fresh JVM per order, per-run timeout,
 no container yet), test discovery and environment record (`runner/discovery.py`,
 `runner/diagnose.py`), outcome normaliser (failure signatures), evidence collector — static only
 (`evidence/extract.py`), minimiser/verifier (`runner/search.py`, `runner/minimise.py`, repeated
@@ -19,8 +28,13 @@ How components call each other: [[contracts/interfaces]].*
 
 ## Iteration 2 — what changes
 
-*`ACCEPTED` 2026-11-13 (ADR-010 to ADR-014; ADR-015 as a spike only). Nothing in this section is
-built yet.*
+*`ACCEPTED` 2026-11-13 (ADR-010 to ADR-014; ADR-015 as a spike only). **Built by 2026-11-27**
+(reproduced by another member; see [[10-Final1/action-register]]): verdict contract v2 (W18/W19),
+deletion checks (W20), class-grouped harness and the written reset boundary (W22), evidence bundle
+with recount and replay (W23), budget ledger and reserve (W24), candidate ranking and the search
+policies `original`/`ranked`/`random` (W25). Added later: pair mode (ADR-016, W35). **Not built:**
+the resource intervention (ADR-015, stretch W34, FYP-2 if the supervisor wants causal
+confirmation). The 2026-11-13 text below is kept as written.*
 
 The Mid review found the pipeline sound and three things missing around it: the verdict claimed
 more than the counts supported, no report could be audited away from the machine that made it,
@@ -67,8 +81,8 @@ and nothing decided what to run next or when to stop. Iteration 2 adds exactly t
 
 **What this does to the eight components.** The *diagnosis planner* (5) exists for the first time,
 in its simplest form. The *minimiser / verifier* (6) gains deletion evidence. The *certificate
-generator* (7) gains the bundle and the replay command it always promised. The *sandbox runner* (2)
-gains a budget and a faithful class lifecycle, and still has no container hardening. The *evidence
+generator* (7) gains the bundle and the replay command it always promised. The *order runner* (2; the
+"sandbox runner" of the target design) gains a budget and a faithful class lifecycle, and still has no container hardening (planned, FYP-2 Iteration 3). The *evidence
 store / graph* (4) and dynamic collection are unchanged: still FYP-2.
 
 **The interdependence, now in code rather than on a slide:** the planner asks the extractor for
@@ -86,9 +100,9 @@ then chooses decide which further evidence is worth paying for.
      └─────────┬──────────┘
                ▼
      ┌────────────────────────────────────────┐
-     │  SANDBOX RUNNER                        │
+     │  ORDER RUNNER (sandbox: planned, FYP-2)│
      │  ordered execution · one JVM per order │
-     │  budgets · timeouts · isolation        │
+     │  budgets · timeouts · disposable copy  │
      └────┬──────────────────────────┬────────┘
           ▼                          ▼
  ┌──────────────────┐      ┌─────────────────────┐
@@ -123,7 +137,7 @@ Diagram: `attachments/Block_Diagram_SysArch.png`
 | # | Component | Responsibility |
 | --- | --- | --- |
 | 1 | **Project adapter** | Validates repository/module, discovers tests, records environment metadata |
-| 2 | **Sandbox runner** | Executes declared orders, emits normalised outcomes, enforces budgets |
+| 2 | **Order runner** *(target: sandbox runner — hardened container planned, FYP-2 Iteration 3)* | Executes declared orders, emits normalised outcomes, enforces budgets |
 | 3 | **Evidence collector** | Captures supported resource events, attributes them to test boundaries |
 | 4 | **Evidence store / graph** | Preserves event provenance, candidate relationships, experiment history |
 | 5 | **Diagnosis planner** | Ranks candidates, selects the next experiment |
@@ -175,7 +189,7 @@ That loop is:
 | Member | Components |
 | --- | --- |
 | 1 | Evidence collector · evidence store/graph · certificate evidence path · coverage reporting |
-| 2 | Sandbox runner · planner · minimiser · verifier · certificate generator · CLI/CI adapter · container security |
+| 2 | Order runner (sandbox planned) · planner · minimiser · verifier · certificate generator · CLI/CI adapter · container security |
 | 3 | Evaluation infrastructure across all of it (benchmark manifest, independent baselines, ablation harness, metrics, fixtures, reproducibility bundle) + gated CDR verification |
 
 ## Evaluation infrastructure — committed, and why it is affordable

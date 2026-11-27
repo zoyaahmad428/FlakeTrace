@@ -10,6 +10,7 @@ at the Mid.
 
 | If you want to… | Open |
 | --- | --- |
+| **Start here (27 Nov):** the supervisor's 23 Nov review and the close-out work W36–W40 | [[10-Final1/supervisor-review-2026-11-23]] |
 | Read what the Mid said about us | [[10-Final1/mid-eval-outcome]] |
 | See every correction asked for, its owner and how it closes | [[10-Final1/feedback-register]] |
 | See the carried action register (handbook Form 10) | [[10-Final1/action-register]] |

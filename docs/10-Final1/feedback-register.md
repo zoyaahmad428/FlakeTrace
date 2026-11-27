@@ -83,6 +83,16 @@ report and worksheet finding (taken from the supervisor's audit).
 
 *Since then (status 2026-11-26; the check above is kept as it was):* FT006 against a real project — fastjson FJ-03 under Maven Surefire gives the same failure as FlakeTrace's diagnosis (M1, 2026-11-25, PR #173); FT008 — FJ-03 run through the whole pipeline, order mode `NOT_REPRODUCED` (M3 #156, repeated by M2) and pair mode `CANDIDATE` from the victim alone (W35, reproduced by M1 #163), with a live comparison (M3 #165); FT009 on a second machine — M1's bundle reproduction (#159) and the W27 image on her laptop (#174). See [[10-Final1/action-register]] for each row's status.
 
+*Supervisor's review of 23 November (added 2026-11-27, M2; [[10-Final1/supervisor-review-2026-11-23]]):*
+his Proposed Student Action Plan keeps FT003, FT004 and FT010 as tested corrections to keep visible,
+acceptance still his. **FT009 reopened by him** for a compatibility regression (16 of 24 bundles failed the
+then-current checker); fixed after his review by versioned validation (schema v3, PR #170) and
+a CI check of every committed bundle (PR #172); his requested version matrix is W36. **FT008:** the
+seven FJ-03 runs adopt four distinct polluters, not five as our protocol and logs said, and every
+endpoint is `CANDIDATE`, so "certified" is wrong; corrected in the claims ledger 2026-11-27, the
+protocol and M3's log are W37. **FT011/FT017/FT022:** current artefacts (architecture, figures,
+report, poster, deck) not yet supplied — W38. **FT018:** still no session — W32.
+
 ## Decisions only the supervisor can make
 
 Tracked with their answers in [[10-Final1/supervisor-agenda]].

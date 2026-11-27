@@ -1,9 +1,39 @@
 # Agenda for the next supervision meeting
 
-*v2 · 2026-11-21 (v1 2026-11-13) · Status: questions prepared, **no answers yet**. Write each answer here
+*v3 · 2026-11-27 (v2 2026-11-21, v1 2026-11-13) · Status: questions prepared, **no answers yet**; v3
+adds what the 23 Nov review already indicates and narrows the meeting to the open questions. Write each answer here
 with the date, in the supervisor's words where possible. An answer recorded here is the approval record
 the handbook's change control asks for. v2 (M2, W31): what changed since v1, one stale question
 corrected, the real-case ranking question added (§9), commitments ticked only where the item exists.*
+
+## v3 (2026-11-27, M2): after the supervisor's review of 23 November
+
+The supervisor sent a review package on 23 November ([[10-Final1/supervisor-review-2026-11-23]]).
+**No meeting has been held and no answer below is recorded yet**, but his Proposed Student Action
+Plan already indicates a direction on some questions. Ask him to confirm those in one line each, and
+spend the meeting on the open ones.
+
+**His plan indicates (to confirm, not yet an answer):**
+
+| Question here | What his plan says |
+| --- | --- |
+| §1 Final date | 4 December, tentative and unannounced; rehearse a 15-minute group presentation |
+| §2 what `VERIFIED` means; `CANDIDATE` with no edge | Accept only claims bounded to the stated run rule; FJ-03's `CANDIDATE` described as "not VERIFIED or causal-resource proof" |
+| §6 / §9 second real case before the Final | Not added: "broad new algorithms or a compulsory second real project are not added to this near-term plan" |
+| §9 the honest ranking claim | Ranked shows no saving on FJ-03; random savings are case-specific; no broad policy superiority |
+
+**Still open, for the meeting (in this order):**
+
+1. **Acceptance:** FT003, FT004, FT010 (his plan treats them as tested corrections); FT005, FT006/FT021;
+   FT009 after W36 and M1's repeat.
+2. **Scope and weights** for the 60% gate (§5) — he says our 43% / conditional 68% is not an approved
+   denominator.
+3. **A10** resource boundary, and whether static-only evidence needs the committee (§3).
+4. **FT018:** a practitioner introduction, or which substitute he accepts if none is found.
+5. **Report (§7):** what "missing abstract" means, abstract length, which template parts are out of
+   line, how to submit the signed report and corrected worksheet.
+6. **Dates:** poster, report deadline, confirmed Final slot, and when each member's oral is observed (§8).
+7. **A1–A6 wording:** the original panel result sheet (§4).
 
 ## Since v1 (13–21 November)
 
