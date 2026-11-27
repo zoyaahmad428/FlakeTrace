@@ -2047,3 +2047,27 @@ Ownership checkpoint: be able to say which exact three Python versions `eval/req
 has to work on and why (3.10 documented minimum, 3.11 CI, 3.12 this image), and why `rpds-py`
 specifically was the one dependency worth checking carefully (a compiled wheel, not pure
 Python).
+
+## 2026-11-27 -- M2's task list, item 1: W37's polluter recount (L2)
+
+**Kept:** redoing a check someone else already reported, because the task explicitly said
+"recount it yourself" -- the whole point of an independent check is not skipping it once a
+number already matches expectation.
+
+**Rejected:** trusting that the two files M2's PR named were the only ones with the stale
+wording. Grepped the whole `docs/` tree instead of the two paths mentioned, which is what
+surfaced the one real remaining problem (`demo-plan.md`, live demo content, not a historical
+record) that neither M2's PR description nor the task message had named.
+
+**What I didn't do:** edit `demo-plan.md` or M2's own UI-demo spec file. The task says "stay in
+`eval/`, `fixtures/` and my own docs" -- `demo-plan.md` is W33's (M2's), and fixing someone
+else's file quietly, even to correct a real error, is exactly what the ownership rule exists to
+prevent. Flagged it instead.
+
+Verified: read `polluters` from all seven committed `report.json` files directly (not via a
+script that could itself have a bug) -- four distinct, matching M2's count; `budget.spent` vs.
+`budget.launches` checked against a real bundle to confirm the invocations/launches distinction
+was never actually conflated. `eval/tests` 165/165 OK, unaffected (no code changed).
+
+Ownership checkpoint: be able to name the real file still showing the wrong wording
+(`demo-plan.md`) and explain why I flagged it instead of fixing it myself.
