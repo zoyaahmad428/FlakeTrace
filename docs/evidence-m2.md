@@ -2069,3 +2069,26 @@ own copy of the code, not from the review's description.
   `#test_writer_2` (×1), `SerializeWriterTest_15#test_writer_1` (×1): **four distinct**, not five as the
   protocol, [[evidence-m3]] and the claims ledger said. Claims ledger E16/G9 corrected; protocol and M3's log are W37.
 - **Not run:** any Java/Maven command (no JVM run needed for this change).
+
+## W39: FJ-03 under a stated budget (2026-11-27)
+
+- **Requirement:** W39 (M-2, FT007; supervisor review 23 Nov): the seven FJ-03 comparison runs (#165) had no budget
+  limit; the iteration objective says "under a stated budget".
+- **Prediction, written before the runs** (from the unconstrained runs): with a 400-invocation limit the pairs get 340
+  after the 60 reserved for verification, so `original` (798 needed) stops `BUDGET_EXHAUSTED` and seeds 1–3 (76, 184,
+  258 needed) reach `CANDIDATE` at the same cost.
+- **Setup** (with the member's permission, scratchpad only): Temurin 8u502 (SHA-256 `3f193fe5…` checked); fastjson
+  `git fetch --depth 1` of `e05e9c5e4be580691cc55a59f3256595393203a1`, `mvn -B -q -DskipTests test-compile` → exit 0,
+  `git status` empty; FlakeTrace from a **clean local clone of `main` at `bfb2f93`** (the member's checkout holds three
+  untracked images of M1's, which would mark every bundle `tool.dirty: true`); records and bundles outside the clone.
+- **Command** (×4, from the clone): `py -3 -m runner diagnose --project <fastjson> --victim com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf --search pairs
+  --scope package --policy <original|random> --seed <0|1|2|3> --n 20 --budget-invocations 400 --bundle <folder>`.
+- **Result:** FJ-03 pair mode, package scope, `--budget-invocations 400` (reserve 60): **`original` → `UNRESOLVED (BUDGET_EXHAUSTED)`** after 170 of 524 pairs, 360 of 400 spent, nothing blamed; **random seeds 1, 2, 3 → `CANDIDATE`** at **76, 184, 258** invocations (`SerializeWriterTest_14#test_writer_1`, `#test_writer_2`, `#test_writer_3`; 20/20, alone 0/20). Each run 3–6 min (10:35–10:51 UTC). **Exactly the prediction.** The clone stayed clean.
+- **Bundles:** `eval/bundles/20261127T103734Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf`, `…20261127T104310Z…`, `…20261127T104600Z…`, `…20261127T104934Z…`: `eval.bundle verify` →
+  OK each; `tool.dirty: false`, tool commit `bfb2f93`; no personal path. M3 agreed (2026-11-27) to them being committed
+  into `eval/bundles/` and a W39 section in its README. `eval.tests.test_committed_bundles` and
+  `runner.tests.test_bundle.TestCommittedBundles` → OK with 29 bundles.
+- **Also:** demo plan step 5 said "each to a certified polluter" — wrong, those runs are `CANDIDATE` (M3's #180
+  flag); corrected, and the budgeted runs added.
+- **Limitations:** one run per policy and seed, one machine; seed 0 (436 needed) and seed 4 (148) not run; M3 to
+  repeat one run.

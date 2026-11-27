@@ -1,0 +1,85 @@
+{
+  "schema_version": 3,
+  "victim": {
+    "class": "com.alibaba.json.bvt.serializer.MaxBufSizeTest",
+    "method": "test_max_buf"
+  },
+  "polluters": [],
+  "original_failing_order": [
+    {
+      "class": "com.alibaba.json.bvt.serializer.MaxBufSizeTest",
+      "method": "test_max_buf"
+    }
+  ],
+  "reduced_sequence": [
+    {
+      "class": "com.alibaba.json.bvt.serializer.MaxBufSizeTest",
+      "method": "test_max_buf"
+    }
+  ],
+  "reproduction": {
+    "n": 170,
+    "passed": 170,
+    "matched": 0,
+    "other": 0,
+    "infra": 0,
+    "confidence": 0.95,
+    "lower": 0.0,
+    "upper": 0.022097483838498504
+  },
+  "victim_alone": {
+    "n": 20,
+    "passed": 20,
+    "matched": 0,
+    "other": 0,
+    "infra": 0,
+    "confidence": 0.95,
+    "lower": 0.0,
+    "upper": 0.16112515827076002
+  },
+  "shared_resource": null,
+  "polluter_write_location": null,
+  "victim_read_location": null,
+  "resource_edges": [],
+  "failure_signature": null,
+  "reproduced_by": null,
+  "instrumentation_level": "static-only",
+  "execution_record_reference": "record.jsonl",
+  "source_integrity": {
+    "passed": true,
+    "details": "copy: 2778 files hashed (SHA-256) before and after; all identical; original project: 2778 files hashed (SHA-256) before and after; all identical"
+  },
+  "outcome": "UNRESOLVED",
+  "unresolved_reason": "BUDGET_EXHAUSTED",
+  "candidate_reasons": [],
+  "limitations": [
+    "instrumentation_level is static-only; runtime instrumentation is not built.",
+    "The execution budget ran out in the pair phase, having tried 170 of 524 candidate(s), before a reproducing sequence was found. A larger --budget-invocations may let the search finish."
+  ],
+  "deletion_checks": [],
+  "budget": {
+    "limit_invocations": 400,
+    "limit_seconds": null,
+    "reserve_invocations": 60,
+    "spent": {
+      "reproduce": 0,
+      "shuffle": 0,
+      "alone": 20,
+      "pair": 340,
+      "search": 0,
+      "minimise": 0,
+      "deletion": 0,
+      "verify": 0
+    },
+    "launches": 190,
+    "wall_seconds": 192.528,
+    "analysis_seconds": null,
+    "policy": "original",
+    "exhausted": true,
+    "exhausted_phase": "pair",
+    "candidates": {
+      "total": 524,
+      "tried": 170
+    }
+  }
+}
