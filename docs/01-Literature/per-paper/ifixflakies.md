@@ -65,9 +65,13 @@ of the most recent reproduced population.
 ## What we add on top — the four things (Q13)
 
 1. **Active budget allocation** — next experiment chosen by expected information gain per
-   estimated cost, not a fixed schedule
+   estimated cost, not a fixed schedule. **Planned, FYP-2 (ADR-014 §7, FR-4; roadmap Iteration 3); not
+   built.** Built now (W24, W25): a budget ledger with a verification reserve, and three fixed search orders
+   (`original`, `ranked`, `random`) — *corrected 2026-11-27 (M2): this line read as if it were delivered*
 2. **Bounded resource provenance** — output names the write, the resource identifier, the read
-3. **Statistical verification** — repeated clean-container replay with an interval
+3. **Statistical verification** — repeated replay with an interval. **Built:** `n` repeats, each in a fresh JVM on a
+   disposable copy of the project, with a Wilson interval (ADR-010, ADR-012). **Not built:** a clean container per
+   run — the W27 image packages FlakeTrace, and a hardened container is FYP-2 — *corrected 2026-11-27 (M2)*
 4. **Typed abstention** — inconclusive returns a reason, not a guess
 
 > **The measurable claim is a cost claim:** at the same isolation-success level, fewer
