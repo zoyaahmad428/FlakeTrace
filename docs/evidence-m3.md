@@ -3313,3 +3313,61 @@ makes a row `Done`, never a member finishing the underlying work.
 
 **Verified:** `python -m unittest discover -s eval/tests` -> 165/165 OK throughout (the
 requirements/Dockerfile change touches no Python test code; re-run anyway, not assumed safe).
+
+## 2026-11-27 -- M2's task list, item 1 (W37/FT008/FT017): the polluter count, recounted myself
+
+M2's PR #178 (merged this morning, after the supervisor's 23 Nov review) already corrected
+`claims-ledger.md` and flagged that `real-case-protocol.md` and this file still said "five
+distinct" / "certified polluter". By the time I read his PR, both were already fixed --
+resolved as part of the same-day merge of PR #170/#171's follow-on branch into `main`, before
+his task list reached me. Did not take that as settled, though: the task says "recount it
+yourself", so I did.
+
+**Independent recount, not trusted from M2's number:** read `polluters` directly from the
+real `report.json` of all seven committed FJ-03 pair-mode bundles
+(`eval/bundles/2026112*T*Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest*`):
+
+```
+120044Z (original) -> SerializeWriterTest_14#test_writer_1
+162104Z (ranked)    -> SerializeWriterTest_14#test_writer_1
+165348Z (seed 0)    -> SerializeWriterTest_14#test_writer_3
+170257Z (seed 1)    -> SerializeWriterTest_14#test_writer_1
+171204Z (seed 2)    -> SerializeWriterTest_14#test_writer_2
+174219Z (seed 3)    -> SerializeWriterTest_14#test_writer_3
+174845Z (seed 4)    -> SerializeWriterTest_15#test_writer_1
+```
+
+**Four distinct identities** (`test_writer_1` x3, `test_writer_3` x2, `test_writer_2` x1,
+`SerializeWriterTest_15#test_writer_1` x1) -- matches M2's own recount in PR #178 exactly, now
+confirmed independently rather than taken on trust.
+
+**Checked the rest of task 1's specific asks, not just the headline number:**
+- The 524-candidate scan's "six relevant tests" is already named as a separate count from the
+  seven runs' "four adopted" in both `real-case-protocol.md` and this file -- not conflated.
+- Order mode's `NOT_REPRODUCED` (12,817 invocations) is stated in its own paragraph, nowhere
+  mixed into the pair-mode table.
+- "Costs are test-method invocations, not JVM launches": checked against a real bundle's own
+  `budget` field (`20261122T120044Z`'s `report.json`) -- `spent` sums to 798 (the table's own
+  number), `launches: 409` is a different, separately-reported figure. The two were never
+  conflated in the first place; confirmed, not assumed.
+
+**Repo-wide check for the stale wording, not just the two files M2 named:** `grep -rl "five
+distinct\|certified polluter" docs/` found eight files. Six are not stale claims and were left
+alone: `claims-ledger.md` (M2's own fix), `genai-register.md` and `members.md` (dated log
+entries correctly describing what was said *at the time*, not a current claim --
+`members.md`'s own entry now also carries a 2026-11-27 correction note), `handover-m1-m3.md`
+and `iteration-2-plan.md` (both quote the old wording only to name the fix, already correct),
+`supervisor-review-2026-11-23.md` (M2's own review note, describing the finding in the past
+tense). **One real, live-content hit found and NOT fixed myself:** `docs/10-Final1/demo-plan.md`
+line 23 still says "each to a certified polluter" -- this is a script for the actual defense
+demo, not a historical record, so it matters that it's wrong. Left untouched (W33/the demo is
+M2's area, not `eval/`, `fixtures/` or my own docs) and flagged in the W37 plan row and the
+message drafted for the team. `docs/superpowers/specs/2026-11-27-ui-demo-design.md` has the
+same wording but is M2's own spec file for his new UI work, also left alone.
+
+**Not done (M2's own ask, not mine):** asking M1 to check the interpretation -- noted in the
+hand-off message, not something I can do myself in this session.
+
+**Verified:** no code changed; the recount is a read-only check against already-committed,
+checksummed bundle files. `python -m unittest discover -s eval/tests` -> 165/165 OK (unaffected,
+confirmed anyway).
