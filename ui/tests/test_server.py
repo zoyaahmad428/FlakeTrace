@@ -109,6 +109,60 @@ class TestCheckRequest(unittest.TestCase):
                 self.assertIsNotNone(check_diagnose_request(body))
 
 
+class TestRunOptions(unittest.TestCase):
+    """The demo's options (search, scope, policy, seed, shuffles, budget, bundle) reach the CLI under its own flag
+    names, with its own defaults and refusals."""
+
+    BASE = {"project": "p", "victim": "a.B#c"}
+
+    def args_for(self, **options):
+        jobs = fake_jobs("args")
+        done = wait(jobs, jobs.start("proj", "a.B#c", options=options)["id"])
+        return done, json.loads((Path(done["report_path"]).parent / "args.json").read_text(encoding="utf-8"))
+
+    def test_every_option_reaches_the_command(self):
+        done, args = self.args_for(search="pairs", scope="package", policy="random", seed=3, shuffles=5,
+                                   budget_invocations=80, budget_seconds=2.5, bundle=True)
+        flag = lambda name: args[args.index(name) + 1]
+        self.assertEqual((flag("--search"), flag("--scope"), flag("--policy"), flag("--seed"), flag("--shuffles")),
+                         ("pairs", "package", "random", "3", "5"))
+        self.assertEqual((flag("--budget-invocations"), flag("--budget-seconds")), ("80", "2.5"))
+        self.assertEqual(Path(flag("--bundle")), Path(done["report_path"]).parent / "bundles")
+        self.assertEqual(done["bundle"], {"path": str(Path(flag("--bundle")) / "run-x")})
+
+    def test_defaults_add_no_flag(self):
+        done, args = self.args_for()
+        for name in ("--search", "--scope", "--policy", "--seed", "--shuffles", "--budget-invocations",
+                     "--budget-seconds", "--bundle"):
+            self.assertNotIn(name, args)
+        self.assertNotIn("bundle", done)
+
+    def test_good_options_are_accepted(self):
+        self.assertIsNone(check_diagnose_request(dict(self.BASE, search="pairs", scope="package", policy="ranked",
+                                                      seed=0, shuffles=0, budget_invocations=1, budget_seconds=0.5,
+                                                      bundle=False)))
+
+    def test_bad_options_are_rejected(self):
+        for extra in ({"search": "both"}, {"scope": "repo"}, {"policy": "best"}, {"seed": -1}, {"seed": 1.5},
+                      {"shuffles": -1}, {"budget_invocations": 0}, {"budget_invocations": "80"},
+                      {"budget_seconds": 0}, {"budget_seconds": True}, {"bundle": "yes"}):
+            with self.subTest(extra=extra):
+                self.assertIsNotNone(check_diagnose_request(dict(self.BASE, **extra)))
+
+    def test_the_cli_refusals_are_the_same(self):
+        order = {"order": ["a.B#c"]}
+        self.assertEqual(check_diagnose_request(dict(self.BASE, search="pairs", **order)),
+                         "--search pairs cannot be combined with --order: pair mode takes the victim only")
+        self.assertEqual(check_diagnose_request(dict(self.BASE, scope="package", **order)),
+                         "--scope package cannot be combined with --order: the order file already fixes the tests")
+
+    def test_the_job_timeout_comes_from_the_environment_and_is_in_health(self):
+        from ui import server
+        self.assertEqual(server.job_timeout({}), 1800)
+        self.assertEqual(server.job_timeout({"FLAKETRACE_UI_JOB_TIMEOUT_S": "90"}), 90)
+        self.assertEqual(server.health()["job_timeout_s"], server.JOB_TIMEOUT_S)
+
+
 class TestJobs(unittest.TestCase):
     def test_a_report_run_ends_done(self):
         jobs = fake_jobs("report")

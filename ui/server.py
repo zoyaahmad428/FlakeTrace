@@ -31,7 +31,30 @@ REPORTS = REPO / "eval" / "reports"
 FIXTURE = REPO / "fixtures" / "od-fixture"
 TOOLS = ("java", "javac", "javap", "mvn")
 RUNNER = [sys.executable, "-m", "runner"]
-JOB_TIMEOUT_S = 600
+
+
+def job_timeout(environ) -> float:
+    """Seconds one diagnosis may take. 30 min by default: a package-scope pair-mode run of FJ-03's size took 8 min of
+    runs plus ~3 min of Maven build (evidence-m2); FLAKETRACE_UI_JOB_TIMEOUT_S overrides it."""
+    return float(environ.get("FLAKETRACE_UI_JOB_TIMEOUT_S", 1800))
+
+
+JOB_TIMEOUT_S = job_timeout(os.environ)
+# The demo's run options (design 2026-11-27): request field -> (CLI flag, check). Defaults are the CLI's, so an
+# absent field adds no flag; the CLI stays the authority and its exit 2 is still reported as an input error.
+SEARCHES, SCOPES, POLICIES = ("order", "pairs"), ("module", "package"), ("original", "ranked", "random")
+_whole = lambda low: lambda v: not isinstance(v, bool) and isinstance(v, int) and v >= low
+OPTIONS = {
+    "search": ("--search", lambda v: v in SEARCHES, f"search must be one of {', '.join(SEARCHES)}"),
+    "scope": ("--scope", lambda v: v in SCOPES, f"scope must be one of {', '.join(SCOPES)}"),
+    "policy": ("--policy", lambda v: v in POLICIES, f"policy must be one of {', '.join(POLICIES)}"),
+    "seed": ("--seed", _whole(0), "seed must be a whole number from 0"),
+    "shuffles": ("--shuffles", _whole(0), "shuffles must be a whole number from 0"),
+    "budget_invocations": ("--budget-invocations", _whole(1), "budget_invocations must be a whole number from 1"),
+    "budget_seconds": ("--budget-seconds",
+                       lambda v: not isinstance(v, bool) and isinstance(v, (int, float)) and v > 0,
+                       "budget_seconds must be a number above 0"),
+}
 TAIL_LINES = 20
 MAX_N = 1000
 MAX_BODY = 1024 * 1024
@@ -77,7 +100,11 @@ def job_result(returncode: int, stdout: str, stderr: str, records: Path) -> dict
         report, why = load_valid_report(reports[-1])
         if report is None:
             return {"state": "failed", "kind": "invalid_report", "message": why, "output_tail": output}
-        return {"state": "done", "report": report, "report_path": str(reports[-1])}
+        done = {"state": "done", "report": report, "report_path": str(reports[-1])}
+        bundles = sorted(path for path in (records / "bundles").glob("*") if path.is_dir())
+        if bundles:
+            done["bundle"] = {"path": str(bundles[-1])}
+        return done
     if returncode == 3:
         lines = [line.strip() for line in stdout.splitlines()
                  if line.strip().startswith(("No report:", "record:"))]
@@ -119,6 +146,16 @@ def check_diagnose_request(body) -> Optional[str]:
     if order is not None and (not isinstance(order, list)
                               or not all(isinstance(test, str) and test.strip() for test in order)):
         return "order must be a list of non-empty Class#method strings"
+    for name, (_, ok, message) in OPTIONS.items():
+        if name in body and not ok(body[name]):
+            return message
+    if "bundle" in body and not isinstance(body["bundle"], bool):
+        return "bundle must be true or false"
+    # The CLI's own refusals, word for word (runner/cli.py), so the UI never starts what the CLI would refuse.
+    if order and body.get("search") == "pairs":
+        return "--search pairs cannot be combined with --order: pair mode takes the victim only"
+    if order and body.get("scope") == "package":
+        return "--scope package cannot be combined with --order: the order file already fixes the tests"
     return None
 
 
@@ -133,7 +170,8 @@ class Jobs:
         self._jobs = {}
         self._running = None
 
-    def start(self, project: str, victim: str, n: int = 20, order: Optional[List[str]] = None) -> dict:
+    def start(self, project: str, victim: str, n: int = 20, order: Optional[List[str]] = None,
+              options: Optional[dict] = None) -> dict:
         with self._lock:
             if self._running is not None:
                 raise Busy(dict(self._jobs[self._running]))
@@ -146,6 +184,13 @@ class Jobs:
                 order_file = records / "order.txt"
                 order_file.write_text("\n".join(order) + "\n", encoding="utf-8")
                 args += ["--order", str(order_file)]
+            options = options or {}
+            for name, (flag, _, _) in OPTIONS.items():
+                if options.get(name) is not None:
+                    args += [flag, str(options[name])]
+            if options.get("bundle"):
+                # Into the job's own folder: the UI never writes into the repository (design, builder check 1).
+                args += ["--bundle", str(records / "bundles")]
             command = self.runner + args
             job = {"id": uuid.uuid4().hex[:12], "state": "running", "started": datetime.now().strftime("%H:%M:%S"),
                    "command": subprocess.list2cmdline(command), "records": str(records)}
@@ -193,7 +238,7 @@ JOB_PATH = re.compile(r"/api/jobs/(\w+)")
 def health() -> dict:
     tools = {tool: shutil.which(tool) for tool in TOOLS}
     return {"tools": tools, "missing": [tool for tool, path in tools.items() if path is None],
-            "python": sys.version.split()[0], "fixture": str(FIXTURE)}
+            "python": sys.version.split()[0], "fixture": str(FIXTURE), "job_timeout_s": JOB_TIMEOUT_S}
 
 
 def list_reports() -> list:
@@ -279,7 +324,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(400, {"error": "bad_request", "message": problem})
             try:
                 job = self.server.jobs.start(body["project"].strip(), body["victim"].strip(), body.get("n", 20),
-                                             body.get("order"))
+                                             body.get("order"), {name: body[name] for name in [*OPTIONS, "bundle"]
+                                                                 if name in body})
             except Busy as busy:
                 return self._send(409, {"error": "busy", "message": "a diagnosis is already running",
                                         "started": busy.job["started"], "command": busy.job["command"]})

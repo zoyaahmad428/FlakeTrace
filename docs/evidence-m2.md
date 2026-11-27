@@ -1948,3 +1948,14 @@ own copy of the code, not from the review's description.
   16 pre-W35 bundles, first problem `report.json does not validate against the schema: 'reproduced_by' is a
   required property` (the real incident's message). `py -3 -m unittest discover -s eval/tests -p "test_*.py"` →
   `Ran 165 tests OK`. CI runs it: the python-eval job lists every `eval/tests/test_*.py`.
+
+## UI demo, task 1: the run options reach the CLI (2026-11-27)
+
+- **Requirement:** the UI is the Final demo (design `docs/superpowers/specs/2026-11-27-ui-demo-design.md`, approved);
+  the server passed only `--n` and `--order`.
+- **Code:** `ui/server.py` — `OPTIONS` (request field → CLI flag and check), `check_diagnose_request`, `Jobs.start(...,
+  options)`, the bundle in the job's folder and in the result, `job_timeout` (default 1800 s, env
+  `FLAKETRACE_UI_JOB_TIMEOUT_S`), `health()["job_timeout_s"]`; `ui/tests/fake_cli.py` writes a bundle folder when asked.
+- **Test-first:** `TestRunOptions` (6 tests) → 11 subtests "unexpectedly None", 1 refusal mismatch, 2 errors
+  (`job_timeout` missing). After: `py -3 -m unittest ui.tests.test_server` → `Ran 37 tests OK` (including the real F1
+  run).
