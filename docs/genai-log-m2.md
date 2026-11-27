@@ -1387,3 +1387,15 @@ before each run; both refusal cases. **Wrong at first:** an N3 folder name taken
 out stale (eight names), sent to M3. **What I changed:** *to fill in.*
 
 Ownership checkpoint: why replay does not depend on the schema version; what R1 refuses.
+
+## 2026-11-27 — W40 A4: how the code block is isolated
+
+**Tool:** Claude Code (Claude Opus 5.5), brainstorming → TDD · **Level:** L2 · **Branch:** `m2/w40-a4-isolation`
+
+**Asked:** the one-page A4 answer, shown on F3. **Kept:** three levels (runs, sequence, resource), each with how sure
+we are, in the claims ledger's agreed words; every number from F3's bundle. **Found:** the UI did not show the deletion
+checks; the member chose to add a panel (option A) rather than leave a "not yet" on the page. **What I changed:** *to
+fill in.*
+
+Ownership checkpoint: what "1-minimal under the rule" means and what it does not promise; why the resource is only a
+static overlap.

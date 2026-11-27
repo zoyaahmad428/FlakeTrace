@@ -156,3 +156,35 @@ describe("review fixes (2026-11-27)", () => {
     );
   });
 });
+
+describe("deletion checks on the Diagnosis step (A4, 2026-11-27)", () => {
+  it("shows each kept test removed for F3, with its runs and status", () => {
+    const r = bundle("20261121T184910Z-odfixture.ToggleVictimTest#expectsNotBothFlagsSet");
+    expect(toView(r).deletions).toEqual([
+      "Removed odfixture.ToggleAPolluterTest#setFlagA: the victim passed 20 of 20 runs without it → NEEDED",
+      "Removed odfixture.ToggleBPolluterTest#setFlagB: the victim passed 20 of 20 runs without it → NEEDED",
+    ]);
+  });
+
+  it("says when the only polluter's check reuses the alone runs", () => {
+    expect(toView(bundle(`20261122T120044Z-${FJ03}`)).deletions).toEqual([
+      "Removed com.alibaba.json.bvt.serializer.SerializeWriterTest_14#test_writer_1 (the only polluter): the victim alone passed 20 of 20 runs → NEEDED",
+    ]);
+  });
+
+  it("names a check the budget stopped, and a later round", () => {
+    const r = bundle("20261121T184910Z-odfixture.ToggleVictimTest#expectsNotBothFlagsSet");
+    const cut = { ...r, deletion_checks: [
+      { ...r.deletion_checks![0], status: "NOT_RUN", runs: null },
+      { ...r.deletion_checks![1], round: 2 },
+    ] } as Report;
+    expect(toView(cut).deletions).toEqual([
+      "Removed odfixture.ToggleAPolluterTest#setFlagA: not run, the budget ran out → NOT_RUN",
+      "Round 2 — removed odfixture.ToggleBPolluterTest#setFlagB: the victim passed 20 of 20 runs without it → NEEDED",
+    ]);
+  });
+
+  it("has none when no polluter was blamed", () => {
+    expect(toView(bundle(`20261124T151413Z-${FJ03}`)).deletions).toEqual([]);
+  });
+});
