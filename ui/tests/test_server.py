@@ -8,6 +8,7 @@ import threading
 import time
 import unittest
 import urllib.error
+import urllib.parse
 import urllib.request
 from contextlib import contextmanager
 from pathlib import Path
@@ -161,6 +162,71 @@ class TestRunOptions(unittest.TestCase):
         self.assertEqual(server.job_timeout({}), 1800)
         self.assertEqual(server.job_timeout({"FLAKETRACE_UI_JOB_TIMEOUT_S": "90"}), 90)
         self.assertEqual(server.health()["job_timeout_s"], server.JOB_TIMEOUT_S)
+
+
+BUNDLES = REPO / "eval" / "bundles"
+STEP5 = "20261122T120044Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf"
+
+
+class TestCommittedEvidence(unittest.TestCase):
+    """Design goals 4 and 5a: committed bundles listed and opened with a fresh verify; any bundle folder checked."""
+
+    def test_every_committed_bundle_is_listed_with_its_parameters(self):
+        from ui.server import list_bundles
+        entries = {entry["name"]: entry for entry in list_bundles()}
+        self.assertEqual(set(entries), {path.parent.name for path in BUNDLES.rglob("manifest.json")})
+        step5 = entries[STEP5]
+        self.assertEqual((step5["search"], step5["scope"], step5["policy"], step5["seed"], step5["run_date"]),
+                         ("pairs", "package", "original", 0, "2026-11-22"))
+        self.assertEqual(step5["report"]["reproduced_by"], "pair")
+        self.assertEqual(entries["20261121T093338Z-odfixture.ConfigVictimTest#expectsDefaultMode"]["search"], "order")
+
+    def test_an_opened_bundle_is_verified_now(self):
+        from ui.server import open_bundle
+        opened = open_bundle(STEP5)
+        self.assertEqual((opened["name"], opened["verify"]), (STEP5, {"ok": True, "problem": None}))
+        self.assertEqual(opened["report"]["outcome"], "CANDIDATE")
+
+    def test_names_outside_the_list_are_not_opened(self):
+        from ui.server import open_bundle
+        for name in ("nope", "../reports", "..", str(BUNDLES / STEP5), STEP5 + "/report.json", ""):
+            with self.subTest(name=name):
+                self.assertIsNone(open_bundle(name))
+
+    def test_a_changed_copy_fails_its_check_and_the_committed_one_does_not(self):
+        from ui.server import check_bundle
+        with tempfile.TemporaryDirectory() as tmp:
+            copy = Path(tmp) / "fj03-copy"
+            shutil.copytree(BUNDLES / STEP5, copy)
+            self.assertEqual(check_bundle(str(copy)), {"ok": True, "problem": None})
+            report = copy / "report.json"
+            report.write_bytes(report.read_bytes().replace(b'"n": 20', b'"n": 21', 1))
+            checked = check_bundle(str(copy))
+            self.assertFalse(checked["ok"])
+            self.assertIn("checksum", checked["problem"])
+        self.assertTrue(check_bundle(str(BUNDLES / STEP5))["ok"])
+
+    def test_a_missing_or_non_bundle_folder_is_a_clear_no(self):
+        from ui.server import check_bundle
+        with tempfile.TemporaryDirectory() as tmp:
+            for path in (str(Path(tmp) / "missing"), tmp, ""):
+                with self.subTest(path=path):
+                    checked = check_bundle(path)
+                    self.assertFalse(checked["ok"])
+                    self.assertTrue(checked["problem"])
+
+    def test_over_http(self):
+        with serving(fake_jobs("report")) as (_, base):
+            status, listed = call(base, "GET", "/api/bundles")
+            self.assertEqual((status, len(listed)), (200, len(list(BUNDLES.rglob("manifest.json")))))
+            status, opened = call(base, "GET", "/api/bundles/" + urllib.parse.quote(STEP5, safe=""))
+            self.assertEqual((status, opened["verify"]["ok"]), (200, True))
+            for path in ("/api/bundles/nope", "/api/bundles/..%2Freports", "/api/bundles/%2E%2E"):
+                with self.subTest(path=path):
+                    self.assertEqual(call(base, "GET", path)[0], 404)
+            status, checked = call(base, "POST", "/api/check-bundle", {"path": str(BUNDLES / STEP5)})
+            self.assertEqual((status, checked), (200, {"ok": True, "problem": None}))
+            self.assertEqual(call(base, "POST", "/api/check-bundle", {"path": 7})[0], 400)
 
 
 class TestJobs(unittest.TestCase):

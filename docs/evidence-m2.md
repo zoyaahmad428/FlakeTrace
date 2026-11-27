@@ -1959,3 +1959,15 @@ own copy of the code, not from the review's description.
 - **Test-first:** `TestRunOptions` (6 tests) → 11 subtests "unexpectedly None", 1 refusal mismatch, 2 errors
   (`job_timeout` missing). After: `py -3 -m unittest ui.tests.test_server` → `Ran 37 tests OK` (including the real F1
   run).
+
+## UI demo, task 2: committed bundles and checking a folder (2026-11-27)
+
+- **Requirement:** design goals 4 and 5a — open committed evidence with a fresh `verify`; check a bundle folder by path
+  (demo step 6, M2's choice A).
+- **Code:** `ui/server.py` — `list_bundles()`, `open_bundle(name)` (exact folder names only), `check_bundle(path)`
+  (`eval.bundle.verify_bundle`, read-only); `GET /api/bundles`, `GET /api/bundles/<name>`, `POST /api/check-bundle`.
+- **Test-first:** `TestCommittedEvidence` (6 tests) → 5 errors (`cannot import name …`), 1 failure (404 for
+  `/api/bundles`). After: 6 OK — the step-5 FJ-03 bundle verifies; a copy with `"n": 20` changed to 21 in
+  `report.json` → `ok: false`, problem names the checksum; `..`, `..%2Freports`, an absolute path, an unknown name →
+  404 / not opened; a missing or non-bundle folder → `ok: false` with a reason. `ui.tests.test_server` → `Ran 43
+  tests OK`.
