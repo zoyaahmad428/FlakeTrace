@@ -2017,3 +2017,33 @@ error-handling branch (it falls through to the current schema and fails on that 
 `const` mismatch), and why bumping `eval/report.py`'s `SCHEMA_VERSION` to 3 was necessary, not
 just the schema file -- a report built today must actually be checked by the stricter schema,
 or the whole point of choosing v3 over "optional" is lost.
+
+## 2026-11-27 -- M2's three-item list (L3)
+
+**Kept:** the habit of checking a claim in the actual environment it's about, not the one at
+hand. M1's build failure was on *her* machine's Docker image (Python 3.12, Ubuntu 24.04); I
+checked the real pin choice against *three* Python versions in real containers (`pip install
+--dry-run`), not just the one that happened to fail, because `eval/requirements.txt` is shared
+across CI (3.11), this image (3.12) and the documented minimum (3.10) -- a pin that fixes one
+and silently breaks another is not a fix.
+
+**Caught before it shipped:** the first candidate pin (`rpds-py 2026.9.1`, what the image's own
+Python resolves today) has no wheel for Python 3.10 at all. Would have been a worse regression
+than M1's original transient failure -- a documented, claimed-supported version permanently
+broken, not an occasional retry. Found by testing the claim, not by reasoning about version
+numbers in the abstract.
+
+**Rejected:** stopping at "pinned `rpds-py`, done" once the first pin resolved and downloaded
+successfully on the one Python version I'd checked first (3.12). The project's own documentation
+names three supported versions; checking only the one convenient to test would have been the
+same mistake M1's unpinned dependency made, just moved one level up.
+
+Verified: `docker build` succeeds (wheels only, no compilation, on the actual pinned base
+image); a real F1 diagnosis inside the rebuilt image matches both earlier real runs exactly
+(`VERIFIED (sequence)`, 67 invocations); `eval/tests` 165/165 OK, re-run after the fix even
+though it touches no Python test code.
+
+Ownership checkpoint: be able to say which exact three Python versions `eval/requirements.txt`
+has to work on and why (3.10 documented minimum, 3.11 CI, 3.12 this image), and why `rpds-py`
+specifically was the one dependency worth checking carefully (a compiled wheel, not pure
+Python).

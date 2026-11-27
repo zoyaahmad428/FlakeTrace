@@ -15,7 +15,10 @@ RUN apt-get update \
 
 WORKDIR /flaketrace
 COPY eval/requirements.txt eval/requirements.txt
-RUN pip3 install --no-cache-dir --break-system-packages -r eval/requirements.txt
+# --retries (M1's first W27 build hit a transient "from versions: none" on rpds-py; the
+# unchanged retry worked, so this is PyPI/network flakiness, not a real incompatibility --
+# eval/requirements.txt now pins every one of jsonschema's dependencies for the real fix).
+RUN pip3 install --no-cache-dir --break-system-packages --retries 5 -r eval/requirements.txt
 
 COPY . .
 

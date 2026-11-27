@@ -7,7 +7,11 @@ through the Mid) is frozen at tag `mid-eval-v1`. Schema v2 -- this file's own sh
 `reproduced_by` (ADR-016, W35) made it required -- is frozen too, at
 [eval/schema/report.v2.schema.json](../../eval/schema/report.v2.schema.json), for the reports
 already committed under it; `eval/schema_validator.py` validates each report against the schema its
-own `schema_version` names, so those 16 bundles stay valid without weakening v3 for new reports.*
+own `schema_version` names, so those 16 bundles stay valid without weakening v3 for new reports.
+**Agreement recorded 2026-11-27** (PR #170 itself did not record it, M2's finding): M1 and M2 both
+agree with the v3 bump and the versioned-validation approach over the alternative of making
+`reproduced_by` merely optional in v2 (M2 approved PR #170 on 2026-11-24; M1's agreement given
+directly, relayed by M2 2026-11-27).*
 
 This is a **shared contract**. The schema lives at
 [eval/schema/report.schema.json](../../eval/schema/report.schema.json) and the

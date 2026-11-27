@@ -3234,3 +3234,76 @@ already exists (M2's area); this is a note to fill it out on my own future PRs.
 **Documented:** ADR-016 (the schema bump is a direct consequence of its own `reproduced_by`
 field) and `docs/contracts/report-schema.md`'s `schema_version`/`reproduced_by` rows, both dated
 2026-11-24.
+
+## 2026-11-27 -- M2's three-item list: the W27 build, the v3 agreement, five stale rows
+
+### 1. W27's Dockerfile: the real cause of the first-build failure, fixed
+
+M1's first build (2026-11-25) failed at `pip install` on `rpds-py` ("from versions: none"); the
+unchanged retry worked, so her evidence log correctly left the cause unconfirmed, "likely a
+network failure". Did not assume that and move on -- checked for real.
+
+`eval/requirements.txt` pinned only `jsonschema==4.26.0` itself, not its own dependencies
+(`attrs`, `referencing`, `jsonschema-specifications`, `rpds-py`, `typing_extensions`). `rpds-py`
+is a compiled wheel, the one that actually failed, and the only one of the five with a real
+chance of not having a wheel for a given Python/platform combination. Pinning the top-level
+package alone does not pin what a fresh build resolves for its own dependencies -- that can
+still change under a "reproducible" image between builds.
+
+**Checked inside real containers, not guessed:** `pip install --dry-run` against the pinned
+W27 image's own Python (3.12.3, Ubuntu 24.04, confirmed from the base image itself) resolves
+`rpds-py 2026.9.1`. Before pinning that, checked it against this project's own documented
+minimum (`Python 3.10`, CLAUDE.md/README.md): `rpds-py 2026.9.1` requires Python `>=3.11` and
+has **no wheel for 3.10 at all** -- pinning it as-is would have silently broken the 3.10 claim
+the moment anyone needed it, a worse regression than the bug being fixed. Found the newest
+version that installs cleanly (a wheel, no compile) on **all three** versions this project
+claims (3.10, 3.11 -- CI's own, 3.12 -- this image's): `rpds-py 0.30.0`. Confirmed the full
+pinned set together on all three, not just `rpds-py` alone.
+
+`Dockerfile`'s `pip3 install` also gets `--retries 5`, for whatever the original failure
+actually was (the pin fixes a real, confirmed-reproducible incompatibility path; the retries
+cover a genuinely transient one, which this evidence cannot rule out either way).
+
+**Verified for real:** `docker build -t flaketrace:w27-fix .` -> succeeds, every dependency a
+downloaded wheel, no compilation. Ran a real F1 diagnosis inside the built image (first attempt
+used a `$(pwd)`-style volume mount in Git Bash and silently mounted nothing -- the exact
+Windows/Git-Bash caveat this project's own README already documents; redone with the
+documented native-path workaround): `VERIFIED (sequence)`, `ConfigPolluterTest#pollute`, 67
+invocations -- matching both earlier runs (mine, 2026-11-21; M1's, 2026-11-25) exactly. Bundle
+landed on the host and `eval.bundle verify` -> OK. `flaketrace:w27-fix` tag removed after
+confirming (the Dockerfile itself, not a tag, is the real deliverable).
+
+### 2. Schema v3 agreement recorded
+
+PR #170 changed a contract (the report schema) without recording the required three-way
+agreement in its own description -- a real process gap, not a technical one. Added a dated note
+to `docs/contracts/report-schema.md` naming M2's approval (2026-11-24, on the PR itself) and
+M1's agreement (given directly, relayed by M2 2026-11-27). Did not re-litigate the choice
+itself -- that was already decided with the member on 2026-11-24, before building either
+option; this is only the record the PR should have carried.
+
+### 3. Five stale action-register rows corrected (M-3, A5, A8, A9; FT009 checked, not stale)
+
+Re-read each against what the row's own evidence (and `docs/evidence-m2.md`/`evidence-m1.md`)
+actually shows before changing anything, rather than taking M2's list as license to just delete
+the word "Open":
+- **M-3, A5:** both said W26b/FT008's "runs and yield table" were open. They are done
+  (M2's independent repeat; M1-reproduced pair mode). The real remaining gap for FT008/A5 is
+  narrower than either row said: a *task-matched comparator baseline* (iFixFlakies/RankF),
+  which is explicitly FYP-2 scope and genuinely not built -- not "the runs".
+- **A8:** said "the acceptance logic" around the Wilson intervals was open, as if only the
+  numbers existed. Checked `eval/outcome.py`: the intervals feed `decide()`'s verdict table
+  directly (`wilson_interval` on both tallies, ADR-010) -- the acceptance logic is built, not
+  separate from the intervals.
+- **A9:** said M1's bundle reproduction was open; her own evidence log (2026-11-22) already
+  shows it done, and schema v3 (above) means all 24 bundles currently pass `verify`, not just
+  hers.
+- **FT009:** M2 asked to check this one too. Read it in full -- it is a dated narrative (first
+  "awaiting the gaps' fixes", later entries show each gap fixed), not actually stale; left
+  unchanged.
+
+Every row kept at `Partly`, per this register's own rule: only the supervisor's acceptance
+makes a row `Done`, never a member finishing the underlying work.
+
+**Verified:** `python -m unittest discover -s eval/tests` -> 165/165 OK throughout (the
+requirements/Dockerfile change touches no Python test code; re-run anyway, not assumed safe).
