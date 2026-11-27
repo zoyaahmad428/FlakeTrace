@@ -1377,3 +1377,13 @@ prediction written before the runs; a clean local clone so the bundles are `tool
 clone. **Found:** the demo plan's "certified polluter" (flagged by M3), corrected. **What I changed:** *to fill in.*
 
 Ownership checkpoint: why 400 invocations leave 340 for the pairs; why `original` blames nothing when it stops.
+
+## 2026-11-27 — W36: which bundle versions replay supports
+
+**Tool:** Claude Code (Claude Opus 5.5) · **Level:** L2 · **Branch:** `m2/w36-replay-matrix`
+
+**Asked:** the replay column of M3's bundle matrix, from real runs on a v2 and a v3 bundle. **Kept:** predictions
+before each run; both refusal cases. **Wrong at first:** an N3 folder name taken from the bundles README, which turned
+out stale (eight names), sent to M3. **What I changed:** *to fill in.*
+
+Ownership checkpoint: why replay does not depend on the schema version; what R1 refuses.
