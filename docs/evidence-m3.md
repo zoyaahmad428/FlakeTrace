@@ -3414,6 +3414,7 @@ no commit attached is not evidence of anything by the time anyone reads it later
 | `20261127T104310Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` (W39, `random` seed 1) | **3** | `CANDIDATE(NO_SUPPORTED_RESOURCE_EVIDENCE)` | OK | `CANDIDATE -> CANDIDATE same`, exit 0, `reproduced_by: pair` with the constructed-pair line, replay bundle `verify` OK (M2, PR #184) |
 | `20261127T104600Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` (W39, `random` seed 2) | **3** | `CANDIDATE(NO_SUPPORTED_RESOURCE_EVIDENCE)` | OK | not yet run |
 | `20261127T104934Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` (W39, `random` seed 3) | **3** | `CANDIDATE(NO_SUPPORTED_RESOURCE_EVIDENCE)` | OK | not yet run |
+| `20261127T130117Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf` (W39, M3's repeat of seed 2) | **3** | `CANDIDATE(NO_SUPPORTED_RESOURCE_EVIDENCE)` | OK | not yet run |
 
 **28 of 28 OK** *(24 as of the matrix's first build, 2026-11-27 morning; M2's W39 PR #182 added
 4 more the same day, appended above rather than re-tabulated from scratch)*. Generated with a
@@ -3628,3 +3629,39 @@ already knew.
 **Verified:** `python -m unittest discover -s eval/tests` -> 165/165 OK (docs-only change); the
 `od_relevant` count re-derived from the real CSV with a one-line script, not quoted from
 memory.
+
+## 2026-11-27 -- M1 caught a stale bundle count: A9 said 28, real count is 29
+
+My own seed-2 repeat (PR #190) added the 29th committed bundle, but I updated A9's text at the
+time I was writing the matrix follow-up entry (24 -> 28), before that repeat landed -- never
+went back to bump it again. M1 caught it on review. Counted for real rather than just trusting
+her number: `ls eval/bundles/` -> 29 real folders; re-ran `eval.bundle verify` on all 29 ->
+29/29 OK. Fixed A9's text, and added the missing 29th row to the W36 matrix table above
+(the actual root cause -- the matrix itself never got the repeat's row, which is why the
+summary count drifted). The two earlier dated entries that say "28 of 28 OK" are left
+unchanged -- they correctly describe what was true at that point in the session's own
+timeline, before the repeat existed.
+
+**Verified:** `python -m unittest discover -s eval/tests` -> 165/165 OK; 29/29 committed
+bundles re-verified together, not assumed from the count alone.
+
+## 2026-11-27 -- task 9 (W40/A6): my own nearest-baseline note
+
+New doc `docs/07-Defense/a6-baseline-m3.md`. Asked the member directly which papers from the
+candidate list they had actually opened themselves, rather than assuming from what is already
+written in the project's own literature notes -- the honesty rule is about who opened the
+source, not what is already cited elsewhere. Confirmed: [20] (certifying algorithms) and [21]
+(Wilson's interval); explicitly **not** [22] or [12], both already cited in this project by
+work the member did not do the reading for.
+
+My part has no single nearest *flaky-test tool*, unlike M2's (search/minimisation/
+verification maps onto iFixFlakies/RankF directly). The certificate framing comes from outside
+the testing literature -- [20]'s witness/checker model, applied to FlakeTrace's own
+bundle/`verify` pair, and [21]'s small-sample interval, applied to the reproduction-rate bound.
+Said explicitly what this note does **not** claim: not that either paper is about test
+flakiness at all (neither is), not a comparison against iDFlakies/iFixFlakies/RankF's own
+statistical practices (I have not opened those papers; that is M2's comparison to make), and
+not a claim that Wilson is "best" (that question is [22]'s, not cited here).
+
+**Verified:** no command run (a literature/citation note); `python -m unittest discover -s
+eval/tests` -> 165/165 OK, unaffected.
