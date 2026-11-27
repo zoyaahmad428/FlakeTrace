@@ -112,17 +112,21 @@ measured comparison).
   `STATIC_OVERLAP` (or `NONE` when no edge was found), with `mechanism: NOT_ASSESSED`; it is
   never `MECHANISM_CONFIRMED`. Section 3 lists what static
   analysis cannot see.
-- **The approved runtime fallback, and its status.** ADR-001 approved a **runtime Java agent** as
-  the fallback for cases static evidence cannot resolve. It would instrument bytecode **in
-  memory**, on a temporary copy, and only for the already-reduced sequence. It was deferred
-  because of its skill risk and the risk of perturbing the failure. ADR-015 (accepted as a
-  **spike** only, W34, a stretch goal) proposes a cheaper test of the same question: change only
-  the named resource and see whether the failure goes away. **Neither is built.** No report today
-  claims more than a static overlap.
+- **The approved runtime fallback, and its status.** ADR-001 names a **runtime Java agent** as
+  the **Iteration 2 fallback**, for cases static evidence cannot resolve. It would instrument
+  bytecode **in memory**, on a temporary copy, and only for the already-reduced sequence. Its
+  skill risk and its risk of perturbing the failure were ADR-001's reasons for not starting with an
+  agent, not the reason it is unbuilt now. In Iteration 2 the team instead accepted ADR-015's
+  cheaper intervention check as a **spike** only (W34, a stretch goal): put the named resource back
+  to its earlier value between polluter and victim, and see whether the failure goes away.
+  **Neither is built.** No report today claims more than a static overlap. Whether causal
+  certification of the resource remains a promise, and by which milestone, is a question for the
+  supervisor ([[10-Final1/supervisor-agenda]], item 2).
 - **A real case that needs it.** On fastjson FJ-03 the static evidence finds **no** edge. The
   pollution goes through a static `ThreadLocal` that both tests only read, via a JDK call (section
   3; [[evidence-m1]]). So FlakeTrace says `CANDIDATE [NO_SUPPORTED_RESOURCE_EVIDENCE]`, not
-  `VERIFIED`. Only runtime observation or an intervention could name the resource there.
+  `VERIFIED`. ADR-015's check cannot help here as designed, because it resets the resource static
+  analysis names, and here there is none. Only runtime observation could name the resource.
 
 ## 4. How to modify it
 

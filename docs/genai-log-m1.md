@@ -974,3 +974,29 @@ name → `OK`.
 
 **Rejections:** editing the `Dockerfile` to add a pip retry. It is M3's file; noted for her
 instead.
+
+## 2026-11-26 — A2 section 3a corrected after M2's review
+
+**Assistance level:** L3 (Core-assist): the assistant checked M2's three points against ADR-001,
+ADR-015, the action register's status rule and the supervisor agenda, and redrafted the two
+bullets of section 3a and the A2 row.
+
+**What I asked:** apply M2's three fixes to section 3a.
+
+**What was retained:** the corrected section 3a of [[04-Implementation/evidence-collector]] and
+the A2 row in [[10-Final1/action-register]].
+
+**What I changed:** read the corrected section before committing.
+
+**How it was verified:** each point checked against the source. ADR-001 calls the Java agent "the
+Iteration 2 fallback" and gives skill and perturbation risk as reasons against an agent "from the
+start"; ADR-015 resets the named resource `r`, which FJ-03 does not have; the register's header
+says none is `Done` without the supervisor's acceptance; agenda item 2 asks whether causal
+certification remains a promise. Nothing was run.
+
+**Errors found:** three in the assistant's 2026-11-25 draft, all found by M2: it gave ADR-001's
+reasons against starting with an agent as the reason the fallback is unbuilt; it said "an
+intervention" could name the resource on FJ-03, which ADR-015 as designed cannot; and it set A2 to
+`Done`, which the register's rule does not allow.
+
+**Rejections:** none.
