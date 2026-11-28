@@ -138,7 +138,7 @@ not a later chore. Check this list each time:
 | If the work… | Update |
 | --- | --- |
 | Ran anything (tests, a build, the tool on a fixture) | `docs/evidence-m<N>.md` — requirement, command, real result, limitation |
-| Was materially AI-assisted | `docs/genai-log-m<N>.md` and a row in `docs/08-MidEval/genai-register.md` |
+| Was materially AI-assisted | `docs/genai-log-m<N>.md` and a row in `docs/10-Final1/genai-register.md` (after the Mid; rows up to the Mid stay in `docs/08-MidEval/genai-register.md`) |
 | Changed a component's behaviour, inputs or outputs | That folder's `README.md`, and its four-point note in `docs/04-Implementation/` |
 | Progressed or finished a work package | Its row in `docs/10-Final1/iteration-2-plan.md`, and your row in `docs/09-Team/members.md` |
 | Changed what the live demo can show | `docs/10-Final1/demo-plan.md` (including what is mocked) |

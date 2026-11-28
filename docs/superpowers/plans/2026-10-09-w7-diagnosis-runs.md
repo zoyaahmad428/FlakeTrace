@@ -166,7 +166,7 @@ def compare(before: Dict[str, str], after: Dict[str, str]) -> SourceIntegrity:
   - `docs/evidence-m2.md` — new dated `###` entry under a `## W7 — diagnosis runs` heading
     (create the heading in Task 1): requirement, files, exact command, the RED result, the GREEN
     result line, limitations.
-  - `docs/genai-log-m2.md` — new entry (tool, level L2, asked / retained / verified / errors,
+  - `docs/genai-log-m2.md` — new entry (tool, level L3, asked / retained / verified / errors,
     `**What I changed:** *fill after reading the diff.*`).
   - `docs/08-MidEval/genai-register.md` — one row after the last M2 row.
   - `runner/README.md` — add a short `## Diagnosis runs (W7)` section listing the modules as they land (integrity first).
@@ -317,7 +317,7 @@ def _outcome(test: TestIdentifier, outcome: RunOutcome) -> dict:
   - `docs/evidence-m2.md` — new dated `###` entry under a `## W7 — diagnosis runs` heading
     (create the heading in Task 1): requirement, files, exact command, the RED result, the GREEN
     result line, limitations.
-  - `docs/genai-log-m2.md` — new entry (tool, level L2, asked / retained / verified / errors,
+  - `docs/genai-log-m2.md` — new entry (tool, level L3, asked / retained / verified / errors,
     `**What I changed:** *fill after reading the diff.*`).
   - `docs/08-MidEval/genai-register.md` — one row after the last M2 row.
   - `runner/README.md` — add `recording.py` to the W7 section.
@@ -545,7 +545,7 @@ def discover_order(runner, test_classes_dir) -> List[TestIdentifier]:
   - `docs/evidence-m2.md` — new dated `###` entry under a `## W7 — diagnosis runs` heading
     (create the heading in Task 1): requirement, files, exact command, the RED result, the GREEN
     result line, limitations.
-  - `docs/genai-log-m2.md` — new entry (tool, level L2, asked / retained / verified / errors,
+  - `docs/genai-log-m2.md` — new entry (tool, level L3, asked / retained / verified / errors,
     `**What I changed:** *fill after reading the diff.*`).
   - `docs/08-MidEval/genai-register.md` — one row after the last M2 row.
   - `runner/README.md` — W7 section: discovery and the `--list` harness protocol; the Surefire `runOrder` limitation from ADR-004.
@@ -754,7 +754,7 @@ def repeat(
   - `docs/evidence-m2.md` — new dated `###` entry under a `## W7 — diagnosis runs` heading
     (create the heading in Task 1): requirement, files, exact command, the RED result, the GREEN
     result line, limitations.
-  - `docs/genai-log-m2.md` — new entry (tool, level L2, asked / retained / verified / errors,
+  - `docs/genai-log-m2.md` — new entry (tool, level L3, asked / retained / verified / errors,
     `**What I changed:** *fill after reading the diff.*`).
   - `docs/08-MidEval/genai-register.md` — one row after the last M2 row.
   - `runner/README.md` — W7 section: search and verify, the "crash is never the reference" rule.
