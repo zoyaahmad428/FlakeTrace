@@ -1077,3 +1077,29 @@ Nothing was run.
 (FJ-03 is a resource both touch with no edge).
 
 **Rejections:** editing the UI label (M2's `ui/`); suggested to him instead.
+
+## 2026-11-28 — W36: FT009 repeat on a v2 and a v3 bundle
+
+**Assistance level:** L3 (Core-assist): the assistant drafted the entry and the rows from my
+output. Earlier the same day I did a first run with commands the assistant had assembled from
+the docs; I then repeated it myself in a new clone, from the docs, and this entry records that
+second run.
+
+**What I asked:** during my own run, two questions (what `CHECKOUT` means; how to get a fastjson
+checkout), then the write-up.
+
+**What was retained:** the W36 entry in [[evidence-m1]], the W36 row in
+[[10-Final1/iteration-2-plan]] and the FT009 row in [[10-Final1/action-register]].
+
+**What I changed:** ran the second run myself from the docs; chose to use my existing fastjson
+clone after the new one failed; checked the entry against my output before committing.
+
+**How it was verified:** every result is copied from my own terminal output.
+
+**Limits:** during the second run the assistant answered my two questions by quoting
+`replay.md` and the README, and gave the git commands for a fresh fastjson clone (not used in the
+end); the exit codes (all 0) were checked by me but are not in the transcript I kept.
+
+**Errors found:** none.
+
+**Rejections:** none.
