@@ -2195,3 +2195,23 @@ Ownership checkpoint: be able to explain what `od_relevant` actually measures in
 code (a real executed pair, not a static classification), and name the two of the six real
 relevant candidates that none of the seven FlakeTrace runs this session ran ever happened to
 encounter.
+
+## 2026-11-27 -- M1's stale-count catch, and task 9: my own A6 note (L2)
+
+**Kept:** counting the real bundles myself (`ls`, re-verify all) rather than just taking M1's
+"29" and writing it down -- cheap to check, and the whole point of the register's honesty rule
+is that a number gets stated only after it is checked, not because someone else said it.
+
+**For the A6 note, asked rather than assumed** which papers the member had personally opened.
+The project's own literature notes already contain detailed analysis of [22] and [12] -- but
+that analysis was written by earlier work, not necessarily read by the member themselves, and
+the citation rule is about who opened the source, not what text already exists about it.
+Excluded both once the member confirmed they had not opened them, even though the comparison
+would have been directly relevant and the material already exists.
+
+**Rejected:** writing a comparison-to-tools table in the same shape as M2's note. My part has
+no single nearest flaky-test tool; forcing the same table structure would have meant either
+inventing a comparator or quietly citing papers the member had not read to fill the cells.
+
+Verified: no command run for the A6 note itself (a citation/literature doc); eval/tests
+165/165 OK throughout this session unaffected.
