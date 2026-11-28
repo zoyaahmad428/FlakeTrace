@@ -4,9 +4,15 @@ Each entry covers one working session with a GenAI coding assistant (Claude
 Code). "Retained" means kept as generated after my review; "changed" means I
 altered it before accepting; "rejected" means discarded.
 
+*Levels: on 2026-11-28 every entry was set to L3, the team's agreed rule for all three members
+(M2's PR #193). Before that, nine Mid entries below gave a lower level, and the Mid report's
+Table 9 (as submitted, not edited) lists four of my ten Mid rows below L3. Report v2.0 should show
+the new levels. "Limits" lines were
+added the same day, each taken from the matching entry in [[evidence-m1]].*
+
 ## 2026-10-09 — Phase 0 (inspection), repo housekeeping, Phase 1 (output contract)
 
-**Assistance level:** L2 (Assisted): the contract text and the check script were
+**Assistance level:** L3 (Core-assist): the contract text and the check script were
 generated; I chose the approach and must review the contract before it goes
 to Member 3. No extraction code yet.
 
@@ -73,7 +79,7 @@ Ownership checkpoint: you need to understand and verify this implementation befo
 
 ## 2026-10-09 — Contract revision: consumers and invocation
 
-**Assistance level:** L2 (Assisted): the section text was generated from my
+**Assistance level:** L3 (Core-assist): the section text was generated from my
 instructions; I chose the command shape and decide the default depth.
 
 **What I asked:**
@@ -113,7 +119,7 @@ Ownership checkpoint: you need to understand and verify this implementation befo
 
 ## 2026-10-09 — Phase 0 re-check, extractor approach and default depth
 
-**Assistance level:** L2 (Assisted): the decision record text was generated; the
+**Assistance level:** L3 (Core-assist): the decision record text was generated; the
 two decisions are mine.
 
 **What I asked:** re-run Phase 0 on the current repo, then record my
@@ -229,7 +235,7 @@ Ownership checkpoint: you need to understand and verify this implementation befo
 
 ## 2026-10-09 — CI guard for the evidence tests; in-process default depth
 
-**Assistance level:** L2 (Assisted): the guard helper and test were generated; the need came from
+**Assistance level:** L3 (Core-assist): the guard helper and test were generated; the need came from
 Member 2's CI question.
 
 **What I asked:** make sure Member 2's CI job for `evidence/tests/` cannot pass by skipping.
@@ -252,7 +258,7 @@ Ownership checkpoint: you need to understand and verify this implementation befo
 
 ## 2026-10-09 — Answers to Member 2's integration questions
 
-**Assistance level:** L1 (Supportive): the wording was drafted by the assistant; the decisions
+**Assistance level:** L3 (Core-assist): the wording was drafted by the assistant; the decisions
 (confirm the contract, first-edge projection, ADR agreement) are mine.
 
 **What I asked:** answer Member 2's seven questions. Confirm the contract, choose the edge for the
@@ -271,12 +277,14 @@ anchors validated).
 working directory) would fail with "No module named evidence". This is now documented: run it from
 the repo root or set `PYTHONPATH`.
 
+**Limits:** the ADR status lines stayed `PROPOSED` until Member 3 ticked; the contract was confirmed by all three only when she approved ([[evidence-m1]], "Contract confirmation and ADR agreement").
+
 **Rejections:** editing claims-ledger row E1 myself. It is a joint row raised by Member 2; I
 proposed wording in my reply instead.
 
 ## 2026-10-09 — Phase 5 part 1: automatic ground-truth check on the fixture
 
-**Assistance level:** L3 (Substantial): the test class was generated; I chose to compare against
+**Assistance level:** L3 (Core-assist): the test class was generated; I chose to compare against
 Member 3's ground truth file directly rather than copying its values into the test.
 
 **What I asked:** start Phase 5. Compare F1, F2, F3, N1 and N2 against `ground_truth.json`
@@ -300,7 +308,7 @@ Ownership checkpoint: you need to understand and verify this implementation befo
 
 ## 2026-10-09 — Phase 5 part 2: fastjson FJ-01 and FJ-02
 
-**Assistance level:** L2 (Moderate): the assistant built fastjson and ran my extractor on it; no
+**Assistance level:** L3 (Core-assist): the assistant built fastjson and ran my extractor on it; no
 extractor code changed. The evidence write-up and javap excerpt were drafted by the assistant.
 
 **What I asked:** run the extractor on real fastjson (FJ-01 at depths 1 and 2) and settle
@@ -332,7 +340,7 @@ Ownership checkpoint: you need to understand and verify this implementation befo
 
 ## 2026-10-10 — Depth measurements and ADR-006 (proposed)
 
-**Assistance level:** L2 (Moderate): the assistant ran the measurements and drafted the ADR; I
+**Assistance level:** L3 (Core-assist): the assistant ran the measurements and drafted the ADR; I
 chose the option.
 
 **What I asked:** draft a note for the team on the depth range before Phase 6.
@@ -358,7 +366,7 @@ Ownership checkpoint: you need to understand and verify this implementation befo
 
 ## 2026-10-10 — Phase 6: lifecycle writes as polluter edges
 
-**Assistance level:** L3 (Substantial): the tests and the self-test class were generated.
+**Assistance level:** L3 (Core-assist): the tests and the self-test class were generated.
 
 **What I asked:** start Phase 6 (the required-test list from the brief).
 
@@ -374,13 +382,15 @@ from JDK 8 javap; mutation check. See `docs/evidence-m1.md`.
 **Errors found:** the first mutation script changed nothing (it filtered the wrong return value),
 which made the tests look unbreakable. It was fixed, and the tests then failed as expected.
 
+**Limits:** a test class's `<clinit>` runs once per JVM, but its writes are attributed to every test of that class; whether it already ran is timing, not modelled ([[evidence-m1]], Phase 6).
+
 **Rejections:** changing how `<clinit>` is attributed. The contract already covers FR-3.
 
 Ownership checkpoint: you need to understand and verify this implementation before claiming it as your contribution.
 
 ## 2026-10-10 — ADR-006 implementation: depth 1–5 and pair-mode auto-deepening
 
-**Assistance level:** L3 (Substantial): the code, tests and contract text were generated from the
+**Assistance level:** L3 (Core-assist): the code, tests and contract text were generated from the
 agreed ADR.
 
 **What I asked:** implement ADR-006 now that M2 and M3 agreed.
@@ -410,7 +420,7 @@ Ownership checkpoint: you need to understand and verify this implementation befo
 
 ## 2026-10-11 — ADR-008 tick, I2, ADR-001 status, panel action A6
 
-**Assistance level:** L2 (Moderate): checks run and text drafted by the assistant; the list of
+**Assistance level:** L3 (Core-assist): checks run and text drafted by the assistant; the list of
 open items and the decision to close them came from the team's status review.
 
 **What I asked:** make one patch for what is left for Member 1: tick ADR-008, answer I2, close
@@ -432,6 +442,8 @@ against the team's existing notes.
 **Errors found:** the first draft of the note said iFixFlakies' Minimizer falls back to OBO; the
 note on iFixFlakies says that of cleaner discovery. Corrected before handing over.
 
+**Limits:** all runs were on javap 21 here (CI runs JDK 8); the F4 end-to-end run used PR #49 before it was reviewed ([[evidence-m1]], "ADR-008 check"). The A6 note's literature statements were checked against our notes, not the papers.
+
 **Rejections:** no new references. Sources [4] and [11] are listed in the note for the citing
 member to open before the report cites them.
 
@@ -439,7 +451,7 @@ Ownership checkpoint: you need to understand and verify this before claiming it 
 
 ## 2026-10-11 — GenAI disclosures and ADR-002 status
 
-**Assistance level:** L1 (Supportive): the assistant drafted the 13 "What I changed" lines and the
+**Assistance level:** L3 (Core-assist): the assistant drafted the 13 "What I changed" lines and the
 10 register cells from the repository record; I read and confirmed each before committing.
 
 **What I asked:** fill in my GenAI disclosures, mark ADR-002 accepted and update my members row,
@@ -456,6 +468,8 @@ PR #50 (removed in #51). Recorded choices were checked against the ADR agreement
 
 **Errors found:** a stray pager file had been committed in PR #8 and was removed in `b2d72b9`;
 it is now named in that entry.
+
+**Limits:** the check compares each handed-over patch with the merged diff; it shows what was merged, not what I understood.
 
 **Rejections:** claiming edits or checks that the record does not show.
 
@@ -543,6 +557,8 @@ Python 3.11); read the entry against my terminal output before committing.
 **Errors found:** the first instructions did not install the Python dependencies before `diagnose`
 (the assistant's omission); found when `diagnose` failed on `jsonschema`.
 
+**Limits:** one run of each command, on one machine; the `%TEMP%` records are not committed ([[evidence-m1]], W22).
+
 **Rejections:** loosening the pinned `jsonschema` version (M3's file) to make Python 3.9 work.
 
 ## 2026-11-20 — W18 verification (outcome tallies) on my own machine
@@ -562,6 +578,8 @@ committing.
 
 **Errors found:** the handover's `git checkout d1e4d4f -- runner` cannot show the defect (it
 restores the old tests); recorded for M2.
+
+**Limits:** scripted unit tests (no JVM); they show the counting, not a real diagnosis ([[evidence-m1]], W18).
 
 **Rejections:** none.
 
@@ -585,6 +603,8 @@ committing.
 
 **Errors found:** none in W19. The first version of these commands from an earlier session was
 lost, so they were rebuilt from the repo.
+
+**Limits:** T1–T4 are scripted unit tests; only T5 (N4) and T6 (F1) went through the real runner and JVM ([[evidence-m1]], W19).
 
 **Rejections:** marking FT003 `Done`. It needs the supervisor's acceptance, so it is `Partly`.
 
@@ -686,6 +706,8 @@ committing.
 
 **Errors found:** none in W20. I typed a test name as a command once; the rerun is the one
 recorded.
+
+**Limits:** one real multi-polluter case (F3); `NOT_NEEDED`, `INCONCLUSIVE` and T5 are scripted; "needed" does not test every subset ([[evidence-m1]], W20).
 
 **Rejections:** marking G2 `SETTLED` or FT004 `Done` myself. G2 belongs to M2 and M3, and FT004
 also needs the supervisor's acceptance.
@@ -798,6 +820,8 @@ committing.
 **Errors found:** the first two builds failed (JDK 21: "Source option 5 is no longer supported",
 then `javax.xml.bind` missing). JDK 8 built it.
 
+**Limits:** one case; source reading plus static analysis, no runtime observation of `bufLocal` ([[evidence-m1]], FJ-03).
+
 **Rejections:** adding a co-touch term to the ranking rule now. FJ-03 is ground truth, and plan
 rule 4 forbids tuning the rule on it.
 
@@ -822,6 +846,8 @@ was run.
 phrasing. It was replaced with the measured tally ("in the report's 20 alone runs it never
 failed").
 
+**Limits:** the case is a fixture (F1), not real code; the harder FJ-03 alternative is named in the protocol but not chosen.
+
 **Rejections:** none.
 
 ## 2026-11-22 — W23 verification: independent bundle reproduction (ADR-013 §5)
@@ -844,6 +870,8 @@ committing.
 
 **Errors found:** the assistant first assumed my plain `python` was 3.9. It is 3.11.9 in that
 folder, so that was not a finding.
+
+**Limits:** one bundle (F1), one second machine; the subject and tool commits were `main`, not the recorded `03ada56` ([[evidence-m1]], W23).
 
 **Rejections:** closing FT009 or G7 myself. G7 belongs to M3 and M2, and FT009 also needs the
 supervisor's acceptance.
@@ -911,6 +939,8 @@ from my output; I ran every command myself on my laptop.
   `JAVA_HOME`.
 - I interrupted the first replay; the second completed.
 
+**Limits:** one bundle; `javap` came from JDK 25 because of my `sset` typo (the test JVM was JDK 8), recorded in [[evidence-m1]].
+
 **Rejections:** none.
 
 ## 2026-11-25 — FT006 on a real project (FJ-03, Surefire vs FlakeTrace)
@@ -929,6 +959,8 @@ them to me, and drafted the entry from my output; I ran every command myself on 
 **How it was verified:** every result is copied from my own terminal output.
 
 **Errors found:** none.
+
+**Limits:** one real case and one Surefire run per order; JUnit 3 only, so no class-grouped lifecycle on real code ([[evidence-m1]], FT006).
 
 **Rejections:** none.
 
@@ -971,6 +1003,8 @@ in [[09-Team/members]].
 **Errors found:** the assistant's first `verify` command kept a `<folder from dir /b>`
 placeholder, which `cmd` passed literally (`not a readable bundle`); re-run with the real folder
 name → `OK`.
+
+**Limits:** the fixture only, one run; the cause of the first build failure was not confirmed by me ([[evidence-m1]], W27).
 
 **Rejections:** editing the `Dockerfile` to add a pip retry. It is M3's file; noted for her
 instead.
