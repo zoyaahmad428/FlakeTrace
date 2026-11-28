@@ -3665,3 +3665,30 @@ not a claim that Wilson is "best" (that question is [22]'s, not cited here).
 
 **Verified:** no command run (a literature/citation note); `python -m unittest discover -s
 eval/tests` -> 165/165 OK, unaffected.
+
+## 2026-11-28 -- M2's GenAI-level-consistency task: relabelled my own rows L1/L2 -> L3
+
+M2 asked every member to make their own going-forward GenAI level consistent across the
+register and the log, after the FT015 worksheet mismatch. Only my own rows, in my own files:
+19 M3 rows in `docs/08-MidEval/genai-register.md`, 26 M3 rows in `docs/10-Final1/genai-register.md`,
+and 11 `(L1)`/`(L2)` headers in `docs/genai-log-m3.md`. Did this with a script that reads each
+file into lines, asserts the targeted line actually contains the expected `| M3 |`/`| L1 or L2 |`
+(or `(L1)`/`(L2)` header) marker before replacing only that occurrence, specifically so a
+`replace_all` could never touch another member's identical-looking row -- then re-applied CRLF.
+
+Left untouched, on purpose, three places that describe the *historical* L2x18/L1x1 state as of
+the Mid cutoff rather than my own current level: `docs/09-Team/members.md`'s W29a/FT015 entry,
+`docs/10-Final1/iteration-2-plan.md`'s FT015 row, `docs/10-Final1/action-register.md`'s FT015 row,
+`docs/10-Final1/feedback-register.md`'s FT015 row, and `docs/10-Final1/genai-register.md`'s own
+2026-11-21 FT015 row (its Verification column states what the register read *at the time of that
+finding*). Rewriting these would misstate what FT015 actually found. Also left the 45
+`genai-log-m3.md` entries with no `(LN)` header at all exactly as they are -- the task is to fix
+a level that is written somewhere, not to invent one where none was ever stated.
+
+**Verified:** `grep -n "| M3 |" docs/08-MidEval/genai-register.md | grep -E "\| L1 \||\| L2 \|"`
+and the same on `docs/10-Final1/genai-register.md` -> no output (no M3 row left at L1/L2);
+`grep -n "(L1)\|(L2)" docs/genai-log-m3.md` -> no output; `git diff docs/08-MidEval/genai-register.md
+docs/10-Final1/genai-register.md | grep "^[+-]" | grep -v "^+++\|^---" | grep -v "| M3 |"` -> no
+output (every changed line is an M3 row); level breakdown after the change: 19/19 M3 rows L3 in
+the Mid register, 40/40 in the Final-1 register, 14/14 `(LN)` headers in the log all `(L3)`.
+No genai-register row added for this update itself, per the task's own rule 6.
