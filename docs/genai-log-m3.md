@@ -1911,7 +1911,7 @@ polluters" is itself a real finding from this session (not something the earlier
 ranking analysis could have told us), and why it is the reason random beat both ranked and
 original here specifically, not evidence about random search in general.
 
-## 2026-11-22 -- confirming the hand-off, then a stale-status check (L2)
+## 2026-11-22 -- confirming the hand-off, then a stale-status check (L3)
 
 Asked to confirm the previous commit (`614fc6d`, the live comparison above) was run and
 land correctly. Checked via the GitHub API (no `gh` CLI in this shell) rather than assuming:
@@ -1935,7 +1935,7 @@ fix commit was (`570a05f`), and why neither row was marked `Done` even after the
 (M1 has not re-run her reproduction against the fixed instructions; supervisor acceptance is
 separate from any of this).
 
-## 2026-11-22 -- FT021's verifier check (L2)
+## 2026-11-22 -- FT021's verifier check (L3)
 
 Asked to do real work, not another documentation pass. Picked FT021 because it was the one
 open, unblocked, M3-owned item left after re-surveying the plan and registers that required
@@ -2048,7 +2048,7 @@ has to work on and why (3.10 documented minimum, 3.11 CI, 3.12 this image), and 
 specifically was the one dependency worth checking carefully (a compiled wheel, not pure
 Python).
 
-## 2026-11-27 -- M2's task list, item 1: W37's polluter recount (L2)
+## 2026-11-27 -- M2's task list, item 1: W37's polluter recount (L3)
 
 **Kept:** redoing a check someone else already reported, because the task explicitly said
 "recount it yourself" -- the whole point of an independent check is not skipping it once a
@@ -2072,7 +2072,7 @@ was never actually conflated. `eval/tests` 165/165 OK, unaffected (no code chang
 Ownership checkpoint: be able to name the real file still showing the wrong wording
 (`demo-plan.md`) and explain why I flagged it instead of fixing it myself.
 
-## 2026-11-27 -- M2's task list, item 2: W36's bundle-verification matrix (L2)
+## 2026-11-27 -- M2's task list, item 2: W36's bundle-verification matrix (L3)
 
 **Kept:** generating the 24-row table with a script reading the real files, not typing it by
 hand -- the task is explicitly about trustworthy record-keeping, so a transcription slip in the
@@ -2097,7 +2097,7 @@ without naming the checker version" rule matters -- the checker itself changed o
 (#164), so a verdict with no commit attached stops being evidence the moment the checker
 changes again.
 
-## 2026-11-27 -- M2's task list, item 3: W27's clean-clone rebuild (L2)
+## 2026-11-27 -- M2's task list, item 3: W27's clean-clone rebuild (L3)
 
 **Kept:** doing the stronger check the task actually asked for (a genuine fresh clone) instead
 of re-citing the earlier fix's own working-directory build as if it already satisfied this.
@@ -2121,7 +2121,7 @@ Ownership checkpoint: be able to explain why a local-path `git clone` on the sam
 differently from cloning over the network (hardlinked loose objects vs. an unpacked packfile),
 and why that distinction is exactly what separates a real finding from a test artifact.
 
-## 2026-11-27 -- two follow-ups M2's PR #184 named in my files (L1)
+## 2026-11-27 -- two follow-ups M2's PR #184 named in my files (L3)
 
 **Kept:** fixing both before starting task 4, since M2 named them as real problems in files I
 own, not optional polish.
@@ -2137,7 +2137,7 @@ the corrected README table re-read from the real current files.
 Ownership checkpoint: be able to explain why N2's "13/20" wasn't an error when it was written,
 but is one now that the folder it described no longer exists.
 
-## 2026-11-27 -- tasks 4 (already done) and 5 (A8/A9) (L1)
+## 2026-11-27 -- tasks 4 (already done) and 5 (A8/A9) (L3)
 
 Checked task 4's claim against the actual file rather than assuming it from memory of having
 done it earlier -- confirmed intact through every subsequent merge. For task 5, matched the
@@ -2146,7 +2146,7 @@ writing new wording for the same concept.
 
 Verified: eval/tests 165/165 OK (docs-only).
 
-## 2026-11-27 -- task 6: the A5 scenario table (L1)
+## 2026-11-27 -- task 6: the A5 scenario table (L3)
 
 **Kept:** re-verifying every cited bundle rather than trusting the W36 matrix's already-real
 entries -- cheap to check, and the day's own earlier finding (the README's 8 stale folder
@@ -2162,7 +2162,7 @@ Ownership checkpoint: be able to explain why N1-N4 show `—` for resource kind 
 blank cell, and why the FT005 controls' missing bundle is a real, stated gap rather than
 something to paper over.
 
-## 2026-11-27 -- task 8: repeated M2's W39 seed-2 run (L1)
+## 2026-11-27 -- task 8: repeated M2's W39 seed-2 run (L3)
 
 M2 asked for this directly (PR #182's "could you repeat one run"), not a self-chosen check.
 Ran the same command he gave, same real checkout, same pinned JDK 8 -- result identical
@@ -2174,7 +2174,7 @@ Verified: `eval.bundle verify` on the new bundle -> OK; the real invocation/pair
 M2's recorded run exactly, confirmed by reading both side by side, not from memory of the
 earlier message.
 
-## 2026-11-27 -- M1's W37 review (L2)
+## 2026-11-27 -- M1's W37 review (L3)
 
 **Kept:** checking her fourth point rather than just agreeing it sounded right. "Each
 independently a valid single polluter" was MY OWN earlier wording, written during a session
@@ -2196,7 +2196,7 @@ code (a real executed pair, not a static classification), and name the two of th
 relevant candidates that none of the seven FlakeTrace runs this session ran ever happened to
 encounter.
 
-## 2026-11-27 -- M1's stale-count catch, and task 9: my own A6 note (L2)
+## 2026-11-27 -- M1's stale-count catch, and task 9: my own A6 note (L3)
 
 **Kept:** counting the real bundles myself (`ls`, re-verify all) rather than just taking M1's
 "29" and writing it down -- cheap to check, and the whole point of the register's honesty rule
