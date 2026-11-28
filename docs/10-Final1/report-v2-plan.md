@@ -93,7 +93,7 @@ prompt journal; it is a contribution boundary document."*
 
 | Column | From |
 | --- | --- |
-| Tool / model | [[08-MidEval/genai-register]] |
+| Tool / model | [[08-MidEval/genai-register]] (up to the Mid) and [[10-Final1/genai-register]] (after it) |
 | Used in which part | The same |
 | Category: Support / Core-assist / Core-replacement | The handbook does not map its L1–L4 levels onto these three. **Our proposed mapping, to confirm with the supervisor:** L1–L2 → Support · L3 → Core-assist · L4 → Core-replacement. We declare no Core-replacement — and each member must be able to show why |
 | Student contribution beyond the tool | Per-member logs |

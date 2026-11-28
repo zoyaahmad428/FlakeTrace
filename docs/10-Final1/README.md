@@ -14,6 +14,7 @@ at the Mid.
 | Read what the Mid said about us | [[10-Final1/mid-eval-outcome]] |
 | See every correction asked for, its owner and how it closes | [[10-Final1/feedback-register]] |
 | See the carried action register (handbook Form 10) | [[10-Final1/action-register]] |
+| See every GenAI-assisted artefact since the Mid (all three members) | [[10-Final1/genai-register]] |
 | Know what to build, in what order, and who checks it | [[10-Final1/iteration-2-plan]] |
 | Know how much of the committed scope is built | [[10-Final1/scope-inventory]] |
 | Prepare the questions only the supervisor can answer | [[10-Final1/supervisor-agenda]] |
@@ -76,7 +77,7 @@ Source: *FYP Handbook 2026, 3rd Edition* (claude.ai project, `FYP-Handbook-2026.
 | Testing on completed modules | 10 | Functional, edge and integration tests executed **and explained** | CI, regression tests for FT003/FT004/FT010, controls | M3 |
 | Design evolution and updated artefacts | 10 | Changes since the Mid are justified and shown in the artefacts. Outdated artefacts are capped | ADR-010 to ADR-015, updated [[03-Design/architecture]] | M1 |
 | Code quality, modularity, integration readiness | 10 | Structured, readable, buildable, ready for FYP-2 | Contracts, container run, evidence bundle | M2 |
-| Responsible tool / API / GenAI ownership defence | 5 | Each student explains what the tool did, what they added, how they verified it | [[08-MidEval/genai-register]], Form 13 | Each |
+| Responsible tool / API / GenAI ownership defence | 5 | Each student explains what the tool did, what they added, how they verified it | [[10-Final1/genai-register]] (and [[08-MidEval/genai-register]] up to the Mid), Form 13 | Each |
 | Presentation, Q&A, team coordination | 5 | Short, clear, balanced. A weak member triggers the contribution adjustment (Form 11) | [[10-Final1/ownership-prep]] | Each |
 
 ### Form 5 — report (100, scaled to 7.5)
