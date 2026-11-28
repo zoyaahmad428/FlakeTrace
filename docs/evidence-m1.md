@@ -1788,3 +1788,84 @@ ADR-015's intervention check accepted as a spike instead (W34, stretch); awaits 
 
 **Result:** the resource part of A4 now matches §3 and §3a. Nothing was run; this is a reading
 check against committed files.
+
+## W36: my FT009 repeat from the written instructions, one v2 and one v3 bundle (2026-11-28)
+
+**Requirement:** [[10-Final1/iteration-2-plan]] W36, verifier column: "M1 re-runs it on her
+machine, alone, with the fixed README (also closes her FT009 repeat)"; M2's task: verify and
+replay one older schema-v2 fixture bundle and one newer schema-v3 bundle using the written
+instructions only (root `README.md` "Run the checks" and "Reproduce a bundle (W23)",
+`eval/bundles/README.md`, `CLAUDE.md` §8, each bundle's own `replay.md`), and record every unclear
+step.
+
+**Machine:** my laptop, Windows 11 (`ver`: 10.0.26300.9974); Temurin `1.8.0_512`; Maven 3.9.9
+(platform encoding Cp1252); Python 3.11.9 (`py -3.11` for F1, plain `python` for FJ-03; both 3.11.9). A fresh clone `D:\ft-w36b` of `main` at
+**`4103cb6`** (the commit the replay output prints as `tool`). `py -3.11 -m pip install -r
+eval/requirements.txt`: every pinned package already satisfied.
+
+**Bundle 1, schema v2: F1** `20261121T093338Z-odfixture.ConfigVictimTest#expectsDefaultMode`
+(the README's own Windows example):
+- `py -3.11 -m eval.bundle verify "eval/bundles/20261121T093338Z-odfixture.ConfigVictimTest#expectsDefaultMode"`
+  → `OK`.
+- `py -3.11 -m runner replay "<same>" --project fixtures/od-fixture`:
+  - verdict `VERIFIED -> VERIFIED same`; polluter `ConfigPolluterTest#pollute` same; sequence
+    `20/20 matched -> 20/20 matched`; alone `20/20 passed -> 20/20 passed`; deletion `NEEDED -> NEEDED`;
+  - subject and tool `03ada56… -> 4103cb6…` DIFFERENT (expected: the fixture lives in this repo,
+    so its subject commit is the tool commit);
+  - JDK `21.0.9 -> 1.8.0_512`, Maven `3.10.0 -> 3.9.9`, encoding `UTF-8 -> Cp1252`: DIFFERENT;
+    timezone `Asia/Karachi`, locale `en_US`, lifecycle `class-grouped`: same;
+  - OS `Windows-11-10.0.26300-SP0 -> Windows-10-10.0.26300-SP0` marked **same** (finding below);
+  - replay bundle `flaketrace-bundles\20261128T120014Z-…`.
+
+**Bundle 2, schema v3: FJ-03 W39 random seed 1**
+`20261127T104310Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf`:
+- `JAVA_TOOL_OPTIONS=-Duser.timezone=UTC -Duser.language=en -Duser.country=US` set, as the W39
+  section says the bundle was made (the JVM printed "Picked up JAVA_TOOL_OPTIONS").
+- `CHECKOUT`: my existing fastjson clone `D:\fj\fastjson`; `git -C D:\fj\fastjson status --short`
+  → nothing.
+- `python -m runner replay "eval/bundles/20261127T104310Z-…" --project "D:\fj\fastjson"`:
+  - verdict `CANDIDATE (NO_SUPPORTED_RESOURCE_EVIDENCE) -> … same`; polluter
+    `SerializeWriterTest_14#test_writer_1` same; sequence `20/20 -> 20/20`; alone `20/20 passed ->
+    20/20 passed`; deletion `NEEDED -> NEEDED`; subject `e05e9c5… same`;
+  - tool `bfb2f93… -> 4103cb6…`, JDK `1.8.0_502 -> 1.8.0_512`, Maven `3.10.0 -> 3.9.9`: DIFFERENT;
+    timezone `UTC`, locale, encoding `Cp1252`, lifecycle: same; OS marked same as above;
+  - replay bundle `flaketrace-bundles\20261128T124147Z-…`.
+- `py -3.11 -m eval.bundle verify "eval/bundles/20261127T104310Z-…"` → `OK`.
+- Afterwards: fastjson `git status --short` → nothing; the clone's `git status --short` → no change
+  to any tracked file.
+
+**Unclear or missing steps in the written instructions:**
+1. **What to put for `CHECKOUT`.** The v3 bundle's `replay.md` ends with `--project "CHECKOUT/."`
+   and defines `CHECKOUT` as "your clone of … fastjson … at commit e05e9c5…"; I had to ask what
+   that meant on my machine. The README's W23 section says the same in other words.
+2. **Getting a fastjson checkout.** No doc says how to make one at a single commit. My first fresh
+   clone (`D:\fj2\fastjson`) never got its files, and `replay` refused it clearly: `error: no
+   pom.xml in D:\fj2\fastjson; --project must be a checkout of the bundle's subject`. I used my
+   existing clone instead.
+3. **Which JDK an FJ-03 replay needs.** No doc says; the W39 section only says how the bundle was
+   made (Temurin 8u502, those `JAVA_TOOL_OPTIONS`).
+4. **`py` vs `py -3.11`.** The README says `py`; mine is not 3.11, so I used `py -3.11` for F1. For
+   FJ-03 I typed plain `python`, which is also 3.11.9 on my laptop.
+
+**Finding for M2 (replay output):** the OS line printed `Windows-11-10.0.26300-SP0 ->
+Windows-10-10.0.26300-SP0` and called them **same**, although the strings differ. Both are build
+10.0.26300 of my machine. I did not read the code, so I do not know whether `replay` compares only
+the version number on purpose; if it does, the output could say so.
+
+**Differences from M2's and M3's runs:** M2 replayed the same two bundles on 2026-11-27 (`main`
+`eb7589f`, fixtures on JDK 21.0.9, FJ-03 on 8u502), both `same` ([[evidence-m2]]). Mine agree on
+every verdict, polluter, tally and deletion line, on a different JDK patch (8u512) and Maven
+(3.9.9). M3's matrix ([[evidence-m3]]) has both bundles `verify` OK at checker `41fc150`.
+
+**Exit codes:** `0` for every command above (`echo exit=%ERRORLEVEL%`, checked by me; not in the
+transcript I kept).
+
+**The two new replay bundles:** `py -3.11 -m eval.bundle verify` on
+`flaketrace-bundles\20261128T120014Z-…` and `flaketrace-bundles\20261128T124147Z-…` → `OK` on both
+(checked by me; not in the transcript I kept).
+
+**Not done:** one run of each bundle only.
+
+**Result:** both bundles replay `same` against the current written instructions (v2 and v3),
+both `verify` OK, every exit `0`, with four unclear points recorded above. FT009 stays `Partly`, awaiting the supervisor's
+acceptance.
