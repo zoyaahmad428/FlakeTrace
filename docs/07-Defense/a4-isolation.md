@@ -1,7 +1,8 @@
 # A4 — How is the code block isolated?
 
-*Panel action A4 (proposal defence). v1 · 2026-11-27 · written by M2; **the resource section is for M1 to check**.
-Status: `DRAFT for M1's check`, then the supervisor's acceptance ([[10-Final1/action-register]] A4, W40).*
+*Panel action A4 (proposal defence). v1.1 · 2026-11-28 · written by M2; **resource row, FJ-03 line and FYP-2 section
+checked and corrected by M1 on 2026-11-28** ([[evidence-m1]]). Status: `DRAFT`, awaiting the supervisor's acceptance
+([[10-Final1/action-register]] A4, W40).*
 
 **Short answer.** FlakeTrace isolates the failing **sequence of tests** — the smallest set of earlier tests that,
 run before the victim, makes it fail — and checks each one by removing it and re-running. It does **not** isolate the
@@ -14,7 +15,7 @@ the cause.
 | --- | --- | --- | --- | --- |
 | Runs | Each test order | One fresh JVM per order, on a disposable copy of the project (ADR-012) | **JVM state only** is reset between orders: static fields, system properties, loaded classes, threads. Files, the working directory, environment variables, network and the clock are **not** (claims ledger G5) | Reset control (FT021), reproduced by M3; project files hashed before and after (G4) |
 | Sequence | The polluters plus the victim | Find a failing order; try each earlier test before the victim; if no single test is enough, shrink with delta debugging (single trials); then **remove each kept test and re-run the rest `m` = 20 times** (ADR-011) | A kept test is `NEEDED` only if the victim passed **all 20** runs without it. The sequence is **1-minimal under that rule, never "the minimum"** (D9); it reproduces `n` = 20 times and the victim alone is tallied separately (FT003) | `deletion_checks` in every `VERIFIED` report (G2); FT004, reproduced by M1 |
-| Resource | The field or property both sides touch | Static bytecode analysis of the compiled classes (`javap`), nothing injected (A2) | **`STATIC_OVERLAP`, mechanism `NOT_ASSESSED`**: the polluter *may* write and the victim *may* read it. Values, restores and timing are not modelled; missing evidence is not proof of independence (G3) | Every report's `assurance.resource` and fixed limitations |
+| Resource | A static field, or a system property with a constant key, that the polluter's code may **write** and the victim's code may **read** | Static bytecode analysis of the compiled classes (`javap`), following calls to depth 2 by default (up to 5); calls into the JDK and libraries are not followed; nothing injected (A2) | **`STATIC_OVERLAP`, mechanism `NOT_ASSESSED`** when an edge is found (every `VERIFIED` report): the polluter *may* write and the victim *may* read it. **`NONE`** when no edge is found (FJ-03). Values, restores and timing are not modelled; missing evidence is not proof of independence (G3) | Every report's `assurance.resource` and fixed limitations |
 
 ## Worked example: fixture F3
 
@@ -36,14 +37,15 @@ Committed bundle `eval/bundles/20261121T184910Z-odfixture.ToggleVictimTest#expec
   delta debugging never tried, can escape it.
 - **Not the cause.** `VERIFIED` is about the sequence; the resource is a possible mechanism (G3).
 - **Not a sandbox.** State outside the JVM can leak between orders (G5); the projects are trusted (A3).
-- **Not every case.** On fastjson FJ-03 the static analysis finds **no** resource edge (a `ThreadLocal` changed through a
-  JDK call), so the best result is `CANDIDATE`, not `VERIFIED`.
+- **Not every case.** On fastjson FJ-03 the static analysis finds **no** resource edge: both tests only *read* the static
+  `ThreadLocal` `SerializeWriter.bufLocal`, and the change happens inside the JDK call `ThreadLocal.set`, which the
+  extractor does not follow. So the best result is `CANDIDATE`, not `VERIFIED`.
 
 ## What is FYP-2
 
 Confirming the resource itself is **ADR-015**: put the named resource back to its earlier value between the polluters
 and the victim, and see whether the failure goes away. It is accepted as a **spike** (W34, stretch), not built; whether
-causal certification remains a promise awaits the supervisor ([[10-Final1/supervisor-agenda]]). Where static analysis
+causal certification remains a promise awaits the supervisor ([[10-Final1/supervisor-agenda]], item 2). Where static analysis
 names no resource (FJ-03), only runtime observation could, and that is not built either (A2).
 
 ## Where the demo shows it

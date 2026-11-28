@@ -1664,3 +1664,127 @@ bundle); the same JDK patch `1.8.0_452`, as expected from the same pinned image.
   sandbox stays a later target;
 - the report and record written inside the container (`flaketrace-records/`) were discarded with
   it (`--rm`); only the bundle was mounted to the host.
+
+## W37: my check of the FJ-03 resource interpretation in M3's wording fix (2026-11-27)
+
+**Requirement:** [[10-Final1/iteration-2-plan]] W37, "M1 the interpretation" (handover item: "check
+M3's FJ-03 wording — why there is no static edge (JDK `ThreadLocal.set`), and why no edge is not
+proof of independence"). I own the resource interpretation. Checked against `main` `43941fa`
+(after PR #187): [[05-Testing/real-case-protocol]] (M3's PR #180 and its earlier same-day fix) and
+M3's W37 entry in [[evidence-m3]].
+
+**What the wording must say, and what I found:**
+
+| # | Must say | `real-case-protocol.md` | `evidence-m3.md` | Result |
+| --- | --- | --- | --- | --- |
+| 1 | No static edge because the change happens inside a JDK call (`ThreadLocal.set`) the extractor does not follow | Says only "no static edge, so the policies are identical by construction"; no reason given | Says it: "FJ-03's pollution is a JDK `ThreadLocal.set()` call that static analysis does not follow" | **Gap in the protocol** |
+| 2 | No edge is not proof of independence | Not said | Not said | **Gap in both** |
+| 3 | Four distinct adopted polluters, named separately from the scan's six | "**four** distinct real tests were adopted", the six named as "the 524-candidate scan's own count" | Recounted from the seven bundles: four | **Correct** |
+| 4 | `CANDIDATE`, never "certified" | "never 'certified': every endpoint here is `CANDIDATE`, not `VERIFIED`" | Same | **Correct** (one leftover, below) |
+
+**My own recount, not taken from M3 or M2:** I read `polluters`, `candidate_reasons` and
+`assurance.resource` from the `report.json` of the seven FJ-03 pair-mode comparison bundles
+(`eval/bundles/20261122T1*Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf`):
+
+```
+120044Z SerializeWriterTest_14#test_writer_1    162104Z SerializeWriterTest_14#test_writer_1
+165348Z SerializeWriterTest_14#test_writer_3    170257Z SerializeWriterTest_14#test_writer_1
+171204Z SerializeWriterTest_14#test_writer_2    174219Z SerializeWriterTest_14#test_writer_3
+174845Z SerializeWriterTest_15#test_writer_1
+```
+
+Four distinct. All seven: outcome `CANDIDATE`, `candidate_reasons: ["NO_SUPPORTED_RESOURCE_EVIDENCE"]`,
+`assurance.resource` `level: NONE`, `mechanism: NOT_ASSESSED`.
+
+**The interpretation, as I would state it** (from my FJ-03 entry above, PR #145, and
+[[04-Implementation/evidence-collector]] §3): `SerializeWriter` holds a static
+`ThreadLocal<char[]> bufLocal`. The polluter's path calls `bufLocal.set(buf)`; the victim's
+`new SerializeWriter()` calls `bufLocal.get()`. In bytecode both sides only **read** the static
+field `bufLocal` (a `getstatic`); the change itself happens inside `java.lang.ThreadLocal.set`, JDK
+code the extractor does not follow (it is listed in `external_calls_not_followed`). So there is no
+write/read pair on one resource, and no edge. **An empty edge list is not proof that the tests are
+independent**: the failure reproduces 20/20 after the polluter and 0/20 alone; static analysis
+simply cannot see this kind of resource.
+
+**Requested of M3 (her files, not edited by me):**
+1. In `real-case-protocol.md`, after "no static edge, so the policies are identical by
+   construction here", add the reason: the pollution goes through the static `ThreadLocal`
+   `SerializeWriter.bufLocal`, both tests only read that field, and the change is the JDK call
+   `ThreadLocal.set`, which the extractor does not follow ([[04-Implementation/evidence-collector]] §3).
+2. In the same place, add: no edge is not proof of independence; the sequence evidence shows
+   the order dependence, the resource is simply not visible to static analysis.
+3. Minor: "The question" under "The comparison" still asks whether ranking reaches "the same
+   **certified** result". On FJ-03 the endpoint is `CANDIDATE`; "the same result (same verdict and
+   polluter class)" would match the rest of the section.
+4. A question, not a defect: "six candidates in the package are each independently a valid single
+   polluter" — "valid" reads stronger than `CANDIDATE`. If the six are the tests that make the
+   victim fail when run directly before it, saying that would be exact.
+
+**Limitations:**
+- I traced the bytecode for `SerializeWriterTest_14#test_writer_1` only (my FJ-03 entry). For the
+  other three adopted polluters I read only their reports (`level: NONE`), not their bytecode;
+  the same `bufLocal` path is likely but not checked by me.
+- Nothing was run; this is a reading check against committed files.
+
+**Result on 2026-11-27:** the count and the `CANDIDATE` wording are right. The interpretation was
+complete in M3's evidence log for item 1, but the protocol (the document a reader is pointed to)
+was missing items 1 and 2.
+
+**M3's fix, re-checked by me on 2026-11-28** (PR #191, `065514d`, on `main` `0be72a5`). I read
+the diff of `real-case-protocol.md`:
+1. **Added:** "the pollution goes through the static `ThreadLocal` `SerializeWriter.bufLocal`. Both
+   tests only *read* that field; the change happens inside the JDK call `ThreadLocal.set`, which
+   the extractor does not follow". This matches my FJ-03 entry.
+2. **Added:** "no edge is not proof of independence: the sequence evidence above already shows
+   the order dependence directly; the resource just is not visible to static analysis".
+3. **Fixed:** "The question" now says "the same verdict", not "certified result".
+4. **Answered:** the six are now stated as the POC scan's tests that "each independently make the
+   victim fail when run directly before it in a `[candidate, victim]` pair" (M3 read
+   `POC/results/scan_FJ-03.csv`'s `od_relevant` column; I did not re-read that file). She also
+   names the two of the six (`SerializeWriterTest_15#test_writer_2`, `#test_writer_3`) that no
+   FlakeTrace run reached.
+
+**Result:** all four points are addressed in the protocol. My W37 interpretation check is
+**done**. Nothing was run.
+
+## A4 (W40): my check of the resource part of M2's one-page answer (2026-11-28)
+
+**Requirement:** [[10-Final1/iteration-2-plan]] W40, "A4 M2 + M1" (M2's request: "check the
+Resource row and the 'What is FYP-2' section against your section 3a"). Checked
+[[07-Defense/a4-isolation]] on `main` `0be72a5` against [[04-Implementation/evidence-collector]]
+§3 and §3a, and the F3 example against its committed bundle.
+
+**F3's resource, checked against the bundle:** I read `resource_edges` and `assurance` from
+`eval/bundles/20261121T184910Z-odfixture.ToggleVictimTest#expectsNotBothFlagsSet/report.json`: two
+edges, static fields `odfixture.Toggles.flagA` (write `ToggleAPolluterTest#setFlagA@1`, read
+`ToggleVictimTest#expectsNotBothFlagsSet@0`) and `flagB` (write `ToggleBPolluterTest#setFlagB@1`,
+read `@6`), both depth 1; `outcome: VERIFIED`, resource `STATIC_OVERLAP`, mechanism `NOT_ASSESSED`.
+Step 6 of the page is **correct**.
+
+**What I changed in the page** (M2 asked me to check this part; the rest is his and unchanged):
+
+| Where | Before | After | Why |
+| --- | --- | --- | --- |
+| Resource, "What" | "The field or property both sides touch" | a static field or constant-key system property the polluter may **write** and the victim may **read** | An edge is a WRITE on the polluter's side and a READ on the victim's (§1). "Both touch" also fits FJ-03, where both only read `bufLocal` and there is **no** edge |
+| Resource, "How" | `javap`, nothing injected | adds: depth 2 by default (up to 5); calls into the JDK and libraries not followed | The two main limits of the static evidence (§3), and the reason for FJ-03 |
+| Resource, "How sure" | `STATIC_OVERLAP`, `NOT_ASSESSED` | adds `NONE` when no edge is found (FJ-03) | §3a: the level is `STATIC_OVERLAP`, or `NONE` with no edge; never `MECHANISM_CONFIRMED` |
+| "Not every case" (FJ-03) | "a `ThreadLocal` changed through a JDK call" | both tests only read `SerializeWriter.bufLocal`; the change is inside `ThreadLocal.set`, not followed | The same reason as §3 and the W37 wording |
+| "What is FYP-2" | agenda link | adds "item 2" | §3a names the agenda item |
+| Status line | "DRAFT for M1's check" | checked by M1 2026-11-28; awaiting the supervisor | Done-when wording of the register |
+
+"Values, restores and timing are not modelled; missing evidence is not proof of independence"
+already matched §3, and "What is FYP-2" already matched §3a (ADR-015 accepted as a spike, W34,
+not built; only runtime observation could name FJ-03's resource, not built). I left both as they
+were.
+
+**A note for M2 (his `ui/`, not edited):** the UI's runtime-evidence label
+(`ui/web/src/lib/labels.ts`) says "ADR-001's fallback replaced by ADR-015's spike (W34, stretch);
+awaits the supervisor". §3a says ADR-015's check was accepted **instead**, but it does not cover
+FJ-03-like cases, which only runtime observation could. "Replaced" may read as if the runtime
+option is no longer needed. Suggested wording: "NOT BUILT — ADR-001's runtime agent not built;
+ADR-015's intervention check accepted as a spike instead (W34, stretch); awaits the supervisor".
+
+**Not done:** A4 on F3 in the demo is not rehearsed (W33); I did not open the UI.
+
+**Result:** the resource part of A4 now matches §3 and §3a. Nothing was run; this is a reading
+check against committed files.
