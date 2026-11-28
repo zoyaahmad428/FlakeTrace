@@ -48,7 +48,7 @@
 ```markdown
 ## 2026-10-09 — W6 design: order runner (ADR-003) and implementation plan
 
-**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L3
 
 **What I asked:** propose at least two designs for `OrderRunner.run_ordered` (JUnit 4, one
 fresh JVM per call, exact order), with trade-offs, classpath without new dependencies, and
@@ -74,7 +74,7 @@ installed 3.10.0 and added to user PATH.
 - [ ] **Step 2: Add a row to the register table in `docs/08-MidEval/genai-register.md`** (after the last 2026-10-09 M2 row)
 
 ```markdown
-| 2026-10-09 | M2 | Claude Opus 5.5 | L2 | ADR-003 (order-runner design), W6 implementation plan | Design alternatives, ADR text, plan | Chose option A; reviewed ADR | Spike on F1 (not committed): alone PASS, after polluter FAIL | ADR `--release 8` corrected to `-source 8 -target 8` | [[genai-log-m2]] |
+| 2026-10-09 | M2 | Claude Opus 5.5 | L3 | ADR-003 (order-runner design), W6 implementation plan | Design alternatives, ADR text, plan | Chose option A; reviewed ADR | Spike on F1 (not committed): alone PASS, after polluter FAIL | ADR `--release 8` corrected to `-source 8 -target 8` | [[genai-log-m2]] |
 ```
 
 - [ ] **Step 3: Hand over** — show `git status --short`, then give:
@@ -504,7 +504,7 @@ Expected: `Ran 8 tests … OK` — 4 normalisation, 1 parse, 3 F1. Record the re
   - `docs/04-Implementation/sandbox-runner.md` — four-point note: (1) what/why, (2) alternatives from ADR-003, (3) what breaks (no `mvn`/`java`; a test that hangs; JDK frame differences), (4) how to modify (e.g. grouping consecutive same-class methods into one `Request` changes `runOne` and the signature tests). Link it from the `runner/` row in `docs/04-Implementation/README.md`.
   - `docs/08-MidEval/iteration-plan.md` — W6 row: State `In progress`, Evidence `runner/order_runner.py`, `[[evidence-m2]]`.
   - `docs/09-Team/members.md` — row 2 State: "W6: harness + F1 proof done; failure paths next".
-  - `docs/genai-log-m2.md` and one `genai-register.md` row (level L2, verification = the Step 5/6 commands).
+  - `docs/genai-log-m2.md` and one `genai-register.md` row (level L3, verification = the Step 5/6 commands).
 
 - [ ] **Step 9: Hand over** — show `git status --short` and the verification output, then:
 

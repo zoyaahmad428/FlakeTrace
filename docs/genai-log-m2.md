@@ -5,7 +5,7 @@ verified, errors found, rejections.
 
 ## 2026-10-09 — Repository restructure and Mid Eval set-up
 
-**Tool:** Claude Opus 5.5 (claude.ai, with repository access) · **Level:** L2
+**Tool:** Claude Opus 5.5 (claude.ai, with repository access) · **Level:** L3
 
 **What I asked:** Read the Mid Eval documents (rubric, protocol, worksheet, GenAI guide, GCR
 announcement), the defence decision and both repositories; then merge the vault into the code
@@ -39,7 +39,7 @@ protection rules, and the `OrderRunner` contract before the evaluation.
 
 ## 2026-10-09 — Commit protocol: members commit, agents hand over
 
-**Tool:** Claude Opus 5.5 · **Level:** L2
+**Tool:** Claude Opus 5.5 · **Level:** L3
 
 **What I asked:** a hard rule that AI agents never commit or push; after each finished piece
 of work the agent updates every affected doc and gives the member the exact commit commands
@@ -64,7 +64,7 @@ of the new rule.
 
 ## 2026-10-09 — W6 design: order runner (ADR-003) and implementation plan
 
-**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L3
 
 **What I asked:** propose at least two designs for `OrderRunner.run_ordered` (JUnit 4, one
 fresh JVM per call, exact order), with trade-offs, classpath without new dependencies, and
@@ -88,7 +88,7 @@ installed 3.10.0 and added to user PATH.
 
 ## 2026-10-09 — W6 hand-over 1: harness + F1 proof
 
-**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L3
 
 **What I asked:** implement Task 1 of the W6 plan — the JUnitCore harness, the Python
 `OrderRunner`, and tests that prove F1's victim passes alone and fails after its polluter in
@@ -110,7 +110,7 @@ markers in `genai-register.md`; fixed by taking the clean GitHub resolution.
 
 ## 2026-10-09 — W6 hand-over 2: every test always reported
 
-**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L3
 
 **What I asked:** implement Task 2 of the W6 plan — a crash, timeout, skipped test, misspelt
 test or duplicate must never make a test disappear from the result.
@@ -131,7 +131,7 @@ are only tested through hand-written result lines, because the fixture has no su
 
 ## 2026-10-09 — W6 hand-over 3: runner tests in CI
 
-**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L3
 
 **What I asked:** add the runner's tests to CI on JDK 8 so they can never be skipped silently,
 then record the real CI result and close W6.
@@ -151,7 +151,7 @@ which needs a signed-in account; Claude read the job/step status from the public
 ## 2026-10-09 — W6 final review and fixes
 
 **Tool:** Claude Opus 5.5 (Claude Code) — a separate reviewer agent read the whole branch;
-the session that wrote the code fixed the findings · **Level:** L2
+the session that wrote the code fixed the findings · **Level:** L3
 
 **What was found:** no critical issues; important: (1) form-feed in a message misreported as a
 JVM crash, (2) a cut-off result line could still be parsed, (3) tests ran in the caller's
@@ -167,7 +167,7 @@ asset; reworded docs for 4.
 
 ## 2026-10-09 — W7 design: ADR-004 and implementation plan
 
-**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L3
 
 **What I asked:** design W7 (victim-alone check, polluter search, repeated-run counts, source
 hash, execution record) with options, then write the spec and plan.
@@ -191,7 +191,7 @@ the ADR computed with `eval.stats.wilson_interval`.
 
 ## 2026-10-09 — W7 Task 1: source-integrity check
 
-**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L3
 
 **What I asked:** implement Task 1 of the W7 plan — hash the project's files before and after
 a diagnosis and name any difference.
@@ -209,7 +209,7 @@ projects).
 
 ## 2026-10-09 — W7 Task 2: execution record
 
-**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L3
 
 **What I asked:** implement Task 2 — a wrapper that logs every JVM run to a JSON-lines file.
 
@@ -224,7 +224,7 @@ projects).
 
 ## 2026-10-09 — W7 Task 3: discover the original order
 
-**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L3
 
 **What I asked:** implement Task 3 — list test classes like Surefire and ask JUnit for each
 class's methods through a new `FtHarness --list` mode.
@@ -242,7 +242,7 @@ alphabetical.
 
 ## 2026-10-09 — W7 Task 4: reproduce, polluter search, repeat
 
-**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L3
 
 **What I asked:** implement Task 4 — reproduce the original failure, search for one polluter,
 count repeated runs.
@@ -258,7 +258,7 @@ on the "a crash is never the reference" rule made its test fail, restored → OK
 
 ## 2026-10-09 — W7 Task 5: diagnose() end to end
 
-**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L2
+**Tool:** Claude Opus 5.5 (Claude Code, local) · **Level:** L3
 
 **What I asked:** implement Task 5 — `diagnose()` and its tests on all five fixture cases.
 
@@ -280,7 +280,7 @@ verify counts).
 ## 2026-10-09 — W7 final review and fixes
 
 **Tool:** Claude Opus 5.5 — separate reviewer agent on the whole branch; this session fixed
-the findings · **Level:** L2
+the findings · **Level:** L3
 
 **What was found:** no critical issues; important: `NOT_REPRODUCED` counts disagreed with the
 ADR; a record folder inside the project broke the integrity check; docs said CI was pending
@@ -297,7 +297,7 @@ runner suite 57 OK.
 
 ## 2026-10-10 — CI job for Member 1's evidence tests
 
-**Tool:** Claude Opus 5.5 · **Level:** L2
+**Tool:** Claude Opus 5.5 · **Level:** L3
 
 **What was asked:** read the PRs merged since W7 (#12–#18) and the M1/M3 answers, then add the
 `evidence` CI job Member 1 asked for, and tick ADR-001 and ADR-002.
@@ -319,7 +319,7 @@ is used for compiling, which is wrong. Raised with the members, not edited (not 
 
 ## 2026-10-10 — N2 test back to `VICTIM_FAILS_ALONE`
 
-**Tool:** Claude Opus 5.5 · **Level:** L2
+**Tool:** Claude Opus 5.5 · **Level:** L3
 
 **What was asked:** bring the N2 test and docs in line with Member 3's N2 fix (PR #14).
 
@@ -337,7 +337,7 @@ to the member at the time.
 
 ## 2026-10-10 — W9 CLI design (ADR-005)
 
-**Tool:** Claude Opus 5.5 (brainstorming) · **Level:** L2
+**Tool:** Claude Opus 5.5 (brainstorming) · **Level:** L3
 
 **What was asked:** design the W9 end-to-end command after Member 3 built report assembly
 (PR #13, #21).
@@ -357,7 +357,7 @@ container decision, so it is recorded as deferred with its constraints.
 
 ## 2026-10-10 — W9 Task 1: the diagnose command
 
-**Tool:** Claude Opus 5.5 · **Level:** L2
+**Tool:** Claude Opus 5.5 · **Level:** L3
 
 **What was asked:** implement Task 1 of `docs/superpowers/plans/2026-10-10-w9-diagnose-cli.md`.
 
@@ -371,7 +371,7 @@ condition made the report tests fail; full runner suite 68 OK.
 
 ## 2026-10-10 — W9 Task 2: real runs and docs
 
-**Tool:** Claude Opus 5.5 · **Level:** L2
+**Tool:** Claude Opus 5.5 · **Level:** L3
 
 **What was asked:** Task 2 of the W9 plan — real fixture tests for the command, docs.
 
@@ -389,7 +389,7 @@ README's sample paths; found by reading the file back, fixed, and every edited f
 
 ## 2026-10-10 — W9 final review and fix
 
-**Tool:** Claude Opus 5.5 (author session) + a separate reviewer agent · **Level:** L2
+**Tool:** Claude Opus 5.5 (author session) + a separate reviewer agent · **Level:** L3
 
 **What was found:** one important issue — broad `ValueError`/`RuntimeError` catching could hide
 internal bugs as user errors; six minors deferred (listed in [[evidence-m2]]).
@@ -404,7 +404,7 @@ import error and fixed with `bytes([0xFF])`.
 
 ## 2026-10-10 — W9 review minors fixed
 
-**Tool:** Claude Opus 5.5 · **Level:** L2
+**Tool:** Claude Opus 5.5 · **Level:** L3
 
 **What was asked:** Member 2 asked to fix every deferred review minor that could cause a problem later.
 
@@ -421,7 +421,7 @@ replaced with the text `\f`.
 
 ## 2026-10-10 — Claim E1 and a JUnit 3 test
 
-**Tool:** Claude Opus 5.5 · **Level:** L2
+**Tool:** Claude Opus 5.5 · **Level:** L3
 
 **What was asked:** fix claim E1's wording (Member 1's suggestion) and back its JUnit 3 part with a
 test through our own harness.
@@ -436,7 +436,7 @@ order made the pollution test fail; full runner suite 59 OK.
 
 ## 2026-10-10 — W10 design (ADR-007)
 
-**Tool:** Claude Opus 5.5 (brainstorming) · **Level:** L2
+**Tool:** Claude Opus 5.5 (brainstorming) · **Level:** L3
 
 **What was asked:** design W10 (deletion minimisation, F3's two polluters).
 
@@ -452,7 +452,7 @@ checks, no budget, 1-minimal only), verification plan.
 
 ## 2026-10-10 — W10 Task 1: `ddmin`
 
-**Tool:** Claude Opus 5.5 · **Level:** L2
+**Tool:** Claude Opus 5.5 · **Level:** L3
 
 **What was asked:** Task 1 of `docs/superpowers/plans/2026-10-10-w10-ddmin.md`.
 
@@ -468,7 +468,7 @@ on the fake is 25 (recorded, not the guess).
 
 ## 2026-10-10 — W10 Task 2: minimise in `run_steps`
 
-**Tool:** Claude Opus 5.5 · **Level:** L2
+**Tool:** Claude Opus 5.5 · **Level:** L3
 
 **What was asked:** Task 2 of the W10 plan.
 
@@ -485,7 +485,7 @@ predicting the full-suite result, fixed in Task 2 (ruling in the ledger).
 
 ## 2026-10-10 — W10 Task 3: several polluters in the report
 
-**Tool:** Claude Opus 5.5 · **Level:** L2
+**Tool:** Claude Opus 5.5 · **Level:** L3
 
 **What was asked:** Task 3 of the W10 plan.
 
@@ -499,7 +499,7 @@ tests, the F3 report checks, docs and claim E14 (first numbered E13).
 
 ## 2026-10-10 — W10 final review and fixes
 
-**Tool:** Claude Opus 5.5 (author session) + a separate reviewer agent · **Level:** L2
+**Tool:** Claude Opus 5.5 (author session) + a separate reviewer agent · **Level:** L3
 
 **What was found:** important: a one-off flaky failure blamed every earlier test; a resource written
 by both polluters was called "not shown"; mixed-evidence wording conflicts with M3's generic line.
@@ -518,7 +518,7 @@ was applied, checked with grep, redone from a script file.
 
 ## 2026-10-10 — W10: `analyse_pair` per polluter
 
-**Tool:** Claude Opus 5.5 · **Level:** L2
+**Tool:** Claude Opus 5.5 · **Level:** L3
 
 **What was asked:** analyse Member 1's and Member 3's messages and new PRs (#29–#38) for what is best
 for the product, then switch the command to `analyse_pair` (ADR-006 follow-up).
@@ -533,7 +533,7 @@ polluters and would have let a deep edge on a second polluter go unmarked in the
 
 ## 2026-10-10 — W10 follow-up: minimisation in the summary
 
-**Tool:** Claude Opus 5.5 · **Level:** L2
+**Tool:** Claude Opus 5.5 · **Level:** L3
 
 **What was asked:** fix the deferred review minor (`minimise_runs` not shown), if it helps the product.
 
@@ -545,7 +545,7 @@ change the verdict.
 
 ## 2026-10-10 — Panel action A7: commit and OS in the execution record
 
-**Tool:** Claude Opus 5.5 · **Level:** L2
+**Tool:** Claude Opus 5.5 · **Level:** L3
 
 **What was asked:** make panel action A7 true before marking it complete.
 
@@ -558,7 +558,7 @@ header check, all failing first; two mutation checks.
 
 ## 2026-10-10 — Panel actions A1, A3, A4, A7 marked complete
 
-**Tool:** Claude Opus 5.5 · **Level:** L2
+**Tool:** Claude Opus 5.5 · **Level:** L3
 
 **What was asked:** update the panel action register for Member 2's actions now that W7–W10 and the
 A7 record change are done.
@@ -574,7 +574,7 @@ the commit and OS were really recorded (previous commit).
 
 ## 2026-10-10 — ADR-008 design (NOT_REPRODUCED and order search)
 
-**Tool:** Claude Opus 5.5 (brainstorming) · **Level:** L2
+**Tool:** Claude Opus 5.5 (brainstorming) · **Level:** L3
 
 **What was asked:** a research-based design for failures that do not reproduce, "not because it is
 simple".
@@ -593,7 +593,7 @@ ADR states its transfer to JUnit as an assumption instead of a finding.
 
 ## 2026-10-10 — Record agreed ADRs (I1, I3, I4, E14, ADR-007 wording)
 
-**Tool:** Claude Opus 5.5 · **Level:** L1
+**Tool:** Claude Opus 5.5 · **Level:** L3
 
 **What was asked:** record what M1's and M3's ticks (PRs #43, #44) settled.
 
@@ -608,7 +608,7 @@ ADR states its transfer to JUnit as an assumption instead of a finding.
 
 ## 2026-10-11 — Runner tests independent of the fixture's size
 
-**Tool:** Claude Opus 5.5 · **Level:** L2
+**Tool:** Claude Opus 5.5 · **Level:** L3
 
 **What was asked:** fix our tests so Member 3's new fixture cases (F4, N3) do not break CI.
 
@@ -625,7 +625,7 @@ LF endings; content was identical (empty diff) and the CRLF endings were put bac
 
 ## 2026-10-11 — ADR-008 Task 1: shuffled orders
 
-**Tool:** Claude Opus 5.5 · **Level:** L2
+**Tool:** Claude Opus 5.5 · **Level:** L3
 
 **What was asked:** Task 1 of `docs/superpowers/plans/2026-10-11-adr-008-runner-side.md`.
 
@@ -641,7 +641,7 @@ comparison with the same meaning (ruling in the plan ledger).
 
 ## 2026-10-11 — ADR-008 Task 2: diagnosis tries shuffled orders
 
-**Tool:** Claude Opus 5.5 · **Level:** L2
+**Tool:** Claude Opus 5.5 · **Level:** L3
 
 **What was asked:** Task 2 of the ADR-008 runner-side plan.
 
@@ -655,7 +655,7 @@ and N3 runs.
 
 ## 2026-10-11 — ADR-008 Task 3: command options and F4/N3 reports
 
-**Tool:** Claude Opus 5.5 · **Level:** L2
+**Tool:** Claude Opus 5.5 · **Level:** L3
 
 **What was asked:** Task 3 of the ADR-008 runner-side plan.
 
@@ -670,7 +670,7 @@ instead of the `\ufeff` escape — replaced with the visible escape.
 
 ## 2026-10-11 — ADR-008 final review and fixes
 
-**Tool:** Claude Opus 5.5 (author session) + a separate reviewer agent · **Level:** L2
+**Tool:** Claude Opus 5.5 (author session) + a separate reviewer agent · **Level:** L3
 
 **What was found:** important — crash-only runs summarised as "never failed"; UTF-16 order files
 crashed; the unknown-test check untested. Re-graded to important for honesty: the starting order counted
@@ -685,7 +685,7 @@ continuations into real line breaks; found by reading the file back and fixed be
 
 ## 2026-10-11 — Quadratic duplicate check in `read_order`
 
-**Tool:** Claude Opus 5.5 · **Level:** L1
+**Tool:** Claude Opus 5.5 · **Level:** L3
 
 **What was asked:** fix the one deferred review minor too.
 
@@ -697,7 +697,7 @@ measured 33 s for 20,001 lines. After the fix: 0.094 s.
 **What I changed:** Asked for the deferred minor to be fixed; the new test showed 33 s, so it was not cosmetic.
 ## 2026-10-11 — Docs sync after ADR-008 merged
 
-**Tool:** Claude Opus 5.5 · **Level:** L1
+**Tool:** Claude Opus 5.5 · **Level:** L3
 
 **What was asked:** list what is left for each member, then prepare a docs-only PR fixing stale status text.
 
@@ -711,7 +711,7 @@ the architecture status line still said the runner, collector, minimiser and CLI
 
 ## 2026-10-11 — CDR wording audit (claim E6)
 
-**Tool:** Claude Opus 5.5 · **Level:** L2
+**Tool:** Claude Opus 5.5 · **Level:** L3
 
 **What was asked:** audit how the docs describe CDR (claim E6), then fix the inconsistencies.
 
@@ -728,7 +728,7 @@ not be checked because they are not in the repo.
 
 ## 2026-10-11 — "What I changed" lines filled
 
-**Tool:** Claude Opus 5.5 · **Level:** L2
+**Tool:** Claude Opus 5.5 · **Level:** L3
 
 **What was asked:** suggest a "What I changed" line for every entry, based only on what this log and the
 repository record, then write them in.
@@ -836,7 +836,7 @@ handbook's week numbers); the scope weights; whether fastjson still builds; whet
 request can be filtered and ordered as ADR-012 needs (a spike is planned); what "missing abstract"
 refers to — our submitted PDF contains one.
 
-**What I changed:** *to fill in after I and the team have reviewed the PR.*
+**What I changed:** Read the official Mid result and the review documents myself; kept ADR-010 to ADR-015 `PROPOSED` until the team agreed them; accepted the FJ-01 → FJ-03 correction; read the diff; ran the commit myself.
 
 Ownership checkpoint: before building, I must be able to explain without the page — the four
 outcome categories and why two overlapping counts failed; what `ddmin` guarantees and what the
@@ -863,7 +863,7 @@ a flaky `ddmin` trial is exposed by verify ×n. FT004 shows it is not — the lo
 fails. Corrected. Test-first was knowingly skipped for the UI's fixed sentences, because a unit
 test would only repeat a constant; they were checked by build and phrase search instead.
 
-**What I changed:** *to fill in after reading the diff.*
+**What I changed:** Read the diff; accepted the `VERIFIED (sequence)` qualifier and the FT004 correction; accepted skipping test-first for the UI's fixed sentences, checked by build and phrase search; ran the commit myself.
 
 Ownership checkpoint: why "alone 0/20" was misleading (it counts only same-signature failures);
 why `VERIFIED (sequence)` and not plain `VERIFIED`; where the qualifier is added (one helper on each
@@ -890,7 +890,7 @@ each caught by the intended tests; all runner (147), eval (99) and UI backend (3
 **Errors found and corrected:** the first mutation script missed its target because
 `eval/baseline.py` has CRLF line endings; the file was restored by the script and the check rerun.
 
-**What I changed:** *to fill in after reading the diff.*
+**What I changed:** Chose the test location, the strict no-reference rule (`ValueError`, not `OTHER`) and the `tally()` helper; edited M3's `eval/baseline.py` only with her agreement of 2026-11-13; read the diff; ran the commit myself.
 
 Ownership checkpoint: why `INFRA` is checked before the reference; why a tally must add up to `n`;
 how `tally([20 different failures])` shows the FT003 defect that `repeat()` hid.
@@ -919,7 +919,7 @@ with `classify(o, None)`, which raises on a real failure and, as written, always
 rewritten before any test ran. One new test was wrong (its order `[V]` let the reproduce step
 consume the scripted alone outcomes); fixed before the code was written.
 
-**What I changed:** *to fill in after reading the diff.*
+**What I changed:** Chose tallies beside the old fields so M3's code stays untouched; accepted the `alone_tally` / `sequence_tally` names; read the diff; ran the commit myself.
 
 Ownership checkpoint: why the tallies sit beside the old fields for now and when they go; why the
 runner still searches after `alone.other > 0`; why T1 is still `VERIFIED` end to end until W19.
@@ -945,7 +945,7 @@ eval and UI backend suites OK; a real F1 run's header shown in full.
 **Errors found and corrected:** none in the code during this job. The design notes that the header
 holds absolute paths, which ADR-013 must redact.
 
-**What I changed:** *to fill in after reading the diff.*
+**What I changed:** Split W22 into four jobs in ADR-012's order; approved the design and plan; chose native execution; accepted Claude's `FtHarness --env` probe; read the diff; ran the commit myself.
 
 Ownership checkpoint: why the timezone is asked of the JVM and how the `JAVA_TOOL_OPTIONS` test
 proves it; why a failed probe gives `null` instead of stopping; where to add a new header field.
@@ -957,7 +957,7 @@ proves it; why a failed probe gives `null` instead of stopping; where to add a n
 **Asked:** run ADR-012 §2's spike and record what it shows. **Kept:** only the findings, in ADR-012
 §2 and [[evidence-m2]]; the spike code stayed in a scratch folder, as the ADR requires.
 **Errors:** the first compile failed because Git Bash passed `/c/...` paths to Windows `javac`;
-fixed with Windows paths — a command error, not a finding. **What I changed:** *to fill in.*
+fixed with Windows paths — a command error, not a finding. **What I changed:** Approved a throwaway spike; kept only its findings (ADR-012 §2), not its code; nothing merged.
 
 Ownership checkpoint: why JUnit 3 stays per-method (sorting silently ignored, and no class-level
 lifecycle to lose); what the harness must do when `@BeforeClass` throws.
@@ -982,7 +982,7 @@ caught; the control's three rows observed; runner 178, eval 99, UI backend 30 OK
 was not in any Maven project, and made the control its own small Maven project. It also renamed a
 confusing variable it had introduced in job 1 (`command` reused in `cli.main`).
 
-**What I changed:** *to fill in after reading the diff.*
+**What I changed:** Approved the design and plan; kept `per-method` as the default; accepted making the control its own small Maven project; read the diff; ran the commit myself.
 
 Ownership checkpoint: how `runBlock` groups, filters and sorts; why JUnit 3 is excluded; what
 happens when `@BeforeClass` throws; how the control proves the difference.
@@ -996,7 +996,7 @@ happens when `@BeforeClass` throws; how the control proves the difference.
 first) and four small harness fixes. **How verified:** [[evidence-m2]] "W22 job 3 follow-up":
 runner 184, eval 99, UI backend 30 OK. **Errors:** the first insert of the tests turned `
 `
-escapes into real newlines (a script error), fixed before running. **What I changed:** *to fill in.*
+escapes into real newlines (a script error), fixed before running. **What I changed:** Asked for the deferred review minors to be fixed rather than left; read the diff; ran the commit myself.
 
 ## 2026-11-14 — W22 job 4: diagnose on a disposable copy
 
@@ -1017,7 +1017,7 @@ UI backend 30 OK; a real run left the project folder without `target/`.
 check skips `target/`. **Review fixes:** multi-module hint, `--copy-parent` with UI clean-up after a
 timeout, a warning for an undeletable copy, the missing `diagnose()`-level tests, no temp path in
 errors, no traceback on a failed copy. **Errors:** Claude's own new test leaked two temp copies;
-found by checking `%TEMP%`, fixed. **What I changed:** *to fill in after reading the diff.*
+found by checking `%TEMP%`, fixed. **What I changed:** Approved the design; left two implementation calls to Claude and checked them in the diff; accepted the review fixes; ran the commit myself.
 
 Ownership checkpoint: why the copy lives in the CLI and not in `diagnose()`; what `origin` is for;
 what the two-part integrity line means; what the copy does not protect against.
@@ -1043,7 +1043,7 @@ diff) — restored and redone as a 5-line text edit; an unconditional CI line wo
 own `evidence` job — guarded; two test expectations were wrong (case of "Deletion"; the extra
 `DELETION_EVIDENCE_INCOMPLETE` reason is the intended change).
 
-**What I changed:** *to fill in after reading the diff.*
+**What I changed:** Integrated M3's W19 with her permission; chose the deletion answer and to fix the UI and the Mid report on the same branch; accepted redoing the schema edit as 5 lines; ran the commit myself.
 
 Ownership checkpoint: why one polluter's alone check counts as its deletion check; why F3 is
 `CANDIDATE` now and becomes `VERIFIED` with W20; why the Mid report reads the tag.
@@ -1063,7 +1063,7 @@ alphabetical); a Javadoc comment containing `**/` would have closed itself and b
 caught before compiling. The fresh review found a critical bug Claude had written — the first
 surefire `<plugin>` anywhere was read, so `pluginManagement` could win — and four important gaps;
 all fixed test-first. I then asked for the seven minors to be fixed as well, not deferred; done
-test-first. **What I changed:** *to fill in after reading the diff.*
+test-first. **What I changed:** Approved approach A (read the project's own Surefire includes and excludes); read the diff; ran the commit myself.
 
 Ownership checkpoint: why the effective POM and not `pom.xml`; why only `build/plugins` counts; how a pattern becomes a regex;
 why unset excludes keep `**/*$*`; why unsupported settings are refused.
@@ -1078,7 +1078,7 @@ notes to me. **Kept:** N2's expected rate read from its report; `class-grouped` 
 lifecycle; README/CLAUDE.md Python floor and first-run download note; corrected handover step;
 claim E14 qualified. **Checked rather than assumed:** the README already stated Python 3.11+ (M1's
 note was half right); the real floor (3.10) was read from PyPI, not guessed; the pre-fetch command
-was run before documenting it. **What I changed:** *to fill in after reading the diff.*
+was run before documenting it. **What I changed:** Reviewed M1's PR #108 and M3's PR #109; chose to keep the deterministic cases hard-coded; read the diff; ran the commit myself.
 
 Ownership checkpoint: why N2 alone reads its rate from the report; why the default could flip only
 after M1's independent control run.
@@ -1091,17 +1091,17 @@ after M1's independent control run.
 (N4 not run under the new default; FT006 to `Partly`). **Kept:** one extra count on the existing
 line, always printed so the two cases differ even at 0; test fixtures completed rather than the
 code made lenient, since schema v2 requires `other`. **Checked rather than assumed:** the UI already
-showed `other` (CLI-only gap); real N4 and F1 runs under the default. **What I changed:** *to fill in.*
+showed `other` (CLI-only gap); real N4 and F1 runs under the default. **What I changed:** Chose to complete the fixtures rather than make the code lenient; read the diff; ran the commit myself.
 
 Ownership checkpoint: why `other` is printed even when 0; why the fixtures, not `summary()`, were fixed.
 
 ## 2026-11-20 — CI: retry setup-java once
 
-**Tool:** Claude Code (Claude Opus 5.5) · **Level:** L2 · **Branch:** `m2/ci-setup-java-retry`
+**Tool:** Claude Code (Claude Opus 5.5) · **Level:** L3 · **Branch:** `m2/ci-setup-java-retry`
 
 **Asked:** stop the repeated `setup-java` tar failures. **Kept:** one retry per Java job and
 `setup-java@v5`. **Rejected:** dropping `cache: maven` — unproven, since the log that would say
-whether the cache or the JDK download failed was not readable. **What I changed:** *to fill in.*
+whether the cache or the JDK download failed was not readable. **What I changed:** Kept the one retry; rejected dropping the Maven cache without a failing log to justify it; ran the commit myself.
 
 Ownership checkpoint: why a retry is acceptable here (the failure is GitHub's, before our code runs)
 and what would show the real cause (the step's log lines before the tar error).
@@ -1118,19 +1118,19 @@ first `NOT_NEEDED` per round; verify the final set. **Rejected:** checks inside 
 test); repeating `ddmin` trials (ADR-011 §6). **Wrong and caught by the fresh review:** my design
 named the record step `delete`, contradicting ADR-011 and ADR-014 (`deletion`, with the removed
 test); the CLI and UI would have said things the new checks made false. All fixed test-first. **Also fixed:** `members.md` had duplicate rows for M1 and
-M2 from an earlier merge — the stale ones were removed. **What I changed:** *to fill in.*
+M2 from an earlier merge — the stale ones were removed. **What I changed:** Planned it with the superpowers skills; chose dropping only the first `NOT_NEEDED` test; read the diff; ran the commit myself.
 
 Ownership checkpoint: why only the first `NOT_NEEDED` test is dropped per round; why one polluter needs
 no deletion runs; why F3 is still `CANDIDATE` today.
 
 ## 2026-11-20 — A2: verify M1's W21; stale "not shown" wording
 
-**Tool:** Claude Code (Claude Opus 5.5) · **Level:** L2 · **Branch:** `m2/a2-verify-w21`
+**Tool:** Claude Code (Claude Opus 5.5) · **Level:** L3 · **Branch:** `m2/a2-verify-w21`
 
 **Asked:** independently verify M1's W21 on this machine. **Kept:** reproduction from a clean `main`
 worktree, including running M1's tests on the pre-change code to see them fail; a search of both
 reports for causal wording. **Found:** a line in M1's code and one in mine that became false once
-schema v2 showed every edge; fixed mine test-first, M1's sent to M1. **What I changed:** *to fill in.*
+schema v2 showed every edge; fixed mine test-first, M1's sent to M1. **What I changed:** Verified M1's W21 from a clean `main`; left M1's own line for M1 to change; ran the commit myself.
 
 Ownership checkpoint: why a verifier runs the tests on the old code too; why "not shown" was false.
 
@@ -1142,30 +1142,30 @@ Ownership checkpoint: why a verifier runs the tests on the old code too; why "no
 the scratchpad (with permission); the real runner, pinned locale and timezone; a real CLI run of the
 case A1 unblocked. **Wrong at first (mine):** the first run used JDK 21 because of a `PATH` mistake —
 which exposed fix 1. **Found and fixed test-first:** the harness compile ran the project's annotation
-processors; `java_version()` recorded the `JAVA_TOOL_OPTIONS` banner. **What I changed:** *to fill in.*
+processors; `java_version()` recorded the `JAVA_TOOL_OPTIONS` banner. **What I changed:** Gave permission for the JDK download; chose 8u502 when 8u512's file was broken; read the diff; ran the commit myself.
 
 Ownership checkpoint: why fastjson needs JDK 8; why `-proc:none` is safe for FtHarness; why the
 banner broke only `java_version`, not `jvm`.
 
 ## 2026-11-20 — A4: remove the old count fields and the alias
 
-**Tool:** Claude Code (Claude Opus 5.5), test-driven-development · **Level:** L2 · **Branch:** `m2/a4-remove-old-counts`
+**Tool:** Claude Code (Claude Opus 5.5), test-driven-development · **Level:** L3 · **Branch:** `m2/a4-remove-old-counts`
 
 **Asked:** remove the five count fields and `NO_SINGLE_POLLUTER` once `eval/` reads the tallies.
 **Kept:** a search of every reader first; M3 asked before touching `eval/`; tallies made required.
 **Rejected:** a three-step migration (defaults first, then M3, then removal) — one PR with M3's
-agreement is simpler and leaves no half-state. **What I changed:** *to fill in.*
+agreement is simpler and leaves no half-state. **What I changed:** Had every reader searched first; asked M3 before `eval/` was touched; accepted one PR over a three-step migration; ran the commit myself.
 
 Ownership checkpoint: why both sides had to change in one PR; why the tallies are now required.
 
 ## 2026-11-20 — review of PR #129; deletion-status order; F3 docs
 
-**Tool:** Claude Code (Claude Opus 5.5), test-driven-development · **Level:** L2 · **Branch:** `m2/f3-verified-followups`
+**Tool:** Claude Code (Claude Opus 5.5), test-driven-development · **Level:** L3 · **Branch:** `m2/f3-verified-followups`
 
 **Asked:** analyse the merged PRs #125–#129. **Found:** #129 checked a short run count before
 `INCONCLUSIVE`, against Interface 4's own ranking. **Kept:** M3's reading that a short run never gives
 `VERIFIED`; only the order changed, test-first, with M3's agreement. Stale "F3 is `CANDIDATE`" lines in my
-docs fixed; dated hand-over notes left as history. **What I changed:** *to fill in.*
+docs fixed; dated hand-over notes left as history. **What I changed:** Got M3's agreement to the `eval/` edit; kept her short-run reading and changed only the order; read the diff; ran the commit myself.
 
 Ownership checkpoint: why evidence against outranks missing evidence; why `-n 5` makes every check short.
 
@@ -1177,7 +1177,7 @@ fresh reviewer at the end · **Level:** L3 · **Branch:** `m2/w24-budget-ledger`
 **Asked:** build W24's runner half. **Kept:** Interface 6 written first and agreed by M1 and M3 before
 any code; the ledger as a wrapper around the runner (ADR-014 §1), so the search code does not count;
 checks either run in full or are `NOT_RUN`. **Found:** the CLI summary would have crashed on a
-`NOT_RUN` check. **What I changed:** *to fill in.*
+`NOT_RUN` check. **What I changed:** Agreed the contract with M1 and M3 before code; had one fresh reviewer check it; read the diff; ran the commit myself.
 
 Ownership checkpoint: why the reserve is `3 × n`; why a seconds limit cannot stop verification; why a
 refused run must leave no `run` line (the recount).
@@ -1190,28 +1190,27 @@ reviewer at the end · **Level:** L3 · **Branch:** `m2/w25-policy-code`
 **Asked:** build W25's runner half, including ADR-014 §6 deepening (M2's choice, checked against FT007, ADR-014
 and the real-case protocol first). **Kept:** Interface 7 agreed before code; the policy chosen once and passed into
 the existing `priority` hook, so every step after the candidate order is the same (the review showed the blamed test can still differ when several tests pollute alone); the deepening loop tested on a fake ranker.
-**What I changed:** *to fill in.*
+**What I changed:** Agreed the contract with M1 and M3 before code; had one fresh reviewer check it; read the diff; ran the commit myself.
 
 Ownership checkpoint: why the policies reach the same endpoint; when deepening stops; why a fixture result is not
 a contribution claim.
 
 ## 2026-11-20 — CLI follow-ups after #135 and #137
 
-**Tool:** Claude Code (Claude Opus 5.5), test-driven-development · **Level:** L2 · **Branch:** `m2/w24-followups`
+**Tool:** Claude Code (Claude Opus 5.5), test-driven-development · **Level:** L3 · **Branch:** `m2/w24-followups`
 
 **Asked:** analyse M3's #135 and M1's #137 and do the follow-ups. **Kept:** two summary wordings, each test-first;
-the dead "no report yet" text removed. **Left:** G2's status, which needs M3's agreement. **What I changed:** *to fill in.*
+the dead "no report yet" text removed. **Left:** G2's status, which needs M3's agreement. **What I changed:** Reviewed #135 and #137; left G2 for M3's agreement; read the diff; ran the commit myself.
 
 Ownership checkpoint: why a `BUDGET_EXHAUSTED` report's `reproduced:` numbers are not a verified sequence.
 
 ## 2026-11-21 — ranking-line notes, G2, Interface 6 step 3
 
-**Tool:** Claude Code (Claude Opus 5.5), test-driven-development · **Level:** L2 · **Branch:** `m2/ranking-notes`
+**Tool:** Claude Code (Claude Opus 5.5), test-driven-development · **Level:** L3 · **Branch:** `m2/ranking-notes`
 
 **Asked:** act on M1's and M3's merged PRs and M1's message. **Kept:** M1's per-candidate note carried into the
 ranking line (agreed by M3); G2 settled with its scope; a real F2 pair at the same limit for items 1–3. **Declined:**
-skipping ranking once the seconds limit is spent (saves little, needs another contract change). **What I changed:**
-*to fill in.*
+skipping ranking once the seconds limit is spent (saves little, needs another contract change). **What I changed:** Agreed the notes with M1 and M3; declined the seconds-skip idea; read the diff; ran the commit myself.
 
 Ownership checkpoint: why "could not analyse" must not look like "no evidence"; why ranked fits in 70 and original does not.
 
@@ -1223,43 +1222,42 @@ one fresh reviewer at the end · **Level:** L3 · **Branch:** `m2/w23-replay-cod
 **Asked:** start W23 without waiting for M3. **Kept:** Interface 8 written first and agreed (two clarifications from
 the builder check); the runner writes bundles and M3 verifies; redaction refuses rather than leaks; replay never
 searches. **Wrong at first (found by review):** the written comparison disagreed with the printed one; replay trusted
-the unchecksummed manifest. **What I changed:** *to fill in.*
+the unchecksummed manifest. **What I changed:** Agreed the contract before code; had one fresh reviewer check it; read the diff; ran the commit myself.
 
 Ownership checkpoint: why the user name is matched only as a path part; why replay reads `n` from the record; why
 "same" needs the same polluters.
 
 ## 2026-11-21 — F1 bundle, Interface 7 wording, G8
 
-**Tool:** Claude Code (Claude Opus 5.5) · **Level:** L2 · **Branch:** `m2/interface7-g8-bundle`
+**Tool:** Claude Code (Claude Opus 5.5) · **Level:** L3 · **Branch:** `m2/interface7-g8-bundle`
 
 **Asked:** act on M1's #144/#145 and her message. **Kept:** G8 settled only with its scope; the bundle made from a
 clean checkout and with relative folders. **Found:** `core.autocrlf` would have broken every committed bundle's
-checksum; `.gitattributes` added and a test that reads every committed bundle back. **What I changed:** *to fill in.*
+checksum; `.gitattributes` added and a test that reads every committed bundle back. **What I changed:** Got M3's agreement to commit the bundle in her folder, and all three members' to the wording and G8; ran the commit myself.
 
 Ownership checkpoint: why a committed bundle needs `-text`; why G8 is scoped.
 
 ## 2026-11-21 — A8/W31: supervisor agenda v2, action register v2, plan rows
 
-**Tool:** Claude Code (Claude Opus 5.5) · **Level:** L2 · **Branch:** `m2/a8-supervisor-agenda`
+**Tool:** Claude Code (Claude Opus 5.5) · **Level:** L3 · **Branch:** `m2/a8-supervisor-agenda`
 
 **Asked:** prepare W31. **Kept:** every status checked against the feedback register's closing rule — moved to
 `Partly` only where the work is built and reproduced by another member, never `Done` (that needs the supervisor);
 the real-case ranking gap (FJ-03, M1's #145) put to the supervisor as a question rather than hidden; the agenda's
 commitments ticked only where the item exists. Plan: the duplicate W18/W19 rows a merge had left removed, ✅ only where
-the row's own "Done when" is met. **What I changed:** *to fill in.*
+the row's own "Done when" is met. **What I changed:** Set statuses only where built and reproduced, none `Done`; read every change; ran the commit myself.
 
 Ownership checkpoint: why nothing is `Done`; why §9 is on the agenda.
 
 ## 2026-11-21 — FT021 reset-sensitive control
 
-**Tool:** Claude Code (Claude Opus 5.5), brainstorming → plan → TDD · **Level:** L2 · **Branch:** `m2/ft021-reset-control`
+**Tool:** Claude Code (Claude Opus 5.5), brainstorming → plan → TDD · **Level:** L3 · **Branch:** `m2/ft021-reset-control`
 
 **Asked:** build the missing FT021 control, the best way for the long run. **Kept:** a separate control project
 (the lifecycle control's Surefire run must keep passing); expectations as one table mirroring ADR-012 §1, so the
 hardened container in FYP-2 changes one row; two file locations (temp folder, working directory) because that is
 what `--workspace copy` does and does not cover; a same-JVM check so no reader passes vacuously. **Not done, on
-purpose:** detecting leftover state during a diagnosis (needs the filesystem family, FYP-2). **What I changed:**
-*to fill in.*
+purpose:** detecting leftover state during a diagnosis (needs the filesystem family, FYP-2). **What I changed:** Chose a separate project and a table of expectations; left leftover detection to FYP-2; read the diff; ran the commit myself.
 
 Ownership checkpoint: why a new JVM resets statics but not files; what `--workspace copy` does not protect.
 
@@ -1274,67 +1272,66 @@ one re-run before a failing pair is adopted; one certification path for both mod
 a time estimate measured from the run. **Rejected:** the automatic fallback and "all before" orders (FYP-2); a new
 `runner/pairs.py` (`find_pair` sits beside `find_polluter`). **Wrong at first:** Interface 9 named a field `search`
 that W25 already uses; a `tally()` with no reference cannot hold a real failure; a parameter named `runs` clashed with
-a local. **What I changed:** *to fill in.*
+a local. **What I changed:** Agreed the revised ADR and Interface 9 with M1 and M3 before code; had one fresh reviewer check it; ran the commit myself.
 
 Ownership checkpoint: why pair mode refuses `--order`; why a failing pair is re-run before it is adopted; what
 `reproduced_by` tells a reader; why the `next:` estimate is only for the pairs.
 
 ## 2026-11-22 — W23 replay gaps from M1's reproduction
 
-**Tool:** Claude Code (Claude Opus 5.5), brainstorming → plan → TDD · **Level:** L2 · **Branch:** `m2/w23-replay-gaps`
+**Tool:** Claude Code (Claude Opus 5.5), brainstorming → plan → TDD · **Level:** L3 · **Branch:** `m2/w23-replay-gaps`
 
 **Asked:** fix M1's findings 1, 2, 5, 6. **Kept:** real, quoted paths; "any FlakeTrace with eval/bundle.py" instead of
 a second recorded commit (no contract change); `--project` from the subject; the OS row compares the Windows build.
 **Rejected:** rewriting the committed bundles (evidence after the fact). **Wrong at first:** the assistant started
 writing tests before the design was approved; the member stopped it, and the design was agreed first.
-**What I changed:** *to fill in.*
+**What I changed:** Agreed the design before code, with no contract change; read the diff; ran the commit myself.
 
 Ownership checkpoint: why an absolute output folder is not written into `replay.md`; why the committed bundles keep
 their old text.
 
 ## 2026-11-22 — W26b step 9; the test-output decoding bug
 
-**Tool:** Claude Code (Claude Opus 5.5), systematic debugging → TDD · **Level:** L2 · **Branch:** `m2/w23-replay-gaps`
+**Tool:** Claude Code (Claude Opus 5.5), systematic debugging → TDD · **Level:** L3 · **Branch:** `m2/w23-replay-gaps`
 
 **Asked:** run step 9; then fix the decoding bug it surfaced. **Kept:** stop capturing output nobody reads (the
 root cause) instead of a tolerant decoding (a symptom patch); a one-file probe like the others in
 `runner/tests/resources/`; a test that sees the reader thread's failure through `threading.excepthook`, so it fails
-on Windows too. **Not claimed:** the Linux behaviour was reasoned, not run. **What I changed:** *to fill in.*
+on Windows too. **Not claimed:** the Linux behaviour was reasoned, not run. **What I changed:** Approved the independent repeat of M3's run; chose fixing the root cause (the output was never read), not the symptom; ran the commit myself.
 
 Ownership checkpoint: why the outcomes were still right; why DEVNULL is the fix and `errors="replace"` would not be.
 
 ## 2026-11-22 — W35 follow-up: replay keeps the mode; agreed wording
 
-**Tool:** Claude Code (Claude Opus 5.5), brainstorming → plan → TDD · **Level:** L2 · **Branch:** `m2/w35-followup`
+**Tool:** Claude Code (Claude Opus 5.5), brainstorming → plan → TDD · **Level:** L3 · **Branch:** `m2/w35-followup`
 
 **Asked:** fix M3's replay finding; record the two agreed Interface 9 wordings; settle E16. **Kept:** the mode read
 from the checksummed record header, not `manifest.json`; a victim that now fails alone is `"order"`. **Rejected:**
-inferring pair mode in `eval/report.py` (M3's file, and a guess where the record already says). **What I changed:**
-*to fill in.*
+inferring pair mode in `eval/report.py` (M3's file, and a guess where the record already says). **What I changed:** Chose taking the mode from the checksummed header; agreed the wording with M1 and M3; ran the commit myself.
 
 Ownership checkpoint: why the record header, not the manifest; what a replay of a pair bundle now reports.
 
 ## 2026-11-24 — Replay takes the mode from the record
 
-**Tool:** Claude Code (Claude Opus 5.5), systematic debugging → brainstorming → plan → TDD · **Level:** L2 ·
+**Tool:** Claude Code (Claude Opus 5.5), systematic debugging → brainstorming → plan → TDD · **Level:** L3 ·
 **Branch:** `m2/replay-old-pair-bundles`
 
 **Asked:** fix M1's replay finding, the most logical way, not the easiest. **Kept:** design B — one source (the
 checksummed header), a disagreeing report refused like `n`/`lifecycle`. **Rejected:** design A (trust the report,
 fall back to the header), the assistant's first proposal: two sources with a precedence rule, a disagreement silently
-believed; the member asked for the most logical design and B was chosen. **What I changed:** *to fill in.*
+believed; the member asked for the most logical design and B was chosen. **What I changed:** Chose design B (derive from the record, refuse a disagreeing report) over the easier A: the most logical, not the easiest; ran the commit myself.
 
 Ownership checkpoint: why `reproduced_by` follows from `search_mode` for every replayable bundle.
 
 ## 2026-11-24 — Every committed bundle verified by a test
 
-**Tool:** Claude Code (Claude Opus 5.5), brainstorming → plan → TDD · **Level:** L2 · **Branch:** `m2/ci-verify-bundles`
+**Tool:** Claude Code (Claude Opus 5.5), brainstorming → plan → TDD · **Level:** L3 · **Branch:** `m2/ci-verify-bundles`
 
 **Asked:** a guard so a schema change can never silently break committed evidence again. **Kept:** the test in
 `eval/tests/` beside the schema and verifier (M3 agreed), so the person changing them sees it fail locally.
 **Rejected:** extending the runner test (M3 does not run it) or a CI-only step. **Wrong at first:** the re-enactment
 validated v2 reports against v3, which also rejected newer bundles; rewritten to re-enact #164 exactly.
-**What I changed:** *to fill in.*
+**What I changed:** Chose a test beside the schema, not a CI-only check; read the diff; ran the commit myself.
 
 Ownership checkpoint: why a test that re-enacts the incident proves the guard is not vacuous.
 
@@ -1348,7 +1345,7 @@ Ownership checkpoint: why a test that re-enacts the incident proves the guard is
 choices; the CLI's names, defaults and refusals in the server; one rule (`reproducedKind`) for the Diagnosis step and
 the evidence table; a UI run's bundle never in the repository. **Found by the builder check:** the seven 21-Nov FJ-03
 bundles ran with a given two-test order — labelled "given order", not order mode reproducing FJ-03. **Rejected:**
-presets (hide parameters); a UI button that tampers (looks staged). **What I changed:** *to fill in.*
+presets (hide parameters); a UI button that tampers (looks staged). **What I changed:** Chose the approach and demo step 6; required the CLI's own option names and refusals; read the diff; ran the commit myself.
 
 Ownership checkpoint: why a committed bundle is labelled "pre-run, not run now"; why the checksum, not the recount,
 catches a changed number; what the UI cannot do (replay, live FJ-03).
@@ -1364,33 +1361,33 @@ M-2, M-3, FT007, FT008, FT009, FT010 each with "Completes when"; agenda v3; clai
 `architecture.md` status and naming (order runner now; sandbox planned for FYP-2 Iteration 3); handover items.
 **Rejected:** editing M3's frozen protocol and evidence log (left as W37 items for him); a first draft that quoted
 scores and probe results from the private part of the package (removed). **Wrong at first:** none recorded beyond
-that. **What I changed:** *to fill in.*
+that. **What I changed:** Read every change; decided the scope and the ownership boundaries; ran the commit myself.
 
 Ownership checkpoint: why "order runner" and not "sandbox runner"; what each W36–W40 package needs to be Done.
 
 ## 2026-11-27 — W39: FJ-03 under a stated budget
 
-**Tool:** Claude Code (Claude Opus 5.5) · **Level:** L2 · **Branch:** `m2/w39-budgeted-fj03`
+**Tool:** Claude Code (Claude Opus 5.5) · **Level:** L3 · **Branch:** `m2/w39-budgeted-fj03`
 
 **Asked:** run FJ-03 pair mode under one stated limit, record the real output, commit the bundles. **Kept:** the
 prediction written before the runs; a clean local clone so the bundles are `tool.dirty: false`; records outside the
-clone. **Found:** the demo plan's "certified polluter" (flagged by M3), corrected. **What I changed:** *to fill in.*
+clone. **Found:** the demo plan's "certified polluter" (flagged by M3), corrected. **What I changed:** Approved the downloads and the four runs; recorded the prediction before running; used a clean clone so `tool.dirty` is false; ran the commit myself.
 
 Ownership checkpoint: why 400 invocations leave 340 for the pairs; why `original` blames nothing when it stops.
 
 ## 2026-11-27 — W36: which bundle versions replay supports
 
-**Tool:** Claude Code (Claude Opus 5.5) · **Level:** L2 · **Branch:** `m2/w36-replay-matrix`
+**Tool:** Claude Code (Claude Opus 5.5) · **Level:** L3 · **Branch:** `m2/w36-replay-matrix`
 
 **Asked:** the replay column of M3's bundle matrix, from real runs on a v2 and a v3 bundle. **Kept:** predictions
 before each run; both refusal cases. **Wrong at first:** an N3 folder name taken from the bundles README, which turned
-out stale (eight names), sent to M3. **What I changed:** *to fill in.*
+out stale (eight names), sent to M3. **What I changed:** Recorded the predictions before running replay on a v2 and a v3 bundle; read the diff; ran the commit myself.
 
 Ownership checkpoint: why replay does not depend on the schema version; what R1 refuses.
 
 ## 2026-11-27 — W40 A4: how the code block is isolated
 
-**Tool:** Claude Code (Claude Opus 5.5), brainstorming → TDD · **Level:** L2 · **Branch:** `m2/w40-a4-isolation`
+**Tool:** Claude Code (Claude Opus 5.5), brainstorming → TDD · **Level:** L3 · **Branch:** `m2/w40-a4-isolation`
 
 **Asked:** the one-page A4 answer, shown on F3. **Kept:** three levels (runs, sequence, resource), each with how sure
 we are, in the claims ledger's agreed words; every number from F3's bundle. **Found:** the UI did not show the deletion
@@ -1402,7 +1399,7 @@ static overlap.
 
 ## 2026-11-27 — W40 A6: M2's nearest-baseline note
 
-**Tool:** Claude Code (Claude Opus 5.5), brainstorming · **Level:** L2 · **Branch:** `m2/w40-a6-baseline`
+**Tool:** Claude Code (Claude Opus 5.5), brainstorming · **Level:** L3 · **Branch:** `m2/w40-a6-baseline`
 
 **Asked:** my nearest-baseline note (iFixFlakies-style search and minimisation against mine), citing only sources I
 opened. **Kept:** only [3], [4], [5], [28] (the four I opened); [11] left uncited; every FlakeTrace fact from our own
