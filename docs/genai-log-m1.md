@@ -1000,3 +1000,24 @@ intervention" could name the resource on FJ-03, which ADR-015 as designed cannot
 `Done`, which the register's rule does not allow.
 
 **Rejections:** none.
+
+## 2026-11-27 — W37: checking M3's FJ-03 interpretation wording
+
+**Assistance level:** L3 (Core-assist): the assistant read M3's protocol change and W37 entry,
+recounted the polluters from the seven committed bundles, compared the wording with my FJ-03
+entry and evidence-collector §3, and drafted the review and requests.
+
+**What I asked:** do the W37 interpretation check from M2's task list.
+
+**What was retained:** the W37 entry in [[evidence-m1]] and the W37 row in
+[[10-Final1/iteration-2-plan]].
+
+**What I changed:** read the entry and the requests before committing.
+
+**How it was verified:** the recount reads `report.json` of the seven committed bundles; each
+finding quotes the protocol or M3's log. No JVM was run. On 2026-11-28 the assistant read M3's
+fix (PR #191) and updated the entry: all four points addressed.
+
+**Errors found:** none.
+
+**Rejections:** editing M3's protocol myself; it is her file.

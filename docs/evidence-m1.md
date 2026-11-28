@@ -1664,3 +1664,85 @@ bundle); the same JDK patch `1.8.0_452`, as expected from the same pinned image.
   sandbox stays a later target;
 - the report and record written inside the container (`flaketrace-records/`) were discarded with
   it (`--rm`); only the bundle was mounted to the host.
+
+## W37: my check of the FJ-03 resource interpretation in M3's wording fix (2026-11-27)
+
+**Requirement:** [[10-Final1/iteration-2-plan]] W37, "M1 the interpretation" (handover item: "check
+M3's FJ-03 wording — why there is no static edge (JDK `ThreadLocal.set`), and why no edge is not
+proof of independence"). I own the resource interpretation. Checked against `main` `43941fa`
+(after PR #187): [[05-Testing/real-case-protocol]] (M3's PR #180 and its earlier same-day fix) and
+M3's W37 entry in [[evidence-m3]].
+
+**What the wording must say, and what I found:**
+
+| # | Must say | `real-case-protocol.md` | `evidence-m3.md` | Result |
+| --- | --- | --- | --- | --- |
+| 1 | No static edge because the change happens inside a JDK call (`ThreadLocal.set`) the extractor does not follow | Says only "no static edge, so the policies are identical by construction"; no reason given | Says it: "FJ-03's pollution is a JDK `ThreadLocal.set()` call that static analysis does not follow" | **Gap in the protocol** |
+| 2 | No edge is not proof of independence | Not said | Not said | **Gap in both** |
+| 3 | Four distinct adopted polluters, named separately from the scan's six | "**four** distinct real tests were adopted", the six named as "the 524-candidate scan's own count" | Recounted from the seven bundles: four | **Correct** |
+| 4 | `CANDIDATE`, never "certified" | "never 'certified': every endpoint here is `CANDIDATE`, not `VERIFIED`" | Same | **Correct** (one leftover, below) |
+
+**My own recount, not taken from M3 or M2:** I read `polluters`, `candidate_reasons` and
+`assurance.resource` from the `report.json` of the seven FJ-03 pair-mode comparison bundles
+(`eval/bundles/20261122T1*Z-com.alibaba.json.bvt.serializer.MaxBufSizeTest#test_max_buf`):
+
+```
+120044Z SerializeWriterTest_14#test_writer_1    162104Z SerializeWriterTest_14#test_writer_1
+165348Z SerializeWriterTest_14#test_writer_3    170257Z SerializeWriterTest_14#test_writer_1
+171204Z SerializeWriterTest_14#test_writer_2    174219Z SerializeWriterTest_14#test_writer_3
+174845Z SerializeWriterTest_15#test_writer_1
+```
+
+Four distinct. All seven: outcome `CANDIDATE`, `candidate_reasons: ["NO_SUPPORTED_RESOURCE_EVIDENCE"]`,
+`assurance.resource` `level: NONE`, `mechanism: NOT_ASSESSED`.
+
+**The interpretation, as I would state it** (from my FJ-03 entry above, PR #145, and
+[[04-Implementation/evidence-collector]] §3): `SerializeWriter` holds a static
+`ThreadLocal<char[]> bufLocal`. The polluter's path calls `bufLocal.set(buf)`; the victim's
+`new SerializeWriter()` calls `bufLocal.get()`. In bytecode both sides only **read** the static
+field `bufLocal` (a `getstatic`); the change itself happens inside `java.lang.ThreadLocal.set`, JDK
+code the extractor does not follow (it is listed in `external_calls_not_followed`). So there is no
+write/read pair on one resource, and no edge. **An empty edge list is not proof that the tests are
+independent**: the failure reproduces 20/20 after the polluter and 0/20 alone; static analysis
+simply cannot see this kind of resource.
+
+**Requested of M3 (her files, not edited by me):**
+1. In `real-case-protocol.md`, after "no static edge, so the policies are identical by
+   construction here", add the reason: the pollution goes through the static `ThreadLocal`
+   `SerializeWriter.bufLocal`, both tests only read that field, and the change is the JDK call
+   `ThreadLocal.set`, which the extractor does not follow ([[04-Implementation/evidence-collector]] §3).
+2. In the same place, add: no edge is not proof of independence; the sequence evidence shows
+   the order dependence, the resource is simply not visible to static analysis.
+3. Minor: "The question" under "The comparison" still asks whether ranking reaches "the same
+   **certified** result". On FJ-03 the endpoint is `CANDIDATE`; "the same result (same verdict and
+   polluter class)" would match the rest of the section.
+4. A question, not a defect: "six candidates in the package are each independently a valid single
+   polluter" — "valid" reads stronger than `CANDIDATE`. If the six are the tests that make the
+   victim fail when run directly before it, saying that would be exact.
+
+**Limitations:**
+- I traced the bytecode for `SerializeWriterTest_14#test_writer_1` only (my FJ-03 entry). For the
+  other three adopted polluters I read only their reports (`level: NONE`), not their bytecode;
+  the same `bufLocal` path is likely but not checked by me.
+- Nothing was run; this is a reading check against committed files.
+
+**Result on 2026-11-27:** the count and the `CANDIDATE` wording are right. The interpretation was
+complete in M3's evidence log for item 1, but the protocol (the document a reader is pointed to)
+was missing items 1 and 2.
+
+**M3's fix, re-checked by me on 2026-11-28** (PR #191, `065514d`, on `main` `0be72a5`). I read
+the diff of `real-case-protocol.md`:
+1. **Added:** "the pollution goes through the static `ThreadLocal` `SerializeWriter.bufLocal`. Both
+   tests only *read* that field; the change happens inside the JDK call `ThreadLocal.set`, which
+   the extractor does not follow". This matches my FJ-03 entry.
+2. **Added:** "no edge is not proof of independence: the sequence evidence above already shows
+   the order dependence directly; the resource just is not visible to static analysis".
+3. **Fixed:** "The question" now says "the same verdict", not "certified result".
+4. **Answered:** the six are now stated as the POC scan's tests that "each independently make the
+   victim fail when run directly before it in a `[candidate, victim]` pair" (M3 read
+   `POC/results/scan_FJ-03.csv`'s `od_relevant` column; I did not re-read that file). She also
+   names the two of the six (`SerializeWriterTest_15#test_writer_2`, `#test_writer_3`) that no
+   FlakeTrace run reached.
+
+**Result:** all four points are addressed in the protocol. My W37 interpretation check is
+**done**. Nothing was run.
