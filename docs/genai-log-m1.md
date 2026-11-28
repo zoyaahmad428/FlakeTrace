@@ -1021,3 +1021,25 @@ fix (PR #191) and updated the entry: all four points addressed.
 **Errors found:** none.
 
 **Rejections:** editing M3's protocol myself; it is her file.
+
+## 2026-11-28 — A4: checking the resource part of M2's one-page answer
+
+**Assistance level:** L3 (Core-assist): the assistant compared the A4 page's Resource row, FJ-03
+line and FYP-2 section with evidence-collector §3 and §3a, checked F3's resource against its
+committed bundle, and drafted the corrections and the entry.
+
+**What I asked:** check the resource part of A4 (M2's request).
+
+**What was retained:** the corrected Resource row, FJ-03 line, FYP-2 link and status line of
+[[07-Defense/a4-isolation]]; the entry in [[evidence-m1]]; the A4 rows in
+[[10-Final1/action-register]] and [[10-Final1/iteration-2-plan]].
+
+**What I changed:** read the page and the entry before committing.
+
+**How it was verified:** each change cites §1, §3 or §3a; F3's edges read from its `report.json`.
+Nothing was run.
+
+**Errors found:** none in the assistant's draft. The page's "both sides touch" was imprecise
+(FJ-03 is a resource both touch with no edge).
+
+**Rejections:** editing the UI label (M2's `ui/`); suggested to him instead.

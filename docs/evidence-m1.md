@@ -1746,3 +1746,45 @@ the diff of `real-case-protocol.md`:
 
 **Result:** all four points are addressed in the protocol. My W37 interpretation check is
 **done**. Nothing was run.
+
+## A4 (W40): my check of the resource part of M2's one-page answer (2026-11-28)
+
+**Requirement:** [[10-Final1/iteration-2-plan]] W40, "A4 M2 + M1" (M2's request: "check the
+Resource row and the 'What is FYP-2' section against your section 3a"). Checked
+[[07-Defense/a4-isolation]] on `main` `0be72a5` against [[04-Implementation/evidence-collector]]
+§3 and §3a, and the F3 example against its committed bundle.
+
+**F3's resource, checked against the bundle:** I read `resource_edges` and `assurance` from
+`eval/bundles/20261121T184910Z-odfixture.ToggleVictimTest#expectsNotBothFlagsSet/report.json`: two
+edges, static fields `odfixture.Toggles.flagA` (write `ToggleAPolluterTest#setFlagA@1`, read
+`ToggleVictimTest#expectsNotBothFlagsSet@0`) and `flagB` (write `ToggleBPolluterTest#setFlagB@1`,
+read `@6`), both depth 1; `outcome: VERIFIED`, resource `STATIC_OVERLAP`, mechanism `NOT_ASSESSED`.
+Step 6 of the page is **correct**.
+
+**What I changed in the page** (M2 asked me to check this part; the rest is his and unchanged):
+
+| Where | Before | After | Why |
+| --- | --- | --- | --- |
+| Resource, "What" | "The field or property both sides touch" | a static field or constant-key system property the polluter may **write** and the victim may **read** | An edge is a WRITE on the polluter's side and a READ on the victim's (§1). "Both touch" also fits FJ-03, where both only read `bufLocal` and there is **no** edge |
+| Resource, "How" | `javap`, nothing injected | adds: depth 2 by default (up to 5); calls into the JDK and libraries not followed | The two main limits of the static evidence (§3), and the reason for FJ-03 |
+| Resource, "How sure" | `STATIC_OVERLAP`, `NOT_ASSESSED` | adds `NONE` when no edge is found (FJ-03) | §3a: the level is `STATIC_OVERLAP`, or `NONE` with no edge; never `MECHANISM_CONFIRMED` |
+| "Not every case" (FJ-03) | "a `ThreadLocal` changed through a JDK call" | both tests only read `SerializeWriter.bufLocal`; the change is inside `ThreadLocal.set`, not followed | The same reason as §3 and the W37 wording |
+| "What is FYP-2" | agenda link | adds "item 2" | §3a names the agenda item |
+| Status line | "DRAFT for M1's check" | checked by M1 2026-11-28; awaiting the supervisor | Done-when wording of the register |
+
+"Values, restores and timing are not modelled; missing evidence is not proof of independence"
+already matched §3, and "What is FYP-2" already matched §3a (ADR-015 accepted as a spike, W34,
+not built; only runtime observation could name FJ-03's resource, not built). I left both as they
+were.
+
+**A note for M2 (his `ui/`, not edited):** the UI's runtime-evidence label
+(`ui/web/src/lib/labels.ts`) says "ADR-001's fallback replaced by ADR-015's spike (W34, stretch);
+awaits the supervisor". §3a says ADR-015's check was accepted **instead**, but it does not cover
+FJ-03-like cases, which only runtime observation could. "Replaced" may read as if the runtime
+option is no longer needed. Suggested wording: "NOT BUILT — ADR-001's runtime agent not built;
+ADR-015's intervention check accepted as a spike instead (W34, stretch); awaits the supervisor".
+
+**Not done:** A4 on F3 in the demo is not rehearsed (W33); I did not open the UI.
+
+**Result:** the resource part of A4 now matches §3 and §3a. Nothing was run; this is a reading
+check against committed files.
